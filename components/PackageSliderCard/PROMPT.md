@@ -55,7 +55,6 @@ const STIFFNESS = 320;
 const DAMPING = 24;
 const PRICE_MS = 520;
 const STAGGER_MS = 70;
-const TAPE_MARKS = 12;
 
 const splitItems = (raw: string) =>
   raw
@@ -75,7 +74,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
 
 export default function PackageSliderCard({
   stops = defaultStops,
-  accentColor = '#6e1f2f',
+  accentColor = '#e2411c',
   currencySymbol = '$',
   priceNote = 'per garment',
   className,
@@ -286,17 +285,21 @@ export default function PackageSliderCard({
 
   const priceText =
     target === null ? stop.price : formatPrice(shown ?? target, decimals);
+  const fitLength = target === null ? stop.price.length : formatPrice(target, decimals).length;
   const rootStyle = { '--ps-accent': accentColor } as CSSProperties;
   const tapeStyle = { '--pos': stopPos(active) } as CSSProperties;
   const valueText = `${stop.name}, ${target === null ? stop.price : `${currencySymbol}${formatPrice(target, decimals)}`}`;
 
   return (
     <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
-      <span className={styles.light} aria-hidden="true" />
-      <span className={styles.grain} aria-hidden="true" />
-
       <div className={styles.inner}>
         <div className={styles.measure}>
+          <p className={styles.topline} aria-hidden="true">
+            <span>Package</span>
+            <span>
+              {pad(active + 1)} / {pad(count)}
+            </span>
+          </p>
           <div
             ref={tapeRef}
             className={styles.tape}
@@ -316,19 +319,8 @@ export default function PackageSliderCard({
             onPointerCancel={onPointerEnd}
             onKeyDown={onKeyDown}
           >
-            <span className={styles.tapeFace} aria-hidden="true" />
-            <span className={styles.wash} aria-hidden="true" />
-            <span className={styles.ticks} aria-hidden="true" />
-            {Array.from({ length: TAPE_MARKS - 1 }, (_, k) => (
-              <span
-                key={k}
-                className={styles.numeral}
-                style={{ insetInlineStart: `${((k + 1) / TAPE_MARKS) * 100}%` }}
-                aria-hidden="true"
-              >
-                {k + 1}
-              </span>
-            ))}
+            <span className={styles.track} aria-hidden="true" />
+            <span className={styles.fill} aria-hidden="true" />
             {stops.map((_, i) => (
               <span
                 key={i}
@@ -338,10 +330,7 @@ export default function PackageSliderCard({
                 aria-hidden="true"
               />
             ))}
-            <span className={styles.thumb} aria-hidden="true">
-              <span className={styles.needle} />
-              <span className={styles.knob} />
-            </span>
+            <span className={styles.thumb} aria-hidden="true" />
           </div>
 
           <div className={styles.labels} style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }}>
@@ -362,13 +351,14 @@ export default function PackageSliderCard({
         </div>
 
         <article id={`${uid}-card`} className={styles.card}>
-          <div className={styles.cardInner}>
-            <span className={styles.cardGrain} aria-hidden="true" />
+          <p className={styles.priceRow} style={{ '--len': fitLength } as CSSProperties}>
+            {target !== null && <span className={styles.currency}>{currencySymbol}</span>}
+            <span className={styles.price}>{priceText}</span>
+            {target !== null && priceNote && <span className={styles.priceNote}>{priceNote}</span>}
+          </p>
 
+          <div className={styles.cols}>
             <div className={styles.head}>
-              <span className={styles.index} aria-hidden="true">
-                {pad(active + 1)} / {pad(count)}
-              </span>
               <h3 key={stop.name} className={styles.name}>
                 {stop.name}
               </h3>
@@ -378,14 +368,6 @@ export default function PackageSliderCard({
                 </p>
               )}
             </div>
-
-            <p className={styles.priceRow}>
-              {target !== null && <span className={styles.currency}>{currencySymbol}</span>}
-              <span className={styles.price}>{priceText}</span>
-              {target !== null && priceNote && <span className={styles.priceNote}>{priceNote}</span>}
-            </p>
-
-            <span className={styles.stitch} aria-hidden="true" />
 
             {allItems.length > 0 && (
               <ul className={styles.items}>
@@ -400,12 +382,8 @@ export default function PackageSliderCard({
                       data-on={on || undefined}
                       style={{ '--d': `${delay}ms` } as CSSProperties}
                     >
-                      <span className={styles.mark} aria-hidden="true">
-                        <svg className={styles.check} viewBox="0 0 16 16">
-                          <path d="M4 8.4l2.6 2.6L12 5.4" />
-                        </svg>
-                      </span>
                       <span className={styles.itemText}>{item}</span>
+                      <span className={styles.mark} aria-hidden="true" />
                       <span className={styles.srOnly}>{on ? ', included' : ', not included'}</span>
                     </li>
                   );
@@ -421,86 +399,68 @@ export default function PackageSliderCard({
 ```
 
 ```css
+@font-face {
+  font-family: 'Inter Tight';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('./fonts/inter-tight-latin.woff2') format('woff2');
+}
+
 .root {
-  --ps-accent: #6e1f2f;
-  --ps-oat: #f5efe3;
-  --ps-oat-deep: #e9dfcc;
-  --ps-tape: #f8f2e6;
-  --ps-stage: #ece4d5;
-  --ps-ink: #2b2220;
-  --ps-muted: rgba(43, 34, 32, 0.56);
-  --ps-hairline: rgba(43, 34, 32, 0.12);
-  --ps-font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
-  --ps-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --ps-font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  --ps-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ps-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --ps-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.4  0 0 0 0 0.32  0 0 0 0 0.24  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --ps-paper: #f2f1ed;
+  --ps-ink: #111110;
+  --ps-mute: #66655f;
+  --ps-rule: color-mix(in srgb, var(--ps-ink) 16%, transparent);
+  --ps-font: 'Inter Tight', 'Helvetica Neue', Arial, system-ui, sans-serif;
 
   position: relative;
-  isolation: isolate;
-  overflow: clip;
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  padding-block: 48px;
-  padding-inline: 18px;
-  border-radius: 28px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--ps-stage) 70%, #fff) 0%, var(--ps-stage) 100%);
+  padding: clamp(20px, 5cqw, 56px);
+  background: var(--ps-paper);
   color: var(--ps-ink);
-  font-family: var(--ps-font-ui);
+  font-family: var(--ps-font);
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
 }
 
-.light,
-.grain {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-}
-
-.light {
-  background:
-    radial-gradient(50% 40% at 50% 0%, rgba(255, 255, 255, 0.75), transparent 70%),
-    radial-gradient(40% 35% at 85% 100%, color-mix(in srgb, var(--ps-accent) 10%, transparent), transparent 70%);
-}
-
-.grain {
-  background-image: var(--ps-noise);
-  opacity: 0.18;
-  mix-blend-mode: multiply;
+.root *,
+.root *::before,
+.root *::after {
+  box-sizing: border-box;
 }
 
 .inner {
   display: grid;
-  gap: 28px;
-  inline-size: min(100%, 560px);
-  margin-inline: auto;
+  gap: clamp(20px, 3.5cqw, 40px);
 }
 
-.measure {
-  display: grid;
-  gap: 12px;
-  padding-block-start: 14px;
+.topline {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
 }
 
+.topline span:last-child {
+  color: var(--ps-mute);
+}
+
+/* slider */
 .tape {
-  --pos: 0.125;
-
   position: relative;
-  block-size: 52px;
-  border-radius: 6px;
+  block-size: 44px;
   cursor: grab;
   touch-action: pan-y;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
   outline: none;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.85) inset,
-    0 0 0 1px color-mix(in srgb, var(--ps-ink) 10%, transparent),
-    0 10px 22px -16px rgba(60, 30, 20, 0.45),
-    0 2px 4px -2px rgba(60, 30, 20, 0.2);
-  transition: box-shadow 200ms var(--ps-ease);
 }
 
 .tape[data-dragging] {
@@ -508,389 +468,256 @@ export default function PackageSliderCard({
 }
 
 .tape:focus-visible {
-  box-shadow:
-    0 0 0 3px var(--ps-stage),
-    0 0 0 5px var(--ps-accent),
-    0 10px 22px -16px rgba(60, 30, 20, 0.45);
+  outline: 2px solid var(--ps-ink);
+  outline-offset: 6px;
 }
 
-.tapeFace,
-.wash,
-.ticks {
+.track,
+.fill {
   position: absolute;
-  inset-block: 0;
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-.tapeFace {
   inset-inline: 0;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, transparent 40%, rgba(120, 90, 60, 0.07) 100%),
-    var(--ps-noise),
-    var(--ps-tape);
-  background-blend-mode: normal, multiply, normal;
+  inset-block-start: 50%;
+  block-size: 2px;
+  translate: 0 -50%;
+  background: var(--ps-rule);
 }
 
-.wash {
-  inset-inline-start: 0;
+.fill {
+  inset-inline-end: auto;
   inline-size: calc(var(--pos) * 100%);
-  background: linear-gradient(90deg, color-mix(in srgb, var(--ps-accent) 4%, transparent), color-mix(in srgb, var(--ps-accent) 13%, transparent));
-  border-start-end-radius: 0;
-  border-end-end-radius: 0;
-}
-
-.ticks {
-  inset-inline: 0;
-  background:
-    linear-gradient(90deg, color-mix(in srgb, var(--ps-accent) 70%, transparent) 1.5px, transparent 1.5px) 0 0 / calc(100% / 12) 17px repeat-x,
-    linear-gradient(90deg, color-mix(in srgb, var(--ps-accent) 45%, transparent) 1px, transparent 1px) 0 0 / calc(100% / 24) 11px repeat-x,
-    linear-gradient(90deg, color-mix(in srgb, var(--ps-accent) 30%, transparent) 1px, transparent 1px) 0 0 / calc(100% / 96) 6px repeat-x,
-    linear-gradient(90deg, color-mix(in srgb, var(--ps-accent) 30%, transparent) 1px, transparent 1px) 0 100% / calc(100% / 96) 5px repeat-x;
-}
-
-.numeral {
-  position: absolute;
-  inset-block-start: 20px;
-  translate: -50% 0;
-  font-family: var(--ps-font-mono);
-  font-size: 9.5px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  font-variant-numeric: tabular-nums;
-  color: color-mix(in srgb, var(--ps-ink) 52%, transparent);
-  pointer-events: none;
+  background: var(--ps-ink);
 }
 
 .stopMark {
   position: absolute;
-  inset-block: 0;
-  inline-size: 0;
-  pointer-events: none;
+  inset-block-start: 50%;
+  inline-size: 10px;
+  block-size: 10px;
+  translate: -50% -50%;
+  background: var(--ps-paper);
+  border: 2px solid var(--ps-ink);
+  transition: background-color 0.2s;
 }
 
-.stopMark::before {
-  content: '';
-  position: absolute;
-  inset-block-end: 7px;
-  inset-inline-start: -3.5px;
-  inline-size: 7px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--ps-tape);
-  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ps-accent) 55%, transparent);
-  transition:
-    background-color 260ms var(--ps-ease),
-    box-shadow 260ms var(--ps-ease);
+.stopMark:dir(rtl) {
+  translate: 50% -50%;
 }
 
-.stopMark[data-on]::before {
-  background: var(--ps-accent);
-  box-shadow: inset 0 0 0 1.5px var(--ps-accent);
+.stopMark[data-on] {
+  background: var(--ps-ink);
 }
 
 .thumb {
   position: absolute;
-  inset-block: -12px 0;
+  inset-block-start: 50%;
   inset-inline-start: calc(var(--pos) * 100%);
-  inline-size: 0;
-  pointer-events: none;
-}
-
-.needle {
-  position: absolute;
-  inset-block: 10px 0;
-  inset-inline-start: -1px;
-  inline-size: 2px;
+  inline-size: 26px;
+  block-size: 26px;
+  translate: -50% -50%;
   background: var(--ps-accent);
-  border-radius: 1px;
+  transition: scale 0.18s ease-out;
 }
 
-.knob {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline-start: -12px;
-  inline-size: 24px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 36% 30%, color-mix(in srgb, var(--ps-accent) 60%, #fff) 0%, transparent 46%),
-    var(--ps-accent);
-  box-shadow:
-    0 0 0 2.5px var(--ps-oat),
-    0 6px 12px -4px color-mix(in srgb, var(--ps-accent) 70%, #000),
-    0 1px 2px rgba(0, 0, 0, 0.18);
-  transition: scale 260ms var(--ps-spring);
+.thumb:dir(rtl) {
+  translate: 50% -50%;
 }
 
-.tape[data-dragging] .knob {
-  scale: 1.14;
+.tape[data-dragging] .thumb {
+  scale: 1.18;
 }
 
 .labels {
   display: grid;
-  gap: 4px;
+  margin-block-start: 6px;
 }
 
 .label {
-  min-inline-size: 0;
-  align-self: start;
-  margin-block: 4px;
-  padding: 0 2px;
-  border: 0;
+  appearance: none;
   background: none;
-  cursor: pointer;
-  font-family: var(--ps-font-ui);
-  font-size: 12.5px;
+  border: 0;
+  margin: 0;
+  padding: 6px 4px;
+  font: inherit;
+  font-size: 15px;
   font-weight: 500;
   line-height: 1.25;
-  letter-spacing: -0.005em;
+  color: var(--ps-mute);
   text-align: center;
-  color: var(--ps-muted);
-  overflow-wrap: anywhere;
+  cursor: pointer;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  transition: color 220ms var(--ps-ease);
-}
-
-.label:hover {
-  color: var(--ps-ink);
+  overflow-wrap: anywhere;
+  transition: color 0.2s;
 }
 
 .label[data-on] {
-  color: var(--ps-accent);
-  font-weight: 650;
-}
-
-.card {
-  position: relative;
-  padding: 7px;
-  border-radius: 22px;
-  background:
-    repeating-linear-gradient(90deg, color-mix(in srgb, var(--ps-accent) 38%, transparent) 0 1px, transparent 1px 5px),
-    var(--ps-oat-deep);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--ps-ink) 10%, transparent),
-    0 28px 50px -30px rgba(70, 35, 25, 0.45),
-    0 8px 16px -10px rgba(70, 35, 25, 0.22);
-}
-
-.cardInner {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  display: grid;
-  gap: 18px;
-  padding: 26px 24px 26px;
-  border-radius: 16px;
-  background:
-    radial-gradient(90% 60% at 20% 0%, rgba(255, 255, 255, 0.7), transparent 70%),
-    var(--ps-oat);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ps-ink) 9%, transparent);
-}
-
-.cardGrain {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-image: var(--ps-noise);
-  opacity: 0.14;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-}
-
-.head {
-  display: grid;
-  gap: 6px;
-}
-
-.index {
-  font-family: var(--ps-font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
-  font-variant-numeric: tabular-nums;
-  color: var(--ps-accent);
-}
-
-.name {
-  margin: 0;
-  font-family: var(--ps-font-display);
-  font-size: clamp(26px, 7.4cqi, 36px);
-  font-weight: 500;
-  line-height: 1.04;
-  letter-spacing: -0.025em;
   color: var(--ps-ink);
-  overflow-wrap: anywhere;
-  text-wrap: balance;
-  animation: rise 520ms var(--ps-ease) both;
+  font-weight: 700;
 }
 
-.tagline {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.45;
-  color: var(--ps-muted);
-  overflow-wrap: anywhere;
-  animation: rise 520ms var(--ps-ease) 60ms both;
+@media (hover: hover) {
+  .label:hover {
+    color: var(--ps-ink);
+  }
 }
 
-@keyframes rise {
-  from {
-    opacity: 0;
-    translate: 0 6px;
-    filter: blur(3px);
-  }
-  to {
-    opacity: 1;
-    translate: 0 0;
-    filter: blur(0);
-  }
+/* package */
+.card {
+  display: grid;
+  gap: clamp(20px, 3.5cqw, 40px);
+  padding-block-start: clamp(16px, 2.5cqw, 28px);
+  border-block-start: 2px solid var(--ps-ink);
+  min-inline-size: 0;
 }
 
 .priceRow {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 2px 6px;
+  align-items: flex-start;
+  column-gap: 0.12em;
   margin: 0;
   min-inline-size: 0;
+  --fit: min(26cqw, 100cqw / (var(--len) * 0.62 + 0.4));
+  font-size: max(30px, var(--fit));
+  line-height: 0.82;
 }
 
 .currency {
-  align-self: flex-start;
-  padding-block-start: 6px;
-  font-family: var(--ps-font-display);
-  font-size: 20px;
-  font-weight: 500;
-  color: var(--ps-accent);
+  font-size: 0.34em;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  padding-block-start: 0.06em;
+  white-space: pre;
 }
 
 .price {
-  min-inline-size: 0;
-  font-family: var(--ps-font-display);
-  font-size: clamp(44px, 13cqi, 60px);
-  font-weight: 400;
-  line-height: 1;
-  letter-spacing: -0.035em;
-  font-variant-numeric: tabular-nums lining-nums;
-  color: var(--ps-ink);
+  font-size: 1em;
+  font-weight: 700;
+  letter-spacing: -0.055em;
+  font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
+  min-inline-size: 0;
 }
 
 .priceNote {
-  font-family: var(--ps-font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ps-muted);
+  flex-basis: 100%;
+  margin-block-start: clamp(10px, 1.6cqw, 18px);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0;
+  color: var(--ps-mute);
 }
 
-.stitch {
-  display: block;
-  block-size: 0;
-  border-block-start: 1.5px dashed color-mix(in srgb, var(--ps-accent) 45%, transparent);
+.cols {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  column-gap: clamp(24px, 5cqw, 64px);
+  row-gap: 28px;
+  align-items: start;
+}
+
+.head {
+  min-inline-size: 0;
+}
+
+.name {
+  margin: 0;
+  font-size: clamp(28px, 4.6cqw, 52px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  overflow-wrap: anywhere;
+  animation: ps-rise 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.tagline {
+  margin: 14px 0 0;
+  max-inline-size: 30ch;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--ps-mute);
+  overflow-wrap: anywhere;
+  animation: ps-rise 0.4s 60ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 .items {
-  display: grid;
-  gap: 11px;
+  list-style: none;
   margin: 0;
   padding: 0;
-  list-style: none;
+  border-block-end: 1px solid var(--ps-rule);
 }
 
 .item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  min-inline-size: 0;
-  font-size: 14.5px;
-  line-height: 1.4;
-  color: color-mix(in srgb, var(--ps-ink) 38%, transparent);
-  transition: color 300ms var(--ps-ease) var(--d, 0ms);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding-block: 14px;
+  border-block-start: 1px solid var(--ps-rule);
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: color-mix(in srgb, var(--ps-ink) 42%, var(--ps-paper));
+  transition: color 0.25s var(--d, 0ms);
 }
 
 .item[data-on] {
   color: var(--ps-ink);
 }
 
-.mark {
-  position: relative;
-  flex: none;
-  display: grid;
-  place-items: center;
-  inline-size: 20px;
-  aspect-ratio: 1;
-  margin-block-start: 0;
-  border-radius: 50%;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ps-ink) 22%, transparent);
-}
-
-.mark::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: var(--ps-accent);
-  scale: 0.2;
-  opacity: 0;
-  transition:
-    scale 420ms var(--ps-spring) var(--d, 0ms),
-    opacity 200ms var(--ps-ease) var(--d, 0ms);
-}
-
-.item[data-on] .mark::before {
-  scale: 1;
-  opacity: 1;
-}
-
-.check {
-  position: relative;
-  inline-size: 13px;
-  block-size: 13px;
-  fill: none;
-  stroke: var(--ps-oat);
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 14;
-  stroke-dashoffset: 14;
-  transition: stroke-dashoffset 320ms var(--ps-ease) calc(var(--d, 0ms) + 120ms);
-}
-
-.item[data-on] .check {
-  stroke-dashoffset: 0;
-}
-
 .itemText {
-  min-inline-size: 0;
   overflow-wrap: anywhere;
+}
+
+.mark {
+  inline-size: 12px;
+  block-size: 12px;
+  border: 2px solid color-mix(in srgb, var(--ps-ink) 30%, var(--ps-paper));
+  background: transparent;
+  transition:
+    background-color 0.25s var(--d, 0ms),
+    border-color 0.25s var(--d, 0ms),
+    scale 0.3s var(--d, 0ms) cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+
+.item[data-on] .mark {
+  background: var(--ps-accent);
+  border-color: var(--ps-accent);
+  scale: 1.15;
 }
 
 .srOnly {
   position: absolute;
   inline-size: 1px;
   block-size: 1px;
+  margin: -1px;
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
 }
 
-@container (min-width: 640px) {
-  .root {
-    padding-block: 64px;
+@keyframes ps-rise {
+  from {
+    opacity: 0;
+    translate: 0 10px;
   }
+}
 
-  .cardInner {
-    padding: 32px 34px;
-    gap: 20px;
+@container (max-width: 640px) {
+  .cols {
+    grid-template-columns: minmax(0, 1fr);
   }
-
-  .items {
-    grid-template-columns: 1fr 1fr;
-    gap: 12px 24px;
+  .label {
+    font-size: 13px;
+    padding-inline: 2px;
+  }
+  .name {
+    font-size: 32px;
   }
 }
 
@@ -899,12 +726,10 @@ export default function PackageSliderCard({
   .tagline {
     animation: none;
   }
-
   .item,
-  .mark::before,
-  .check,
-  .knob,
-  .stopMark::before,
+  .mark,
+  .stopMark,
+  .thumb,
   .label {
     transition: none;
   }

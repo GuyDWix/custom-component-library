@@ -28,8 +28,8 @@ const stage = {
   boxSizing: 'border-box' as const,
   display: 'grid',
   placeItems: 'center',
-  padding: 'clamp(16px, 4vw, 56px)',
-  background: 'linear-gradient(180deg, #f3eee5 0%, #e7e0d3 100%)',
+  padding: 0,
+  background: '#f2f1ed',
 };
 
 export default function Preview() {

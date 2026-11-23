@@ -50,7 +50,6 @@ const STIFFNESS = 320;
 const DAMPING = 24;
 const PRICE_MS = 520;
 const STAGGER_MS = 70;
-const TAPE_MARKS = 12;
 
 const splitItems = (raw: string) =>
   raw
@@ -70,7 +69,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
 
 export default function PackageSliderCard({
   stops = defaultStops,
-  accentColor = '#6e1f2f',
+  accentColor = '#e2411c',
   currencySymbol = '$',
   priceNote = 'per garment',
   className,
@@ -281,17 +280,21 @@ export default function PackageSliderCard({
 
   const priceText =
     target === null ? stop.price : formatPrice(shown ?? target, decimals);
+  const fitLength = target === null ? stop.price.length : formatPrice(target, decimals).length;
   const rootStyle = { '--ps-accent': accentColor } as CSSProperties;
   const tapeStyle = { '--pos': stopPos(active) } as CSSProperties;
   const valueText = `${stop.name}, ${target === null ? stop.price : `${currencySymbol}${formatPrice(target, decimals)}`}`;
 
   return (
     <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
-      <span className={styles.light} aria-hidden="true" />
-      <span className={styles.grain} aria-hidden="true" />
-
       <div className={styles.inner}>
         <div className={styles.measure}>
+          <p className={styles.topline} aria-hidden="true">
+            <span>Package</span>
+            <span>
+              {pad(active + 1)} / {pad(count)}
+            </span>
+          </p>
           <div
             ref={tapeRef}
             className={styles.tape}
@@ -311,19 +314,8 @@ export default function PackageSliderCard({
             onPointerCancel={onPointerEnd}
             onKeyDown={onKeyDown}
           >
-            <span className={styles.tapeFace} aria-hidden="true" />
-            <span className={styles.wash} aria-hidden="true" />
-            <span className={styles.ticks} aria-hidden="true" />
-            {Array.from({ length: TAPE_MARKS - 1 }, (_, k) => (
-              <span
-                key={k}
-                className={styles.numeral}
-                style={{ insetInlineStart: `${((k + 1) / TAPE_MARKS) * 100}%` }}
-                aria-hidden="true"
-              >
-                {k + 1}
-              </span>
-            ))}
+            <span className={styles.track} aria-hidden="true" />
+            <span className={styles.fill} aria-hidden="true" />
             {stops.map((_, i) => (
               <span
                 key={i}
@@ -333,10 +325,7 @@ export default function PackageSliderCard({
                 aria-hidden="true"
               />
             ))}
-            <span className={styles.thumb} aria-hidden="true">
-              <span className={styles.needle} />
-              <span className={styles.knob} />
-            </span>
+            <span className={styles.thumb} aria-hidden="true" />
           </div>
 
           <div className={styles.labels} style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }}>
@@ -357,13 +346,14 @@ export default function PackageSliderCard({
         </div>
 
         <article id={`${uid}-card`} className={styles.card}>
-          <div className={styles.cardInner}>
-            <span className={styles.cardGrain} aria-hidden="true" />
+          <p className={styles.priceRow} style={{ '--len': fitLength } as CSSProperties}>
+            {target !== null && <span className={styles.currency}>{currencySymbol}</span>}
+            <span className={styles.price}>{priceText}</span>
+            {target !== null && priceNote && <span className={styles.priceNote}>{priceNote}</span>}
+          </p>
 
+          <div className={styles.cols}>
             <div className={styles.head}>
-              <span className={styles.index} aria-hidden="true">
-                {pad(active + 1)} / {pad(count)}
-              </span>
               <h3 key={stop.name} className={styles.name}>
                 {stop.name}
               </h3>
@@ -373,14 +363,6 @@ export default function PackageSliderCard({
                 </p>
               )}
             </div>
-
-            <p className={styles.priceRow}>
-              {target !== null && <span className={styles.currency}>{currencySymbol}</span>}
-              <span className={styles.price}>{priceText}</span>
-              {target !== null && priceNote && <span className={styles.priceNote}>{priceNote}</span>}
-            </p>
-
-            <span className={styles.stitch} aria-hidden="true" />
 
             {allItems.length > 0 && (
               <ul className={styles.items}>
@@ -395,12 +377,8 @@ export default function PackageSliderCard({
                       data-on={on || undefined}
                       style={{ '--d': `${delay}ms` } as CSSProperties}
                     >
-                      <span className={styles.mark} aria-hidden="true">
-                        <svg className={styles.check} viewBox="0 0 16 16">
-                          <path d="M4 8.4l2.6 2.6L12 5.4" />
-                        </svg>
-                      </span>
                       <span className={styles.itemText}>{item}</span>
+                      <span className={styles.mark} aria-hidden="true" />
                       <span className={styles.srOnly}>{on ? ', included' : ', not included'}</span>
                     </li>
                   );
