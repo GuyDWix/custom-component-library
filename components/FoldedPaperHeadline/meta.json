@@ -4,13 +4,15 @@
   "display_name": "Folded Paper Headline",
   "category": "text",
   "tier": "showpiece",
-  "job": "A headline printed across a zig-zag folded paper strip that opens flat as the visitor scrolls, letters straightening with each crease",
-  "visitor_action": "scroll to unfold; readable at every stage",
+  "job": "A headline printed across a zig-zag folded paper strip that unfolds flat on click or hover, letters straightening with each crease",
+  "visitor_action": "click or hover to unfold; readable at every stage",
   "owner_settings": [
     "Headline text",
     "Paper color",
     "Text color",
-    "Fold count"
+    "Fold count",
+    "Folded (on/off)",
+    "Fold trigger (click, hover, none)"
   ],
   "site_types": [
     "events",
@@ -18,8 +20,8 @@
     "store",
     "business"
   ],
-  "mobile": "fewer folds, unfolds on view instead of scroll",
-  "motion": "scroll-linked: fold progress follows the strip's position in the viewport (smoothed by a spring), facets flatten crease by crease; folds back on scroll up; at page end opens fully (reduced-motion: static flat strip)",
+  "mobile": "fewer folds; tap toggles",
+  "motion": "spring-driven: facets flatten crease by crease when unfolded and fold back; no scroll link (reduced-motion: static flat strip, no trigger)",
   "scores": {
     "concept": 3,
     "usefulness": 2,

@@ -1,6 +1,6 @@
 Create a custom element called "Folded Paper Headline". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: headline text, paper color, text color, fold count. Add other settings if they help.
+The site owner must be able to change: headline text, paper color, text color, fold count, folded (on/off), fold trigger (click, hover, none). Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
@@ -12,6 +12,9 @@ export interface FoldedPaperHeadlineProps {
   paperColor?: string;
   textColor?: string;
   foldCount?: number;
+  isFolded?: boolean;
+  foldTrigger?: 'click' | 'hover' | 'none';
+  onValueChange?: (isFolded: boolean) => void;
   className?: string;
 }
 
@@ -19,9 +22,6 @@ const FOLD_DEG = 52;
 const MIN_FONT = 22;
 const REST_LIT = 0.2;
 const REST_SHADE = 0.27;
-// scroll window: closed when the strip's centre is at 98% of the viewport height, flat at 48%
-const SCROLL_FROM = 0.98;
-const SCROLL_TO = 0.48;
 // each facet opens over this share of the scroll travel, staggered crease by crease
 const FACET_SPAN = 0.55;
 const SMOOTH_K = 120;
@@ -36,6 +36,9 @@ export default function FoldedPaperHeadline({
   paperColor = '#b32914',
   textColor = '#f0e5cf',
   foldCount = 5,
+  isFolded = true,
+  foldTrigger = 'click',
+  onValueChange,
   className,
 }: FoldedPaperHeadlineProps) {
   const uid = useId();
@@ -45,16 +48,26 @@ export default function FoldedPaperHeadline({
   const [inView, setInView] = useState(true);
   const [narrow, setNarrow] = useState(false);
   const [fit, setFit] = useState<number | null>(null);
+  const [folded, setFolded] = useState(isFolded);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
   const probeRef = useRef<HTMLSpanElement>(null);
   const sceneWidth = useRef(0);
+  const motion = useRef({ p: isFolded ? 0 : 1, v: 0 });
 
   const folds = Math.max(1, Math.min(9, Math.round(foldCount)));
   const effFolds = narrow ? Math.min(folds, 2) : folds;
   const facetCount = effFolds + 1;
+
+  useEffect(() => setFolded(isFolded), [isFolded]);
+
+  const changeFolded = (next: boolean) => {
+    if (next === folded) return;
+    setFolded(next);
+    onValueChange?.(next);
+  };
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -139,48 +152,45 @@ export default function FoldedPaperHeadline({
   );
 
   useEffect(() => {
+    const m = motion.current;
     if (reduced) {
       // flat open strip, no motion
+      m.p = 1;
+      m.v = 0;
       paint(1);
       return;
     }
-    const target = () => {
-      const root = rootRef.current;
-      if (!root) return 0;
-      const vh = window.innerHeight;
-      const rect = root.getBoundingClientRect();
-      const atPageEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
-      // a strip that cannot scroll any further up the screen is as open as it will ever get
-      if (atPageEnd && rect.bottom <= vh && rect.top >= 0) return 1;
-      const centre = rect.top + rect.height / 2;
-      return clamp01((vh * SCROLL_FROM - centre) / (vh * (SCROLL_FROM - SCROLL_TO)));
-    };
-    const state = { p: target(), v: 0 };
-    paint(state.p);
-    if (!inView) return;
+    const goal = folded ? 0 : 1;
+    if (!inView) {
+      m.p = goal;
+      m.v = 0;
+      paint(goal);
+      return;
+    }
+    paint(m.p);
     let last = performance.now();
     let id = 0;
     const loop = (now: number) => {
       const dt = Math.min((now - last) / 1000, 1 / 30);
       last = now;
-      const goal = target();
       const steps = Math.max(1, Math.ceil(dt / (1 / 120)));
       const h = dt / steps;
       for (let n = 0; n < steps; n++) {
-        state.v += (SMOOTH_K * (goal - state.p) - SMOOTH_C * state.v) * h;
-        state.p += state.v * h;
+        m.v += (SMOOTH_K * (goal - m.p) - SMOOTH_C * m.v) * h;
+        m.p += m.v * h;
       }
-      state.p = clamp01(state.p);
-      if (Math.abs(goal - state.p) < 0.0005 && Math.abs(state.v) < 0.002) {
-        state.p = goal;
-        state.v = 0;
+      m.p = clamp01(m.p);
+      const settled = Math.abs(goal - m.p) < 0.0005 && Math.abs(m.v) < 0.002;
+      if (settled) {
+        m.p = goal;
+        m.v = 0;
       }
-      paint(state.p);
-      id = requestAnimationFrame(loop);
+      paint(m.p);
+      if (!settled) id = requestAnimationFrame(loop);
     };
     id = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(id);
-  }, [reduced, inView, paint, effFolds]);
+  }, [reduced, inView, folded, paint]);
 
   const rootStyle = {
     '--fph-paper': paperColor,
@@ -245,6 +255,19 @@ export default function FoldedPaperHeadline({
           </div>
         </div>
       </div>
+      {foldTrigger !== 'none' && !reduced && (
+        <button
+          type="button"
+          className={styles.trigger}
+          aria-label={headline}
+          aria-expanded={!folded}
+          onClick={foldTrigger === 'click' ? () => changeFolded(!folded) : undefined}
+          onPointerEnter={foldTrigger === 'hover' ? () => changeFolded(false) : undefined}
+          onPointerLeave={foldTrigger === 'hover' ? () => changeFolded(true) : undefined}
+          onFocus={foldTrigger === 'hover' ? () => changeFolded(false) : undefined}
+          onBlur={foldTrigger === 'hover' ? () => changeFolded(true) : undefined}
+        />
+      )}
       <span ref={probeRef} className={styles.probe} aria-hidden="true">
         {headline}
       </span>
@@ -451,4 +474,20 @@ export default function FoldedPaperHeadline({
   text-transform: uppercase;
 }
 
+
+.trigger {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.trigger:focus-visible {
+  outline: 3px solid var(--fph-black);
+  outline-offset: -6px;
+}
 ```

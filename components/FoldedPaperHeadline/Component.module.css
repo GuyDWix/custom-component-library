@@ -195,3 +195,19 @@
   text-transform: uppercase;
 }
 
+
+.trigger {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.trigger:focus-visible {
+  outline: 3px solid var(--fph-black);
+  outline-offset: -6px;
+}
