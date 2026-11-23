@@ -1,6 +1,6 @@
 Create a custom element called "Sign-off Signature". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: note text, signature name, handwriting style, ink color, flourish underline, paper tone. Add other settings if they help.
+The site owner must be able to change: note text, signature name, handwriting style, ink color, flourish underline, paper tone, writing speed. Add other settings if they help.
 
 ```tsx
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -17,6 +17,8 @@ export interface SignOffSignatureProps {
   inkColor?: string;
   showFlourish?: boolean;
   paperTone?: PaperTone;
+  /** Writing speed multiplier: 1 = default, higher = faster. Clamped to 0.25-3. */
+  speed?: number;
   className?: string;
 }
 
@@ -465,6 +467,7 @@ export default function SignOffSignature({
   inkColor = '#2c2a63',
   showFlourish = true,
   paperTone = 'cream',
+  speed = 1,
   className,
 }: SignOffSignatureProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -473,6 +476,7 @@ export default function SignOffSignature({
   const startedRef = useRef(false);
   const [availPx, setAvailPx] = useState(560);
   const [reduced, setReduced] = useState(false);
+  const rate = Math.min(3, Math.max(0.25, Number.isFinite(speed) ? speed : 1));
   const [inView, setInView] = useState(false);
 
   const layout = useMemo(
@@ -540,7 +544,7 @@ export default function SignOffSignature({
     let raf = 0;
     let last = performance.now();
     const frame = (now: number) => {
-      elapsedRef.current += Math.min(64, now - last);
+      elapsedRef.current += Math.min(64, now - last) * rate;
       last = now;
       const t = elapsedRef.current;
       drawFrame(ctx, timeline.beats, t, timeline.total, layout, inkColor);
@@ -548,7 +552,7 @@ export default function SignOffSignature({
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [layout, timeline, inkColor, reduced, inView]);
+  }, [layout, timeline, inkColor, reduced, inView, rate]);
 
   const rootStyle = { '--sos-ink': inkColor } as CSSProperties;
 

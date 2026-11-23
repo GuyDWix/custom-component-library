@@ -12,7 +12,8 @@
     "Handwriting style",
     "Ink color",
     "Flourish underline",
-    "Paper tone"
+    "Paper tone",
+    "Writing speed"
   ],
   "site_types": [
     "business",
