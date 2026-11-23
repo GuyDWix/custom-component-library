@@ -277,9 +277,6 @@ export default function DevelopingPolaroidRow({
                       <span className={styles.blank} aria-hidden="true" />
                     )}
                     <span className={styles.milk} aria-hidden="true" />
-                    <span className={styles.blotA} aria-hidden="true" />
-                    <span className={styles.blotB} aria-hidden="true" />
-                    <span className={styles.blotC} aria-hidden="true" />
                     <span className={styles.rim} aria-hidden="true" />
                     <span className={styles.flash} aria-hidden="true" />
                     <span className={styles.glass} aria-hidden="true" />

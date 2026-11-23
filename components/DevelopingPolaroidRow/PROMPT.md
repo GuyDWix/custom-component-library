@@ -282,9 +282,6 @@ export default function DevelopingPolaroidRow({
                       <span className={styles.blank} aria-hidden="true" />
                     )}
                     <span className={styles.milk} aria-hidden="true" />
-                    <span className={styles.blotA} aria-hidden="true" />
-                    <span className={styles.blotB} aria-hidden="true" />
-                    <span className={styles.blotC} aria-hidden="true" />
                     <span className={styles.rim} aria-hidden="true" />
                     <span className={styles.flash} aria-hidden="true" />
                     <span className={styles.glass} aria-hidden="true" />
@@ -316,18 +313,18 @@ export default function DevelopingPolaroidRow({
 
 .root {
   --dp-border: #f8f9fb;
-  --dp-table: #b8c0cb;
-  --dp-table-deep: #9ea8b5;
-  --dp-pool: #e9eef3;
+  --dp-table: #dde1e7;
+  --dp-table-deep: #c9ced6;
+  --dp-pool: #f1f3f6;
   --dp-ink: #25418f;
   --dp-focus: #25418f;
-  --dp-edge: #c3c9d2;
+  --dp-edge: rgba(70, 80, 96, 0.28);
   --dp-emulsion: #16211f;
   --dp-shadow: 34, 42, 56;
-  --dp-teal: 70, 112, 104;
-  --dp-milk-hi: #e9f0eb;
-  --dp-milk: #d6e5df;
-  --dp-milk-lo: #c3d7cf;
+  --dp-teal: 120, 134, 130;
+  --dp-milk-hi: #eef1ee;
+  --dp-milk: #e6eae7;
+  --dp-milk-lo: #dde3df;
   --dp-develop: 3.2s;
   --dp-font-hand: 'Caveat', cursive;
   --dp-font-ui: 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
@@ -342,12 +339,9 @@ export default function DevelopingPolaroidRow({
   border-radius: 28px;
   color: var(--dp-ink);
   font-family: var(--dp-font-ui);
-  /* The tabletop: one strobe pool over the hero, a window-edge shadow in the corner, a falloff to the frame. */
   background:
-    radial-gradient(150% 130% at 50% 50%, rgba(0, 0, 0, 0) 52%, rgba(36, 46, 62, 0.34) 100%),
-    linear-gradient(128deg, rgba(34, 44, 60, 0.3) 0%, rgba(34, 44, 60, 0.1) 14%, rgba(34, 44, 60, 0) 30%),
-    radial-gradient(54% 70% at 46% 42%, var(--dp-pool) 0%, rgba(233, 238, 243, 0.7) 34%, rgba(233, 238, 243, 0) 76%),
-    linear-gradient(176deg, var(--dp-table) 0%, var(--dp-table-deep) 100%);
+    radial-gradient(70% 80% at 50% 44%, var(--dp-pool) 0%, rgba(241, 243, 246, 0) 80%),
+    linear-gradient(180deg, var(--dp-table) 0%, var(--dp-table-deep) 100%);
 }
 
 .root ::selection {
@@ -360,7 +354,7 @@ export default function DevelopingPolaroidRow({
   z-index: -2;
   pointer-events: none;
   background-image: var(--dp-noise);
-  opacity: 0.16;
+  opacity: 0.07;
   mix-blend-mode: multiply;
 }
 
@@ -374,9 +368,9 @@ export default function DevelopingPolaroidRow({
     linear-gradient(
       104deg,
       rgba(255, 255, 255, 0) 24%,
-      rgba(255, 255, 255, 0.2) 38%,
-      rgba(255, 255, 255, 0.42) 46%,
-      rgba(255, 255, 255, 0.12) 56%,
+      rgba(255, 255, 255, 0.1) 38%,
+      rgba(255, 255, 255, 0.2) 46%,
+      rgba(255, 255, 255, 0.06) 56%,
       rgba(255, 255, 255, 0) 68%
     );
   mix-blend-mode: soft-light;
@@ -447,9 +441,9 @@ export default function DevelopingPolaroidRow({
     rotate(calc((var(--dp-rot, 0deg) + var(--dp-ent, 0deg)) * var(--dp-flat)))
     scale(var(--dp-scale));
   box-shadow:
-    0 1px 0 var(--dp-edge),
-    0 1px 2px rgba(var(--dp-shadow), 0.2),
-    0 4px 8px -4px rgba(var(--dp-shadow), 0.16);
+    0 0 0 0.5px var(--dp-edge),
+    0 1px 2px rgba(var(--dp-shadow), 0.14),
+    0 6px 12px -6px rgba(var(--dp-shadow), 0.14);
   transition:
     transform 620ms cubic-bezier(0.3, 1.36, 0.42, 1),
     box-shadow 460ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -471,9 +465,9 @@ export default function DevelopingPolaroidRow({
     --dp-flat: 0;
     --dp-scale: 1.055;
     box-shadow:
-      0 1px 0 var(--dp-edge),
-      0 2px 4px rgba(var(--dp-shadow), 0.18),
-      0 10px 16px -8px rgba(var(--dp-shadow), 0.22);
+          0 0 0 0.5px var(--dp-edge),
+      0 2px 4px rgba(var(--dp-shadow), 0.12),
+      0 12px 20px -10px rgba(var(--dp-shadow), 0.2);
   }
 
   .print:hover .glass {
@@ -491,9 +485,9 @@ export default function DevelopingPolaroidRow({
   --dp-flat: 0;
   --dp-scale: 1.055;
   box-shadow:
-    0 1px 0 var(--dp-edge),
-    0 2px 4px rgba(var(--dp-shadow), 0.18),
-    0 10px 16px -8px rgba(var(--dp-shadow), 0.22);
+        0 0 0 0.5px var(--dp-edge),
+    0 2px 4px rgba(var(--dp-shadow), 0.12),
+    0 12px 20px -10px rgba(var(--dp-shadow), 0.2);
 }
 
 .print:focus-visible .body {
@@ -505,9 +499,9 @@ export default function DevelopingPolaroidRow({
   --dp-flat: 0;
   --dp-scale: 1.12;
   box-shadow:
-    0 1px 0 var(--dp-edge),
-    0 3px 6px rgba(var(--dp-shadow), 0.18),
-    0 14px 22px -10px rgba(var(--dp-shadow), 0.26);
+    0 0 0 0.5px var(--dp-edge),
+    0 3px 6px rgba(var(--dp-shadow), 0.14),
+    0 16px 26px -12px rgba(var(--dp-shadow), 0.24);
 }
 
 .body {
@@ -533,8 +527,8 @@ export default function DevelopingPolaroidRow({
   display: block;
   aspect-ratio: 1;
   overflow: hidden;
-  background: var(--dp-emulsion);
-  box-shadow: 0 1.5px 0 rgba(255, 255, 255, 0.55);
+  background: var(--dp-milk);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .photo,
@@ -559,13 +553,10 @@ export default function DevelopingPolaroidRow({
 
 .blank {
   background:
-    radial-gradient(70% 55% at 32% 28%, #39484a 0%, #222f2e 55%, var(--dp-emulsion) 100%);
+    linear-gradient(180deg, #5b6664 0%, #3a4442 100%);
 }
 
 .milk,
-.blotA,
-.blotB,
-.blotC,
 .rim,
 .flash,
 .glass {
@@ -575,59 +566,22 @@ export default function DevelopingPolaroidRow({
 
 .milk {
   inset: 0;
-  background: linear-gradient(178deg, var(--dp-milk-hi) 0%, var(--dp-milk) 58%, var(--dp-milk-lo) 100%);
+  background:
+    var(--dp-noise) 0 0 / 120px 120px,
+    linear-gradient(178deg, var(--dp-milk-hi) 0%, var(--dp-milk) 60%, var(--dp-milk-lo) 100%);
+  background-blend-mode: multiply, normal;
   opacity: 1;
   transition: opacity 420ms ease-in;
 }
 
-.blotA,
-.blotB,
-.blotC {
-  border-radius: 50%;
-  filter: blur(10px);
-  background: radial-gradient(closest-side, rgba(var(--dp-teal), 0.85), rgba(var(--dp-teal), 0.34) 55%, transparent 74%);
-  opacity: 0.9;
-  transition:
-    opacity 420ms ease-in,
-    transform 420ms ease-in;
-}
-
-.blotA {
-  inline-size: 120%;
-  block-size: 95%;
-  inset-block-start: -22%;
-  inset-inline-start: -18%;
-}
-
-.blotB {
-  inline-size: 105%;
-  block-size: 110%;
-  inset-block-end: -30%;
-  inset-inline-end: -20%;
-}
-
-.blotC {
-  inline-size: 90%;
-  block-size: 70%;
-  inset-block-end: -10%;
-  inset-inline-start: 8%;
-}
-
 .rim {
   inset: 0;
-  background: radial-gradient(
-    115% 130% at 50% 46%,
-    transparent 62%,
-    color-mix(in srgb, var(--dp-milk) 85%, #fff) 82%,
-    rgba(var(--dp-teal), 0.5) 96%,
-    transparent 100%
-  );
-  box-shadow: inset 0 0 0 1px rgba(var(--dp-teal), 0.4);
+  box-shadow: inset 0 0 0 1px rgba(var(--dp-teal), 0.22);
 }
 
 .flash {
   inset: 0;
-  background: radial-gradient(65% 55% at 50% 42%, rgba(255, 255, 255, 0.85), transparent 70%);
+  background: radial-gradient(65% 55% at 50% 42%, rgba(255, 255, 255, 0.5), transparent 70%);
   mix-blend-mode: screen;
   opacity: 0;
 }
@@ -644,8 +598,8 @@ export default function DevelopingPolaroidRow({
   );
   background-size: 200% 200%;
   box-shadow:
-    inset 0 2px 6px rgba(13, 20, 27, 0.38),
-    inset 0 0 0 1px rgba(13, 20, 27, 0.2);
+    inset 0 1px 3px rgba(13, 20, 27, 0.16),
+    inset 0 0 0 1px rgba(13, 20, 27, 0.1);
   transition: background-position 900ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -680,18 +634,6 @@ export default function DevelopingPolaroidRow({
 
 .developed .milk {
   animation: dpMilk calc(var(--dp-develop) / var(--dp-rate)) cubic-bezier(0.3, 0.1, 0.3, 1) calc(var(--dp-delay) + 90ms) both;
-}
-
-.developed .blotA {
-  animation: dpBlotA calc(var(--dp-develop) * 1.05 / var(--dp-rate)) cubic-bezier(0.3, 0.1, 0.3, 1) calc(var(--dp-delay) + 90ms) both;
-}
-
-.developed .blotB {
-  animation: dpBlotB calc(var(--dp-develop) * 1.05 / var(--dp-rate)) cubic-bezier(0.3, 0.1, 0.3, 1) calc(var(--dp-delay) + 140ms) both;
-}
-
-.developed .blotC {
-  animation: dpBlotC calc(var(--dp-develop) * 1.05 / var(--dp-rate)) cubic-bezier(0.3, 0.1, 0.3, 1) calc(var(--dp-delay) + 60ms) both;
 }
 
 .developed .rim {
@@ -733,9 +675,6 @@ export default function DevelopingPolaroidRow({
 }
 
 .still .milk,
-.still .blotA,
-.still .blotB,
-.still .blotC,
 .still .rim {
   opacity: 0;
   animation: none;
@@ -799,77 +738,16 @@ export default function DevelopingPolaroidRow({
 
 @keyframes dpMilk {
   0% {
-    opacity: 0.97;
-  }
-  28% {
-    opacity: 0.92;
-  }
-  72% {
-    opacity: 0.3;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes dpBlotA {
-  0% {
-    opacity: 0.9;
-    transform: scale(0.6);
-  }
-  35% {
-    opacity: 0.85;
-    transform: scale(0.78);
-  }
-  62% {
-    opacity: 0.5;
-    transform: scale(0.95);
-  }
-  92% {
-    opacity: 0;
-    transform: scale(1.2);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.2);
-  }
-}
-
-@keyframes dpBlotB {
-  0% {
-    opacity: 0.9;
-    transform: scale(0.55);
+    opacity: 1;
   }
   30% {
-    opacity: 0.85;
-    transform: scale(0.75);
+    opacity: 0.94;
   }
-  66% {
-    opacity: 0.4;
-    transform: scale(1);
+  72% {
+    opacity: 0.28;
   }
   100% {
     opacity: 0;
-    transform: scale(1.25);
-  }
-}
-
-@keyframes dpBlotC {
-  0% {
-    opacity: 0.85;
-    transform: scale(0.7);
-  }
-  45% {
-    opacity: 0.6;
-    transform: scale(0.9);
-  }
-  78% {
-    opacity: 0.18;
-    transform: scale(1.1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.15);
   }
 }
 
