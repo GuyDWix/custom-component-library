@@ -22,6 +22,8 @@ export interface InkSwatchProductProps {
   className?: string;
 }
 
+import powderShoeImg from './images/powder-shoe.jpg';
+
 export const defaultVariants: InkSwatchVariant[] = [
   {
     name: 'Ember',
@@ -37,6 +39,7 @@ export const defaultVariants: InkSwatchVariant[] = [
   {
     name: 'Powder',
     color: '#8ea4e8',
+    image: powderShoeImg,
     alt: 'Court Runner sneaker in powder blue',
   },
   {
@@ -1194,6 +1197,10 @@ export default function InkSwatchProduct({
     grid-column: 2;
     grid-row: 1;
     aspect-ratio: 6 / 5;
+    /* A tall meta column (long title, many swatches) must not stretch the figure: the aspect ratio
+       would then widen it past its grid track and clip the artwork off the right edge. */
+    align-self: center;
+    min-inline-size: 0;
   }
 
   .halo {

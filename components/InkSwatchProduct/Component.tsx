@@ -17,6 +17,8 @@ export interface InkSwatchProductProps {
   className?: string;
 }
 
+import powderShoeImg from './images/powder-shoe.jpg';
+
 export const defaultVariants: InkSwatchVariant[] = [
   {
     name: 'Ember',
@@ -32,6 +34,7 @@ export const defaultVariants: InkSwatchVariant[] = [
   {
     name: 'Powder',
     color: '#8ea4e8',
+    image: powderShoeImg,
     alt: 'Court Runner sneaker in powder blue',
   },
   {

@@ -309,6 +309,10 @@
     grid-column: 2;
     grid-row: 1;
     aspect-ratio: 6 / 5;
+    /* A tall meta column (long title, many swatches) must not stretch the figure: the aspect ratio
+       would then widen it past its grid track and clip the artwork off the right edge. */
+    align-self: center;
+    min-inline-size: 0;
   }
 
   .halo {
@@ -318,6 +322,11 @@
   .haloShape,
   .frame {
     clip-path: var(--edge-wide);
+  }
+
+  .frame {
+    border-start-end-radius: 20px;
+    border-end-end-radius: 20px;
   }
 
   .meta {
