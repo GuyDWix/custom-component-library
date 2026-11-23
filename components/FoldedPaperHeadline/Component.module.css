@@ -7,7 +7,7 @@
 }
 
 .root {
-  --fph-paper: #e8432a;
+  --fph-paper: #b32914;
   --fph-ink: #f0e5cf;
   --fph-ground: #f0e5cf;
   --fph-black: #16120f;
@@ -65,8 +65,8 @@
   inset-inline: 0;
   inset-block: calc(var(--fph-size) * 0.1) calc(var(--fph-size) * -0.1);
   background: color-mix(in srgb, var(--fph-black) 16%, var(--fph-ground));
-  transform-origin: 0 50%;
-  transform: translateX(calc(var(--fph-size) * (0.1 - var(--shadow-t, 0) * 0.1))) scaleX(var(--shadow-scale, 0.85));
+  transform-origin: 50% 50%;
+  transform: translateX(calc(var(--fph-size) * (0.1 - var(--shadow-t, 0) * 0.04))) scaleX(var(--shadow-scale, 0.85));
   opacity: var(--shadow-o, 0.9);
   pointer-events: none;
 }
@@ -77,7 +77,7 @@
   inline-size: calc(100% / var(--k, 1));
   transform-style: preserve-3d;
   transform-origin: calc(var(--k, 1) * 50%) 50%;
-  transform: translateX(var(--shift, 0px)) translateY(calc(var(--lift, 0) * var(--fph-size) * -0.12)) rotateY(var(--sway, -8deg)) rotateX(var(--tilt, -13deg));
+  transform: translateX(var(--shift, 0px)) rotateY(var(--sway, -8deg)) rotateX(var(--tilt, -13deg));
   will-change: transform;
 }
 
@@ -105,7 +105,6 @@
   inset: 0;
   overflow: clip;
   transform-origin: 0 50%;
-  transform: rotateX(var(--fx, 0deg));
   pointer-events: none;
   background: var(--fph-paper);
 }
@@ -161,7 +160,7 @@
 
 .facetLit {
   background: #fff;
-  opacity: calc(var(--lit, 0.28) * 0.3);
+  opacity: calc(var(--lit, 0.28) * 0.12);
 }
 
 .facetShade {

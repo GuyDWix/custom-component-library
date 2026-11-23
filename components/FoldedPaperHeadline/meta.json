@@ -19,7 +19,7 @@
     "business"
   ],
   "mobile": "fewer folds, unfolds on view instead of scroll",
-  "motion": "anticipation lift, then facets unfold crease by crease on underdamped springs with a paper flutter, shadow trailing the last facet; replays each time the strip re-enters view (reduced-motion: flat open strip, no replay)",
+  "motion": "scroll-linked: fold progress follows the strip's position in the viewport (smoothed by a spring), facets flatten crease by crease; folds back on scroll up; at page end opens fully (reduced-motion: static flat strip)",
   "scores": {
     "concept": 3,
     "usefulness": 2,
@@ -33,5 +33,5 @@
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Retro constructivist poster: flat vermilion #e8432a strip, cream #f0e5cf type and ground, black #16120f index numerals and baseline bar; Anton set loud and condensed; folds read as flat tone planes, hard-edged flat cast slab, no gloss or dark floor"
+  "art_direction": "True 3D accordion facets (CSS 3D, 52deg creases) driven by scroll; flat deep vermilion #b32914 planes, cream #f0e5cf Anton type and ground, black #16120f index numerals, baseline bar and flat tone planes on shaded facets; no gloss"
 }
