@@ -1,0 +1,37 @@
+{
+  "id": "c0xx",
+  "name": "ScanStrip",
+  "display_name": "Scan Strip",
+  "category": "galleries",
+  "tier": "showpiece",
+  "job": "A draggable auto-scrolling product strip where a beam at the centre turns each photo into its spec sheet as it passes",
+  "visitor_action": "watch, drag or flick the strip, scroll the wheel to nudge it, arrow keys to step",
+  "owner_settings": [
+    "Cards (photo, alt text, spec title, spec lines)",
+    "Beam colour",
+    "Particle density",
+    "Scroll speed",
+    "Scroll direction"
+  ],
+  "site_types": [
+    "store",
+    "portfolio",
+    "business"
+  ],
+  "mobile": "drag to scroll with momentum, vertical page scroll preserved",
+  "motion": "constant drift, drag sets velocity with 0.95 friction decay, per-frame clip-path split at the beam; tapered laser beam on canvas (white core, tinted glow, flicker, points at both ends) that intensifies while a card crosses it, with a particle spray off the beam into the incoming photo side (mirrors with direction) that scales with scroll speed (paused offscreen and when paused; reduced-motion: static CSS beam, no particles or drift, spec sheet shows on hover or focus)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 2,
+    "uniqueness": 3,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass",
+    "craft": "pass (2)"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Survey sheet: graphite stage, grid-ruled paper twin with ink hairlines and mono spec rows, one signal-orange beam"
+}
