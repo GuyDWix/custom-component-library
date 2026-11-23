@@ -429,7 +429,7 @@ export default function SlidingDoorPanels({
 /* Dark cinematic architecture: full-bleed photo, smoked-glass slabs, one pale ink */
 .root {
   --sd-night: #07080a;
-  --sd-smoke: rgba(8, 10, 13, 0.66);
+  --sd-smoke: linear-gradient(180deg, #151920 0%, #0b0d11 100%);
   --sd-ink: #f1efe9;
   --sd-ink-dim: rgba(241, 239, 233, 0.66);
   --sd-font-display: 'Jost Glass', system-ui, sans-serif;
@@ -543,13 +543,11 @@ export default function SlidingDoorPanels({
 .panel {
   position: absolute;
   inset-block: 0;
-  /* sub-pixel overlap hides seams between slabs */
+  /* opaque slabs + edge shadow: no see-through seams */
   margin-inline-end: -1px;
   box-sizing: content-box;
   padding-inline-end: 1px;
   background: var(--sd-smoke);
-  -webkit-backdrop-filter: blur(22px) saturate(0.85);
-  backdrop-filter: blur(22px) saturate(0.85);
   will-change: transform;
   transition: transform var(--sd-dur, 700ms) cubic-bezier(0.76, 0, 0.18, 1) var(--sd-d, 0ms);
 }
