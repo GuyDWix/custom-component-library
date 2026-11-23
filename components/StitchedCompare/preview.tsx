@@ -8,7 +8,7 @@ const stage: CSSProperties = {
   display: 'grid',
   placeItems: 'center',
   padding: 'clamp(16px, 4vw, 56px)',
-  background: 'linear-gradient(180deg, #efe8d8 0%, #e0d5bc 100%)',
+  background: '#faf8f4',
 };
 
 const worst = {
