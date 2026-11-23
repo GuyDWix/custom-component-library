@@ -14,7 +14,7 @@ export interface LoupeZoomImageProps {
   className?: string;
 }
 
-/* Built-in product shot: a vector wristwatch on linen. Self-contained (no network, no fonts) so the
+/* Built-in product shot: a vector wristwatch on a neutral backdrop. Self-contained (no network, no fonts) so the
    stage is never empty, and razor sharp under the loupe at any zoom. Also the fallback if a photo fails. */
 function buildWatchArt(): string {
   const f = (n: number) => n.toFixed(2);
@@ -53,8 +53,7 @@ function buildWatchArt(): string {
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">` +
     `<defs>` +
-    `<radialGradient id="bg" cx=".45" cy=".42" r=".8"><stop offset="0" stop-color="#ded7c8"/><stop offset="1" stop-color="#b6ae9b"/></radialGradient>` +
-    `<pattern id="wv" width="5" height="5" patternUnits="userSpaceOnUse"><path d="M0 .5H5" stroke="rgba(255,255,255,.2)"/><path d="M0 3H5" stroke="rgba(70,58,34,.12)"/><path d="M.5 0V5" stroke="rgba(255,255,255,.12)"/><path d="M3 0V5" stroke="rgba(70,58,34,.09)"/></pattern>` +
+    `<radialGradient id="bg" cx=".45" cy=".42" r=".8"><stop offset="0" stop-color="#e9e8e5"/><stop offset="1" stop-color="#c4c3be"/></radialGradient>` +
     `<linearGradient id="strap" x1="0" x2="1"><stop offset="0" stop-color="#150f0b"/><stop offset=".1" stop-color="#3a2b20"/><stop offset=".5" stop-color="#2b2018"/><stop offset=".9" stop-color="#3b2c21"/><stop offset="1" stop-color="#130d09"/></linearGradient>` +
     `<linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f7f7f5"/><stop offset=".28" stop-color="#a7abb0"/><stop offset=".52" stop-color="#eef0f1"/><stop offset=".78" stop-color="#7b7f85"/><stop offset="1" stop-color="#d3d6d9"/></linearGradient>` +
     `<linearGradient id="steelRev" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#e9ebec"/><stop offset=".35" stop-color="#9a9ea3"/><stop offset=".6" stop-color="#f4f5f5"/><stop offset="1" stop-color="#85898f"/></linearGradient>` +
@@ -66,9 +65,8 @@ function buildWatchArt(): string {
     `<filter id="blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="7"/></filter>` +
     `<filter id="blurL" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="22"/></filter>` +
     `<filter id="gr" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .05  0 0 0 0 .03  0 0 0 0 .02  0 0 0 1.1 -.42"/></filter>` +
-    `<filter id="ln" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".6 .02" numOctaves="3" seed="9"/><feColorMatrix values="0 0 0 0 .3  0 0 0 0 .25  0 0 0 0 .15  0 0 0 .5 -.12"/></filter>` +
     `</defs>` +
-    `<rect width="1600" height="1000" fill="url(#bg)"/><rect width="1600" height="1000" fill="url(#wv)"/><rect width="1600" height="1000" filter="url(#ln)" opacity=".7"/>` +
+    `<rect width="1600" height="1000" fill="url(#bg)"/>` +
     `<g transform="translate(720 500)">` +
     `<g transform="translate(26 40)" opacity=".42" filter="url(#blurL)"><circle r="372" fill="#2a2010"/><path d="M-200 -520H200L190 520H-190Z" fill="#2a2010"/></g>` +
     `<g clip-path="url(#sc)"><path d="M-205 -520H205L196 520H-196Z" fill="url(#strap)"/><rect x="-205" y="-520" width="410" height="1040" filter="url(#gr)" opacity=".8"/>` +
@@ -133,7 +131,7 @@ interface TargetState {
 
 export default function LoupeZoomImage({
   image = WATCH_ART,
-  imageAlt = 'Silver wristwatch with a cream dial on a dark leather strap, lying on linen',
+  imageAlt = 'Silver wristwatch with a cream dial on a dark leather strap, on a neutral backdrop',
   caption = 'Sterling wristwatch, ref. 1948',
   detail = 'Polished silver case, enamel dial with a sunburst finish, hand-wound movement',
   zoom = 2.6,
@@ -154,8 +152,6 @@ export default function LoupeZoomImage({
   const photoRef = useRef<HTMLImageElement>(null);
 
   const sizeRef = useRef({ w: 0, h: 0 });
-  // Which way the handle points (mirrored toward the side of the frame with room), with hysteresis.
-  const handleDir = useRef({ x: 1, y: 1 });
   const zoomRef = useRef(2.6);
   const lensPxRef = useRef(320);
   const motion = useRef<MotionState>({
@@ -218,21 +214,6 @@ export default function LoupeZoomImage({
     set('--lz-drag', `${(-gx * 1.1).toFixed(1)}px`);
     set('--lz-mx', `${(-(m.x * w * z - s / 2)).toFixed(1)}px`);
     set('--lz-my', `${(-(m.y * h * z - s / 2)).toFixed(1)}px`);
-
-    // Keep the handle inside the frame: point it toward the side with more room, and shorten it if neither fits.
-    const reach = s * 0.95;
-    const hd = handleDir.current;
-    const px = m.x * w;
-    const py = m.y * h;
-    const stick = s * 0.12;
-    if (hd.x > 0 ? w - px < reach && px > w - px + stick : px < w - px - stick) hd.x = -hd.x;
-    if (hd.y > 0 ? h - py < reach && py > h - py + stick : py < h - py - stick) hd.y = -hd.y;
-    const roomX = hd.x > 0 ? w - px : px;
-    const roomY = hd.y > 0 ? h - py : py;
-    const k = clamp(Math.min(roomX, roomY) / reach, 0.55, 1);
-    set('--lz-hx', String(hd.x));
-    set('--lz-hy', String(hd.y));
-    set('--lz-hk', k.toFixed(3));
   }, []);
 
   useEffect(() => {
@@ -430,7 +411,6 @@ export default function LoupeZoomImage({
 
   return (
     <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
-
       <div
         className={styles.stage}
         tabIndex={0}
@@ -456,10 +436,6 @@ export default function LoupeZoomImage({
           />
           <span className={styles.lensShadow} ref={shadowRef} aria-hidden="true" />
           <div ref={lensRef} className={styles.lens} aria-hidden="true">
-            <span className={styles.handle}>
-              <span className={styles.ferrule} />
-              <span className={styles.grip} />
-            </span>
             <span className={styles.rim} />
             <span className={styles.view}>
               <img ref={lensImgRef} className={styles.lensImage} src={src} alt="" draggable={false} />

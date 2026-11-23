@@ -1,4 +1,4 @@
-/* Optical bench — plain linen, a slim brass-rimmed loupe with a matte black grip */
+/* Neutral print table — a handleless glass loupe with a thin ring and soft shadow */
 
 @font-face {
   font-family: 'Schibsted Grotesk';
@@ -20,10 +20,10 @@
   --lz-rim: #b08a3c;
   --lz-size: 320px;
   --lz-zoom: 2.6;
-  --lz-linen: #ebe5d7;
-  --lz-linen-deep: #ddd4c1;
-  --lz-ink: #261f14;
-  --lz-muted: #5a5242;
+  --lz-linen: #f4f3f1;
+  --lz-linen-deep: #eceae6;
+  --lz-ink: #1d1d1f;
+  --lz-muted: #55555a;
   --lz-font-display: 'Schibsted Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --lz-font-ui: 'Schibsted Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
 
@@ -35,15 +35,12 @@
   inline-size: 100%;
   display: grid;
   border-radius: 22px;
-  background:
-    repeating-linear-gradient(0deg, transparent 0 3px, rgba(112, 98, 70, 0.05) 3px 4px),
-    repeating-linear-gradient(90deg, transparent 0 3px, rgba(112, 98, 70, 0.05) 3px 4px),
-    linear-gradient(180deg, var(--lz-linen) 0%, var(--lz-linen-deep) 100%);
+  background: linear-gradient(180deg, var(--lz-linen) 0%, var(--lz-linen-deep) 100%);
   color: var(--lz-ink);
   font-family: var(--lz-font-ui);
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--lz-ink) 10%, transparent),
-    0 30px 60px -34px rgba(52, 40, 18, 0.55);
+    0 24px 48px -30px rgba(20, 20, 24, 0.4);
 }
 
 .stage {
@@ -79,8 +76,8 @@
 
   position: relative;
   min-block-size: 220px;
-  background: #cbc3b0;
-  box-shadow: 0 1px 0 color-mix(in srgb, var(--lz-rim) 45%, transparent);
+  background: #c9c8c3;
+  box-shadow: 0 1px 0 rgba(20, 20, 24, 0.08);
 }
 
 .photo {
@@ -104,7 +101,7 @@
   border-radius: 50%;
   pointer-events: none;
   opacity: 0;
-  background: radial-gradient(closest-side, rgba(36, 26, 8, 0.34) 0%, rgba(36, 26, 8, 0.14) 66%, transparent 100%);
+  background: radial-gradient(closest-side, rgba(16, 16, 20, 0.3) 0%, rgba(16, 16, 20, 0.12) 66%, transparent 100%);
   filter: blur(13px);
   transform:
     translate3d(calc(var(--lz-tx) + var(--lz-drag)), calc(var(--lz-ty) + var(--lz-size) * 0.07), 0)
@@ -122,7 +119,6 @@
   pointer-events: none;
   opacity: 0;
   will-change: transform;
-  filter: drop-shadow(0 2px 3px rgba(30, 22, 6, 0.28));
   transform:
     translate3d(var(--lz-tx), var(--lz-ty), 0)
     translate(-50%, -50%)
@@ -130,65 +126,26 @@
     scale(var(--lz-scale));
 }
 
-/* handle: slim brass collar into a matte black grip */
-.handle {
-  position: absolute;
-  inset-block-start: 50%;
-  inset-inline-start: calc(50% - var(--lz-size) * 0.04);
-  inline-size: calc(var(--lz-size) * 0.08);
-  block-size: calc(var(--lz-size) * 1.1);
-  transform-origin: 50% 0;
-  /* mirrored toward the side of the frame with room (--lz-hx/--lz-hy) and shortened to fit (--lz-hk) */
-  transform: scale(var(--lz-hx, 1), var(--lz-hy, 1)) rotate(-45deg) scale(1, var(--lz-hk, 1));
-  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .handle {
-    transition: none;
-  }
-}
-
-.ferrule {
-  position: absolute;
-  inset-block-start: calc(var(--lz-size) * 0.46);
-  inset-inline: 8%;
-  block-size: calc(var(--lz-size) * 0.12);
-  background: linear-gradient(90deg, color-mix(in srgb, var(--lz-rim), #000 30%), color-mix(in srgb, var(--lz-rim), #fff 18%) 45%, color-mix(in srgb, var(--lz-rim), #000 36%));
-}
-
-.grip {
-  position: absolute;
-  inset-block-start: calc(var(--lz-size) * 0.58);
-  inset-inline: 0;
-  block-size: calc(var(--lz-size) * 0.48);
-  border-radius: 2px 2px 999px 999px;
-  background: linear-gradient(90deg, #14110d 0%, #2c2620 40%, #14110d 100%);
-}
-
-/* a slim machined brass rim */
+/* thin glass ring with a single edge highlight */
 .rim {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--lz-rim), #fff 30%) 0%,
-    var(--lz-rim) 45%,
-    color-mix(in srgb, var(--lz-rim), #000 34%) 100%
-  );
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--lz-rim), #000 55%);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.28) 45%, rgba(255, 255, 255, 0.6) 100%);
+  box-shadow:
+    0 0 0 1px rgba(20, 20, 24, 0.22),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.7);
 }
 
 .view {
   position: absolute;
-  inset: calc(var(--lz-size) * 0.04);
+  inset: calc(var(--lz-size) * 0.022);
   border-radius: 50%;
   overflow: hidden;
-  background: #211b10;
+  background: #1d1d1f;
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--lz-rim), #000 62%),
-    inset 0 2px 6px rgba(24, 18, 6, 0.3);
+    0 0 0 1px rgba(20, 20, 24, 0.3),
+    inset 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
 .lensImage {
@@ -210,7 +167,7 @@
   inset: 0;
   border-radius: 50%;
   pointer-events: none;
-  background: radial-gradient(closest-side, transparent 72%, rgba(20, 14, 4, 0.1) 90%, rgba(20, 14, 4, 0.28) 100%);
+  background: radial-gradient(closest-side, transparent 72%, rgba(10, 10, 14, 0.08) 92%, rgba(10, 10, 14, 0.22) 100%);
 }
 
 /* a whisper of dispersion at the glass edge */
@@ -220,8 +177,8 @@
   border-radius: 50%;
   pointer-events: none;
   box-shadow:
-    inset 2px 0 4px rgba(255, 70, 70, 0.14),
-    inset -2px 0 4px rgba(70, 120, 255, 0.16);
+    inset 1px 0 3px rgba(255, 70, 70, 0.1),
+    inset -1px 0 3px rgba(70, 120, 255, 0.12);
   mix-blend-mode: screen;
 }
 
@@ -280,14 +237,16 @@
 
 .mag {
   flex: none;
-  padding: 4px 12px;
-  border: 1px solid color-mix(in srgb, var(--lz-rim) 70%, transparent);
+  padding: 5px 12px;
+  border: 1px solid rgba(20, 20, 24, 0.16);
+  background: rgba(255, 255, 255, 0.7);
   border-radius: 999px;
   font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
-  color: color-mix(in srgb, var(--lz-rim), #000 52%);
+  color: var(--lz-ink);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   white-space: nowrap;
 }
 

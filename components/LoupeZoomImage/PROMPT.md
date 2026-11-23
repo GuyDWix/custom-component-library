@@ -19,7 +19,7 @@ export interface LoupeZoomImageProps {
   className?: string;
 }
 
-/* Built-in product shot: a vector wristwatch on linen. Self-contained (no network, no fonts) so the
+/* Built-in product shot: a vector wristwatch on a neutral backdrop. Self-contained (no network, no fonts) so the
    stage is never empty, and razor sharp under the loupe at any zoom. Also the fallback if a photo fails. */
 function buildWatchArt(): string {
   const f = (n: number) => n.toFixed(2);
@@ -58,8 +58,7 @@ function buildWatchArt(): string {
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">` +
     `<defs>` +
-    `<radialGradient id="bg" cx=".45" cy=".42" r=".8"><stop offset="0" stop-color="#ded7c8"/><stop offset="1" stop-color="#b6ae9b"/></radialGradient>` +
-    `<pattern id="wv" width="5" height="5" patternUnits="userSpaceOnUse"><path d="M0 .5H5" stroke="rgba(255,255,255,.2)"/><path d="M0 3H5" stroke="rgba(70,58,34,.12)"/><path d="M.5 0V5" stroke="rgba(255,255,255,.12)"/><path d="M3 0V5" stroke="rgba(70,58,34,.09)"/></pattern>` +
+    `<radialGradient id="bg" cx=".45" cy=".42" r=".8"><stop offset="0" stop-color="#e9e8e5"/><stop offset="1" stop-color="#c4c3be"/></radialGradient>` +
     `<linearGradient id="strap" x1="0" x2="1"><stop offset="0" stop-color="#150f0b"/><stop offset=".1" stop-color="#3a2b20"/><stop offset=".5" stop-color="#2b2018"/><stop offset=".9" stop-color="#3b2c21"/><stop offset="1" stop-color="#130d09"/></linearGradient>` +
     `<linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f7f7f5"/><stop offset=".28" stop-color="#a7abb0"/><stop offset=".52" stop-color="#eef0f1"/><stop offset=".78" stop-color="#7b7f85"/><stop offset="1" stop-color="#d3d6d9"/></linearGradient>` +
     `<linearGradient id="steelRev" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#e9ebec"/><stop offset=".35" stop-color="#9a9ea3"/><stop offset=".6" stop-color="#f4f5f5"/><stop offset="1" stop-color="#85898f"/></linearGradient>` +
@@ -71,9 +70,8 @@ function buildWatchArt(): string {
     `<filter id="blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="7"/></filter>` +
     `<filter id="blurL" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="22"/></filter>` +
     `<filter id="gr" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .05  0 0 0 0 .03  0 0 0 0 .02  0 0 0 1.1 -.42"/></filter>` +
-    `<filter id="ln" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".6 .02" numOctaves="3" seed="9"/><feColorMatrix values="0 0 0 0 .3  0 0 0 0 .25  0 0 0 0 .15  0 0 0 .5 -.12"/></filter>` +
     `</defs>` +
-    `<rect width="1600" height="1000" fill="url(#bg)"/><rect width="1600" height="1000" fill="url(#wv)"/><rect width="1600" height="1000" filter="url(#ln)" opacity=".7"/>` +
+    `<rect width="1600" height="1000" fill="url(#bg)"/>` +
     `<g transform="translate(720 500)">` +
     `<g transform="translate(26 40)" opacity=".42" filter="url(#blurL)"><circle r="372" fill="#2a2010"/><path d="M-200 -520H200L190 520H-190Z" fill="#2a2010"/></g>` +
     `<g clip-path="url(#sc)"><path d="M-205 -520H205L196 520H-196Z" fill="url(#strap)"/><rect x="-205" y="-520" width="410" height="1040" filter="url(#gr)" opacity=".8"/>` +
@@ -138,7 +136,7 @@ interface TargetState {
 
 export default function LoupeZoomImage({
   image = WATCH_ART,
-  imageAlt = 'Silver wristwatch with a cream dial on a dark leather strap, lying on linen',
+  imageAlt = 'Silver wristwatch with a cream dial on a dark leather strap, on a neutral backdrop',
   caption = 'Sterling wristwatch, ref. 1948',
   detail = 'Polished silver case, enamel dial with a sunburst finish, hand-wound movement',
   zoom = 2.6,
@@ -159,8 +157,6 @@ export default function LoupeZoomImage({
   const photoRef = useRef<HTMLImageElement>(null);
 
   const sizeRef = useRef({ w: 0, h: 0 });
-  // Which way the handle points (mirrored toward the side of the frame with room), with hysteresis.
-  const handleDir = useRef({ x: 1, y: 1 });
   const zoomRef = useRef(2.6);
   const lensPxRef = useRef(320);
   const motion = useRef<MotionState>({
@@ -223,21 +219,6 @@ export default function LoupeZoomImage({
     set('--lz-drag', `${(-gx * 1.1).toFixed(1)}px`);
     set('--lz-mx', `${(-(m.x * w * z - s / 2)).toFixed(1)}px`);
     set('--lz-my', `${(-(m.y * h * z - s / 2)).toFixed(1)}px`);
-
-    // Keep the handle inside the frame: point it toward the side with more room, and shorten it if neither fits.
-    const reach = s * 0.95;
-    const hd = handleDir.current;
-    const px = m.x * w;
-    const py = m.y * h;
-    const stick = s * 0.12;
-    if (hd.x > 0 ? w - px < reach && px > w - px + stick : px < w - px - stick) hd.x = -hd.x;
-    if (hd.y > 0 ? h - py < reach && py > h - py + stick : py < h - py - stick) hd.y = -hd.y;
-    const roomX = hd.x > 0 ? w - px : px;
-    const roomY = hd.y > 0 ? h - py : py;
-    const k = clamp(Math.min(roomX, roomY) / reach, 0.55, 1);
-    set('--lz-hx', String(hd.x));
-    set('--lz-hy', String(hd.y));
-    set('--lz-hk', k.toFixed(3));
   }, []);
 
   useEffect(() => {
@@ -435,7 +416,6 @@ export default function LoupeZoomImage({
 
   return (
     <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
-
       <div
         className={styles.stage}
         tabIndex={0}
@@ -461,10 +441,6 @@ export default function LoupeZoomImage({
           />
           <span className={styles.lensShadow} ref={shadowRef} aria-hidden="true" />
           <div ref={lensRef} className={styles.lens} aria-hidden="true">
-            <span className={styles.handle}>
-              <span className={styles.ferrule} />
-              <span className={styles.grip} />
-            </span>
             <span className={styles.rim} />
             <span className={styles.view}>
               <img ref={lensImgRef} className={styles.lensImage} src={src} alt="" draggable={false} />
@@ -489,7 +465,7 @@ export default function LoupeZoomImage({
 ```
 
 ```css
-/* Optical bench — plain linen, a slim brass-rimmed loupe with a matte black grip */
+/* Neutral print table — a handleless glass loupe with a thin ring and soft shadow */
 
 @font-face {
   font-family: 'Schibsted Grotesk';
@@ -511,10 +487,10 @@ export default function LoupeZoomImage({
   --lz-rim: #b08a3c;
   --lz-size: 320px;
   --lz-zoom: 2.6;
-  --lz-linen: #ebe5d7;
-  --lz-linen-deep: #ddd4c1;
-  --lz-ink: #261f14;
-  --lz-muted: #5a5242;
+  --lz-linen: #f4f3f1;
+  --lz-linen-deep: #eceae6;
+  --lz-ink: #1d1d1f;
+  --lz-muted: #55555a;
   --lz-font-display: 'Schibsted Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --lz-font-ui: 'Schibsted Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
 
@@ -526,15 +502,12 @@ export default function LoupeZoomImage({
   inline-size: 100%;
   display: grid;
   border-radius: 22px;
-  background:
-    repeating-linear-gradient(0deg, transparent 0 3px, rgba(112, 98, 70, 0.05) 3px 4px),
-    repeating-linear-gradient(90deg, transparent 0 3px, rgba(112, 98, 70, 0.05) 3px 4px),
-    linear-gradient(180deg, var(--lz-linen) 0%, var(--lz-linen-deep) 100%);
+  background: linear-gradient(180deg, var(--lz-linen) 0%, var(--lz-linen-deep) 100%);
   color: var(--lz-ink);
   font-family: var(--lz-font-ui);
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--lz-ink) 10%, transparent),
-    0 30px 60px -34px rgba(52, 40, 18, 0.55);
+    0 24px 48px -30px rgba(20, 20, 24, 0.4);
 }
 
 .stage {
@@ -570,8 +543,8 @@ export default function LoupeZoomImage({
 
   position: relative;
   min-block-size: 220px;
-  background: #cbc3b0;
-  box-shadow: 0 1px 0 color-mix(in srgb, var(--lz-rim) 45%, transparent);
+  background: #c9c8c3;
+  box-shadow: 0 1px 0 rgba(20, 20, 24, 0.08);
 }
 
 .photo {
@@ -595,7 +568,7 @@ export default function LoupeZoomImage({
   border-radius: 50%;
   pointer-events: none;
   opacity: 0;
-  background: radial-gradient(closest-side, rgba(36, 26, 8, 0.34) 0%, rgba(36, 26, 8, 0.14) 66%, transparent 100%);
+  background: radial-gradient(closest-side, rgba(16, 16, 20, 0.3) 0%, rgba(16, 16, 20, 0.12) 66%, transparent 100%);
   filter: blur(13px);
   transform:
     translate3d(calc(var(--lz-tx) + var(--lz-drag)), calc(var(--lz-ty) + var(--lz-size) * 0.07), 0)
@@ -613,7 +586,6 @@ export default function LoupeZoomImage({
   pointer-events: none;
   opacity: 0;
   will-change: transform;
-  filter: drop-shadow(0 2px 3px rgba(30, 22, 6, 0.28));
   transform:
     translate3d(var(--lz-tx), var(--lz-ty), 0)
     translate(-50%, -50%)
@@ -621,65 +593,26 @@ export default function LoupeZoomImage({
     scale(var(--lz-scale));
 }
 
-/* handle: slim brass collar into a matte black grip */
-.handle {
-  position: absolute;
-  inset-block-start: 50%;
-  inset-inline-start: calc(50% - var(--lz-size) * 0.04);
-  inline-size: calc(var(--lz-size) * 0.08);
-  block-size: calc(var(--lz-size) * 1.1);
-  transform-origin: 50% 0;
-  /* mirrored toward the side of the frame with room (--lz-hx/--lz-hy) and shortened to fit (--lz-hk) */
-  transform: scale(var(--lz-hx, 1), var(--lz-hy, 1)) rotate(-45deg) scale(1, var(--lz-hk, 1));
-  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .handle {
-    transition: none;
-  }
-}
-
-.ferrule {
-  position: absolute;
-  inset-block-start: calc(var(--lz-size) * 0.46);
-  inset-inline: 8%;
-  block-size: calc(var(--lz-size) * 0.12);
-  background: linear-gradient(90deg, color-mix(in srgb, var(--lz-rim), #000 30%), color-mix(in srgb, var(--lz-rim), #fff 18%) 45%, color-mix(in srgb, var(--lz-rim), #000 36%));
-}
-
-.grip {
-  position: absolute;
-  inset-block-start: calc(var(--lz-size) * 0.58);
-  inset-inline: 0;
-  block-size: calc(var(--lz-size) * 0.48);
-  border-radius: 2px 2px 999px 999px;
-  background: linear-gradient(90deg, #14110d 0%, #2c2620 40%, #14110d 100%);
-}
-
-/* a slim machined brass rim */
+/* thin glass ring with a single edge highlight */
 .rim {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--lz-rim), #fff 30%) 0%,
-    var(--lz-rim) 45%,
-    color-mix(in srgb, var(--lz-rim), #000 34%) 100%
-  );
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--lz-rim), #000 55%);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.28) 45%, rgba(255, 255, 255, 0.6) 100%);
+  box-shadow:
+    0 0 0 1px rgba(20, 20, 24, 0.22),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.7);
 }
 
 .view {
   position: absolute;
-  inset: calc(var(--lz-size) * 0.04);
+  inset: calc(var(--lz-size) * 0.022);
   border-radius: 50%;
   overflow: hidden;
-  background: #211b10;
+  background: #1d1d1f;
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--lz-rim), #000 62%),
-    inset 0 2px 6px rgba(24, 18, 6, 0.3);
+    0 0 0 1px rgba(20, 20, 24, 0.3),
+    inset 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
 .lensImage {
@@ -701,7 +634,7 @@ export default function LoupeZoomImage({
   inset: 0;
   border-radius: 50%;
   pointer-events: none;
-  background: radial-gradient(closest-side, transparent 72%, rgba(20, 14, 4, 0.1) 90%, rgba(20, 14, 4, 0.28) 100%);
+  background: radial-gradient(closest-side, transparent 72%, rgba(10, 10, 14, 0.08) 92%, rgba(10, 10, 14, 0.22) 100%);
 }
 
 /* a whisper of dispersion at the glass edge */
@@ -711,8 +644,8 @@ export default function LoupeZoomImage({
   border-radius: 50%;
   pointer-events: none;
   box-shadow:
-    inset 2px 0 4px rgba(255, 70, 70, 0.14),
-    inset -2px 0 4px rgba(70, 120, 255, 0.16);
+    inset 1px 0 3px rgba(255, 70, 70, 0.1),
+    inset -1px 0 3px rgba(70, 120, 255, 0.12);
   mix-blend-mode: screen;
 }
 
@@ -771,14 +704,16 @@ export default function LoupeZoomImage({
 
 .mag {
   flex: none;
-  padding: 4px 12px;
-  border: 1px solid color-mix(in srgb, var(--lz-rim) 70%, transparent);
+  padding: 5px 12px;
+  border: 1px solid rgba(20, 20, 24, 0.16);
+  background: rgba(255, 255, 255, 0.7);
   border-radius: 999px;
   font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
-  color: color-mix(in srgb, var(--lz-rim), #000 52%);
+  color: var(--lz-ink);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   white-space: nowrap;
 }
 
