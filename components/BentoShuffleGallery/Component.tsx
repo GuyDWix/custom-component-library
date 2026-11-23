@@ -723,7 +723,6 @@ export default function BentoShuffleGallery({
       onPointerMove={onRootMove}
     >
       <div className={styles.inner}>
-        <div className={styles.table}>
           <div className={styles.deck}>
             <div
               ref={stageRef}
@@ -794,7 +793,6 @@ export default function BentoShuffleGallery({
               </button>
             )}
           </div>
-        </div>
       </div>
     </section>
   );

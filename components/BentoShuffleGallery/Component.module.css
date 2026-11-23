@@ -1,6 +1,6 @@
 @font-face {
-  font-family: 'Bricolage Grotesque';
-  src: url('./fonts/bricolage-grotesque-latin-var.woff2') format('woff2');
+  font-family: "Bricolage Grotesque";
+  src: url("./fonts/bricolage-grotesque-latin-var.woff2") format("woff2");
   font-weight: 400 700;
   font-style: normal;
   font-display: swap;
@@ -9,33 +9,28 @@
 .root {
   --bs-radius: 22px;
   --bs-gap: 14px;
-  --bs-bone: #f2ecdf;
-  --bs-card: #fbf6ea;
-  --bs-ink: #2a221c;
-  --bs-ink-soft: rgba(42, 34, 28, 0.62);
-  --bs-peach: #ffd8bc;
-  --bs-pistachio: #d5e6bd;
-  --bs-shadow: 52, 58, 40;
-  --bs-table-hi: #e9ebdd;
-  --bs-table-lo: #cdd2bd;
-  --bs-edge-hi: #fffef8;
-  --bs-edge-lo: #cbc4af;
-  --bs-font-ui: 'Bricolage Grotesque', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --bs-ink: #1d1b2e;
+  --bs-ink-soft: rgba(29, 27, 46, 0.6);
+  --bs-surface: #ffffff;
+  --bs-wash: #ebe8f5;
+  --bs-accent: #6f5cf0;
+  --bs-font-ui:
+    "Bricolage Grotesque", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
 
   position: relative;
   isolation: isolate;
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  padding-block: 14px;
-  padding-inline: 12px;
+  padding-block: 0;
+  padding-inline: 0;
   color: var(--bs-ink);
   font-family: var(--bs-font-ui);
 }
 
 .root::selection {
-  background: var(--bs-peach);
-  color: var(--bs-ink);
+  background: var(--bs-accent);
+  color: var(--bs-surface);
 }
 
 .inner {
@@ -44,45 +39,27 @@
   margin-inline: auto;
 }
 
-/* the surface the prints lie on: honed pistachio plaster, window light pooling from the upper left */
-.table {
-  position: relative;
-  box-sizing: border-box;
-  padding: clamp(16px, 3.4cqi, 40px);
-  border-radius: calc(var(--bs-radius) + 14px);
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .22 0 0 0 0 .26 0 0 0 0 .16 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.3'/%3E%3C/svg%3E"),
-    radial-gradient(120% 90% at 18% 6%, rgba(255, 255, 250, 0.7) 0%, rgba(255, 255, 250, 0) 58%),
-    linear-gradient(158deg, var(--bs-table-hi) 0%, var(--bs-table-lo) 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.75),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.28),
-    inset 0 -40px 70px -50px rgba(52, 62, 36, 0.35),
-    0 1px 2px rgba(var(--bs-shadow), 0.18),
-    0 28px 50px -34px rgba(var(--bs-shadow), 0.45);
-}
-
 .deck {
   position: relative;
 }
 
 .stage {
   position: relative;
-  border-radius: var(--bs-radius);
   outline: none;
   touch-action: pan-y;
   transition: height 520ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .stage:focus-visible {
-  outline: 2px solid var(--bs-ink);
+  outline: 2px solid var(--bs-accent);
   outline-offset: 8px;
+  border-radius: var(--bs-radius);
 }
 
-/* a matte print: paper stock edge, a contact shadow, and a soft travel shadow that grows with lift */
+/* flat tiles; the only shadow is the lift of a tile in flight */
 .tile {
-  --bs-sx: 3;
-  --bs-sy: 6;
+  --bs-sx: 0;
+  --bs-sy: 0;
   --bs-lf: 0;
 
   position: absolute;
@@ -94,36 +71,17 @@
   border: 0;
   overflow: clip;
   border-radius: var(--bs-radius);
-  background: var(--bs-peach);
+  background: var(--bs-wash);
   cursor: pointer;
   transform-origin: 50% 50%;
   -webkit-tap-highlight-color: transparent;
   will-change: transform;
-  box-shadow:
-    0 1px 0 0 var(--bs-edge-hi),
-    0.4px 2.2px 0 0 var(--bs-edge-lo),
-    calc(var(--bs-sx) * 0.3px) calc(var(--bs-sy) * 0.3px + 2px) 3px -1px rgba(var(--bs-shadow), 0.34),
-    calc(var(--bs-sx) * 1px) calc(var(--bs-sy) * 1px) calc(10px + var(--bs-lf) * 30px) calc(-5px - var(--bs-lf) * 8px) rgba(var(--bs-shadow), calc(0.26 + var(--bs-lf) * 0.3));
-}
-
-/* print face: paper tooth, a faint raking sheen and a pressed edge, above the photo and below the caption */
-.tile::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .18 0 0 0 0 .14 0 0 0 .7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E"),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 36%, rgba(40, 30, 20, 0) 64%, rgba(40, 30, 20, 0.11) 100%);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
-    inset 0 -1px 0 0 rgba(30, 22, 14, 0.18);
+  box-shadow: 0 calc(var(--bs-lf) * 20px) calc(var(--bs-lf) * 36px)
+    calc(var(--bs-lf) * -12px) rgba(29, 27, 46, calc(var(--bs-lf) * 0.32));
 }
 
 .tile:focus-visible {
-  outline: 2px solid var(--bs-ink);
+  outline: 2px solid var(--bs-accent);
   outline-offset: 3px;
 }
 
@@ -133,7 +91,6 @@
   block-size: 100%;
   object-fit: cover;
   pointer-events: none;
-  filter: saturate(0.94) contrast(0.98);
 }
 
 .missing {
@@ -141,54 +98,48 @@
   place-items: center;
   inline-size: 100%;
   block-size: 100%;
-  background: linear-gradient(160deg, #f6e8d2 0%, #eddfc4 100%);
-  color: rgba(42, 34, 28, 0.4);
+  background: var(--bs-wash);
+  color: var(--bs-ink-soft);
   font-size: 32px;
   font-weight: 600;
   user-select: none;
 }
 
-/* the feature tile carries one big, legible caption; it scales with the tile it sits on (so mid-trade it never overflows) and the pill grows taller rather than clipping */
+/* one small chip; sized to its tile so it stays proportionate mid-trade */
 .chipFeature {
   position: absolute;
   z-index: 1;
-  inset-block-end: 0.85em;
-  inset-inline-start: 0.85em;
+  inset-block-end: 12px;
+  inset-inline-start: 12px;
   box-sizing: border-box;
-  max-inline-size: calc(100% - 1.7em);
-  max-block-size: calc(100% - 1.7em);
-  padding: 0.5em 0.95em 0.55em;
-  border-radius: 1.15em;
-  background: var(--bs-card);
-  color: var(--bs-ink);
-  font-size: clamp(12px, 5.4cqi, 26px);
-  font-weight: 600;
-  letter-spacing: -0.012em;
-  line-height: 1.2;
-  text-align: start;
-  text-wrap: balance;
-  overflow-wrap: anywhere;
-  box-shadow:
-    inset 0 0 0 1px rgba(42, 34, 28, 0.07),
-    0 6px 16px -8px rgba(var(--bs-shadow), 0.4);
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  max-inline-size: calc(100% - 24px);
+  padding: 0.5em 0.95em;
+  border-radius: 999px;
+  background: var(--bs-surface);
+  color: var(--bs-ink);
+  font-size: clamp(12px, 2.6cqi, 15px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
   overflow: hidden;
+  overflow-wrap: anywhere;
   animation: chipIn 520ms cubic-bezier(0.22, 1, 0.36, 1) 300ms backwards;
 }
 
 .chipDot {
   display: inline-block;
-  inline-size: 0.46em;
-  block-size: 0.46em;
+  inline-size: 0.5em;
+  block-size: 0.5em;
   margin-inline-end: 0.55em;
   border-radius: 50%;
-  background: #e8825a;
+  background: var(--bs-accent);
   vertical-align: 0.08em;
 }
 
-/* other tiles stay clean; their caption appears for keyboard users (hover/tap makes them the feature) */
+/* other tiles stay clean; their caption shows for keyboard users */
 .chipQuiet {
   position: absolute;
   z-index: 1;
@@ -198,9 +149,9 @@
   max-inline-size: calc(100% - 20px);
   padding: 5px 12px;
   border-radius: 999px;
-  background: var(--bs-pistachio);
+  background: var(--bs-surface);
   color: var(--bs-ink);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   line-height: 1.25;
   white-space: nowrap;
@@ -221,29 +172,27 @@
   z-index: 6;
   display: grid;
   place-items: center;
-  inline-size: 42px;
-  block-size: 42px;
+  inline-size: 40px;
+  block-size: 40px;
   padding: 0;
   border-radius: 50%;
-  border: 1px solid rgba(42, 34, 28, 0.14);
-  background: color-mix(in srgb, var(--bs-card) 88%, transparent);
+  border: 0;
+  background: var(--bs-surface);
   color: var(--bs-ink);
   cursor: pointer;
-  box-shadow: 0 2px 8px -3px rgba(var(--bs-shadow), 0.32);
-  transition: background-color 200ms ease, border-color 200ms ease, transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .pause:hover {
-  background: var(--bs-card);
-  border-color: rgba(42, 34, 28, 0.28);
+  transform: scale(1.06);
 }
 
 .pause:active {
-  transform: scale(0.92);
+  transform: scale(0.94);
 }
 
 .pause:focus-visible {
-  outline: 2px solid var(--bs-ink);
+  outline: 2px solid var(--bs-accent);
   outline-offset: 3px;
 }
 
@@ -262,11 +211,11 @@
 }
 
 .ringTrack {
-  stroke: rgba(42, 34, 28, 0.12);
+  stroke: rgba(29, 27, 46, 0.12);
 }
 
 .ringFill {
-  stroke: var(--bs-ink-soft);
+  stroke: var(--bs-accent);
   stroke-linecap: round;
 }
 

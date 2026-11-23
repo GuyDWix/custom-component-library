@@ -34,5 +34,5 @@
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Sorbet bento: matte rounded tiles straight on the host page (no panel), peach and pistachio accents, one big bone caption card on the feature, Bricolage Grotesque ink text"
+  "art_direction": "Soft UI bento: flat equal-radius photo tiles straight on the host page (no tray, no texture, shadow only while a tile is in flight), small white pill caption with one violet dot, ink #1d1b2e / white / violet #6f5cf0 on lilac wash #ebe8f5, Bricolage Grotesque"
 }
