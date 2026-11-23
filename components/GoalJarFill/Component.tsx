@@ -64,8 +64,11 @@ export default function GoalJarFill({
   const rootRef = useRef<HTMLDivElement>(null);
   const glassRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const causticRef = useRef<HTMLCanvasElement>(null);
   const amountRef = useRef<HTMLSpanElement>(null);
+  const percentRef = useRef<HTMLSpanElement>(null);
   const numeralRef = useRef<HTMLSpanElement>(null);
+  const numeralInRef = useRef<HTMLSpanElement>(null);
   const wake = useRef<() => void>(() => {});
   const bubblesRef = useRef<Bubble[]>([]);
   const poppedRef = useRef(false);
@@ -123,17 +126,22 @@ export default function GoalJarFill({
     const root = rootRef.current;
     const glass = glassRef.current;
     const canvas = canvasRef.current;
-    if (!root || !glass || !canvas) return;
+    const caustic = causticRef.current;
+    if (!root || !glass || !canvas || !caustic) return;
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const cctx = caustic.getContext('2d');
+    if (!ctx || !cctx) return;
 
     let w = 0;
     let hgt = 0;
+    let cw = 0;
+    let ch = 0;
     let raf = 0;
     let running = false;
     let last = 0;
     let time = 0;
-    let idle = 2;
+    let flare = 0;
+    let idleTimer = 0;
     let liquid: Rgb = [201, 120, 15];
     const s = sim.current;
     const bubbles = bubblesRef.current;
@@ -159,13 +167,44 @@ export default function GoalJarFill({
       });
     };
 
+    const drawCaustic = (fill: number, energy: number) => {
+      if (!cw || !ch) return;
+      cctx.clearRect(0, 0, cw, ch);
+      const a = 0.04 + clamp(fill) * 0.34 + flare * 0.5 + Math.min(0.14, energy * 0.5);
+      const cx = cw * 0.56;
+      const cy = ch * 0.42;
+      const pool = cctx.createRadialGradient(cx, cy, 0, cx, cy, cw * 0.32);
+      pool.addColorStop(0, `rgba(255, 206, 120, ${a * 0.85})`);
+      pool.addColorStop(1, 'rgba(255, 206, 120, 0)');
+      cctx.fillStyle = pool;
+      cctx.fillRect(0, 0, cw, ch);
+      cctx.lineCap = 'round';
+      for (let k = 0; k < 3; k++) {
+        cctx.beginPath();
+        const yy = ch * (0.34 + k * 0.16);
+        for (let px = cw * 0.24; px <= cw * 0.8; px += 6) {
+          const y =
+            yy +
+            Math.sin(px * 0.02 + time * (0.5 + k * 0.22) + k * 2.1) * ch * 0.07 +
+            Math.sin(px * 0.05 - time * 0.7 + k) * ch * 0.02;
+          if (px === cw * 0.24) cctx.moveTo(px, y);
+          else cctx.lineTo(px, y);
+        }
+        cctx.strokeStyle = `rgba(255, 218, 140, ${a * (0.55 - k * 0.13)})`;
+        cctx.lineWidth = 5 + k * 3;
+        cctx.stroke();
+      }
+    };
+
     const writeText = () => {
       const l = live.current;
       const shown = l.ratio > 0 ? clamp(s.fill / Math.max(0.0001, clamp(l.ratio, 0, 1.04)), 0, 1) : 1;
       const done = shown > 0.999;
       if (amountRef.current) amountRef.current.textContent = done ? l.amountText : money(l.symbol, l.amount * shown);
       const pct = done ? l.percent : Math.round(l.percent * shown);
+      if (percentRef.current) percentRef.current.textContent = `${pct}%`;
       if (numeralRef.current) numeralRef.current.textContent = String(pct);
+      if (numeralInRef.current) numeralInRef.current.textContent = String(pct);
       root.style.setProperty('--gj-fill', clamp(s.fill, 0, 1).toFixed(4));
     };
 
@@ -182,11 +221,8 @@ export default function GoalJarFill({
         const e = Math.min(i, COLUMNS - 1 - i) / 3;
         return e < 1 ? (1 - e) * (1 - e) * depth * 0.8 : 0;
       };
-      const swell = (x: number, ph: number) =>
-        (Math.sin(x * 0.034 + time * 1.15 + ph) * 0.0034 + Math.sin(x * 0.081 - time * 0.8 + ph) * 0.0013) * hgt;
-      const front = (i: number) => level + s.h[i] * amp + swell(xs(i), 0) + s.tilt * (xs(i) - w / 2) * 0.16 - meniscus(i);
-      const back = (i: number) =>
-        level - depth + s.h[COLUMNS - 1 - i] * amp * 0.7 + swell(xs(i), 1.4) - s.tilt * (xs(i) - w / 2) * 0.12;
+      const front = (i: number) => level + s.h[i] * amp + s.tilt * (xs(i) - w / 2) * 0.16 - meniscus(i);
+      const back = (i: number) => level - depth + s.h[COLUMNS - 1 - i] * amp * 0.7 - s.tilt * (xs(i) - w / 2) * 0.12;
 
       const light = mix(liquid, [255, 236, 190], 0.5);
       const deep = mix(liquid, [40, 14, 0], 0.5);
@@ -218,10 +254,9 @@ export default function GoalJarFill({
       ctx.lineTo(0, hgt);
       ctx.closePath();
       const body = ctx.createLinearGradient(0, level, 0, hgt);
-      body.addColorStop(0, rgba(mix(liquid, light, 0.4), 0.94));
-      body.addColorStop(0.3, rgba(mix(liquid, light, 0.1), 0.96));
-      body.addColorStop(0.7, rgba(mix(liquid, deep, 0.25), 0.97));
-      body.addColorStop(1, rgba(deep, 0.99));
+      body.addColorStop(0, rgba(mix(liquid, light, 0.35), 0.96));
+      body.addColorStop(0.45, rgba(liquid, 0.97));
+      body.addColorStop(1, rgba(deep, 0.98));
       ctx.fillStyle = body;
       ctx.fill();
 
@@ -253,16 +288,20 @@ export default function GoalJarFill({
           ctx.arc(bx, by, b.r, 0, Math.PI * 2);
           ctx.fillStyle = rgba(mix(liquid, [255, 250, 235], 0.3), 0.14);
           ctx.fill();
-          ctx.strokeStyle = 'rgba(255,247,225,0.5)';
+          ctx.strokeStyle = 'rgba(255,247,225,0.85)';
           ctx.lineWidth = 0.8;
           ctx.stroke();
           ctx.beginPath();
           ctx.arc(bx - b.r * 0.32, by - b.r * 0.36, Math.max(0.4, b.r * 0.26), 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(255,255,255,0.8)';
+          ctx.fillStyle = 'rgba(255,255,255,0.95)';
           ctx.fill();
         }
       }
 
+      // refraction glints where the liquid climbs the inner walls
+      ctx.fillStyle = 'rgba(255,246,224,0.5)';
+      ctx.fillRect(w * 0.035, level - 3, 2, 9);
+      ctx.fillRect(w * 0.965 - 2, level - 3, 2, 9);
       ctx.restore();
 
       // back rim of the surface catches light
@@ -284,6 +323,7 @@ export default function GoalJarFill({
 
     const resize = () => {
       const r = glass.getBoundingClientRect();
+      const cr = caustic.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       if (r.width && r.height) {
         w = r.width;
@@ -292,7 +332,15 @@ export default function GoalJarFill({
         canvas.height = Math.round(hgt * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
+      if (cr.width && cr.height) {
+        cw = cr.width;
+        ch = cr.height;
+        caustic.width = Math.round(cw * dpr);
+        caustic.height = Math.round(ch * dpr);
+        cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
       draw();
+      drawCaustic(clamp(s.fill), 0);
     };
 
     const step = (dt: number) => {
@@ -317,6 +365,24 @@ export default function GoalJarFill({
         bubbles[bi].y += bubbles[bi].vy * dt;
         if (bubbles[bi].y >= 1) bubbles.splice(bi, 1);
       }
+      flare *= Math.exp(-1.6 * dt);
+    };
+
+    const calm = () => {
+      if (s.start >= 0 || bubbles.length > 0) return false;
+      if (Math.abs(s.tilt) > 0.004 || Math.abs(s.tiltV) > 0.01) return false;
+      for (let i = 0; i < COLUMNS; i++) if (Math.abs(s.h[i]) > 0.05 || Math.abs(s.v[i]) > 0.02) return false;
+      return true;
+    };
+
+    const scheduleIdle = () => {
+      if (idleTimer || reduced || !inView) return;
+      idleTimer = window.setTimeout(() => {
+        idleTimer = 0;
+        spawnBubble();
+        s.v[Math.floor(COLUMNS * (0.3 + Math.random() * 0.4))] += -0.35;
+        start();
+      }, 2600 + Math.random() * 2800);
     };
 
     const loop = (now: number) => {
@@ -339,21 +405,28 @@ export default function GoalJarFill({
               for (let i = 0; i < 22; i++) spawnBubble(0.25 + Math.random() * 0.5, 0.6 + Math.random() * 0.32, 0.8, 2);
               s.v[Math.floor(COLUMNS * 0.5)] += -3.2;
               s.tiltV += 0.5;
+              flare = 1;
             }
           } else {
             syncPopped(false);
           }
         }
       }
-      idle -= dt;
-      if (idle <= 0) {
-        idle = 2.6 + Math.random() * 2.8;
-        spawnBubble();
-        s.v[Math.floor(COLUMNS * (0.3 + Math.random() * 0.4))] += -0.35;
-      }
       step(dt);
       draw();
+      const energy = s.h.reduce((a, x) => a + Math.abs(x), 0) / COLUMNS;
+      drawCaustic(clamp(s.fill), energy);
       writeText();
+      if (calm()) {
+        running = false;
+        s.h.fill(0);
+        s.v.fill(0);
+        draw();
+        drawCaustic(clamp(s.fill), 0);
+        writeText();
+        scheduleIdle();
+        return;
+      }
       raf = requestAnimationFrame(loop);
     };
 
@@ -385,6 +458,7 @@ export default function GoalJarFill({
       }
       syncPopped(s.to >= 1);
       draw();
+      drawCaustic(clamp(s.fill), 0);
       writeText();
     };
 
@@ -403,12 +477,14 @@ export default function GoalJarFill({
 
     const ro = new ResizeObserver(resize);
     ro.observe(glass);
+    ro.observe(caustic);
     resize();
     writeText();
     start();
     return () => {
       ro.disconnect();
       cancelAnimationFrame(raf);
+      window.clearTimeout(idleTimer);
       running = false;
       wake.current = () => {};
     };
@@ -460,25 +536,24 @@ export default function GoalJarFill({
     disturb(0.3, -5);
   };
 
+  // the giant numeral scales with the jar, and shrinks as the digit count grows so it always fits
+  const digits = String(Math.max(0, percent)).length;
+  const numeralK = Math.min(1, 1.45 / (0.6 * digits + 0.4));
   const rootStyle = {
     '--gj-liquid': liquidColor,
     '--gj-fill': clamp(ratio, 0, 1).toFixed(4),
+    '--gj-nk': numeralK.toFixed(3),
   } as CSSProperties;
   const amountStyle = { '--gj-chars': Math.max(6, amountText.length) } as CSSProperties;
 
   return (
     <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
-      <div className={styles.layout}>
-      <div className={styles.readout} aria-hidden="true">
-        <span className={styles.figure}>
-          <span ref={numeralRef}>{percent}</span>
-          <span className={styles.pct}>%</span>
-        </span>
-        <span className={styles.caption}>of goal</span>
-        {popped && reachedText && <span className={styles.pill}>{reachedText}</span>}
-      </div>
-
       <div className={styles.stage}>
+        <span className={styles.lightGlow} aria-hidden="true" />
+        <span className={styles.halo} aria-hidden="true" />
+        <div className={styles.shelf} aria-hidden="true" />
+        <canvas ref={causticRef} className={styles.caustics} aria-hidden="true" />
+
         <div
           className={styles.jar}
           role="progressbar"
@@ -495,27 +570,53 @@ export default function GoalJarFill({
           onKeyDown={onKeyDown}
         >
           <span className={styles.shadow} aria-hidden="true" />
+          <span className={styles.numeral} aria-hidden="true">
+            <span ref={numeralRef}>{percent}</span>
+            <span className={styles.pct}>%</span>
+          </span>
           <span
-            className={[styles.lidShadow, popped ? styles.lidShadowOpen : ''].filter(Boolean).join(' ')}
+            className={[styles.corkShadow, popped ? styles.corkShadowOpen : ''].filter(Boolean).join(' ')}
             aria-hidden="true"
           />
-          <div className={[styles.lid, popped ? styles.lidPopped : ''].filter(Boolean).join(' ')} aria-hidden="true" />
+          <div
+            className={[styles.cork, popped ? styles.corkPopped : ''].filter(Boolean).join(' ')}
+            aria-hidden="true"
+          >
+            <span className={styles.corkSkin} aria-hidden="true" />
+          </div>
           <span className={styles.lip} aria-hidden="true" />
           <span className={styles.neck} aria-hidden="true" />
           <div ref={glassRef} className={styles.glass}>
             <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
+            <span className={styles.liquidLayer} aria-hidden="true">
+              <span className={`${styles.numeral} ${styles.numeralIn}`}>
+                <span ref={numeralInRef}>{percent}</span>
+                <span className={styles.pct}>%</span>
+              </span>
+            </span>
+            <span className={styles.ticks} aria-hidden="true" />
             <div className={styles.paper}>
               {label && <p id={labelId} className={styles.name}>{label}</p>}
+              {label && <span className={styles.rule} aria-hidden="true" />}
               <span ref={amountRef} className={styles.amount} style={amountStyle}>
                 {amountText}
               </span>
               <span className={styles.rule} aria-hidden="true" />
-              <span className={styles.goalLine}>of {goalText}</span>
+              <span className={styles.goalLine}>
+                <span ref={percentRef}>{percent}%</span> of {goalText}
+              </span>
+              <span className={styles.paperShade} aria-hidden="true" />
             </div>
+            <span className={styles.base} aria-hidden="true" />
             <span className={styles.highlight} aria-hidden="true" />
+            <span className={styles.highlightThin} aria-hidden="true" />
+            <span className={styles.lens} aria-hidden="true" />
+            <span className={styles.grainGlass} aria-hidden="true" />
           </div>
         </div>
-      </div>
+
+        {popped && reachedText && <span className={styles.pill}>{reachedText}</span>}
+        <span className={styles.grain} aria-hidden="true" />
       </div>
     </div>
   );

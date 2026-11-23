@@ -69,8 +69,11 @@ export default function GoalJarFill({
   const rootRef = useRef<HTMLDivElement>(null);
   const glassRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const causticRef = useRef<HTMLCanvasElement>(null);
   const amountRef = useRef<HTMLSpanElement>(null);
+  const percentRef = useRef<HTMLSpanElement>(null);
   const numeralRef = useRef<HTMLSpanElement>(null);
+  const numeralInRef = useRef<HTMLSpanElement>(null);
   const wake = useRef<() => void>(() => {});
   const bubblesRef = useRef<Bubble[]>([]);
   const poppedRef = useRef(false);
@@ -128,17 +131,22 @@ export default function GoalJarFill({
     const root = rootRef.current;
     const glass = glassRef.current;
     const canvas = canvasRef.current;
-    if (!root || !glass || !canvas) return;
+    const caustic = causticRef.current;
+    if (!root || !glass || !canvas || !caustic) return;
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const cctx = caustic.getContext('2d');
+    if (!ctx || !cctx) return;
 
     let w = 0;
     let hgt = 0;
+    let cw = 0;
+    let ch = 0;
     let raf = 0;
     let running = false;
     let last = 0;
     let time = 0;
-    let idle = 2;
+    let flare = 0;
+    let idleTimer = 0;
     let liquid: Rgb = [201, 120, 15];
     const s = sim.current;
     const bubbles = bubblesRef.current;
@@ -164,13 +172,44 @@ export default function GoalJarFill({
       });
     };
 
+    const drawCaustic = (fill: number, energy: number) => {
+      if (!cw || !ch) return;
+      cctx.clearRect(0, 0, cw, ch);
+      const a = 0.04 + clamp(fill) * 0.34 + flare * 0.5 + Math.min(0.14, energy * 0.5);
+      const cx = cw * 0.56;
+      const cy = ch * 0.42;
+      const pool = cctx.createRadialGradient(cx, cy, 0, cx, cy, cw * 0.32);
+      pool.addColorStop(0, `rgba(255, 206, 120, ${a * 0.85})`);
+      pool.addColorStop(1, 'rgba(255, 206, 120, 0)');
+      cctx.fillStyle = pool;
+      cctx.fillRect(0, 0, cw, ch);
+      cctx.lineCap = 'round';
+      for (let k = 0; k < 3; k++) {
+        cctx.beginPath();
+        const yy = ch * (0.34 + k * 0.16);
+        for (let px = cw * 0.24; px <= cw * 0.8; px += 6) {
+          const y =
+            yy +
+            Math.sin(px * 0.02 + time * (0.5 + k * 0.22) + k * 2.1) * ch * 0.07 +
+            Math.sin(px * 0.05 - time * 0.7 + k) * ch * 0.02;
+          if (px === cw * 0.24) cctx.moveTo(px, y);
+          else cctx.lineTo(px, y);
+        }
+        cctx.strokeStyle = `rgba(255, 218, 140, ${a * (0.55 - k * 0.13)})`;
+        cctx.lineWidth = 5 + k * 3;
+        cctx.stroke();
+      }
+    };
+
     const writeText = () => {
       const l = live.current;
       const shown = l.ratio > 0 ? clamp(s.fill / Math.max(0.0001, clamp(l.ratio, 0, 1.04)), 0, 1) : 1;
       const done = shown > 0.999;
       if (amountRef.current) amountRef.current.textContent = done ? l.amountText : money(l.symbol, l.amount * shown);
       const pct = done ? l.percent : Math.round(l.percent * shown);
+      if (percentRef.current) percentRef.current.textContent = `${pct}%`;
       if (numeralRef.current) numeralRef.current.textContent = String(pct);
+      if (numeralInRef.current) numeralInRef.current.textContent = String(pct);
       root.style.setProperty('--gj-fill', clamp(s.fill, 0, 1).toFixed(4));
     };
 
@@ -187,11 +226,8 @@ export default function GoalJarFill({
         const e = Math.min(i, COLUMNS - 1 - i) / 3;
         return e < 1 ? (1 - e) * (1 - e) * depth * 0.8 : 0;
       };
-      const swell = (x: number, ph: number) =>
-        (Math.sin(x * 0.034 + time * 1.15 + ph) * 0.0034 + Math.sin(x * 0.081 - time * 0.8 + ph) * 0.0013) * hgt;
-      const front = (i: number) => level + s.h[i] * amp + swell(xs(i), 0) + s.tilt * (xs(i) - w / 2) * 0.16 - meniscus(i);
-      const back = (i: number) =>
-        level - depth + s.h[COLUMNS - 1 - i] * amp * 0.7 + swell(xs(i), 1.4) - s.tilt * (xs(i) - w / 2) * 0.12;
+      const front = (i: number) => level + s.h[i] * amp + s.tilt * (xs(i) - w / 2) * 0.16 - meniscus(i);
+      const back = (i: number) => level - depth + s.h[COLUMNS - 1 - i] * amp * 0.7 - s.tilt * (xs(i) - w / 2) * 0.12;
 
       const light = mix(liquid, [255, 236, 190], 0.5);
       const deep = mix(liquid, [40, 14, 0], 0.5);
@@ -223,10 +259,9 @@ export default function GoalJarFill({
       ctx.lineTo(0, hgt);
       ctx.closePath();
       const body = ctx.createLinearGradient(0, level, 0, hgt);
-      body.addColorStop(0, rgba(mix(liquid, light, 0.4), 0.94));
-      body.addColorStop(0.3, rgba(mix(liquid, light, 0.1), 0.96));
-      body.addColorStop(0.7, rgba(mix(liquid, deep, 0.25), 0.97));
-      body.addColorStop(1, rgba(deep, 0.99));
+      body.addColorStop(0, rgba(mix(liquid, light, 0.35), 0.96));
+      body.addColorStop(0.45, rgba(liquid, 0.97));
+      body.addColorStop(1, rgba(deep, 0.98));
       ctx.fillStyle = body;
       ctx.fill();
 
@@ -258,16 +293,20 @@ export default function GoalJarFill({
           ctx.arc(bx, by, b.r, 0, Math.PI * 2);
           ctx.fillStyle = rgba(mix(liquid, [255, 250, 235], 0.3), 0.14);
           ctx.fill();
-          ctx.strokeStyle = 'rgba(255,247,225,0.5)';
+          ctx.strokeStyle = 'rgba(255,247,225,0.85)';
           ctx.lineWidth = 0.8;
           ctx.stroke();
           ctx.beginPath();
           ctx.arc(bx - b.r * 0.32, by - b.r * 0.36, Math.max(0.4, b.r * 0.26), 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(255,255,255,0.8)';
+          ctx.fillStyle = 'rgba(255,255,255,0.95)';
           ctx.fill();
         }
       }
 
+      // refraction glints where the liquid climbs the inner walls
+      ctx.fillStyle = 'rgba(255,246,224,0.5)';
+      ctx.fillRect(w * 0.035, level - 3, 2, 9);
+      ctx.fillRect(w * 0.965 - 2, level - 3, 2, 9);
       ctx.restore();
 
       // back rim of the surface catches light
@@ -289,6 +328,7 @@ export default function GoalJarFill({
 
     const resize = () => {
       const r = glass.getBoundingClientRect();
+      const cr = caustic.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       if (r.width && r.height) {
         w = r.width;
@@ -297,7 +337,15 @@ export default function GoalJarFill({
         canvas.height = Math.round(hgt * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
+      if (cr.width && cr.height) {
+        cw = cr.width;
+        ch = cr.height;
+        caustic.width = Math.round(cw * dpr);
+        caustic.height = Math.round(ch * dpr);
+        cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
       draw();
+      drawCaustic(clamp(s.fill), 0);
     };
 
     const step = (dt: number) => {
@@ -322,6 +370,24 @@ export default function GoalJarFill({
         bubbles[bi].y += bubbles[bi].vy * dt;
         if (bubbles[bi].y >= 1) bubbles.splice(bi, 1);
       }
+      flare *= Math.exp(-1.6 * dt);
+    };
+
+    const calm = () => {
+      if (s.start >= 0 || bubbles.length > 0) return false;
+      if (Math.abs(s.tilt) > 0.004 || Math.abs(s.tiltV) > 0.01) return false;
+      for (let i = 0; i < COLUMNS; i++) if (Math.abs(s.h[i]) > 0.05 || Math.abs(s.v[i]) > 0.02) return false;
+      return true;
+    };
+
+    const scheduleIdle = () => {
+      if (idleTimer || reduced || !inView) return;
+      idleTimer = window.setTimeout(() => {
+        idleTimer = 0;
+        spawnBubble();
+        s.v[Math.floor(COLUMNS * (0.3 + Math.random() * 0.4))] += -0.35;
+        start();
+      }, 2600 + Math.random() * 2800);
     };
 
     const loop = (now: number) => {
@@ -344,21 +410,28 @@ export default function GoalJarFill({
               for (let i = 0; i < 22; i++) spawnBubble(0.25 + Math.random() * 0.5, 0.6 + Math.random() * 0.32, 0.8, 2);
               s.v[Math.floor(COLUMNS * 0.5)] += -3.2;
               s.tiltV += 0.5;
+              flare = 1;
             }
           } else {
             syncPopped(false);
           }
         }
       }
-      idle -= dt;
-      if (idle <= 0) {
-        idle = 2.6 + Math.random() * 2.8;
-        spawnBubble();
-        s.v[Math.floor(COLUMNS * (0.3 + Math.random() * 0.4))] += -0.35;
-      }
       step(dt);
       draw();
+      const energy = s.h.reduce((a, x) => a + Math.abs(x), 0) / COLUMNS;
+      drawCaustic(clamp(s.fill), energy);
       writeText();
+      if (calm()) {
+        running = false;
+        s.h.fill(0);
+        s.v.fill(0);
+        draw();
+        drawCaustic(clamp(s.fill), 0);
+        writeText();
+        scheduleIdle();
+        return;
+      }
       raf = requestAnimationFrame(loop);
     };
 
@@ -390,6 +463,7 @@ export default function GoalJarFill({
       }
       syncPopped(s.to >= 1);
       draw();
+      drawCaustic(clamp(s.fill), 0);
       writeText();
     };
 
@@ -408,12 +482,14 @@ export default function GoalJarFill({
 
     const ro = new ResizeObserver(resize);
     ro.observe(glass);
+    ro.observe(caustic);
     resize();
     writeText();
     start();
     return () => {
       ro.disconnect();
       cancelAnimationFrame(raf);
+      window.clearTimeout(idleTimer);
       running = false;
       wake.current = () => {};
     };
@@ -465,25 +541,24 @@ export default function GoalJarFill({
     disturb(0.3, -5);
   };
 
+  // the giant numeral scales with the jar, and shrinks as the digit count grows so it always fits
+  const digits = String(Math.max(0, percent)).length;
+  const numeralK = Math.min(1, 1.45 / (0.6 * digits + 0.4));
   const rootStyle = {
     '--gj-liquid': liquidColor,
     '--gj-fill': clamp(ratio, 0, 1).toFixed(4),
+    '--gj-nk': numeralK.toFixed(3),
   } as CSSProperties;
   const amountStyle = { '--gj-chars': Math.max(6, amountText.length) } as CSSProperties;
 
   return (
     <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
-      <div className={styles.layout}>
-      <div className={styles.readout} aria-hidden="true">
-        <span className={styles.figure}>
-          <span ref={numeralRef}>{percent}</span>
-          <span className={styles.pct}>%</span>
-        </span>
-        <span className={styles.caption}>of goal</span>
-        {popped && reachedText && <span className={styles.pill}>{reachedText}</span>}
-      </div>
-
       <div className={styles.stage}>
+        <span className={styles.lightGlow} aria-hidden="true" />
+        <span className={styles.halo} aria-hidden="true" />
+        <div className={styles.shelf} aria-hidden="true" />
+        <canvas ref={causticRef} className={styles.caustics} aria-hidden="true" />
+
         <div
           className={styles.jar}
           role="progressbar"
@@ -500,27 +575,53 @@ export default function GoalJarFill({
           onKeyDown={onKeyDown}
         >
           <span className={styles.shadow} aria-hidden="true" />
+          <span className={styles.numeral} aria-hidden="true">
+            <span ref={numeralRef}>{percent}</span>
+            <span className={styles.pct}>%</span>
+          </span>
           <span
-            className={[styles.lidShadow, popped ? styles.lidShadowOpen : ''].filter(Boolean).join(' ')}
+            className={[styles.corkShadow, popped ? styles.corkShadowOpen : ''].filter(Boolean).join(' ')}
             aria-hidden="true"
           />
-          <div className={[styles.lid, popped ? styles.lidPopped : ''].filter(Boolean).join(' ')} aria-hidden="true" />
+          <div
+            className={[styles.cork, popped ? styles.corkPopped : ''].filter(Boolean).join(' ')}
+            aria-hidden="true"
+          >
+            <span className={styles.corkSkin} aria-hidden="true" />
+          </div>
           <span className={styles.lip} aria-hidden="true" />
           <span className={styles.neck} aria-hidden="true" />
           <div ref={glassRef} className={styles.glass}>
             <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
+            <span className={styles.liquidLayer} aria-hidden="true">
+              <span className={`${styles.numeral} ${styles.numeralIn}`}>
+                <span ref={numeralInRef}>{percent}</span>
+                <span className={styles.pct}>%</span>
+              </span>
+            </span>
+            <span className={styles.ticks} aria-hidden="true" />
             <div className={styles.paper}>
               {label && <p id={labelId} className={styles.name}>{label}</p>}
+              {label && <span className={styles.rule} aria-hidden="true" />}
               <span ref={amountRef} className={styles.amount} style={amountStyle}>
                 {amountText}
               </span>
               <span className={styles.rule} aria-hidden="true" />
-              <span className={styles.goalLine}>of {goalText}</span>
+              <span className={styles.goalLine}>
+                <span ref={percentRef}>{percent}%</span> of {goalText}
+              </span>
+              <span className={styles.paperShade} aria-hidden="true" />
             </div>
+            <span className={styles.base} aria-hidden="true" />
             <span className={styles.highlight} aria-hidden="true" />
+            <span className={styles.highlightThin} aria-hidden="true" />
+            <span className={styles.lens} aria-hidden="true" />
+            <span className={styles.grainGlass} aria-hidden="true" />
           </div>
         </div>
-      </div>
+
+        {popped && reachedText && <span className={styles.pill}>{reachedText}</span>}
+        <span className={styles.grain} aria-hidden="true" />
       </div>
     </div>
   );
@@ -546,15 +647,20 @@ export default function GoalJarFill({
 
 .root {
   --gj-liquid: #c9780f;
-  --gj-ink: #34210f;
-  --gj-ink-soft: rgba(52, 33, 15, 0.72);
-  --gj-cream: #fbf9f4;
-  --gj-ground-1: #f6f3ee;
-  --gj-ground-2: #ecdfc6;
-  --gj-glass-tint: rgba(60, 50, 40, 0.05);
+  --gj-ink: #3b2412;
+  --gj-ink-soft: rgba(59, 36, 18, 0.78);
+  --gj-cream: #f6eedd;
+  --gj-ground-1: #f7efdf;
+  --gj-ground-2: #eadcc0;
+  --gj-shelf-top: #e9d5ae;
+  --gj-shelf-face: #d6bd8e;
+  --gj-shelf-line: #a8824c;
+  --gj-glass-tint: rgba(96, 58, 20, 0.2);
   --gj-font-display: 'Schibsted Grotesk', 'Avenir Next', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --gj-font-ui: 'Schibsted Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --gj-fill: 0.62;
+  --gj-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.32  0 0 0 0 0.2  0 0 0 0 0.08  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --gj-fibers: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.03 .09' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 0.98  0 0 0 0 0.92  0 0 0 0 0.8  0 0 0 1.4 -0.62'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -562,8 +668,10 @@ export default function GoalJarFill({
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  border-radius: 24px;
-  background: var(--gj-ground-1);
+  border-radius: 28px;
+  background:
+    radial-gradient(46% 58% at 14% 0%, #fff8e9 0%, rgba(255, 248, 233, 0) 62%),
+    linear-gradient(180deg, var(--gj-ground-1) 0%, var(--gj-ground-2) 100%);
   color: var(--gj-ink);
   font-family: var(--gj-font-ui);
   font-weight: 500;
@@ -574,99 +682,161 @@ export default function GoalJarFill({
   color: #2f1d0e;
 }
 
-.layout {
-  display: grid;
-  justify-items: center;
+.stage {
+  --gj-jw: min(58cqi, 250px);
+  position: relative;
+  block-size: clamp(480px, 138cqi, 600px);
 }
 
-.readout {
-  position: relative;
-  z-index: 6;
+.lightGlow {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: -18%;
+  inset-inline-start: -14%;
+  inline-size: 78%;
+  aspect-ratio: 1.3;
+  background: radial-gradient(closest-side, rgba(255, 250, 236, 0.95), rgba(255, 250, 236, 0) 70%);
+  pointer-events: none;
+}
+
+.halo {
+  position: absolute;
+  z-index: 2;
+  inset-block-end: 6%;
+  inset-inline-start: 50%;
+  inline-size: 58%;
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, rgba(255, 213, 148, 0.38), rgba(255, 213, 148, 0) 68%);
+  filter: blur(26px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.shelf {
+  position: absolute;
+  z-index: 2;
+  inset-block-end: 0;
+  inset-inline: 0;
+  block-size: 15%;
+  background: linear-gradient(180deg, var(--gj-shelf-line) 0 2px, var(--gj-shelf-top) 2px 38%, var(--gj-shelf-face) 100%);
+}
+
+/* the percentage: one giant tabular numeral behind the glass, scaled to the jar.
+   The same numeral is repeated inside the liquid (see .liquidLayer) so it flips from ink to cream at the surface. */
+.numeral {
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: 43.4%;
+  transform: translate(-50%, -50%);
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: center;
-  gap: 4px 10px;
-  padding: 32px 24px 0;
-  text-align: center;
+  gap: 0.03em;
+  margin: 0;
+  font-family: var(--gj-font-display);
+  font-weight: 700;
+  font-size: calc(var(--gj-jw) * var(--gj-nk, 0.9));
+  line-height: 0.8;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+  color: var(--gj-ink);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
   pointer-events: none;
   user-select: none;
-}
-
-.figure {
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 0.04em;
-  font-family: var(--gj-font-display);
-  font-weight: 500;
-  font-size: clamp(56px, 17cqi, 92px);
-  line-height: 0.9;
-  letter-spacing: -0.05em;
-  font-variant-numeric: tabular-nums lining-nums;
-  white-space: nowrap;
 }
 
 .pct {
   font-size: 0.4em;
   line-height: 1;
-  margin-block-start: 0.1em;
+  margin-block-start: 0.12em;
   letter-spacing: 0;
+  font-weight: 700;
 }
 
-.caption {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--gj-ink-soft);
+/* inside the glass: the numeral again, lit from within, only where there is liquid */
+.liquidLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent calc((0.9 - var(--gj-fill) * 0.8) * 100%), #000 calc((0.9 - var(--gj-fill) * 0.8) * 100% + 10px));
+  mask-image: linear-gradient(180deg, transparent calc((0.9 - var(--gj-fill) * 0.8) * 100%), #000 calc((0.9 - var(--gj-fill) * 0.8) * 100% + 10px));
+}
+
+.numeralIn {
+  inset-block-start: 31%;
+  font-size: calc((100cqi + 10px) * var(--gj-nk, 0.9));
+  color: rgba(255, 246, 222, 0.82);
+}
+
+.caustics {
+  position: absolute;
+  z-index: 3;
+  inset-block-end: 1.5%;
+  inset-inline: 0;
+  inline-size: 100%;
+  block-size: 14%;
+  filter: blur(6px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  background-image: var(--gj-noise);
+  opacity: 0.12;
+  mix-blend-mode: multiply;
+  pointer-events: none;
 }
 
 .pill {
-  padding: 5px 12px;
+  position: absolute;
+  z-index: 6;
+  inset-block-start: 6%;
+  inset-inline-end: 5%;
+  padding: 8px 16px;
   border-radius: 999px;
-  border: 1px solid rgba(52, 33, 15, 0.28);
-  background: rgba(255, 250, 238, 0.7);
+  background: linear-gradient(180deg, #fbf4e5, var(--gj-cream));
+  border: 1px solid rgba(59, 36, 18, 0.5);
   color: var(--gj-ink);
-  font-size: 12.5px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  animation: gjPill 560ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 12px 24px -12px rgba(60, 32, 8, 0.55);
+  animation: gjPill 640ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 @keyframes gjPill {
   0% {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(10px) scale(0.7);
   }
   100% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
-}
-
-.stage {
-  --gj-jw: min(54cqi, 240px);
-  position: relative;
-  inline-size: 100%;
-  block-size: calc(var(--gj-jw) / 0.7 + 64px);
 }
 
 .jar {
   position: absolute;
   z-index: 5;
-  inset-block-end: 28px;
+  inset-block-end: 14%;
   inset-inline-start: 50%;
   inline-size: var(--gj-jw);
-  aspect-ratio: 0.7;
+  aspect-ratio: 0.74;
   transform: translateX(-50%);
   display: grid;
-  grid-template-rows: 7% 4.5% 1fr;
+  grid-template-rows: 11% 7% 1fr;
   justify-items: center;
   cursor: default;
   touch-action: pan-y;
   -webkit-tap-highlight-color: transparent;
   outline: none;
-  border-radius: 20px;
+  border-radius: 24px;
 }
 
 .jar:focus-visible {
@@ -675,49 +845,68 @@ export default function GoalJarFill({
 
 .shadow {
   position: absolute;
-  inset-inline: 6%;
-  inset-block-end: -3%;
-  block-size: 6%;
+  inset-inline: 12%;
+  inset-block-end: -4.5%;
+  block-size: 7%;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(40, 30, 20, 0.22), transparent);
-  filter: blur(6px);
+  background: radial-gradient(closest-side, rgba(52, 28, 8, 0.42), transparent);
+  filter: blur(5px);
   pointer-events: none;
 }
 
 .lip {
   grid-row: 1;
   align-self: end;
-  inline-size: 50%;
-  block-size: 60%;
-  border-radius: 3px 3px 1px 1px;
-  background: var(--gj-glass-tint);
-  box-shadow: inset 0 0 0 1.5px rgba(52, 33, 15, 0.22);
+  inline-size: 46%;
+  block-size: 34%;
+  border-radius: 30% 30% 50% 50% / 70% 70% 40% 40%;
+  background:
+    linear-gradient(180deg, rgba(255, 244, 222, 0.5), rgba(255, 244, 222, 0.08) 55%, rgba(50, 26, 6, 0.18)),
+    var(--gj-glass-tint);
+  box-shadow:
+    0 2px 4px rgba(60, 30, 6, 0.2),
+    inset 0 -2px 3px rgba(50, 24, 4, 0.25);
 }
 
 .neck {
   grid-row: 2;
-  inline-size: 52%;
-  background: var(--gj-glass-tint);
-  box-shadow: inset 1.5px 0 0 rgba(52, 33, 15, 0.22), inset -1.5px 0 0 rgba(52, 33, 15, 0.22);
+  inline-size: 55%;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.42) 15%, rgba(255, 255, 255, 0.04) 40%, rgba(255, 255, 255, 0.04) 78%, rgba(255, 255, 255, 0.26) 96%),
+    var(--gj-glass-tint);
+  box-shadow: inset 0 -8px 10px rgba(50, 24, 4, 0.22);
 }
 
-.lid {
+.cork {
   position: absolute;
   z-index: 4;
-  inset-block-start: -1%;
+  inset-block-start: 1%;
   inset-inline-start: 50%;
-  inline-size: 56%;
-  block-size: 8.4%;
+  inline-size: 31%;
+  block-size: 13.5%;
   transform: translateX(-50%);
-  border-radius: 3px;
-  background: var(--gj-ink);
-  transition: transform 600ms cubic-bezier(0.2, 0.9, 0.3, 1);
+  border-radius: 48% 48% 20% 20% / 62% 62% 26% 26%;
+  background: radial-gradient(circle at 34% 26%, #e6c08a 0%, #cf9f5f 48%, #a1763c 100%);
+  box-shadow:
+    inset 0 2px 2px rgba(255, 238, 205, 0.55),
+    inset 0 -4px 6px rgba(96, 56, 16, 0.4),
+    0 3px 5px -1px rgba(56, 28, 6, 0.4);
+  transition: transform 650ms cubic-bezier(0.2, 0.9, 0.3, 1);
   pointer-events: none;
 }
 
-.lidPopped {
-  transform: translateX(-50%) translateY(-8px) rotate(2deg);
-  animation: gjPop 900ms cubic-bezier(0.3, 1.1, 0.34, 1) both;
+.corkSkin {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: var(--gj-noise);
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+}
+
+.corkPopped {
+  transform: translateX(-50%) translateY(-15px) rotate(12deg);
+  animation: gjPop 950ms cubic-bezier(0.3, 1.1, 0.34, 1) both;
 }
 
 @keyframes gjPop {
@@ -725,33 +914,32 @@ export default function GoalJarFill({
     transform: translateX(-50%);
   }
   40% {
-    transform: translateX(-50%) translateY(-22px) rotate(-3deg);
+    transform: translateX(-50%) translateY(-76px) rotate(-11deg);
   }
   66% {
-    transform: translateX(-50%) translateY(-12px) rotate(2deg);
+    transform: translateX(-50%) translateY(-54px) rotate(6deg);
   }
   100% {
-    transform: translateX(-50%) translateY(-8px) rotate(2deg);
+    transform: translateX(-50%) translateY(-15px) rotate(12deg);
   }
 }
 
-.lidShadow {
+.corkShadow {
   position: absolute;
   z-index: 3;
-  inset-block-start: 6.6%;
+  inset-block-start: 10.2%;
   inset-inline-start: 50%;
-  inline-size: 52%;
-  block-size: 2%;
+  inline-size: 34%;
+  block-size: 3%;
   transform: translateX(-50%);
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(54, 28, 8, 0.4), transparent);
+  background: radial-gradient(closest-side, rgba(54, 28, 8, 0.5), transparent);
   filter: blur(2px);
   pointer-events: none;
-  transition: opacity 400ms ease;
 }
 
-.lidShadowOpen {
-  opacity: 0.35;
+.corkShadowOpen {
+  opacity: 0.3;
 }
 
 .glass {
@@ -762,10 +950,18 @@ export default function GoalJarFill({
   block-size: 100%;
   box-sizing: border-box;
   overflow: hidden;
-  border: 1.5px solid rgba(52, 33, 15, 0.22);
-  border-radius: 18% 18% 6% 6% / 9% 9% 3% 3%;
-  background: var(--gj-glass-tint);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  border: 5px solid rgba(255, 248, 236, 0.3);
+  border-radius: 42% 42% 15% 15% / 26% 26% 7% 7%;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 32%),
+    var(--gj-glass-tint);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.42),
+    inset 16px 0 24px rgba(255, 246, 226, 0.14),
+    inset -18px 0 26px rgba(34, 16, 2, 0.28),
+    inset 0 -14px 30px rgba(30, 14, 2, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.4),
+    0 22px 34px -18px rgba(52, 26, 8, 0.55);
 }
 
 .canvas {
@@ -776,30 +972,48 @@ export default function GoalJarFill({
   block-size: 100%;
 }
 
+.ticks {
+  position: absolute;
+  inset-inline-end: 9%;
+  inset-block: 12% 12%;
+  inline-size: 7%;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 250, 240, 0.5) 0 1.5px,
+    transparent 1.5px calc(25% - 0.4px),
+    rgba(255, 250, 240, 0.5) calc(25% - 0.4px) calc(25% + 1px)
+  );
+  -webkit-mask: linear-gradient(90deg, #000, rgba(0, 0, 0, 0.55));
+  mask: linear-gradient(90deg, #000, rgba(0, 0, 0, 0.55));
+  opacity: 0.45;
+  pointer-events: none;
+}
+
 .paper {
   position: absolute;
   z-index: 2;
-  inset-inline: 12%;
-  inset-block-end: 11%;
+  inset-inline: 8%;
+  inset-block-end: 9%;
   box-sizing: border-box;
-  padding: 3.6cqi 3cqi 3.8cqi;
+  padding: 3.4cqi 3cqi 3.8cqi;
   display: grid;
   justify-items: center;
   text-align: center;
-  background: var(--gj-cream);
-  border-radius: 2px;
+  background: linear-gradient(180deg, #fbf4e5, var(--gj-cream));
+  border: 1px solid rgba(59, 36, 18, 0.55);
+  border-radius: 4px;
+  box-shadow: 0 8px 16px -10px rgba(52, 28, 8, 0.5);
   color: var(--gj-ink);
 }
 
 .name {
+  position: relative;
+  z-index: 1;
   margin: 0;
   padding-inline: 1cqi;
-  font-size: clamp(10.5px, 3cqi, 12px);
+  font-size: clamp(12px, 3.6cqi, 15px);
   font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--gj-ink-soft);
+  line-height: 1.35;
   overflow-wrap: anywhere;
   text-wrap: balance;
   display: -webkit-box;
@@ -808,74 +1022,115 @@ export default function GoalJarFill({
   overflow: hidden;
 }
 
+.rule {
+  position: relative;
+  z-index: 1;
+  inline-size: 76%;
+  block-size: 1px;
+  margin-block: 1.6cqi 1.4cqi;
+  background: rgba(59, 36, 18, 0.35);
+}
+
 .amount {
-  margin-block-start: 1.6cqi;
+  position: relative;
+  z-index: 1;
   font-family: var(--gj-font-display);
   font-weight: 700;
-  font-size: min(12cqi, calc(140cqi / var(--gj-chars)));
-  line-height: 1.1;
+  font-size: min(13cqi, calc(150cqi / var(--gj-chars)));
+  line-height: 1.05;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-.rule {
-  inline-size: 28%;
-  block-size: 1px;
-  margin-block: 1.8cqi 1.6cqi;
-  background: rgba(52, 33, 15, 0.3);
-}
-
 .goalLine {
+  position: relative;
+  z-index: 1;
+  margin-block-start: 1.8cqi;
   padding-inline: 1cqi;
-  font-size: clamp(11.5px, 3.3cqi, 13px);
+  font-size: clamp(11.5px, 3.4cqi, 14px);
   font-weight: 500;
+  letter-spacing: 0.01em;
   color: var(--gj-ink-soft);
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
 
+.paperShade {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image:
+    var(--gj-fibers),
+    linear-gradient(90deg, rgba(66, 40, 14, 0.16), rgba(66, 40, 14, 0) 24%, rgba(66, 40, 14, 0) 76%, rgba(66, 40, 14, 0.22));
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.base {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: 9%;
+  background: linear-gradient(180deg, rgba(255, 250, 240, 0) 0, rgba(255, 250, 240, 0.12) 40%, rgba(255, 250, 240, 0.26) 100%);
+  pointer-events: none;
+}
+
 .highlight {
   position: absolute;
-  inset-inline-start: 7%;
-  inset-block: 14% 12%;
-  inline-size: 3.5%;
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.5) 20%, rgba(255, 255, 255, 0.22) 80%, rgba(255, 255, 255, 0));
+  inset-inline-start: 8%;
+  inset-block: 9% 16%;
+  inline-size: 8%;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.55) 20%, rgba(255, 255, 255, 0.35) 70%, rgba(255, 255, 255, 0));
+  filter: blur(1.5px);
   mix-blend-mode: screen;
   pointer-events: none;
 }
 
-@container (min-width: 600px) {
-  .layout {
-    grid-template-columns: auto auto;
-    justify-content: center;
-    align-items: center;
-    column-gap: clamp(56px, 10cqi, 140px);
-    padding-block: 24px;
-  }
+.highlightThin {
+  position: absolute;
+  inset-inline-end: 5%;
+  inset-block: 14% 22%;
+  inline-size: 2.4%;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.45) 40%, rgba(255, 255, 255, 0));
+  filter: blur(0.6px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
 
-  .readout {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 0;
-    text-align: start;
-  }
+.lens {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 34%, rgba(255, 250, 238, 0.13) 44%, rgba(255, 255, 255, 0.05) 52%, transparent 62%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
 
-  .figure {
-    font-size: clamp(80px, 11cqi, 120px);
+.grainGlass {
+  position: absolute;
+  inset: 0;
+  background-image: var(--gj-noise);
+  opacity: 0.14;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+@container (min-width: 560px) {
+  .stage {
+    block-size: clamp(520px, 58cqi, 680px);
   }
 
   .stage {
-    inline-size: var(--gj-jw);
-    --gj-jw: min(26cqi, 280px);
+    --gj-jw: min(34cqi, 370px);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lid,
-  .lidPopped,
-  .lidShadow,
+  .cork,
+  .corkPopped,
   .pill {
     animation: none;
     transition: none;
