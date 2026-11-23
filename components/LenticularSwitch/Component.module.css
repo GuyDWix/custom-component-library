@@ -23,6 +23,8 @@
   --ls-img-a: none;
   --ls-img-b: none;
   --ls-gx: 0;
+  --ls-ar-a: 1.6;
+  --ls-ar-b: 1.6;
 
   box-sizing: border-box;
   inline-size: 100%;
@@ -38,7 +40,7 @@
   --ls-n: 24;
 
   position: relative;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   container-type: inline-size;
   perspective: 1400px;
@@ -80,25 +82,47 @@
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   background-repeat: no-repeat;
-  background-size: 100cqw 100%;
-  background-position: calc(var(--i) * -100cqw / var(--ls-n) + 0.5px) center;
+  background-size: max(100cqw, calc(75cqw * var(--ls-ar, 1.6))) auto;
+  background-position: calc(var(--i) * -100cqw / var(--ls-n) + 0.5px) 38%;
   background-color: var(--ls-paper);
+}
+
+.faceA::before,
+.faceB::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(
+      100deg,
+      hsl(var(--h, 200) 95% 66%) 0%,
+      hsl(calc(var(--h, 200) + 70) 95% 62%) 38%,
+      hsl(calc(var(--h, 200) + 140) 95% 68%) 70%,
+      hsl(calc(var(--h, 200) + 210) 95% 64%) 100%
+    );
+  mix-blend-mode: soft-light;
+  opacity: calc(var(--s) * 1.1);
+  pointer-events: none;
 }
 
 .faceA::after,
 .faceB::after {
+  z-index: 2;
   content: '';
   position: absolute;
   inset: 0;
-  background: #000;
-  opacity: calc(var(--s) * 0.3);
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.9), rgba(255, 255, 255, 0.55) 45%, rgba(0, 0, 0, 0.9));
+  opacity: calc(var(--s) * var(--s) * 0.34);
 }
 
 .faceA {
+  --ls-ar: var(--ls-ar-a);
   background-image: var(--ls-img-a);
 }
 
 .faceB {
+  --ls-ar: var(--ls-ar-b);
   transform: rotateY(180deg);
   background-image: var(--ls-img-b);
 }

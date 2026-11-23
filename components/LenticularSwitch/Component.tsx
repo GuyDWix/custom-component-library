@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import styles from './Component.module.css';
+import powderShoeImg from './images/powder-shoe.jpg';
+import onyxShoeImg from './images/onyx-shoe.png';
 
 export interface LenticularSwitchProps {
   imageA?: string;
@@ -23,6 +25,18 @@ const KEY_STEP = 0.07;
 const KEY_HOLD_MS = 1600;
 const SWAY_SPEED = 0.48;
 const SWAY_EASE_MS = 2600;
+const HUE_BASE = 200;
+
+const useImageRatio = (src: string) => {
+  const [ratio, setRatio] = useState(1.6);
+  useEffect(() => {
+    if (!src) return;
+    const img = new Image();
+    img.onload = () => img.naturalHeight && setRatio(img.naturalWidth / img.naturalHeight);
+    img.src = src;
+  }, [src]);
+  return ratio;
+};
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 const clamp01 = (v: number) => clamp(v, 0, 1);
@@ -33,16 +47,14 @@ const HELP_ANIMATED =
   'Move across the print, or drag on touch, to flip between the two photos. Arrow keys flip step by step; Home and End jump to a photo; Escape lets it drift again.';
 const HELP_REDUCED = 'Press Enter, Space or the arrow keys to switch between the two photos.';
 
-const defaultImageA =
-  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&h=750&fit=crop&auto=format';
-const defaultImageB =
-  'https://images.unsplash.com/photo-1490750967868-88aa4486c946?q=80&w=1200&h=750&fit=crop&auto=format';
+const defaultImageA = powderShoeImg;
+const defaultImageB = onyxShoeImg;
 
 export default function LenticularSwitch({
   imageA = defaultImageA,
-  imageAAlt = 'Turquoise sea rolling onto a white sand beach',
+  imageAAlt = 'Knit sneaker in cobalt blue resting on a pale step',
   imageB = defaultImageB,
-  imageBAlt = 'Pink cosmos flowers leaning into the late afternoon light',
+  imageBAlt = 'Pair of black knit sneakers with white soles on a plinth',
   stripWidth = 26,
   hint = true,
   className,
@@ -56,6 +68,8 @@ export default function LenticularSwitch({
   const [showB, setShowB] = useState(false);
   const [stripCount, setStripCount] = useState(() => clamp(Math.round(720 / sw), MIN_STRIPS, MAX_STRIPS));
 
+  const ratioA = useImageRatio(imageA);
+  const ratioB = useImageRatio(imageB);
   const rootRef = useRef<HTMLDivElement>(null);
   const openingRef = useRef<HTMLDivElement>(null);
   const stripEls = useRef<(HTMLDivElement | null)[]>([]);
@@ -158,6 +172,7 @@ export default function LenticularSwitch({
         if (!el) continue;
         el.style.transform = `rotateY(${(m.p[i] * 180).toFixed(2)}deg)`;
         el.style.setProperty('--s', Math.sin(Math.PI * m.p[i]).toFixed(3));
+        el.style.setProperty('--h', (HUE_BASE + m.p[i] * 260 + i * 11).toFixed(1));
       }
       id = requestAnimationFrame(loop);
     };
@@ -235,6 +250,8 @@ export default function LenticularSwitch({
   const rootStyle = {
     '--ls-img-a': imageA ? `url("${imageA}")` : 'none',
     '--ls-img-b': imageB ? `url("${imageB}")` : 'none',
+    '--ls-ar-a': ratioA,
+    '--ls-ar-b': ratioB,
   } as CSSProperties;
   const openingStyle = { '--ls-n': stripCount } as CSSProperties;
   const ariaLabel = `Lenticular print switching between ${imageAAlt} and ${imageBAlt}`;
