@@ -45,7 +45,7 @@ export const defaultQuestions: ConcertinaFAQQuestion[] = [
 type Anim = { p: number; v: number; live: boolean };
 
 const STIFFNESS = 190;
-const DAMPING = 19;
+const DAMPING = 16;
 const STAGGER = 0.14;
 const FALLBACK_HEIGHT = 168;
 const RAD = Math.PI / 180;
@@ -131,6 +131,8 @@ export default function ConcertinaFAQ({
     item.style.setProperty('--p', clamp01(p).toFixed(3));
     item.style.setProperty('--tx', clamp01((p - textFrom) / 0.32).toFixed(3));
     item.style.setProperty('--sd', clamp01((p - 0.12) / 0.6).toFixed(3));
+    const lift = clamp01((p - 0.72) / 0.28);
+    item.style.setProperty('--cv', (lift * lift * (3 - 2 * lift)).toFixed(3));
   }, []);
 
   /* Hand an item back to the resting CSS (also the reduced-motion and SSR state). */
@@ -138,7 +140,7 @@ export default function ConcertinaFAQ({
     const item = itemRefs.current[i];
     const wrap = wrapRefs.current[i];
     if (!item || !wrap) return;
-    ['--p', '--tx', '--sd'].forEach((k) => item.style.removeProperty(k));
+    ['--p', '--tx', '--sd', '--cv'].forEach((k) => item.style.removeProperty(k));
     wrap.style.removeProperty('block-size');
     wrap.style.removeProperty('visibility');
     wrap.querySelectorAll<HTMLElement>('[data-facet]').forEach((el) => {
@@ -286,7 +288,7 @@ export default function ConcertinaFAQ({
       className={k === 0 ? `${styles.facet} ${styles.facetFirst}` : styles.facet}
       style={{ '--k': k } as CSSProperties}
     >
-      <div className={styles.slice}>
+      <div className={k + 1 === pleats ? `${styles.slice} ${styles.sliceLast}` : styles.slice}>
         <div
           ref={
             k === 0
@@ -302,6 +304,7 @@ export default function ConcertinaFAQ({
         </div>
         <span className={k % 2 === 0 ? styles.shadeLit : styles.shadeDark} aria-hidden="true" />
         <span className={styles.crease} aria-hidden="true" />
+        {k + 1 === pleats ? <span className={styles.curl} aria-hidden="true" /> : null}
       </div>
       {k + 1 < pleats ? renderFacet(i, k + 1, text) : null}
     </div>
@@ -346,8 +349,8 @@ export default function ConcertinaFAQ({
                   >
                     <span className={styles.qText}>{item.question}</span>
                     <span className={isOpen ? `${styles.mark} ${styles.markOpen}` : styles.mark} aria-hidden="true">
-                      <svg className={styles.zig} viewBox="0 0 24 14" width="24" height="14" focusable="false">
-                        <polyline className={styles.zigLine} points="2,12 7,2 12,12 17,2 22,12" />
+                      <svg className={styles.chev} viewBox="0 0 24 24" width="24" height="24" focusable="false">
+                        <polyline className={styles.chevLine} points="6,9 12,15.2 18,9" />
                       </svg>
                     </span>
                   </button>

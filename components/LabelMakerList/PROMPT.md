@@ -26,8 +26,8 @@ export const defaultLabels: string[] = [
   'Engraving',
 ];
 
-const COLUMN_GAP = 20;
-const CREAM = '#f3ecd8';
+const COLUMN_GAP = 16;
+const CREAM = '#efeadd';
 
 const isLightTape = (color: string): boolean => {
   const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color.trim());
@@ -42,14 +42,13 @@ const isLightTape = (color: string): boolean => {
 const stripVars = (index: number, tape: string, textStyle: LabelTextStyle, perRow: number): CSSProperties =>
   ({
     '--tape': tape,
-    '--ink-on-tape': isLightTape(tape) ? '#2b2115' : '#f8fafc',
+    '--ink-on-tape': isLightTape(tape) ? '#2a2a2e' : '#ffffff',
     '--emboss':
       textStyle === 'printed'
         ? 'none'
         : isLightTape(tape)
-          ? '0 -1px 0 rgba(255, 255, 255, 0.75), 0 1px 0 rgba(48, 36, 22, 0.38), 0 2px 2px rgba(46, 34, 20, 0.3), 0 4px 8px rgba(46, 34, 20, 0.2)'
-          : '0 -1px 0 rgba(255, 255, 255, 0.26), 0 1px 0 rgba(4, 8, 24, 0.55), 0 2px 2px rgba(4, 8, 24, 0.42), 0 4px 8px rgba(4, 8, 24, 0.3)',
-    '--tilt': `${index % 2 === 0 ? -0.5 : 0.45}deg`,
+          ? '0 1px 0 rgba(255, 255, 255, 0.6), 0 -0.5px 0 rgba(0, 0, 0, 0.16)'
+          : '0 -0.5px 0 rgba(0, 0, 0, 0.32), 0 0.5px 0 rgba(255, 255, 255, 0.2)',
     '--i': `${index}`,
     '--max-w': `calc((100% - ${(perRow - 1) * COLUMN_GAP}px) / ${perRow})`,
   }) as CSSProperties;
@@ -84,8 +83,8 @@ export default function LabelMakerList({
 
   const rootVars = {
     '--lm-tape': tapeColor,
-    '--lm-ls': textStyle === 'printed' ? '0.05em' : '0.09em',
-    '--lm-fw': textStyle === 'printed' ? '600' : '700',
+    '--lm-ls': textStyle === 'printed' ? '0.08em' : '0.12em',
+    '--lm-fw': textStyle === 'printed' ? '500' : '600',
   } as CSSProperties;
 
   return (
@@ -94,9 +93,6 @@ export default function LabelMakerList({
       className={[styles.root, className].filter(Boolean).join(' ')}
       style={rootVars}
     >
-      <span className={styles.holes} aria-hidden="true" />
-      <span className={styles.grain} aria-hidden="true" />
-
       {items.length > 0 && (
         <ul className={styles.list} aria-label="Labels">
           {items.map((text, i) => (
@@ -107,9 +103,6 @@ export default function LabelMakerList({
             >
               <div className={[styles.tilt, inView ? styles.tiltRun : ''].filter(Boolean).join(' ')}>
                 <span className={styles.text}>{text}</span>
-                <span className={styles.curl} aria-hidden="true">
-                  <span className={styles.curlTip} />
-                </span>
               </div>
             </li>
           ))}
@@ -121,15 +114,22 @@ export default function LabelMakerList({
 ```
 
 ```css
+@font-face {
+  font-family: 'Inter Tight';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('./fonts/inter-tight-latin.woff2') format('woff2');
+}
+
 .root {
   --lm-tape: #2547d8;
-  --lm-ground: #a0a5ac;
-  --lm-ground-deep: #878d95;
+  --lm-ground: #eceef1;
   --lm-ink: #262a31;
-  --lm-font: 'Helvetica Neue', 'Inter Tight', 'Inter', 'Segoe UI', system-ui, Arial, sans-serif;
-  --lm-ls: 0.09em;
-  --lm-fw: 700;
-  --lm-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --lm-font: 'Inter Tight', 'Helvetica Neue', 'Segoe UI', system-ui, Arial, sans-serif;
+  --lm-ls: 0.12em;
+  --lm-fw: 600;
+  --lm-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
   position: relative;
   isolation: isolate;
@@ -137,36 +137,11 @@ export default function LabelMakerList({
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  padding: clamp(44px, 9cqi, 80px) clamp(22px, 6cqi, 64px);
-  border-radius: 28px;
-  background:
-    radial-gradient(140% 110% at 50% -12%, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 55%),
-    linear-gradient(180deg, var(--lm-ground) 0%, var(--lm-ground-deep) 100%);
+  padding: clamp(36px, 8cqi, 72px) clamp(22px, 6cqi, 64px);
+  border-radius: 16px;
+  background: var(--lm-ground);
   color: var(--lm-ink);
   font-family: var(--lm-font);
-}
-
-.holes {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: radial-gradient(
-    circle at 50% 50%,
-    rgba(38, 42, 49, 0.16) 0 1.7px,
-    rgba(255, 255, 255, 0.06) 2.4px,
-    rgba(255, 255, 255, 0) 3.4px
-  );
-  background-size: 30px 30px;
-  opacity: 0.75;
-}
-
-.grain {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: var(--lm-noise);
-  opacity: 0.3;
-  mix-blend-mode: overlay;
 }
 
 .list {
@@ -174,7 +149,7 @@ export default function LabelMakerList({
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 18px 20px;
+  gap: 14px 16px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -182,7 +157,6 @@ export default function LabelMakerList({
 
 .strip {
   position: relative;
-  perspective: 700px;
   max-inline-size: var(--max-w, 100%);
 }
 
@@ -190,31 +164,25 @@ export default function LabelMakerList({
   z-index: 3;
 }
 
-.stripRun {
-  animation: lmFeed 780ms both;
-  animation-delay: calc(140ms + var(--i, 0) * 130ms);
+/* the strip prints out left to right, then settles */
+.stripRun .tilt {
+  animation: lmPrint 640ms var(--lm-ease) both;
+  animation-delay: calc(120ms + var(--i, 0) * 120ms);
 }
 
-@keyframes lmFeed {
-  0% {
+@keyframes lmPrint {
+  from {
     opacity: 0;
-    transform: translateX(-54px);
-    animation-timing-function: cubic-bezier(0.2, 0.6, 0.35, 1);
+    clip-path: inset(0 100% 0 0);
+    translate: -14px 0;
   }
-  32% {
+  25% {
     opacity: 1;
   }
-  58% {
-    transform: translateX(6px);
-    animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
-  }
-  80% {
-    transform: translateX(-2px);
-    animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
-  }
-  100% {
+  to {
     opacity: 1;
-    transform: translateX(0);
+    clip-path: inset(0 0 0 0);
+    translate: 0 0;
   }
 }
 
@@ -222,147 +190,52 @@ export default function LabelMakerList({
   position: relative;
   box-sizing: border-box;
   inline-size: 100%;
-  padding: 12px 32px 13px 24px;
-  border-radius: 4px;
+  padding: 9px 22px 10px 18px;
+  border-radius: 2px;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--tape, #2547d8) 62%, #fff) 0%,
-    color-mix(in srgb, var(--tape, #2547d8) 88%, #fff) 8%,
-    var(--tape, #2547d8) 30%,
-    color-mix(in srgb, var(--tape, #2547d8) 92%, #000) 86%,
-    color-mix(in srgb, var(--tape, #2547d8) 66%, #000) 100%
+    color-mix(in srgb, var(--tape, #2547d8) 94%, #fff) 0%,
+    var(--tape, #2547d8) 40%,
+    color-mix(in srgb, var(--tape, #2547d8) 94%, #000) 100%
   );
-  transform: rotate(var(--tilt, 0deg));
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    0 2px 5px rgba(23, 27, 36, 0.24),
-    0 18px 30px -16px rgba(23, 27, 36, 0.55);
+    inset 0 0 0 1px color-mix(in srgb, var(--tape, #2547d8) 82%, #000),
+    0 1px 1px rgba(23, 27, 36, 0.12),
+    0 6px 12px -8px rgba(23, 27, 36, 0.3);
   transition:
-    transform 520ms cubic-bezier(0.34, 1.45, 0.5, 1),
-    box-shadow 420ms ease;
+    translate 320ms var(--lm-ease),
+    box-shadow 320ms var(--lm-ease);
 }
 
-.tilt:hover {
-  transform: rotate(calc(var(--tilt, 0deg) * -1.5)) translateY(-7px) rotateX(8deg) scale(1.02);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    0 6px 12px -6px rgba(23, 27, 36, 0.3),
-    0 30px 48px -20px rgba(23, 27, 36, 0.62);
-}
-
-.tilt::before {
+/* squared cut at the print end: a hairline of the tape's edge, no curl */
+.tilt::after {
   content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background:
-    linear-gradient(
-      102deg,
-      rgba(255, 255, 255, 0) 34%,
-      rgba(255, 255, 255, 0.16) 45%,
-      rgba(255, 255, 255, 0.42) 49%,
-      rgba(255, 255, 255, 0.12) 53%,
-      rgba(255, 255, 255, 0) 68%
-    ),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 1px, rgba(255, 255, 255, 0) 1px 3px);
-  background-size: 240% 100%, 100% 100%;
-  background-position: 16% 0, 0 0;
-  transition: background-position 560ms ease;
-}
-
-.tilt:hover::before {
-  background-position: 74% 0, 0 0;
-}
-
-.tiltRun .curl,
-.tiltRun .curlTip {
-  animation-duration: 520ms;
-  animation-timing-function: cubic-bezier(0.34, 1.3, 0.5, 1);
-  animation-fill-mode: both;
-}
-
-/* the rolled end: the strip bends away in two stages, a gentle lift and then a tight roll */
-.curl {
   position: absolute;
   inset-block: 0;
   inset-inline-end: 0;
-  inline-size: 16px;
-  border-radius: 0;
-  transform-origin: left center;
-  transform-style: preserve-3d;
-  transform: perspective(220px) rotateY(-28deg);
-  background: linear-gradient(
-    90deg,
-    var(--tape, #2547d8) 0%,
-    color-mix(in srgb, var(--tape, #2547d8) 80%, #fff) 38%,
-    color-mix(in srgb, var(--tape, #2547d8) 70%, #000) 100%
-  );
-  box-shadow: -3px 4px 7px -3px rgba(20, 24, 34, 0.4);
+  inline-size: 1px;
+  background: color-mix(in srgb, var(--tape, #2547d8) 70%, #000);
+  opacity: 0.45;
+  pointer-events: none;
 }
 
-.curlTip {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 100%;
-  inline-size: 13px;
-  border-radius: 0 3px 3px 0;
-  transform-origin: left center;
-  transform: rotateY(-62deg);
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--tape, #2547d8) 58%, #000) 0%,
-    color-mix(in srgb, var(--tape, #2547d8) 36%, #000) 62%,
-    color-mix(in srgb, var(--tape, #2547d8) 52%, #fff) 94%,
-    rgba(255, 255, 255, 0.55) 100%
-  );
-  box-shadow: 2px 3px 5px -2px rgba(14, 18, 28, 0.55);
-}
-
-.tiltRun .curl {
-  animation-name: lmCurlA;
-  animation-delay: calc(140ms + var(--i, 0) * 130ms + 540ms);
-}
-
-.tiltRun .curlTip {
-  animation-name: lmCurlB;
-  animation-delay: calc(140ms + var(--i, 0) * 130ms + 640ms);
-}
-
-@keyframes lmCurlA {
-  0% {
-    transform: perspective(220px) rotateY(0deg);
-  }
-  60% {
-    transform: perspective(220px) rotateY(-36deg);
-  }
-  100% {
-    transform: perspective(220px) rotateY(-28deg);
-  }
-}
-
-@keyframes lmCurlB {
-  0% {
-    transform: rotateY(0deg);
-  }
-  60% {
-    transform: rotateY(-72deg);
-  }
-  100% {
-    transform: rotateY(-62deg);
-  }
+.tilt:hover {
+  translate: 0 -2px;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--tape, #2547d8) 82%, #000),
+    0 1px 1px rgba(23, 27, 36, 0.12),
+    0 12px 18px -10px rgba(23, 27, 36, 0.34);
 }
 
 .text {
   position: relative;
   display: block;
-  font-size: clamp(15px, 3cqi, 22px);
-  font-weight: var(--lm-fw, 700);
-  line-height: 1.15;
-  letter-spacing: var(--lm-ls, 0.09em);
+  font-size: clamp(13px, 2.4cqi, 16px);
+  font-weight: var(--lm-fw, 600);
+  line-height: 1.2;
+  letter-spacing: var(--lm-ls, 0.12em);
   text-transform: uppercase;
-  font-stretch: 90%;
-  color: var(--ink-on-tape, #f8fafc);
+  color: var(--ink-on-tape, #fff);
   text-shadow: var(--emboss, none);
   overflow-wrap: anywhere;
 }
@@ -374,7 +247,7 @@ export default function LabelMakerList({
 
 @container (max-width: 540px) {
   .list {
-    gap: 14px;
+    gap: 12px;
   }
 
   .strip {
@@ -382,17 +255,12 @@ export default function LabelMakerList({
   }
 
   .tilt {
-    padding: 13px 32px 14px 22px;
+    padding: 11px 20px 12px 16px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .stripRun {
-    animation: none;
-  }
-
-  .tiltRun .curl,
-  .tiltRun .curlTip {
+  .stripRun .tilt {
     animation: none;
   }
 
@@ -401,11 +269,7 @@ export default function LabelMakerList({
   }
 
   .tilt:hover {
-    transform: rotate(var(--tilt, 0deg));
-  }
-
-  .tilt::before {
-    transition: none;
+    translate: none;
   }
 }
 ```

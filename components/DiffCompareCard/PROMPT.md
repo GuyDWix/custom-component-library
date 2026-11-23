@@ -43,90 +43,6 @@ const text = (value: string) => {
 
 const differs = (row: DiffCompareRow) => row.valueA.trim() !== row.valueB.trim();
 
-/* ───────── mass: how much "weight" each side of a row puts on its hanger ───────── */
-
-const NUMBER_WORDS: Record<string, number> = {
-  zero: 0,
-  one: 1,
-  two: 2,
-  three: 3,
-  four: 4,
-  five: 5,
-  six: 6,
-  seven: 7,
-  eight: 8,
-  nine: 9,
-  ten: 10,
-  eleven: 11,
-  twelve: 12,
-};
-
-/** First number in a value plus whatever surrounds it (the unit), or null when there is none. */
-const quantity = (value: string): { n: number; unit: string } | null => {
-  const t = value.trim().toLowerCase();
-  const m = t.match(/\d[\d,]*(?:\.\d+)?/);
-  if (m && m.index !== undefined) {
-    const n = parseFloat(m[0].replace(/,/g, ''));
-    if (!Number.isFinite(n)) return null;
-    const unit = `${t.slice(0, m.index)} ${t.slice(m.index + m[0].length)}`.replace(/\s+/g, ' ').trim();
-    return { n, unit };
-  }
-  const word = t.replace(/[^a-z]/g, '');
-  if (word in NUMBER_WORDS) return { n: NUMBER_WORDS[word], unit: '' };
-  return null;
-};
-
-interface Mass {
-  /** share of the hanger width this side's slab takes (heavier side = 1) */
-  wa: number;
-  wb: number;
-  /** which side is heavier, when the values can be weighed */
-  heavy: 'a' | 'b' | null;
-  /** signed pull on the beam: positive = A heavier */
-  pull: number;
-}
-
-const MATCH_W = 0.6;
-
-const weigh = (row: DiffCompareRow): Mass => {
-  if (!differs(row)) return { wa: MATCH_W, wb: MATCH_W, heavy: null, pull: 0 };
-  const a = row.valueA.trim();
-  const b = row.valueB.trim();
-  if (a === '' || b === '') {
-    // a missing value is an empty hook
-    return a === ''
-      ? { wa: 0.42, wb: 1, heavy: 'b', pull: -1 }
-      : { wa: 1, wb: 0.42, heavy: 'a', pull: 1 };
-  }
-  const qa = quantity(a);
-  const qb = quantity(b);
-  if (qa && qb && qa.unit === qb.unit && qa.n !== qb.n) {
-    const hi = Math.max(qa.n, qb.n);
-    const lo = Math.min(qa.n, qb.n);
-    const light = 0.36 + 0.64 * (hi > 0 ? lo / hi : 0);
-    const pull = (qa.n - qb.n) / (qa.n + qb.n);
-    return qa.n > qb.n
-      ? { wa: 1, wb: light, heavy: 'a', pull }
-      : { wa: light, wb: 1, heavy: 'b', pull };
-  }
-  return { wa: 0.92, wb: 0.92, heavy: null, pull: 0 };
-};
-
-/** Names scale down by length so a long name never overflows its plate. */
-const nameSize = (value: string) => {
-  const n = value.length;
-  if (n > 44) return styles.nameXL;
-  if (n > 26) return styles.nameL;
-  return '';
-};
-
-const slabClass = (side: 'a' | 'b', diff: boolean, mass: Mass, empty: boolean) => {
-  if (!diff) return styles.slabMatch;
-  if (empty) return styles.slabGhost;
-  if (mass.heavy === null) return styles.slabText;
-  return mass.heavy === side ? styles.slabHeavy : styles.slabLight;
-};
-
 export default function DiffCompareCard({
   optionAName = 'Signature Full-Day',
   optionBName = 'Classic Half-Day',
@@ -136,36 +52,21 @@ export default function DiffCompareCard({
   className,
 }: DiffCompareCardProps) {
   const [diffOnly, setDiffOnly] = useState(false);
-  const [sway, setSway] = useState(0);
-  const [pending, setPending] = useState(false);
   const uid = useId();
   const nameAId = `${uid}-a`;
   const nameBId = `${uid}-b`;
-
   const rootRef = useRef<HTMLDivElement>(null);
 
-  const masses = rows.map(weigh);
   const diffCount = rows.filter(differs).length;
   const noneDiffer = diffCount === 0;
-  const nameA = text(optionAName);
-  const nameB = text(optionBName);
-  const longest = nameA.length >= nameB.length ? nameA : nameB;
-  const sizeClass = nameSize(longest);
-
-  // The beam leans toward the heavier option. Matching rows weigh the same on both
-  // hangers and cancel out, so only the differing rows pull on it.
-  const pull = masses.reduce((sum, m) => sum + m.pull, 0);
-  const leanA = Math.tanh(pull * 1.1);
-  const tilt = Number((-leanA).toFixed(3));
-  const frac = rows.length > 0 ? diffCount / rows.length : 0;
 
   // A card mounted below the fold keeps its finished look and plays the opening on arrival.
+  const [pending, setPending] = useState(false);
   useEffect(() => {
     const el = rootRef.current;
     if (!el || typeof IntersectionObserver === 'undefined') return;
     const rect = el.getBoundingClientRect();
-    const offscreen = rect.top >= window.innerHeight || rect.bottom <= 0;
-    if (!offscreen) return;
+    if (rect.top < window.innerHeight && rect.bottom > 0) return;
     setPending(true);
     const io = new IntersectionObserver(
       ([entry]) => {
@@ -180,32 +81,17 @@ export default function DiffCompareCard({
     return () => io.disconnect();
   }, []);
 
-  const rootStyle = {
-    ...(highlightColor ? { '--dc-mint': highlightColor } : {}),
-  } as CSSProperties;
-
-  const scaleStyle = {
-    '--dc-tilt': tilt,
-    '--dc-frac': frac.toFixed(3),
-  } as CSSProperties;
-
+  const rootStyle = (highlightColor ? { '--dc-accent': highlightColor } : undefined) as CSSProperties | undefined;
   const rootClass = [styles.root, diffOnly ? styles.diffOn : '', pending ? styles.pending : '', className]
     .filter(Boolean)
     .join(' ');
 
-  const scaleClass = [styles.scale, sway === 0 ? '' : sway % 2 === 1 ? styles.swayA : styles.swayB]
-    .filter(Boolean)
-    .join(' ');
-
   return (
-    <div
-      ref={rootRef}
-      className={rootClass}
-      style={rootStyle}
-      role="group"
-      aria-labelledby={`${nameAId} ${nameBId}`}
-    >
+    <div ref={rootRef} className={rootClass} style={rootStyle} role="group" aria-labelledby={`${nameAId} ${nameBId}`}>
       <div className={styles.toolbar}>
+        <span className={styles.tally} role="img" aria-label={`${diffCount} of ${rows.length} entries differ`}>
+          <span className={styles.tallyNum}>{diffCount}</span> of {rows.length} differ
+        </span>
         <button
           type="button"
           role="switch"
@@ -213,116 +99,51 @@ export default function DiffCompareCard({
           aria-disabled={noneDiffer ? true : undefined}
           className={[styles.switch, diffOnly ? styles.switchOn : ''].filter(Boolean).join(' ')}
           onClick={() => {
-            if (noneDiffer) return;
-            setDiffOnly((v) => !v);
-            setSway((s) => s + 1);
+            if (!noneDiffer) setDiffOnly((v) => !v);
           }}
         >
+          <span className={styles.switchLabel}>{diffOnlyLabel}</span>
           <span className={styles.track} aria-hidden="true">
             <span className={styles.thumb} />
           </span>
-          <span className={styles.switchLabel}>{diffOnlyLabel}</span>
         </button>
       </div>
 
-      <div className={scaleClass} style={scaleStyle}>
-        {/* the beam, its pivot and the tally dial */}
-        <div className={styles.rig} aria-hidden="true">
-          <span className={styles.beam}>
-            <span className={`${styles.cap} ${styles.capA}`} />
-            <span className={`${styles.cap} ${styles.capB}`} />
-          </span>
-        </div>
-        <span className={styles.pillar} aria-hidden="true" />
-        <span className={styles.base} aria-hidden="true" />
-        <span
-          className={styles.hub}
-          role="img"
-          aria-label={`${diffCount} of ${rows.length} entries differ`}
-        >
-          <span className={styles.pillNum}>{diffCount}</span>
-          <span className={styles.pillSlash} aria-hidden="true">
-            /
-          </span>
-          <span className={styles.pillTotal}>{rows.length}</span>
-        </span>
+      <header className={styles.head}>
+        <h3 id={nameAId} className={styles.name}>
+          {text(optionAName)}
+        </h3>
+        <h3 id={nameBId} className={styles.name}>
+          {text(optionBName)}
+        </h3>
+      </header>
 
-        {/* the two options hang from the beam ends as heavy nameplates */}
-        <header className={[styles.crown, sizeClass].filter(Boolean).join(' ')}>
-          <div className={`${styles.hang} ${styles.hangA}`}>
-            <svg className={styles.stirrup} viewBox="0 0 100 48" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M50 0 L12 48 M50 0 L88 48" />
-            </svg>
-            <h3 id={nameAId} className={styles.plate}>
-              <span className={styles.bolt} aria-hidden="true" />
-              <span className={styles.name}>{nameA}</span>
-            </h3>
-          </div>
-          <div className={`${styles.hang} ${styles.hangB}`}>
-            <svg className={styles.stirrup} viewBox="0 0 100 48" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M50 0 L12 48 M50 0 L88 48" />
-            </svg>
-            <h3 id={nameBId} className={styles.plate}>
-              <span className={styles.bolt} aria-hidden="true" />
-              <span className={styles.name}>{nameB}</span>
-            </h3>
-          </div>
-        </header>
-
-        <div className={styles.list} role="list">
-          <span className={`${styles.rod} ${styles.rodA}`} aria-hidden="true" />
-          <span className={`${styles.rod} ${styles.rodB}`} aria-hidden="true" />
-          {rows.map((row, i) => {
-            const diff = differs(row);
-            const mass = masses[i];
-            const a = text(row.valueA);
-            const b = text(row.valueB);
-            const state = diff ? 'differs' : 'identical';
-            const long = a.length > LONG_VALUE || b.length > LONG_VALUE;
-            const emptyA = diff && row.valueA.trim() === '';
-            const emptyB = diff && row.valueB.trim() === '';
-            const note = diff && mass.heavy ? `, ${mass.heavy === 'a' ? 'first' : 'second'} is larger` : '';
-            const slabStyle = (w: number) => ({ '--dc-w': w } as CSSProperties);
-            return (
+      <div className={styles.list} role="list">
+        {rows.map((row, i) => {
+          const diff = differs(row);
+          const a = text(row.valueA);
+          const b = text(row.valueB);
+          const long = a.length > LONG_VALUE || b.length > LONG_VALUE;
+          return (
+            <div
+              key={i}
+              className={[styles.rowWrap, diff ? styles.rowDiff : styles.rowMatch].join(' ')}
+              style={{ '--i': i, '--r': rows.length - 1 - i } as CSSProperties}
+              aria-hidden={diffOnly && !diff ? true : undefined}
+            >
               <div
-                key={i}
-                className={[styles.rowWrap, diff ? styles.rowDiff : styles.rowMatch].join(' ')}
-                style={{ '--i': i, '--r': rows.length - 1 - i } as CSSProperties}
-                aria-hidden={diffOnly && !diff ? true : undefined}
+                className={[styles.row, long ? styles.rowLong : ''].filter(Boolean).join(' ')}
+                role="listitem"
+                tabIndex={0}
+                aria-label={`${text(row.label)}: ${a} versus ${b}, ${diff ? 'differs' : 'identical'}`}
               >
-                <div
-                  className={[styles.row, long ? styles.rowLong : ''].filter(Boolean).join(' ')}
-                  role="listitem"
-                  tabIndex={0}
-                  aria-label={`${text(row.label)}: ${a} versus ${b}, ${state}${note}`}
-                >
-                  <span className={`${styles.cell} ${styles.cellA}`}>
-                    <span
-                      className={`${styles.slab} ${slabClass('a', diff, mass, emptyA)}`}
-                      style={slabStyle(mass.wa)}
-                    >
-                      {a}
-                    </span>
-                  </span>
-                  <span className={styles.cellLabel}>
-                    <span className={styles.chip}>
-                      <span className={styles.tick} aria-hidden="true" />
-                      <span className={styles.labelText}>{text(row.label)}</span>
-                    </span>
-                  </span>
-                  <span className={`${styles.cell} ${styles.cellB}`}>
-                    <span
-                      className={`${styles.slab} ${slabClass('b', diff, mass, emptyB)}`}
-                      style={slabStyle(mass.wb)}
-                    >
-                      {b}
-                    </span>
-                  </span>
-                </div>
+                <span className={styles.label}>{text(row.label)}</span>
+                <span className={`${styles.value} ${row.valueA.trim() === '' ? styles.empty : ''}`}>{a}</span>
+                <span className={`${styles.value} ${row.valueB.trim() === '' ? styles.empty : ''}`}>{b}</span>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -339,101 +160,68 @@ export default function DiffCompareCard({
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-@font-face {
-  font-family: 'Barlow Condensed';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('./fonts/barlow-condensed-latin-600-normal.woff2') format('woff2');
-}
-
-/* the three numbers that drive the physics: swing-in, toggle jolt, dial sweep */
-@property --dc-k {
-  syntax: '<number>';
-  inherits: true;
-  initial-value: 1;
-}
-
-@property --dc-sway {
-  syntax: '<angle>';
-  inherits: true;
-  initial-value: 0deg;
-}
-
-@property --dc-ring {
-  syntax: '<number>';
-  inherits: true;
-  initial-value: 1;
-}
-
 .root {
-  --dc-sheet: #f3f6f8;
   --dc-paper: #ffffff;
-  --dc-ink: #12263f;
-  --dc-well: color-mix(in srgb, var(--dc-ink) 7%, var(--dc-sheet));
-  --dc-ink-2: color-mix(in srgb, var(--dc-ink) 78%, var(--dc-sheet));
-  --dc-ink-3: color-mix(in srgb, var(--dc-ink) 84%, var(--dc-sheet));
-  --dc-line: color-mix(in srgb, var(--dc-ink) 14%, transparent);
-  --dc-mint: #21b98c;
-  --dc-mint-ink: color-mix(in srgb, var(--dc-mint) 40%, #06281f);
-  --dc-slip: color-mix(in srgb, var(--dc-mint) 17%, var(--dc-paper));
-  --dc-slip-hi: color-mix(in srgb, var(--dc-mint) 28%, var(--dc-paper));
-  --dc-slip-edge: color-mix(in srgb, var(--dc-mint) 46%, var(--dc-paper));
+  --dc-ink: #17191f;
+  --dc-muted: #5b616c;
+  --dc-line: #e4e6ea;
+  --dc-accent: #2f56d6;
+  --dc-accent-ink: color-mix(in srgb, var(--dc-accent) 70%, #000);
+  --dc-tint: color-mix(in srgb, var(--dc-accent) 6%, var(--dc-paper));
   --dc-font: 'IBM Plex Sans', system-ui, sans-serif;
-  --dc-display: 'Barlow Condensed', 'IBM Plex Sans', system-ui, sans-serif;
   --dc-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --dc-fall: cubic-bezier(0.5, 0, 0.9, 0.4);
-  /* damped springs, sampled: beam swing-in (15% overshoot) and toggle jolt (21%) */
-  --dc-spring-a: linear(0, 0.218, 0.448, 0.662, 0.841, 0.978, 1.072, 1.128, 1.151, 1.151, 1.134, 1.109, 1.08, 1.053, 1.028, 1.009, 0.995, 0.986, 0.982, 0.981, 0.982, 0.985, 0.989, 0.992, 0.995, 0.998, 1);
-  --dc-spring-b: linear(0, 0.302, 0.632, 0.909, 1.097, 1.19, 1.207, 1.173, 1.117, 1.058, 1.01, 0.979, 0.964, 0.963, 0.97, 0.981, 0.991, 0.999, 1.004, 1.007, 1.007, 1.005, 1.003, 1.001, 1, 0.999, 1);
-
+  --dc-cols: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
 
   position: relative;
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
   overflow: clip;
+  padding: clamp(20px, 4cqi, 40px);
   border: 1px solid var(--dc-line);
-  border-radius: 22px;
-  background:
-    linear-gradient(180deg, var(--dc-paper) 0, transparent 260px),
-    radial-gradient(color-mix(in srgb, var(--dc-ink) 11%, transparent) 1px, transparent 1.3px) 0 0 / 20px 20px,
-    var(--dc-sheet);
-  box-shadow:
-    0 1px 2px rgba(18, 38, 63, 0.05),
-    0 30px 54px -30px rgba(18, 38, 63, 0.34);
+  border-radius: 16px;
+  background: var(--dc-paper);
+  box-shadow: 0 1px 2px rgba(23, 25, 31, 0.04), 0 12px 32px -20px rgba(23, 25, 31, 0.18);
   color: var(--dc-ink);
   font-family: var(--dc-font);
   -webkit-tap-highlight-color: transparent;
 }
 
 .root ::selection {
-  background: color-mix(in srgb, var(--dc-mint) 26%, #fff);
+  background: color-mix(in srgb, var(--dc-accent) 22%, #fff);
 }
 
-/* a card that mounts below the fold sits in its finished state and plays the opening once it scrolls into view */
-.pending .scale,
-.pending .crown,
-.pending .rod,
-.pending .cell,
-.pending .slab,
-.pending .chip {
+.pending .row,
+.pending .head {
   animation: none;
 }
 
-/* ───────── toolbar (switch) ───────── */
+/* ───────── toolbar ───────── */
 
 .toolbar {
-  position: relative;
-  z-index: 6;
-  padding: 18px 22px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-block-end: clamp(20px, 3.5cqi, 32px);
+}
+
+.tally {
+  font-size: 14px;
+  color: var(--dc-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.tallyNum {
+  font-weight: 600;
+  color: var(--dc-ink);
 }
 
 .switch {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  min-height: 44px;
+  gap: 12px;
+  min-block-size: 44px;
   padding: 0;
   appearance: none;
   border: 0;
@@ -444,726 +232,219 @@ export default function DiffCompareCard({
 }
 
 .switch:focus-visible {
-  outline: 2px solid var(--dc-mint-ink);
-  outline-offset: 3px;
-  border-radius: 10px;
-}
-
-.track {
-  position: relative;
-  flex: none;
-  inline-size: 44px;
-  block-size: 26px;
-  border: 1px solid color-mix(in srgb, var(--dc-ink) 34%, transparent);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--dc-ink) 6%, transparent);
-  transition:
-    background-color 240ms var(--dc-ease),
-    border-color 240ms var(--dc-ease);
-}
-
-.thumb {
-  position: absolute;
-  inset-block-start: 2px;
-  inset-inline-start: 2px;
-  inline-size: 20px;
-  block-size: 20px;
-  border: 1px solid color-mix(in srgb, var(--dc-ink) 18%, transparent);
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(18, 38, 63, 0.22);
-  transition: inset-inline-start 340ms cubic-bezier(0.34, 1.5, 0.44, 1);
-}
-
-.switchOn .track {
-  border-color: var(--dc-mint-ink);
-  background: var(--dc-mint);
-}
-
-.switchOn .thumb {
-  inset-inline-start: 20px;
+  outline: 2px solid var(--dc-accent-ink);
+  outline-offset: 4px;
+  border-radius: 8px;
 }
 
 .switchLabel {
   font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  color: var(--dc-ink-3);
+  font-weight: 500;
+  color: var(--dc-muted);
+  transition: color 200ms ease;
 }
 
 .switchOn .switchLabel {
   color: var(--dc-ink);
 }
 
+.track {
+  position: relative;
+  flex: none;
+  inline-size: 36px;
+  block-size: 20px;
+  border-radius: 999px;
+  background: #b9bec7;
+  transition: background-color 240ms var(--dc-ease);
+}
+
+.thumb {
+  position: absolute;
+  inset-block-start: 2px;
+  inset-inline-start: 2px;
+  inline-size: 16px;
+  block-size: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(23, 25, 31, 0.25);
+  transition: translate 280ms var(--dc-ease);
+}
+
+.switchOn .track {
+  background: var(--dc-accent);
+}
+
+.switchOn .thumb {
+  translate: 16px 0;
+}
+
 .switch[aria-disabled='true'] {
-  opacity: 0.55;
+  opacity: 0.5;
   cursor: default;
 }
 
-/* ───────── the scale ───────── */
+/* ───────── option names ───────── */
 
-.scale {
-  /* geometry: the nameplates sit under the beam ends, labels run down the pillar */
-  --dc-mid: clamp(150px, 27cqi, 220px);
-  --dc-half: calc(25cqi + var(--dc-mid) / 4);
-  --dc-tmax: 7.5deg;
-  --dc-beamY: 92px;
-  --dc-tilt: 0;
-  --dc-frac: 0;
-  --dc-ang: calc(var(--dc-tilt) * var(--dc-tmax) * var(--dc-k) + var(--dc-sway));
-  position: relative;
-  isolation: isolate;
-  direction: ltr;
-  padding-block: var(--dc-beamY) 88px;
-  animation-name: dcSwing, dcDial;
-  animation-duration: 1150ms, 1000ms;
-  animation-timing-function: var(--dc-spring-a), var(--dc-ease);
-  animation-delay: 460ms, 560ms;
-  animation-fill-mode: backwards, backwards;
-}
-
-.swayA {
-  animation-name: dcSwing, dcDial, dcJoltA;
-  animation-duration: 1150ms, 1000ms, 1250ms;
-  animation-timing-function: var(--dc-spring-a), var(--dc-ease), var(--dc-spring-b);
-  animation-delay: 460ms, 560ms, 0ms;
-  animation-fill-mode: backwards, backwards, none;
-}
-
-.swayB {
-  animation-name: dcSwing, dcDial, dcJoltB;
-  animation-duration: 1150ms, 1000ms, 1250ms;
-  animation-timing-function: var(--dc-spring-a), var(--dc-ease), var(--dc-spring-b);
-  animation-delay: 460ms, 560ms, 0ms;
-  animation-fill-mode: backwards, backwards, none;
-}
-
-.rig {
-  position: absolute;
-  inset-inline: 0;
-  inset-block-start: 0;
-  z-index: 4;
-  block-size: calc(var(--dc-beamY) * 2);
-  pointer-events: none;
-}
-
-.beam {
-  position: absolute;
-  inset-block-start: calc(var(--dc-beamY) - 6px);
-  inset-inline-start: calc(50% - var(--dc-half));
-  inline-size: calc(var(--dc-half) * 2);
-  block-size: 12px;
-  border-radius: 6px;
-  background: var(--dc-ink);
-  box-shadow: 0 10px 16px -12px rgba(18, 38, 63, 0.4);
-  transform: rotate(var(--dc-ang));
-}
-
-.cap {
-  position: absolute;
-  inset-block-start: 50%;
-  inline-size: 28px;
-  block-size: 28px;
-  margin-block-start: -14px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--dc-mint) 0 4px, var(--dc-ink) 4.5px);
-  box-shadow: 0 0 0 5px var(--dc-sheet);
-}
-
-.capA {
-  inset-inline-start: -14px;
-}
-
-.capB {
-  inset-inline-end: -14px;
-}
-
-.pillar {
-  position: absolute;
-  inset-block: var(--dc-beamY) 40px;
-  inset-inline-start: 50%;
-  z-index: 0;
-  inline-size: 3px;
-  margin-inline-start: -1.5px;
-  border-radius: 2px;
-  background: linear-gradient(180deg, var(--dc-ink) 0, color-mix(in srgb, var(--dc-ink) 22%, transparent) 90px);
-}
-
-.base {
-  position: absolute;
-  inset-block-end: 22px;
-  inset-inline-start: 50%;
-  z-index: 0;
-  inline-size: clamp(120px, var(--dc-mid), 210px);
-  block-size: 24px;
-  transform: translateX(-50%);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--dc-ink) 90%, #fff), var(--dc-ink));
-  clip-path: polygon(10% 0, 90% 0, 100% 100%, 0 100%);
-}
-
-/* the table the scale stands on */
-.scale::after {
-  content: '';
-  position: absolute;
-  inset-inline: 22px;
-  inset-block-end: 21px;
-  block-size: 1px;
-  background: linear-gradient(90deg, transparent, var(--dc-line) 14%, var(--dc-line) 86%, transparent);
-  pointer-events: none;
-}
-
-.hub {
-  position: absolute;
-  inset-inline-start: 50%;
-  inset-block-start: var(--dc-beamY);
-  z-index: 5;
-  translate: -50% -50%;
-  display: inline-flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 3px;
-  box-sizing: border-box;
-  inline-size: 78px;
-  block-size: 78px;
-  padding-block-start: 22px;
-  border-radius: 50%;
-  background: var(--dc-ink);
-  box-shadow:
-    0 0 0 9px var(--dc-sheet),
-    0 14px 22px -12px rgba(18, 38, 63, 0.4);
-  font-family: var(--dc-display);
-  font-size: 27px;
-  font-weight: 600;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.01em;
-  color: #fff;
-  transition: scale 420ms cubic-bezier(0.34, 1.5, 0.44, 1);
-}
-
-.hub::before {
-  content: '';
-  position: absolute;
-  inset: -13px;
-  border-radius: 50%;
-  background: conic-gradient(
-    var(--dc-mint) calc(var(--dc-ring) * var(--dc-frac) * 360deg),
-    color-mix(in srgb, var(--dc-ink) 14%, transparent) 0
-  );
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
-}
-
-.diffOn .hub {
-  scale: 1.08;
-}
-
-.pillNum {
-  color: color-mix(in srgb, var(--dc-mint) 62%, #fff);
-}
-
-.pillSlash {
-  color: color-mix(in srgb, #fff 45%, var(--dc-ink));
-}
-
-.pillTotal {
-  color: color-mix(in srgb, #fff 82%, var(--dc-ink));
-}
-
-/* ───────── nameplates: heavy counterweights hung from the beam ends ───────── */
-
-.crown {
-  position: relative;
-  z-index: 3;
+.head {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--dc-mid) minmax(0, 1fr);
-  animation: dcCrown 760ms var(--dc-ease) 60ms backwards;
+  grid-template-columns: var(--dc-cols);
+  column-gap: clamp(12px, 3cqi, 28px);
+  padding-block-end: 16px;
+  border-block-end: 1px solid var(--dc-ink);
+  animation: dcRise 600ms var(--dc-ease) backwards;
 }
 
-.nameL {
-  --dc-nm: clamp(22px, 4.6cqi, 38px);
-}
-
-.nameXL {
-  --dc-nm: clamp(16px, 3.2cqi, 27px);
-}
-
-.hang {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.hangA {
-  grid-column: 1;
-  translate: 0 calc(sin(var(--dc-ang)) * var(--dc-half) * -1);
-}
-
-.hangB {
-  grid-column: 3;
-  translate: 0 calc(sin(var(--dc-ang)) * var(--dc-half));
-}
-
-.stirrup {
-  display: block;
-  flex: none;
-  inline-size: 56%;
-  block-size: 62px;
-  fill: none;
-  stroke: var(--dc-ink);
-  stroke-width: 1.6;
-  vector-effect: non-scaling-stroke;
-  overflow: visible;
-}
-
-.stirrup path {
-  vector-effect: non-scaling-stroke;
-}
-
-.plate {
-  position: relative;
-  box-sizing: border-box;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: 84%;
-  margin: 0;
-  padding: 24px 16px 22px;
-  border-radius: 16px;
-  background: var(--dc-ink);
-  box-shadow:
-    inset 0 -4px 0 var(--dc-mint),
-    0 18px 28px -22px rgba(18, 38, 63, 0.5);
-  text-align: center;
-  color: #fff;
-}
-
-.bolt {
-  display: none;
-  position: absolute;
-  inset-inline: 0;
-  inset-block-start: 7px;
-  block-size: 9px;
-  pointer-events: none;
-}
-
-.bolt::before,
-.bolt::after {
+.head::before {
   content: '';
-  position: absolute;
-  inset-block-start: 0;
-  inline-size: 9px;
-  block-size: 9px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--dc-ink) 0 1.6px, color-mix(in srgb, var(--dc-mint) 70%, #fff) 2px);
-}
-
-.bolt::before {
-  inset-inline-start: calc(24.6% - 4.5px);
-}
-
-.bolt::after {
-  inset-inline-start: calc(75.4% - 4.5px);
 }
 
 .name {
-  display: block;
+  grid-column: auto;
+  margin: 0;
   min-inline-size: 0;
-  font-family: var(--dc-display);
-  font-size: var(--dc-nm, clamp(26px, 6.1cqi, 54px));
+  font-size: clamp(18px, 3.4cqi, 26px);
   font-weight: 600;
-  line-height: 0.95;
-  letter-spacing: 0.014em;
-  text-transform: uppercase;
-  font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
-  hyphens: auto;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
   text-wrap: balance;
+  overflow-wrap: anywhere;
   unicode-bidi: plaintext;
 }
 
-/* ───────── the hangers: rods with slotted masses ───────── */
-
-.list {
-  position: relative;
-  z-index: 1;
-  padding-block: 22px 40px;
-}
-
-.rod {
-  position: absolute;
-  inset-block: -30px 14px;
-  inline-size: 3px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--dc-ink) 78%, #fff), var(--dc-ink));
-  animation: dcRod 620ms var(--dc-ease) 200ms backwards;
-}
-
-.rod::after {
-  content: '';
-  position: absolute;
-  inset-block-end: -4px;
-  inset-inline-start: 50%;
-  inline-size: 13px;
-  block-size: 13px;
-  margin-inline-start: -6.5px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--dc-ink) 70%, #fff), var(--dc-ink) 62%);
-}
-
-.rodA {
-  inset-inline-start: calc((100% - var(--dc-mid)) / 4);
-  translate: -50% calc(sin(var(--dc-ang)) * var(--dc-half) * -1);
-}
-
-.rodB {
-  inset-inline-end: calc((100% - var(--dc-mid)) / 4);
-  translate: 50% calc(sin(var(--dc-ang)) * var(--dc-half));
-}
+/* ───────── rows ───────── */
 
 .rowWrap {
   display: grid;
   grid-template-rows: 1fr;
   transition:
-    grid-template-rows 460ms var(--dc-ease),
+    grid-template-rows 420ms var(--dc-ease) calc(120ms + min(var(--r), 10) * 20ms),
+    opacity 240ms ease calc(min(var(--r), 10) * 20ms),
     visibility 0s;
 }
 
-/* matching masses fall off the bottom of the hangers, then the stack closes up */
 .diffOn .rowMatch {
   grid-template-rows: 0fr;
+  opacity: 0;
   visibility: hidden;
   transition:
-    grid-template-rows 440ms cubic-bezier(0.6, 0, 0.3, 1) calc(280ms + min(var(--r), 10) * 24ms),
-    visibility 0s calc(280ms + min(var(--r), 10) * 24ms + 440ms);
+    grid-template-rows 420ms var(--dc-ease) calc(160ms + min(var(--r), 10) * 20ms),
+    opacity 220ms ease calc(min(var(--r), 10) * 20ms),
+    visibility 0s calc(160ms + min(var(--r), 10) * 20ms + 420ms);
 }
 
 .row {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--dc-mid) minmax(0, 1fr);
-  grid-template-areas: 'a label b';
-  align-items: center;
+  grid-template-columns: var(--dc-cols);
+  column-gap: clamp(12px, 3cqi, 28px);
+  align-items: baseline;
   min-block-size: 0;
+  overflow: hidden;
+  background: linear-gradient(var(--dc-line), var(--dc-line)) bottom / 100% 1px no-repeat;
   outline-offset: -2px;
-  border-radius: 16px;
+  animation: dcRise 560ms var(--dc-ease) calc(80ms + var(--i) * 45ms) backwards;
 }
 
-.row::before {
-  content: '';
-  position: absolute;
-  inset-inline: 10px;
-  inset-block: 2px;
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--dc-mint) 11%, transparent);
-  opacity: 0;
-  transition: opacity 200ms ease;
-  pointer-events: none;
-}
-
-.row:hover::before,
-.row:focus-visible::before {
-  opacity: 1;
+.rowDiff .row {
+  margin-inline: calc(clamp(12px, 2.4cqi, 20px) * -1);
+  padding-inline: clamp(12px, 2.4cqi, 20px);
+  border-radius: 8px;
+  background: var(--dc-tint);
 }
 
 .row:focus-visible {
-  outline: 2px solid var(--dc-mint-ink);
+  outline: 2px solid var(--dc-accent-ink);
+  border-radius: 8px;
 }
 
-.cell {
-  --dc-ang: calc(var(--dc-tilt) * var(--dc-tmax) * var(--dc-k) + var(--dc-sway));
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.label,
+.value {
+  padding-block: 18px;
+}
+
+.label {
   min-inline-size: 0;
-  padding: 10px 20px;
-  /* each mass trails the plate a hair behind, so the stack settles like a chain */
-  animation: dcSwing 1150ms var(--dc-spring-a) calc(460ms + min(var(--i), 12) * 9ms) backwards;
-}
-
-.cellA {
-  grid-area: a;
-  translate: 0 calc(sin(var(--dc-ang)) * var(--dc-half) * -1);
-}
-
-.cellB {
-  grid-area: b;
-  translate: 0 calc(sin(var(--dc-ang)) * var(--dc-half));
-}
-
-.slab {
-  box-sizing: border-box;
-  display: grid;
-  place-items: center;
-  inline-size: fit-content;
-  min-inline-size: calc(var(--dc-w) * 100%);
-  max-inline-size: 100%;
-  min-block-size: 38px;
-  padding: 9px 16px;
-  border-radius: 10px;
-  font-family: var(--dc-display);
-  font-size: clamp(18px, 3.2cqi, 23px);
-  font-weight: 600;
-  letter-spacing: 0.014em;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-  overflow-wrap: anywhere;
-  unicode-bidi: plaintext;
-  transition:
-    transform 320ms cubic-bezier(0.34, 1.5, 0.44, 1),
-    box-shadow 320ms var(--dc-ease),
-    background-color 220ms ease,
-    opacity 260ms ease calc(240ms + min(var(--i), 10) * 26ms),
-    translate 420ms var(--dc-ease) calc(240ms + min(var(--i), 10) * 26ms);
-  animation: dcThread 640ms var(--dc-ease) calc(120ms + var(--i) * 40ms) backwards;
-}
-
-/* the weights that make the difference are the big ones */
-.slabHeavy,
-.slabLight,
-.slabText {
-  min-block-size: 58px;
-  font-size: clamp(22px, 4.6cqi, 36px);
-}
-
-.slabHeavy {
-  background: var(--dc-ink);
-  color: #fff;
-  box-shadow:
-    inset 0 -4px 0 var(--dc-mint),
-    0 12px 18px -14px rgba(18, 38, 63, 0.5);
-}
-
-.slabLight,
-.slabText {
-  border: 1px solid var(--dc-slip-edge);
-  background: var(--dc-slip);
-  color: var(--dc-ink);
-  box-shadow:
-    inset 0 -4px 0 color-mix(in srgb, var(--dc-mint) 80%, var(--dc-paper)),
-    0 10px 16px -12px rgba(18, 38, 63, 0.4);
-}
-
-.slabGhost {
-  min-block-size: 58px;
-  font-size: clamp(22px, 4.6cqi, 36px);
-  border: 1.5px dashed color-mix(in srgb, var(--dc-ink) 38%, transparent);
-  background: transparent;
-  color: var(--dc-ink-3);
-}
-
-.slabMatch {
-  border: 1px solid var(--dc-line);
-  background: var(--dc-well);
-  color: var(--dc-ink-2);
-}
-
-.row:hover .slab,
-.row:focus-visible .slab {
-  transform: translateY(-4px);
-}
-
-.row:hover .slabHeavy,
-.row:focus-visible .slabHeavy {
-  box-shadow:
-    inset 0 -4px 0 var(--dc-mint),
-    0 18px 24px -14px rgba(18, 38, 63, 0.5);
-}
-
-.row:hover .slabLight,
-.row:focus-visible .slabLight,
-.row:hover .slabText,
-.row:focus-visible .slabText {
-  background: var(--dc-slip-hi);
-}
-
-.row:hover .slabMatch,
-.row:focus-visible .slabMatch {
-  background: var(--dc-paper);
-  color: var(--dc-ink);
-}
-
-.diffOn .rowMatch .slab {
-  opacity: 0;
-  translate: 0 26px;
-  pointer-events: none;
-  transition:
-    opacity 240ms ease-in calc(min(var(--r), 10) * 26ms),
-    translate 320ms var(--dc-fall) calc(min(var(--r), 10) * 26ms);
-}
-
-/* ───────── label tags on the pillar ───────── */
-
-.cellLabel {
-  grid-area: label;
-  position: relative;
-  z-index: 2;
-  display: flex;
-  justify-content: center;
-  min-inline-size: 0;
-  padding-inline: 6px;
-}
-
-.chip {
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  max-inline-size: 100%;
-  padding: 8px 14px 9px;
-  border: 1px solid var(--dc-line);
-  border-radius: 11px;
-  background: var(--dc-paper);
-  box-shadow: 0 1px 2px rgba(18, 38, 63, 0.06);
-  text-align: center;
-  transition:
-    opacity 260ms ease calc(240ms + min(var(--i), 10) * 26ms),
-    translate 420ms var(--dc-ease) calc(240ms + min(var(--i), 10) * 26ms),
-    border-color 220ms ease;
-  animation: dcPop 560ms var(--dc-ease) calc(180ms + var(--i) * 40ms) backwards;
-}
-
-.rowDiff .chip {
-  border-color: var(--dc-slip-edge);
-}
-
-.diffOn .rowMatch .chip {
-  opacity: 0;
-  translate: 0 26px;
-  transition:
-    opacity 240ms ease-in calc(min(var(--r), 10) * 26ms),
-    translate 320ms var(--dc-fall) calc(min(var(--r), 10) * 26ms);
-}
-
-.tick {
-  flex: none;
-  inline-size: 20px;
-  block-size: 4px;
-  border-radius: 2px;
-  background: var(--dc-mint);
-  transition: transform 260ms cubic-bezier(0.34, 1.5, 0.44, 1);
-}
-
-.rowMatch .tick {
-  display: none;
-}
-
-.row:hover .tick,
-.row:focus-visible .tick {
-  transform: scaleX(1.35);
-}
-
-.labelText {
   font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.005em;
-  line-height: 1.3;
-  color: var(--dc-ink-3);
-  text-wrap: balance;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--dc-muted);
   overflow-wrap: anywhere;
   unicode-bidi: plaintext;
 }
 
-.rowDiff .labelText {
-  color: var(--dc-mint-ink);
-}
-
-/* long pasted text: switch to readable sans, start-aligned, full-width slab */
-.rowLong .slab {
-  inline-size: 100%;
+.value {
   min-inline-size: 0;
-  place-items: start;
-  padding-block: 14px;
-  font-family: var(--dc-font);
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 0;
-  line-height: 1.5;
-  text-align: start;
-  overflow-wrap: break-word;
+  font-size: clamp(16px, 2.6cqi, 19px);
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+  color: var(--dc-muted);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+  unicode-bidi: plaintext;
 }
 
-.rowLong .slabHeavy,
-.rowLong .slabLight,
-.rowLong .slabText {
-  min-block-size: 64px;
+.rowDiff .value {
   font-weight: 600;
+  color: var(--dc-ink);
 }
 
-.rowLong .cell {
-  align-self: stretch;
+.rowDiff .label {
+  color: var(--dc-accent-ink);
 }
 
-/* ───────── keyframes ───────── */
-
-@keyframes dcSwing {
-  from {
-    --dc-k: 0;
-  }
-  to {
-    --dc-k: 1;
-  }
+.rowDiff .empty {
+  font-weight: 400;
+  color: var(--dc-muted);
 }
 
-@keyframes dcDial {
-  from {
-    --dc-ring: 0;
-  }
-  to {
-    --dc-ring: 1;
-  }
+.rowLong .value {
+  font-size: 15px;
+  line-height: 1.55;
 }
 
-@keyframes dcJoltA {
-  from {
-    --dc-sway: calc(var(--dc-tilt) * 2.6deg);
-  }
-  to {
-    --dc-sway: 0deg;
-  }
+.rowLong .label {
+  align-self: start;
 }
 
-@keyframes dcJoltB {
-  from {
-    --dc-sway: calc(var(--dc-tilt) * 2.6deg);
-  }
-  to {
-    --dc-sway: 0deg;
-  }
-}
+/* ───────── narrow containers: label above its two values ───────── */
 
-@keyframes dcCrown {
-  from {
-    opacity: 0;
-    transform: translateY(-22px);
+@container (width < 560px) {
+  .root {
+    --dc-cols: minmax(0, 1fr) minmax(0, 1fr);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-@keyframes dcRod {
-  from {
-    clip-path: inset(0 0 100% 0);
+  .head::before {
+    display: none;
   }
-  to {
-    clip-path: inset(0 0 -20px 0);
+
+  .row {
+    grid-template-areas:
+      'label label'
+      'a b';
+  }
+
+  .label {
+    padding-block: 16px 0;
+  }
+
+  .value {
+    padding-block: 6px 16px;
+  }
+
+  .label {
+    grid-area: label;
+    font-size: 13px;
+  }
+
+  .name {
+    font-size: clamp(17px, 5.4cqi, 22px);
   }
 }
 
-@keyframes dcThread {
+@keyframes dcRise {
   from {
     opacity: 0;
-    translate: 0 -30px;
-  }
-  60% {
-    opacity: 1;
+    translate: 0 10px;
   }
   to {
     opacity: 1;
@@ -1171,139 +452,19 @@ export default function DiffCompareCard({
   }
 }
 
-@keyframes dcPop {
-  from {
-    opacity: 0;
-    scale: 0.86;
-  }
-  to {
-    opacity: 1;
-    scale: 1;
-  }
-}
-
-/* ───────── narrow containers: labels sit above each pair of masses ───────── */
-
-@container (width < 620px) {
-  .scale {
-    --dc-mid: 0px;
-    --dc-half: 25cqi;
-    --dc-tmax: 9deg;
-    --dc-beamY: 88px;
-  }
-
-  .toolbar {
-    padding-inline: 18px;
-  }
-
-  .hub {
-    inline-size: 56px;
-    block-size: 56px;
-    padding-block-start: 16px;
-    font-size: 21px;
-  }
-
-  .hub::before {
-    inset: -10px;
-  }
-
-  .stirrup {
-    block-size: 54px;
-  }
-
-  .plate {
-    inline-size: 92%;
-    padding: 20px 10px 18px;
-    border-radius: 14px;
-  }
-
-  .name {
-    font-size: var(--dc-nm, clamp(24px, 8.4cqi, 40px));
-  }
-
-  .nameL {
-    --dc-nm: clamp(20px, 6.6cqi, 30px);
-  }
-
-  .nameXL {
-    --dc-nm: clamp(16px, 5cqi, 22px);
-  }
-
-  .base {
-    inline-size: 110px;
-  }
-
-  .row {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-areas:
-      'label label'
-      'a b';
-  }
-
-  .cellLabel {
-    padding-block: 14px 0;
-  }
-
-  .cell {
-    padding: 8px 14px;
-  }
-
-  .slab {
-    padding-inline: 10px;
-    font-size: clamp(18px, 5.2cqi, 22px);
-  }
-
-  .slabHeavy,
-  .slabLight,
-  .slabText,
-  .slabGhost {
-    font-size: clamp(22px, 7.6cqi, 32px);
-  }
-
-  .chip {
-    padding: 6px 12px 7px;
-  }
-
-  .labelText {
-    font-size: 13.5px;
-  }
-
-  .rowLong .slab {
-    font-size: 14.5px;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .scale,
-  .crown,
-  .rod,
-  .cell,
-  .slab,
-  .chip,
-  .hub,
-  .row::before,
+  .head,
+  .row,
   .track,
   .thumb,
-  .tick {
+  .switchLabel {
     animation: none;
     transition: none;
   }
 
   .rowWrap,
-  .diffOn .rowMatch,
-  .diffOn .rowMatch .slab,
-  .diffOn .rowMatch .chip {
+  .diffOn .rowMatch {
     transition: none;
-  }
-
-  .diffOn .rowMatch .slab,
-  .diffOn .rowMatch .chip {
-    translate: none;
-  }
-
-  .row:hover .slab,
-  .row:focus-visible .slab {
-    transform: none;
   }
 }
 ```

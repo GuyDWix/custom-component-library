@@ -4,7 +4,7 @@ The site owner must be able to change: photos (image, caption), cell size, lens 
 
 ```tsx
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import type { CSSProperties, FocusEvent, KeyboardEvent, PointerEvent } from 'react';
+import type { CSSProperties, FocusEvent, KeyboardEvent, MouseEvent, PointerEvent } from 'react';
 import styles from './Component.module.css';
 
 export interface HoneycombLensPhoto {
@@ -55,6 +55,7 @@ const ENTRANCE_STIFF = 120;
 const ENTRANCE_DAMP = 13;
 const FADE_STIFF = 90;
 const FADE_DAMP = 20;
+const LENS_GROWTH = 1.2;
 const GRID_HELP =
   'A photo collection shown through glass lenses. Move across it to magnify a lens. Arrow keys move between lenses; Enter opens a photo.';
 
@@ -117,25 +118,36 @@ function computeLayout(avail: number, count: number, cellSize: number): Layout {
     created++;
   }
 
-  const hero: Cell = { x: focusX, y: focusY, r: heroR, photo: 0, hero: true };
+  const hero: Cell = { x: focusX, y: focusY, r: baseR, photo: 0, hero: true };
   const cells = [hero, ...lattice];
   let p = 1;
   for (const c of cells) {
     if (!c.hero) c.photo = p++;
   }
 
-  const floor = cells.reduce((m, c) => Math.max(m, c.y + c.r), 0);
-  const right = cells.reduce((m, c) => Math.max(m, c.x + c.r), 0);
+  const reach = (c: Cell) => c.r * (c.hero ? 1 + LENS_GROWTH : 1.14);
+  const floor = cells.reduce((m, c) => Math.max(m, c.y + reach(c)), 0);
+  const right = cells.reduce((m, c) => Math.max(m, c.x + reach(c)), 0);
   const height = floor + baseR * 0.95 + 10;
   return { cells, width: Math.max(right, avail), height, floor };
 }
 
-function nearest(cells: Cell[], x: number, y: number, max = Infinity) {
+/* lens falloff: the cell under the lens swells, neighbours ease back smoothly */
+function falloff(c: Cell, x: number, y: number) {
+  const q = Math.hypot(c.x - x, c.y - y) / (c.r * 1.35);
+  return Math.exp(-q * q * 1.1);
+}
+
+function growthAt(c: Cell, x: number, y: number, presence: number, strength: number) {
+  return LENS_GROWTH * strength * clamp(presence / REST_PRESENCE, 0, 1) * falloff(c, x, y);
+}
+
+function pick(cells: Cell[], x: number, y: number, strength: number, slack = 1) {
   let best = -1;
   let bestD = Infinity;
   cells.forEach((c, i) => {
-    const d = Math.hypot(c.x - x, c.y - y);
-    if (d < bestD && d <= max + c.r) {
+    const d = Math.hypot(c.x - x, c.y - y) / (c.r * (1 + growthAt(c, x, y, 1, strength)));
+    if (d < bestD && d <= slack) {
       bestD = d;
       best = i;
     }
@@ -300,13 +312,13 @@ export default function HoneycombLens({
     if (openIndex === null && dialog.open) dialog.close();
   }, [openIndex]);
 
-  const drawCell = useCallback((ctx: CanvasRenderingContext2D, c: Cell, idx: number, a: CellAnim, b: number, flare: number) => {
+  const drawCell = useCallback((ctx: CanvasRenderingContext2D, c: Cell, idx: number, a: CellAnim, b: number, grow: number, flare: number) => {
     const { lens } = eng.current;
     const dist = Math.hypot(c.x - lens.x, c.y - lens.y) || 1;
-    const push = b * c.r * 0.11;
+    const push = b * c.r * 0.3 * (1 - grow / (1 + LENS_GROWTH));
     const x = c.x + ((c.x - lens.x) / dist) * push;
     const y = c.y + ((c.y - lens.y) / dist) * push + (1 - a.e) * c.r * 0.35;
-    const r = c.r * (1 + b * 0.13) * (0.6 + 0.4 * a.e);
+    const r = c.r * (1 + grow) * (0.6 + 0.4 * a.e);
     const alpha = clamp(a.e * 1.7, 0, 1);
     if (alpha <= 0.01 || r <= 1) return;
 
@@ -338,7 +350,7 @@ export default function HoneycombLens({
     ctx.globalCompositeOperation = 'screen';
     const lw = Math.max(1.5, r * 0.026);
     ctx.lineWidth = lw;
-    const rimA = (0.36 + b * 0.55 + flare * 0.3) * alpha;
+    const rimA = (0.16 + b * 0.3 + flare * 0.2) * alpha;
     for (let k = 0; k < 6; k++) {
       const a1 = (Math.PI / 3) * k - Math.PI / 2;
       const a2 = (Math.PI / 3) * (k + 1) - Math.PI / 2;
@@ -379,7 +391,7 @@ export default function HoneycombLens({
     // specular streak — slides with the pointer, light on glass
     const px = clamp((lens.x - c.x) / (c.r * 3), -1, 1);
     const py = clamp((lens.y - c.y) / (c.r * 3), -1, 1);
-    const specA = (0.17 + b * 0.12 + flare * 0.38) * alpha;
+    const specA = (0.1 + b * 0.1 + flare * 0.3) * alpha;
     ctx.save();
     ctx.translate(x - r * 0.3 - px * r * 0.09, y - r * 0.34 - py * r * 0.07);
     ctx.rotate(-0.55);
@@ -397,7 +409,7 @@ export default function HoneycombLens({
     ctx.save();
     ctx.globalCompositeOperation = 'screen';
     const glint = ctx.createRadialGradient(x - r * 0.22 - px * r * 0.06, y - r * 0.26 - py * r * 0.05, 0, x - r * 0.22 - px * r * 0.06, y - r * 0.26 - py * r * 0.05, Math.max(2, r * 0.045));
-    glint.addColorStop(0, `rgba(255,255,250,${((0.5 + b * 0.25 + flare * 0.5) * alpha).toFixed(3)})`);
+    glint.addColorStop(0, `rgba(255,255,250,${((0.3 + b * 0.2 + flare * 0.4) * alpha).toFixed(3)})`);
     glint.addColorStop(1, 'rgba(255,255,250,0)');
     ctx.fillStyle = glint;
     ctx.beginPath();
@@ -492,14 +504,13 @@ export default function HoneycombLens({
       for (const c of lay.cells) {
         const a = E2.cellAnim[c.photo];
         if (!a || a.e < 0.05) continue;
-        const d = Math.hypot(c.x - lens.x, c.y - lens.y);
-        const q = d / (c.r * 1.35);
-        const b = lens.p * E2.strength * Math.exp(-q * q * 1.1);
+        const b = lens.p * E2.strength * falloff(c, lens.x, lens.y);
+        const grow = growthAt(c, lens.x, lens.y, lens.p, E2.strength);
         const rec = E2.images[c.photo];
         const lift = 1 + b * 0.9;
         const vis = rec?.ok ? clamp(a.fade, 0, 1) : 1;
-        ctx.globalAlpha = clamp((0.3 + b * 0.35) * a.e * vis, 0, 1);
-        hexPath(ctx, c.x + 3.5 * lift, c.y + (5 + b * 9) * lift, c.r * (0.97 + b * 0.1) * (0.6 + 0.4 * a.e));
+        ctx.globalAlpha = clamp((0.26 + b * 0.22) * a.e * vis, 0, 1);
+        hexPath(ctx, c.x + 3.5 * lift, c.y + (5 + b * 9) * lift, c.r * (1 + grow) * 0.97 * (0.6 + 0.4 * a.e));
         ctx.fillStyle = '#000';
         ctx.fill();
       }
@@ -509,17 +520,16 @@ export default function HoneycombLens({
       // lenses — bigger and lifted ones in front
       const order = lay.cells
         .map((c, i) => {
-          const d = Math.hypot(c.x - lens.x, c.y - lens.y);
-          const q = d / (c.r * 1.35);
-          const b = lens.p * E2.strength * Math.exp(-q * q * 1.1);
+          const b = lens.p * E2.strength * falloff(c, lens.x, lens.y);
+          const grow = growthAt(c, lens.x, lens.y, lens.p, E2.strength);
           const flare = sweepOn ? Math.exp(-(((c.x - E2.sweepX) ** 2) / (2 * (c.r * 1.6) ** 2))) : 0;
-          return { c, i, b, flare };
+          return { c, i, b, grow, flare };
         })
-        .sort((m, n2) => m.c.r * (1 + m.b * 0.35) - n2.c.r * (1 + n2.b * 0.35));
-      for (const { c, i, b, flare } of order) {
+        .sort((m, n2) => m.c.r * (1 + m.grow) - n2.c.r * (1 + n2.grow));
+      for (const { c, i, b, grow, flare } of order) {
         const a = E2.cellAnim[c.photo];
         if (!a) continue;
-        drawCell(ctx, c, i, a, b, flare);
+        drawCell(ctx, c, i, a, b, grow, flare);
       }
 
       // reflection on the black glass floor
@@ -698,7 +708,7 @@ export default function HoneycombLens({
 
       if (now - E2.lastPoll > 140) {
         E2.lastPoll = now;
-        const i = l.p > 0.18 ? nearest(E2.layout.cells, l.x, l.y, 200) : -1;
+        const i = l.p > 0.18 ? pick(E2.layout.cells, E2.target.x, E2.target.y, E2.strength, 1.25) : -1;
         if (i !== E2.active) {
           E2.active = i;
           setActiveIndex(i);
@@ -745,7 +755,7 @@ export default function HoneycombLens({
     if (hero) aimAt(hero.x, hero.y, REST_PRESENCE);
   }, [aimAt]);
 
-  const localPoint = (ev: PointerEvent<HTMLElement>) => {
+  const localPoint = (ev: PointerEvent<HTMLElement> | MouseEvent<HTMLElement>) => {
     const rect = ev.currentTarget.getBoundingClientRect();
     return { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
   };
@@ -765,6 +775,12 @@ export default function HoneycombLens({
   const onPointerEnd = (ev: PointerEvent<HTMLDivElement>) => {
     if (ev.type === 'pointerleave' && ev.pointerType !== 'mouse') return;
     settle();
+  };
+
+  const onRootClick = (ev: MouseEvent<HTMLDivElement>) => {
+    const { x, y } = localPoint(ev);
+    const i = pick(layout.cells, x, y, strength);
+    if (i >= 0) setOpenIndex(layout.cells[i].photo);
   };
 
   const focusCell = (i: number) => {
@@ -819,11 +835,12 @@ export default function HoneycombLens({
   const activePhoto = activeCell ? photos[activeCell.photo] : null;
   const activeCaption = activePhoto ? activePhoto.caption || activePhoto.alt || '' : '';
   const captionBound = Math.min(layout.width, avail);
-  const captionAbove = activeCell ? activeCell.y + activeCell.r * 1.13 > layout.height - 46 : false;
+  const activeR = activeCell ? activeCell.r * (1 + growthAt(activeCell, E.target.x, E.target.y, 1, strength)) : 0;
+  const captionAbove = activeCell ? activeCell.y + activeR * 1.08 > layout.height - 46 : false;
   const captionStyle: CSSProperties | undefined = activeCell
     ? {
         insetInlineStart: clamp(activeCell.x, 120, captionBound - 120),
-        insetBlockStart: captionAbove ? activeCell.y - activeCell.r * 1.13 - 8 : activeCell.y + activeCell.r * 1.13 + 4,
+        insetBlockStart: captionAbove ? activeCell.y - activeR * 1.08 - 8 : activeCell.y + activeR * 1.08 + 4,
       }
     : undefined;
 
@@ -836,6 +853,7 @@ export default function HoneycombLens({
       onPointerUp={onPointerEnd}
       onPointerCancel={onPointerEnd}
       onPointerLeave={onPointerEnd}
+      onClick={onRootClick}
       onKeyDown={onKeyDown}
       onBlur={onRootBlur}
     >
@@ -871,7 +889,10 @@ export default function HoneycombLens({
             aria-describedby={`${uid}-help`}
             aria-haspopup="dialog"
             onFocus={() => onCellFocus(i)}
-            onClick={() => setOpenIndex(c.photo)}
+            onClick={(ev) => {
+              ev.stopPropagation();
+              setOpenIndex(c.photo);
+            }}
           />
         );
       })}
@@ -1007,6 +1028,7 @@ export default function HoneycombLens({
 
 .canvas {
   display: block;
+  cursor: zoom-in;
   position: relative;
   z-index: 0;
 }
@@ -1019,7 +1041,7 @@ export default function HoneycombLens({
   padding: 0;
   border: 0;
   background: none;
-  cursor: zoom-in;
+  pointer-events: none;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -1044,7 +1066,7 @@ export default function HoneycombLens({
   text-align: center;
   text-wrap: balance;
   overflow-wrap: anywhere;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.9);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85);
   pointer-events: none;
   transition:
     inset-inline-start 240ms cubic-bezier(0.16, 1, 0.3, 1),
@@ -1064,7 +1086,7 @@ export default function HoneycombLens({
   margin-inline: auto;
   inline-size: 36px;
   block-size: 1px;
-  background: linear-gradient(90deg, rgba(255, 130, 72, 0.7), rgba(111, 157, 255, 0.7));
+  background: rgba(204, 210, 222, 0.35);
 }
 
 .srHelp {

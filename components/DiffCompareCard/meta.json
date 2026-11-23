@@ -5,7 +5,7 @@
   "category": "cards",
   "tier": "everyday",
   "job": "Compare two options side by side where only the rows that differ are highlighted and matching rows fade back",
-  "visitor_action": "toggle \"differences only\" to drop the matching weights off the rods; hover or focus a row to lift both of its masses",
+  "visitor_action": "toggle \"differences only\" to fade matching rows away; hover or focus a row to read it",
   "owner_settings": [
     "First option name",
     "Second option name",
@@ -19,8 +19,8 @@
     "business",
     "events"
   ],
-  "mobile": "beam and nameplates stay on top with a steeper tilt; each row's label tag sits above its two masses on the pillar",
-  "motion": "nameplates drop in, masses thread onto the rods, then the beam swings down toward the heavier option on a damped spring with the stacks trailing it and the tally ring sweeping; toggling differences-only drops the matching weights off the rods and jolts the beam (reduced-motion: static tilted scale, instant filter)",
+  "mobile": "each row label sits above its two values; option names stay in two columns on top",
+  "motion": "rows rise in with a light stagger; toggling differences-only fades and collapses the matching rows (reduced-motion: instant)",
   "scores": {
     "concept": 2,
     "usefulness": 3,
@@ -34,5 +34,5 @@
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Assay balance in ink and mint: the two options hang from a tilting beam as heavy nameplates; differing rows are slotted masses strung on each rod (heavier value = wider ink slab, lighter = mint), matching rows are small grey tare weights that drop off when differences-only is on; a dial hub shows the tally"
+  "art_direction": "Restrained editorial comparison: white sheet, one blue accent, IBM Plex Sans, hairline rules; differing rows get a faint accent tint and heavier values, matching rows recede to muted grey"
 }

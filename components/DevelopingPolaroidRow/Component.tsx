@@ -16,14 +16,12 @@ export interface DevelopingPolaroidRowProps {
   className?: string;
 }
 
-const photo = (id: string) => `https://images.unsplash.com/${id}?w=640&h=640&fit=crop&auto=format&q=80`;
-
 export const defaultPhotos: DevelopingPolaroidPhoto[] = [
-  { image: photo('photo-1529156069898-49953e39b3ac'), caption: 'the whole gang, finally', alt: 'Friends laughing together outdoors' },
-  { image: photo('photo-1414235077428-338989a2e8c0'), caption: 'table 4, best seat', alt: 'Candlelit restaurant table set for dinner' },
-  { image: photo('photo-1530103862676-de8c9debad1d'), caption: 'cake o’clock', alt: 'Birthday cake with lit candles' },
-  { image: photo('photo-1507525428034-b723cf961d3e'), caption: 'last swim of summer', alt: 'Turquoise sea meeting a sandy beach' },
-  { image: photo('photo-1470229722913-7c0e2dbbafd3'), caption: 'front row!!', alt: 'Crowd at an outdoor concert under stage lights' },
+  { image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=640&h=640&fit=crop&auto=format&q=80', caption: 'the whole gang, finally', alt: 'Friends laughing together outdoors' },
+  { image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=640&h=640&fit=crop&auto=format&q=80', caption: 'table 4, best seat', alt: 'Candlelit restaurant table set for dinner' },
+  { image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=640&h=640&fit=crop&auto=format&q=80', caption: 'cake o’clock', alt: 'Birthday cake with lit candles' },
+  { image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=640&h=640&fit=crop&auto=format&q=80', caption: 'last swim of summer', alt: 'Turquoise sea meeting a sandy beach' },
+  { image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=640&h=640&fit=crop&auto=format&q=80', caption: 'front row!!', alt: 'Crowd at an outdoor concert under stage lights' },
 ];
 
 // A worktable seen from above-beside. Print 0 is the hero (front and centre); the rest are

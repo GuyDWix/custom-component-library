@@ -11,7 +11,6 @@
     "Number shown",
     "Unit label",
     "Highlight color",
-    "Small heading",
     "Heading",
     "Rank label"
   ],
@@ -36,5 +35,5 @@
   },
   "status": "backlog",
   "studio2_tested": false,
-  "art_direction": "Market stall: warm kraft background, photo-filled bars with rounded ends, tomato-red rank numbers, handwritten-feel price tags"
+  "art_direction": "Neutral paper surface, white ledger rows, ink price tags, photo-filled bars with one accent for rank numbers"
 }

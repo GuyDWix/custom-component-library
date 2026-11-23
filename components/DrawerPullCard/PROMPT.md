@@ -362,7 +362,7 @@ export default function DrawerPullCard({
   --dp-img-h: var(--dp-pore-h), var(--dp-fine-h), var(--dp-fig-h), linear-gradient(180deg, var(--dp-wood-hi) 0%, var(--dp-wood) 55%, var(--dp-wood-lo) 100%);
   --dp-size-h: 300px 300px, 420px 420px, 760px 760px, 100% 100%;
   --dp-ink: #3b2a18;
-  --dp-ink-muted: #22150a;
+  --dp-ink-muted: #1a0f06;
   --dp-halo: rgba(238, 216, 168, 0.9);
   --dp-focus: #1b1006;
   --dp-focus-gap: #f7ecd0;
@@ -375,7 +375,7 @@ export default function DrawerPullCard({
   --dp-felt: #2a4535;
   --dp-felt-lo: #14241b;
   --dp-felt-text: #f1e9d8;
-  --dp-felt-label: #cdb785;
+  --dp-felt-label: #e0cc9c;
   --dp-card: #f0e5ca;
   --dp-card-ink: #3a2815;
   --dp-slot: #130c06;
@@ -579,11 +579,7 @@ export default function DrawerPullCard({
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 4;
   overflow: hidden;
-  color: transparent;
-  background-image: linear-gradient(180deg, var(--dp-inlay-a) 0%, var(--dp-inlay-b) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--dp-inlay-a);
   filter: drop-shadow(0 1px 0 var(--dp-inlay-edge));
 }
 
@@ -593,7 +589,7 @@ export default function DrawerPullCard({
   border-block-start: 1px solid color-mix(in srgb, var(--dp-ink) 38%, transparent);
   color: var(--dp-ink-muted);
   text-shadow: 0 0 0.7em var(--dp-halo), 0 0 0.35em var(--dp-halo), 0 0 0.15em var(--dp-halo);
-  font-size: 17px;
+  font-size: clamp(17px, 2.1cqi, 22px);
   line-height: 1.38;
   font-weight: 500;
   overflow-wrap: anywhere;
@@ -909,16 +905,16 @@ export default function DrawerPullCard({
 .rowLabel {
   flex: none;
   color: var(--dp-felt-label);
-  font-size: 13px;
+  font-size: clamp(14px, 1.5cqi, 16px);
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .rowValue {
   margin: 0;
   color: var(--dp-felt-text);
-  font-size: 17px;
+  font-size: clamp(17px, 1.8cqi, 20px);
   line-height: 1.35;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
@@ -1013,10 +1009,10 @@ export default function DrawerPullCard({
   background: linear-gradient(180deg, #f6edd6, var(--dp-card));
   box-shadow: inset 0 1px 3px rgba(60, 40, 10, 0.4);
   color: var(--dp-card-ink);
-  font-size: 13px;
+  font-size: clamp(15px, 1.7cqi, 18px);
   line-height: 1.25;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.08em;
   text-align: center;
   text-transform: uppercase;
   overflow-wrap: anywhere;
@@ -1176,7 +1172,7 @@ export default function DrawerPullCard({
   }
 
   .subtitle {
-    font-size: 15px;
+    font-size: clamp(16px, 4.2cqi, 19px);
     padding-block-start: 8px;
     -webkit-line-clamp: 2;
   }
@@ -1224,7 +1220,8 @@ export default function DrawerPullCard({
 
   .holderCard {
     padding: 6px 12px 5px;
-    letter-spacing: 0.12em;
+    font-size: 15px;
+    letter-spacing: 0.06em;
   }
 
   .rows {

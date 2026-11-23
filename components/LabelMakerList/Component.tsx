@@ -21,8 +21,8 @@ export const defaultLabels: string[] = [
   'Engraving',
 ];
 
-const COLUMN_GAP = 20;
-const CREAM = '#f3ecd8';
+const COLUMN_GAP = 16;
+const CREAM = '#efeadd';
 
 const isLightTape = (color: string): boolean => {
   const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color.trim());
@@ -37,14 +37,13 @@ const isLightTape = (color: string): boolean => {
 const stripVars = (index: number, tape: string, textStyle: LabelTextStyle, perRow: number): CSSProperties =>
   ({
     '--tape': tape,
-    '--ink-on-tape': isLightTape(tape) ? '#2b2115' : '#f8fafc',
+    '--ink-on-tape': isLightTape(tape) ? '#2a2a2e' : '#ffffff',
     '--emboss':
       textStyle === 'printed'
         ? 'none'
         : isLightTape(tape)
-          ? '0 -1px 0 rgba(255, 255, 255, 0.75), 0 1px 0 rgba(48, 36, 22, 0.38), 0 2px 2px rgba(46, 34, 20, 0.3), 0 4px 8px rgba(46, 34, 20, 0.2)'
-          : '0 -1px 0 rgba(255, 255, 255, 0.26), 0 1px 0 rgba(4, 8, 24, 0.55), 0 2px 2px rgba(4, 8, 24, 0.42), 0 4px 8px rgba(4, 8, 24, 0.3)',
-    '--tilt': `${index % 2 === 0 ? -0.5 : 0.45}deg`,
+          ? '0 1px 0 rgba(255, 255, 255, 0.6), 0 -0.5px 0 rgba(0, 0, 0, 0.16)'
+          : '0 -0.5px 0 rgba(0, 0, 0, 0.32), 0 0.5px 0 rgba(255, 255, 255, 0.2)',
     '--i': `${index}`,
     '--max-w': `calc((100% - ${(perRow - 1) * COLUMN_GAP}px) / ${perRow})`,
   }) as CSSProperties;
@@ -79,8 +78,8 @@ export default function LabelMakerList({
 
   const rootVars = {
     '--lm-tape': tapeColor,
-    '--lm-ls': textStyle === 'printed' ? '0.05em' : '0.09em',
-    '--lm-fw': textStyle === 'printed' ? '600' : '700',
+    '--lm-ls': textStyle === 'printed' ? '0.08em' : '0.12em',
+    '--lm-fw': textStyle === 'printed' ? '500' : '600',
   } as CSSProperties;
 
   return (
@@ -89,9 +88,6 @@ export default function LabelMakerList({
       className={[styles.root, className].filter(Boolean).join(' ')}
       style={rootVars}
     >
-      <span className={styles.holes} aria-hidden="true" />
-      <span className={styles.grain} aria-hidden="true" />
-
       {items.length > 0 && (
         <ul className={styles.list} aria-label="Labels">
           {items.map((text, i) => (
@@ -102,9 +98,6 @@ export default function LabelMakerList({
             >
               <div className={[styles.tilt, inView ? styles.tiltRun : ''].filter(Boolean).join(' ')}>
                 <span className={styles.text}>{text}</span>
-                <span className={styles.curl} aria-hidden="true">
-                  <span className={styles.curlTip} />
-                </span>
               </div>
             </li>
           ))}

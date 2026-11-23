@@ -154,7 +154,7 @@ export default function ContactSheetGallery({
     const dl = lensD.current;
     const cx = L.x;
     const cy = L.y;
-    cl.style.transform = `translate(${(dl / 2 - cx * ZOOM).toFixed(1)}px, ${(dl / 2 - cy * ZOOM).toFixed(1)}px, 0) scale(${ZOOM})`;
+    cl.style.transform = `translate3d(${(dl / 2 - cx * ZOOM).toFixed(1)}px, ${(dl / 2 - cy * ZOOM).toFixed(1)}px, 0) scale(${ZOOM})`;
   }, []);
 
   const computeBox = useCallback((i: number): Box | null => {
@@ -664,7 +664,7 @@ export default function ContactSheetGallery({
       <svg className={styles.defs} aria-hidden="true" focusable="false">
         <filter id={ringFilterId} x="-10%" y="-10%" width="120%" height="120%">
           <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" />
-          <feDisplacementMap in="SourceGraphic" scale="1.8" />
+          <feDisplacementMap in="SourceGraphic" scale="1.2" />
         </filter>
         {bulge && (
           <filter id={bulgeFilterId} x="-8%" y="-8%" width="116%" height="116%">
@@ -857,7 +857,7 @@ export default function ContactSheetGallery({
   z-index: 4;
   background-image: var(--csg-noise);
   mix-blend-mode: overlay;
-  opacity: 0.32;
+  opacity: 0.18;
 }
 
 .defs {
@@ -880,9 +880,9 @@ export default function ContactSheetGallery({
   margin: 0;
   font-family: var(--csg-font-display);
   font-weight: 500;
-  font-size: clamp(34px, 7.4cqi, 82px);
-  line-height: 1;
-  letter-spacing: -0.035em;
+  font-size: clamp(32px, 6.4cqi, 68px);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
   max-inline-size: 17ch;
   color: var(--csg-ink);
   text-wrap: balance;
@@ -891,12 +891,11 @@ export default function ContactSheetGallery({
 
 .roll {
   margin: clamp(12px, 2cqi, 20px) 0 0;
-  font-family: var(--csg-font-mono);
-  font-size: 12px;
+  font-family: var(--csg-font-display);
+  font-size: 14px;
   line-height: 1.5;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--csg-amber);
+  letter-spacing: 0.01em;
+  color: var(--csg-muted);
   max-inline-size: 100%;
   overflow-wrap: anywhere;
 }
@@ -908,9 +907,9 @@ export default function ContactSheetGallery({
   padding-block: clamp(22px, 4cqi, 42px) clamp(30px, 5.5cqi, 54px);
   background:
     radial-gradient(135% 105% at 50% 0%,
-      color-mix(in srgb, var(--csg-paper) 58%, #fff) 0%,
-      var(--csg-paper) 44%,
-      color-mix(in srgb, var(--csg-paper) 74%, #66573d) 100%);
+      color-mix(in srgb, var(--csg-paper) 80%, #fff) 0%,
+      var(--csg-paper) 50%,
+      color-mix(in srgb, var(--csg-paper) 86%, #66573d) 100%);
 }
 
 .table {
@@ -918,10 +917,8 @@ export default function ContactSheetGallery({
   touch-action: pan-y pinch-zoom;
   -webkit-tap-highlight-color: transparent;
   box-shadow:
-    0 -30px 90px -28px color-mix(in srgb, var(--csg-paper) 26%, transparent),
-    0 -10px 30px -16px color-mix(in srgb, var(--csg-paper) 22%, transparent),
-    inset 0 2px 8px rgba(66, 48, 22, 0.16),
-    inset 0 -1px 0 rgba(66, 48, 22, 0.1);
+    0 -24px 70px -34px color-mix(in srgb, var(--csg-paper) 18%, transparent),
+    inset 0 1px 0 rgba(66, 48, 22, 0.1);
 }
 
 .bloom {
@@ -940,10 +937,10 @@ export default function ContactSheetGallery({
 
 @keyframes bloom {
   from {
-    opacity: 0.2;
+    opacity: 0.12;
   }
   to {
-    opacity: 0.38;
+    opacity: 0.22;
   }
 }
 
@@ -964,12 +961,10 @@ export default function ContactSheetGallery({
   padding-inline: 10px;
   border-radius: 3px;
   background:
-    linear-gradient(100deg, transparent 32%, rgba(255, 205, 130, 0.06) 47%, transparent 64%),
-    linear-gradient(180deg, rgba(56, 36, 16, 0.85) 0%, #211206 9%, var(--csg-film) 88%, rgba(48, 30, 13, 0.85) 100%);
+    var(--csg-film);
   box-shadow:
-    0 1px 1px rgba(9, 5, 2, 0.5),
-    0 14px 28px -16px rgba(8, 5, 2, 0.65),
-    inset 0 1px 0 rgba(255, 196, 116, 0.12);
+    0 1px 1px rgba(9, 5, 2, 0.4),
+    0 10px 22px -14px rgba(8, 5, 2, 0.5);
   transform: rotate(var(--tilt, 0deg));
 }
 
@@ -992,7 +987,6 @@ export default function ContactSheetGallery({
   );
   -webkit-mask: var(--csg-holes) repeat-x;
   mask: var(--csg-holes) repeat-x;
-  filter: drop-shadow(0 0 3px rgba(255, 216, 152, 0.55));
 }
 
 .bandTop::before {
@@ -1010,12 +1004,11 @@ export default function ContactSheetGallery({
 
 .edgeLabel,
 .edgeNum {
-  font-family: var(--csg-font-mono);
+  font-family: var(--csg-font-display);
   font-size: 12px;
   line-height: 1;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #dfa15a;
+  letter-spacing: 0.08em;
+  color: rgba(223, 161, 90, 0.8);
   white-space: nowrap;
 }
 
@@ -1051,7 +1044,7 @@ export default function ContactSheetGallery({
   border: 0;
   border-radius: 1px;
   background: #0c0702;
-  box-shadow: 0 0 0 2px rgba(216, 140, 60, 0.4);
+  box-shadow: 0 0 0 1px rgba(216, 140, 60, 0.35);
   cursor: zoom-in;
   -webkit-tap-highlight-color: transparent;
 }
@@ -1078,6 +1071,10 @@ export default function ContactSheetGallery({
   object-fit: cover;
   filter: invert(1) sepia(0.42) saturate(1.9) hue-rotate(180deg) brightness(1.02) contrast(1.05);
   transition: filter 280ms ease;
+}
+
+.lensClone .thumb {
+  filter: none;
 }
 
 .thumb:hover {
@@ -1107,7 +1104,7 @@ export default function ContactSheetGallery({
   overflow: visible;
   pointer-events: none;
   z-index: 2;
-  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.3)) drop-shadow(0 0 2px rgba(232, 80, 46, 0.45));
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.25));
 }
 
 .ringCore,
@@ -1122,14 +1119,14 @@ export default function ContactSheetGallery({
 }
 
 .ringCore {
-  stroke-width: 1.7;
-  opacity: 0.95;
+  stroke-width: 1.3;
+  opacity: 0.92;
 }
 
 .ringWax {
-  stroke-width: 0.6;
-  opacity: 0.6;
-  transform: translate(0.5px, 0.9px);
+  stroke-width: 0.5;
+  opacity: 0.4;
+  transform: translate(0.4px, 0.7px);
 }
 
 .ringDrawn {
@@ -1168,13 +1165,7 @@ export default function ContactSheetGallery({
   position: absolute;
   inset: -3%;
   border-radius: 50%;
-  background: radial-gradient(
-    closest-side,
-    transparent 76%,
-    color-mix(in srgb, var(--csg-paper) 26%, transparent) 85%,
-    transparent 97%
-  );
-  filter: blur(2px);
+  background: none;
 }
 
 .loupeShadow {
@@ -1191,17 +1182,16 @@ export default function ContactSheetGallery({
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: conic-gradient(from 215deg, #45403a, #191511 22%, #3d3830 47%, #141110 68%, #2c2823 86%, #45403a);
+  background: linear-gradient(160deg, #3a3631, #161310);
   box-shadow:
-    0 2px 6px rgba(0, 0, 0, 0.5),
-    0 6px 18px -6px rgba(255, 186, 106, 0.12),
-    inset 0 1px 1px rgba(255, 255, 255, 0.14),
-    inset 0 -2px 4px rgba(255, 196, 120, 0.18);
+    0 1px 3px rgba(0, 0, 0, 0.4),
+    0 10px 24px -10px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
 .lens {
   position: absolute;
-  inset: 6.5%;
+  inset: 4.5%;
   border-radius: 50%;
   overflow: hidden;
   background: var(--csg-room);
@@ -1230,7 +1220,7 @@ export default function ContactSheetGallery({
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: radial-gradient(58% 42% at 31% 15%, rgba(255, 249, 236, 0.5) 0%, rgba(255, 249, 236, 0.07) 48%, transparent 72%);
+  background: radial-gradient(58% 42% at 31% 15%, rgba(255, 249, 236, 0.26) 0%, rgba(255, 249, 236, 0.04) 48%, transparent 72%);
   mix-blend-mode: soft-light;
 }
 
@@ -1239,9 +1229,8 @@ export default function ContactSheetGallery({
   inset: 0;
   border-radius: 50%;
   box-shadow:
-    inset 0 0 0 2px rgba(140, 190, 255, 0.14),
-    inset 0 0 0 3.5px rgba(255, 150, 70, 0.12),
-    inset 0 0 12px rgba(18, 9, 3, 0.38);
+    inset 0 0 0 1px rgba(0, 0, 0, 0.5),
+    inset 0 0 10px rgba(18, 9, 3, 0.28);
 }
 
 .lensGrain {
@@ -1249,7 +1238,7 @@ export default function ContactSheetGallery({
   inset: 0;
   border-radius: 50%;
   background-image: var(--csg-noise);
-  opacity: 0.14;
+  opacity: 0.06;
   mix-blend-mode: overlay;
 }
 

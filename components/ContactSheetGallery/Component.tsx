@@ -149,7 +149,7 @@ export default function ContactSheetGallery({
     const dl = lensD.current;
     const cx = L.x;
     const cy = L.y;
-    cl.style.transform = `translate(${(dl / 2 - cx * ZOOM).toFixed(1)}px, ${(dl / 2 - cy * ZOOM).toFixed(1)}px, 0) scale(${ZOOM})`;
+    cl.style.transform = `translate3d(${(dl / 2 - cx * ZOOM).toFixed(1)}px, ${(dl / 2 - cy * ZOOM).toFixed(1)}px, 0) scale(${ZOOM})`;
   }, []);
 
   const computeBox = useCallback((i: number): Box | null => {
@@ -659,7 +659,7 @@ export default function ContactSheetGallery({
       <svg className={styles.defs} aria-hidden="true" focusable="false">
         <filter id={ringFilterId} x="-10%" y="-10%" width="120%" height="120%">
           <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" />
-          <feDisplacementMap in="SourceGraphic" scale="1.8" />
+          <feDisplacementMap in="SourceGraphic" scale="1.2" />
         </filter>
         {bulge && (
           <filter id={bulgeFilterId} x="-8%" y="-8%" width="116%" height="116%">

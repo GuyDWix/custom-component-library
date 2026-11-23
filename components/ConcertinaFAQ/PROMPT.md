@@ -50,7 +50,7 @@ export const defaultQuestions: ConcertinaFAQQuestion[] = [
 type Anim = { p: number; v: number; live: boolean };
 
 const STIFFNESS = 190;
-const DAMPING = 19;
+const DAMPING = 16;
 const STAGGER = 0.14;
 const FALLBACK_HEIGHT = 168;
 const RAD = Math.PI / 180;
@@ -136,6 +136,8 @@ export default function ConcertinaFAQ({
     item.style.setProperty('--p', clamp01(p).toFixed(3));
     item.style.setProperty('--tx', clamp01((p - textFrom) / 0.32).toFixed(3));
     item.style.setProperty('--sd', clamp01((p - 0.12) / 0.6).toFixed(3));
+    const lift = clamp01((p - 0.72) / 0.28);
+    item.style.setProperty('--cv', (lift * lift * (3 - 2 * lift)).toFixed(3));
   }, []);
 
   /* Hand an item back to the resting CSS (also the reduced-motion and SSR state). */
@@ -143,7 +145,7 @@ export default function ConcertinaFAQ({
     const item = itemRefs.current[i];
     const wrap = wrapRefs.current[i];
     if (!item || !wrap) return;
-    ['--p', '--tx', '--sd'].forEach((k) => item.style.removeProperty(k));
+    ['--p', '--tx', '--sd', '--cv'].forEach((k) => item.style.removeProperty(k));
     wrap.style.removeProperty('block-size');
     wrap.style.removeProperty('visibility');
     wrap.querySelectorAll<HTMLElement>('[data-facet]').forEach((el) => {
@@ -291,7 +293,7 @@ export default function ConcertinaFAQ({
       className={k === 0 ? `${styles.facet} ${styles.facetFirst}` : styles.facet}
       style={{ '--k': k } as CSSProperties}
     >
-      <div className={styles.slice}>
+      <div className={k + 1 === pleats ? `${styles.slice} ${styles.sliceLast}` : styles.slice}>
         <div
           ref={
             k === 0
@@ -307,6 +309,7 @@ export default function ConcertinaFAQ({
         </div>
         <span className={k % 2 === 0 ? styles.shadeLit : styles.shadeDark} aria-hidden="true" />
         <span className={styles.crease} aria-hidden="true" />
+        {k + 1 === pleats ? <span className={styles.curl} aria-hidden="true" /> : null}
       </div>
       {k + 1 < pleats ? renderFacet(i, k + 1, text) : null}
     </div>
@@ -351,8 +354,8 @@ export default function ConcertinaFAQ({
                   >
                     <span className={styles.qText}>{item.question}</span>
                     <span className={isOpen ? `${styles.mark} ${styles.markOpen}` : styles.mark} aria-hidden="true">
-                      <svg className={styles.zig} viewBox="0 0 24 14" width="24" height="14" focusable="false">
-                        <polyline className={styles.zigLine} points="2,12 7,2 12,12 17,2 22,12" />
+                      <svg className={styles.chev} viewBox="0 0 24 24" width="24" height="24" focusable="false">
+                        <polyline className={styles.chevLine} points="6,9 12,15.2 18,9" />
                       </svg>
                     </span>
                   </button>
@@ -405,16 +408,23 @@ export default function ConcertinaFAQ({
 .root {
   --cf-paper: #c8a06a;
   --cf-accent: #0a4249;
-  --cf-paper-hi: color-mix(in srgb, var(--cf-paper) 82%, #ffffff);
-  --cf-paper-lo: color-mix(in srgb, var(--cf-paper) 84%, #3a1d00);
-  --cf-fold: color-mix(in srgb, var(--cf-paper) 56%, #2a1300);
+  --cf-paper-hi: color-mix(in srgb, var(--cf-paper) 84%, #ffffff);
+  --cf-paper-lo: color-mix(in srgb, var(--cf-paper) 86%, #3a1d00);
+  --cf-fold: color-mix(in srgb, var(--cf-paper) 52%, #2a1300);
   --cf-cream: color-mix(in srgb, var(--cf-paper) 8%, #fffbf0);
   --cf-ink: color-mix(in srgb, var(--cf-accent) 30%, #1b1108);
   --cf-shadow: color-mix(in srgb, var(--cf-paper) 30%, #2a1400);
   --cf-font: 'Concertina Bricolage', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --cf-fibre: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='420' height='420'><filter id='f' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.03 0.8' numOctaves='3' seed='7' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.30 0 0 0 0 0.17 0 0 0 0 0.06 0 0 0 -1.5 0.9'/></filter><rect width='100%25' height='100%25' filter='url(%23f)'/></svg>");
-  --cf-speck: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='s' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.22 0 0 0 0 0.12 0 0 0 0 0.04 0 0 0 -2.4 1.45'/></filter><rect width='100%25' height='100%25' filter='url(%23s)'/></svg>");
-
+  --cf-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='640' height='240'><filter id='g' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.014 0.85' numOctaves='3' seed='11' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.26 0 0 0 0 0.14 0 0 0 0 0.04 -2.6 0 0 0 1.3'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>");
+  --cf-leaf: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='l' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' seed='5' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.36 0 0 0 0 0.24 0 0 0 0 0.1 0 0 0 -0.7 0.37'/></filter><rect width='100%25' height='100%25' filter='url(%23l)'/></svg>");
+  --cf-edge: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='6'><filter id='e' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.5 1.3' numOctaves='2' seed='9' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 0.985 0 0 0 0 0.93 -2.6 0 0 0 1.9'/></filter><rect width='100%25' height='100%25' filter='url(%23e)'/></svg>");
+  --cf-sap: linear-gradient(
+    90deg,
+    transparent 2%,
+    color-mix(in srgb, var(--cf-fold) 34%, transparent) 20%,
+    color-mix(in srgb, var(--cf-fold) 18%, transparent) 64%,
+    transparent 96%
+  );
   position: relative;
   isolation: isolate;
   overflow: clip;
@@ -427,18 +437,64 @@ export default function ConcertinaFAQ({
   font-family: var(--cf-font);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.35) inset,
-    0 28px 40px -30px color-mix(in srgb, var(--cf-shadow) 70%, transparent),
-    0 2px 6px -2px color-mix(in srgb, var(--cf-shadow) 40%, transparent);
+    0 30px 44px -32px color-mix(in srgb, var(--cf-shadow) 74%, transparent),
+    0 3px 8px -3px color-mix(in srgb, var(--cf-shadow) 46%, transparent);
 }
 
+/* The board is lit from the upper left: a soft falloff across the card, darker toward the edges. */
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    114deg,
+    rgba(255, 246, 226, 0.34) 0%,
+    rgba(255, 246, 226, 0.08) 34%,
+    transparent 54%,
+    color-mix(in srgb, var(--cf-shadow) 30%, transparent) 100%
+  );
+  box-shadow:
+    inset 0 0 64px -14px color-mix(in srgb, var(--cf-shadow) 62%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38);
+}
+
+/* Grain: long dark fibres running with the board. */
 .root::after {
   content: '';
   position: absolute;
   inset: 0;
-  z-index: 5;
+  z-index: 1;
   pointer-events: none;
-  background-image: var(--cf-fibre), var(--cf-speck);
+  background-image: var(--cf-grain);
+  background-size: 640px 240px;
   mix-blend-mode: multiply;
+  opacity: 0.5;
+}
+
+/* Sheen: light catches the same fibres, in two soft bands across the grain. */
+.frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    102deg,
+    transparent 10%,
+    rgba(255, 238, 202, 0.95) 26%,
+    rgba(255, 238, 202, 0.2) 37%,
+    transparent 48%,
+    rgba(255, 238, 202, 0.55) 70%,
+    transparent 84%
+  );
+  -webkit-mask-image: var(--cf-grain);
+  mask-image: var(--cf-grain);
+  -webkit-mask-size: 640px 240px;
+  mask-size: 640px 240px;
+  mix-blend-mode: screen;
   opacity: 0.5;
 }
 
@@ -456,6 +512,7 @@ export default function ConcertinaFAQ({
 
 .item {
   --p: 0;
+  --cv: 0;
   position: relative;
   margin: 0;
   padding: 0;
@@ -463,6 +520,7 @@ export default function ConcertinaFAQ({
 
 .itemOpen {
   --p: 1;
+  --cv: 1;
 }
 
 .heading {
@@ -475,8 +533,8 @@ export default function ConcertinaFAQ({
 .band {
   --hv: 0;
   --pr: 0;
+  --sap: 33%;
   position: relative;
-  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -495,22 +553,29 @@ export default function ConcertinaFAQ({
   -webkit-tap-highlight-color: transparent;
   box-shadow:
     inset 0 -1px 0 var(--cf-fold),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -12px 14px -12px color-mix(in srgb, var(--cf-shadow) 46%, transparent),
+    inset 0 10px 12px -12px color-mix(in srgb, var(--cf-shadow) 26%, transparent);
 }
 
 .bandEven {
-  background: linear-gradient(180deg, var(--cf-paper-hi) 0%, var(--cf-paper) 46%, var(--cf-paper-lo) 100%);
+  background:
+    var(--cf-sap) 0 var(--sap) / 100% 2px no-repeat,
+    linear-gradient(180deg, var(--cf-paper-hi) 0%, var(--cf-paper) 46%, var(--cf-paper-lo) 100%);
 }
 
 .bandOdd {
-  background: linear-gradient(180deg, var(--cf-paper-lo) 0%, var(--cf-paper) 54%, var(--cf-paper-hi) 100%);
+  --sap: 69%;
+  background:
+    var(--cf-sap) 0 var(--sap) / 100% 2px no-repeat,
+    linear-gradient(180deg, var(--cf-paper-lo) 0%, var(--cf-paper) 54%, var(--cf-paper-hi) 100%);
 }
 
 .band::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(255, 250, 235, 0.22);
+  background: rgba(255, 250, 235, 0.2);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.22s ease-out;
@@ -535,16 +600,18 @@ export default function ConcertinaFAQ({
 
 .qText {
   position: relative;
+  z-index: 2;
   display: block;
   min-inline-size: 0;
-  max-inline-size: 22em;
+  max-inline-size: 24em;
   font-weight: 600;
-  font-size: clamp(1.3rem, 0.85rem + 2.7cqi, 2.7rem);
-  line-height: 1.08;
-  letter-spacing: -0.03em;
+  font-size: clamp(1.25rem, 0.95rem + 2.2cqi, 2.3rem);
+  line-height: 1.1;
+  letter-spacing: -0.028em;
   text-wrap: balance;
   overflow-wrap: break-word;
   hyphens: manual;
+  text-shadow: 0 1px 0 rgba(255, 236, 202, 0.4);
   transform: translateY(calc(var(--pr) * 1px));
   transition: transform 0.12s ease-out;
 }
@@ -552,48 +619,50 @@ export default function ConcertinaFAQ({
 .qText::selection {
   background: var(--cf-accent);
   color: var(--cf-cream);
+  text-shadow: none;
 }
 
-/* The mark is a miniature of the fold: a zigzag that flattens as the answer opens. */
+/* The mark is a machined toggle: a thin ring and a chevron that turns with the fold. */
 .mark {
   position: relative;
+  z-index: 2;
   flex: none;
   display: grid;
   place-items: center;
-  inline-size: 2.75rem;
-  block-size: 2.75rem;
-  border: 1.5px solid var(--cf-accent);
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border: 1.25px solid color-mix(in srgb, var(--cf-accent) 88%, transparent);
   border-radius: 50%;
   color: var(--cf-accent);
-  background: transparent;
-  transform: scale(calc(1 + var(--hv) * 0.08));
+  background: linear-gradient(180deg, rgba(255, 244, 220, 0.3) 0%, rgba(255, 244, 220, 0) 60%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 230, 0.5),
+    0 1px 0 rgba(255, 238, 205, 0.5);
+  transform: scale(calc(1 + var(--hv) * 0.06));
   transition:
     transform 0.22s cubic-bezier(0.3, 1.5, 0.5, 1),
-    background-color 0.25s ease-out,
-    color 0.25s ease-out;
+    background-color 0.25s ease-out;
 }
 
 .markOpen {
-  background: var(--cf-accent);
-  color: var(--cf-cream);
+  background-color: color-mix(in srgb, var(--cf-accent) 9%, transparent);
 }
 
-.zig {
+.chev {
   display: block;
   inline-size: 1.5rem;
-  block-size: 0.875rem;
+  block-size: 1.5rem;
   overflow: visible;
   transform-origin: 50% 50%;
-  transform: scaleY(max(0.02, 1 - var(--p)));
+  transform: rotate(calc(var(--p) * 180deg));
 }
 
-.zigLine {
+.chevLine {
   fill: none;
   stroke: currentColor;
-  stroke-width: 2;
+  stroke-width: 1.9;
   stroke-linecap: round;
   stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
 }
 
 /* ---- The answer: a cream leaf cut into pleats that fold flat ---- */
@@ -601,7 +670,7 @@ export default function ConcertinaFAQ({
 .answer {
   position: relative;
   z-index: 2;
-  margin-inline: 0 var(--cf-gap);
+  margin: 0;
   block-size: calc(var(--h) * var(--n) * var(--p));
   visibility: hidden;
   perspective: 820px;
@@ -624,14 +693,16 @@ export default function ConcertinaFAQ({
     visibility 0s;
 }
 
+/* The leaf presses into the board: a hairline contact, a close shade, a long soft fall. */
 .cast {
   position: absolute;
   inset: 0;
   pointer-events: none;
   opacity: var(--sd, 1);
   box-shadow:
-    0 1.6rem 2.2rem -1.1rem color-mix(in srgb, var(--cf-shadow) 78%, transparent),
-    0 0.2rem 0.6rem -0.2rem color-mix(in srgb, var(--cf-shadow) 60%, transparent);
+    0 1px 0 color-mix(in srgb, var(--cf-shadow) 72%, transparent),
+    0 0.35rem 0.7rem -0.2rem color-mix(in srgb, var(--cf-shadow) 66%, transparent),
+    0 1.9rem 2.4rem -1.2rem color-mix(in srgb, var(--cf-shadow) 80%, transparent);
 }
 
 .facet {
@@ -648,10 +719,73 @@ export default function ConcertinaFAQ({
 }
 
 .slice {
+  --cs: calc(clamp(1.2rem, 2.8cqi, 1.75rem) * var(--cv));
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: var(--cf-cream);
+  background: var(--cf-leaf), var(--cf-cream);
+  background-size: 220px 220px, auto;
+  box-shadow:
+    inset 1.1rem 0 1.4rem -1.3rem color-mix(in srgb, var(--cf-shadow) 34%, transparent),
+    inset -1.1rem 0 1.4rem -1.3rem color-mix(in srgb, var(--cf-shadow) 34%, transparent);
+}
+
+/* Where the leaf slides out from under the band: fibre edge, then the band's shade. */
+.facetFirst > .slice::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0;
+  block-size: 0.7rem;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--cf-shadow) 46%, transparent) 0%,
+    color-mix(in srgb, var(--cf-shadow) 16%, transparent) 45%,
+    transparent 100%
+  );
+}
+
+.facetFirst > .slice::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0;
+  block-size: 4px;
+  z-index: 1;
+  pointer-events: none;
+  background: var(--cf-edge);
+  background-size: 180px 6px;
+  opacity: 0.8;
+}
+
+/* The free end: the paper has thickness, and its last corner lifts clear of the board. */
+.sliceLast {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cs)), calc(100% - var(--cs)) 100%, 0 100%);
+}
+
+.curl {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-end: 0;
+  inline-size: var(--cs);
+  block-size: var(--cs);
+  pointer-events: none;
+  filter: drop-shadow(-1px -1px 2.5px color-mix(in srgb, var(--cf-shadow) 52%, transparent));
+}
+
+.curl::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+  background: linear-gradient(
+    135deg,
+    #fffdf6 0%,
+    var(--cf-cream) 38%,
+    color-mix(in srgb, var(--cf-cream) 74%, var(--cf-shadow)) 100%
+  );
 }
 
 .copy {
@@ -659,7 +793,7 @@ export default function ConcertinaFAQ({
   inset-inline: 0;
   inset-block-start: calc(var(--k) * var(--h) * -1);
   box-sizing: border-box;
-  padding-block: clamp(1.1rem, 3.2cqi, 2.1rem) clamp(1.4rem, 3.8cqi, 2.6rem);
+  padding-block: clamp(1.25rem, 3.4cqi, 2.2rem) clamp(1.75rem, 4cqi, 2.9rem);
   padding-inline: var(--cf-pad) clamp(1rem, 4cqi, 3rem);
   color: var(--cf-ink);
   opacity: var(--tx, 1);
@@ -672,10 +806,11 @@ export default function ConcertinaFAQ({
 
 .answerText {
   margin: 0;
-  max-inline-size: 58ch;
+  max-inline-size: 60ch;
   font-weight: 400;
-  font-size: clamp(1.0625rem, 0.92rem + 0.7cqi, 1.3125rem);
-  line-height: 1.55;
+  font-size: clamp(1.0625rem, 0.98rem + 0.5cqi, 1.25rem);
+  line-height: 1.68;
+  letter-spacing: -0.005em;
   color: var(--cf-ink);
   text-wrap: pretty;
   overflow-wrap: break-word;

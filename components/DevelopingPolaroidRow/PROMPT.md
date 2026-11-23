@@ -21,14 +21,12 @@ export interface DevelopingPolaroidRowProps {
   className?: string;
 }
 
-const photo = (id: string) => `https://images.unsplash.com/${id}?w=640&h=640&fit=crop&auto=format&q=80`;
-
 export const defaultPhotos: DevelopingPolaroidPhoto[] = [
-  { image: photo('photo-1529156069898-49953e39b3ac'), caption: 'the whole gang, finally', alt: 'Friends laughing together outdoors' },
-  { image: photo('photo-1414235077428-338989a2e8c0'), caption: 'table 4, best seat', alt: 'Candlelit restaurant table set for dinner' },
-  { image: photo('photo-1530103862676-de8c9debad1d'), caption: 'cake o’clock', alt: 'Birthday cake with lit candles' },
-  { image: photo('photo-1507525428034-b723cf961d3e'), caption: 'last swim of summer', alt: 'Turquoise sea meeting a sandy beach' },
-  { image: photo('photo-1470229722913-7c0e2dbbafd3'), caption: 'front row!!', alt: 'Crowd at an outdoor concert under stage lights' },
+  { image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=640&h=640&fit=crop&auto=format&q=80', caption: 'the whole gang, finally', alt: 'Friends laughing together outdoors' },
+  { image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=640&h=640&fit=crop&auto=format&q=80', caption: 'table 4, best seat', alt: 'Candlelit restaurant table set for dinner' },
+  { image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=640&h=640&fit=crop&auto=format&q=80', caption: 'cake o’clock', alt: 'Birthday cake with lit candles' },
+  { image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=640&h=640&fit=crop&auto=format&q=80', caption: 'last swim of summer', alt: 'Turquoise sea meeting a sandy beach' },
+  { image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=640&h=640&fit=crop&auto=format&q=80', caption: 'front row!!', alt: 'Crowd at an outdoor concert under stage lights' },
 ];
 
 // A worktable seen from above-beside. Print 0 is the hero (front and centre); the rest are
@@ -331,7 +329,7 @@ export default function DevelopingPolaroidRow({
   --dp-milk: #d6e5df;
   --dp-milk-lo: #c3d7cf;
   --dp-develop: 3.2s;
-  --dp-font-hand: 'Caveat', 'Segoe Print', 'Bradley Hand', cursive;
+  --dp-font-hand: 'Caveat', cursive;
   --dp-font-ui: 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --dp-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.53  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
@@ -449,10 +447,9 @@ export default function DevelopingPolaroidRow({
     rotate(calc((var(--dp-rot, 0deg) + var(--dp-ent, 0deg)) * var(--dp-flat)))
     scale(var(--dp-scale));
   box-shadow:
-    1px 2px 0 var(--dp-edge),
-    0 3px 4px -2px rgba(var(--dp-shadow), 0.28),
-    0 16px 22px -12px rgba(var(--dp-shadow), 0.35),
-    0 38px 48px -26px rgba(var(--dp-shadow), 0.38);
+    0 1px 0 var(--dp-edge),
+    0 1px 2px rgba(var(--dp-shadow), 0.2),
+    0 4px 8px -4px rgba(var(--dp-shadow), 0.16);
   transition:
     transform 620ms cubic-bezier(0.3, 1.36, 0.42, 1),
     box-shadow 460ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -474,10 +471,9 @@ export default function DevelopingPolaroidRow({
     --dp-flat: 0;
     --dp-scale: 1.055;
     box-shadow:
-      0 2px 0 var(--dp-edge),
-      0 5px 8px -3px rgba(var(--dp-shadow), 0.26),
-      0 24px 34px -16px rgba(var(--dp-shadow), 0.38),
-      0 54px 64px -30px rgba(var(--dp-shadow), 0.44);
+      0 1px 0 var(--dp-edge),
+      0 2px 4px rgba(var(--dp-shadow), 0.18),
+      0 10px 16px -8px rgba(var(--dp-shadow), 0.22);
   }
 
   .print:hover .glass {
@@ -495,10 +491,9 @@ export default function DevelopingPolaroidRow({
   --dp-flat: 0;
   --dp-scale: 1.055;
   box-shadow:
-    0 2px 0 var(--dp-edge),
-    0 5px 8px -3px rgba(var(--dp-shadow), 0.26),
-    0 24px 34px -16px rgba(var(--dp-shadow), 0.38),
-    0 54px 64px -30px rgba(var(--dp-shadow), 0.44);
+    0 1px 0 var(--dp-edge),
+    0 2px 4px rgba(var(--dp-shadow), 0.18),
+    0 10px 16px -8px rgba(var(--dp-shadow), 0.22);
 }
 
 .print:focus-visible .body {
@@ -510,10 +505,9 @@ export default function DevelopingPolaroidRow({
   --dp-flat: 0;
   --dp-scale: 1.12;
   box-shadow:
-    0 2px 0 var(--dp-edge),
-    0 6px 10px -4px rgba(var(--dp-shadow), 0.24),
-    0 28px 40px -18px rgba(var(--dp-shadow), 0.4),
-    0 64px 76px -34px rgba(var(--dp-shadow), 0.48);
+    0 1px 0 var(--dp-edge),
+    0 3px 6px rgba(var(--dp-shadow), 0.18),
+    0 14px 22px -10px rgba(var(--dp-shadow), 0.26);
 }
 
 .body {

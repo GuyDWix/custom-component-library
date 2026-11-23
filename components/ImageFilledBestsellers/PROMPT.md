@@ -1,6 +1,6 @@
 Create a custom element called "Image-Filled Best Sellers". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: products (name, photo, units sold), number shown, unit label, highlight color, small heading, heading, rank label. Add other settings if they help.
+The site owner must be able to change: products (name, photo, units sold), number shown, unit label, highlight color, heading, rank label. Add other settings if they help.
 
 ```tsx
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -18,28 +18,27 @@ export interface ImageFilledBestsellersProps {
   numberShown?: number;
   unitLabel?: string;
   highlightColor?: string;
-  eyebrow?: string;
   heading?: string;
   rankLabel?: string;
   className?: string;
 }
 
-const shot = (id: string) => `https://images.unsplash.com/photo-${id}?w=1200&h=360&fit=crop&auto=format&q=70`;
+const Q = '?w=1200&h=360&fit=crop&auto=format&q=70';
+const shot = (u: string) => u + Q;
 
 export const defaultProducts: BestsellerProduct[] = [
-  { name: 'Country sourdough', units: 1284, photo: shot('1509440159596-0249088772ff') },
-  { name: 'Butter croissant', units: 1032, photo: shot('1555507036-ab1f4038808a') },
-  { name: 'Flat white', units: 846, photo: shot('1495474472287-4d71bcdd2085') },
-  { name: 'Wood-fired margherita', units: 612, photo: shot('1565299624946-b28f40a0ae38') },
-  { name: 'Harvest grain bowl', units: 438, photo: shot('1512621776951-a57141f2eefd') },
-  { name: 'Buttermilk pancakes', units: 297, photo: shot('1567620905732-2d1ec7ab7445') },
+  { name: 'Signature classic', units: 1284, photo: shot('https://images.unsplash.com/photo-1509440159596-0249088772ff') },
+  { name: 'Customer favourite', units: 1032, photo: shot('https://images.unsplash.com/photo-1555507036-ab1f4038808a') },
+  { name: 'Everyday essential', units: 846, photo: shot('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085') },
+  { name: 'Seasonal special', units: 612, photo: shot('https://images.unsplash.com/photo-1565299624946-b28f40a0ae38') },
+  { name: 'Starter pick', units: 438, photo: shot('https://images.unsplash.com/photo-1512621776951-a57141f2eefd') },
+  { name: 'Limited edition', units: 297, photo: shot('https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445') },
 ];
 
 type Phase = 'static' | 'armed' | 'play';
 
 const MIN_FILL = 0.16;
 const LIST_HELP = 'Hover or tap a bar to see the details; arrow keys, Home and End move between bars.';
-const TILTS = [-4, 3, -2, 4, -3];
 const numberFormat = new Intl.NumberFormat('en-US');
 const compactFormat = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
 const COMPACT_FROM = 100000;
@@ -51,8 +50,7 @@ export default function ImageFilledBestsellers({
   products = defaultProducts,
   numberShown = 5,
   unitLabel = 'sold',
-  highlightColor = '#c8361f',
-  eyebrow = 'This week at the stall',
+  highlightColor = '#d23a1b',
   heading = 'Best sellers',
   rankLabel = 'No.',
   className,
@@ -126,20 +124,14 @@ export default function ImageFilledBestsellers({
       style={rootStyle}
       aria-label={heading}
     >
-      <span className={styles.awning} aria-hidden="true" />
-      <span className={styles.light} aria-hidden="true" />
-      <span className={styles.grain} aria-hidden="true" />
-
       <div className={styles.inner}>
         <header className={styles.header}>
           <div className={styles.titles}>
-            {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
             <h2 className={styles.heading}>{heading}</h2>
           </div>
 
           {chosen && (
             <div className={styles.readout} aria-live="polite" aria-atomic="true">
-              <span className={styles.twine} aria-hidden="true" />
               <div key={current} className={cx(styles.readoutCard, phase !== 'static' && styles.readoutSwing)}>
                 <span className={styles.readoutRank}>
                   {rankLabel} {current + 1}
@@ -162,7 +154,6 @@ export default function ImageFilledBestsellers({
             const rowStyle = {
               '--fill': fill.toFixed(4),
               '--i': i,
-              '--tilt': `${TILTS[i % TILTS.length]}deg`,
             } as CSSProperties;
             const isActive = i === current;
             return (
@@ -232,17 +223,14 @@ export default function ImageFilledBestsellers({
 }
 
 .root {
-  --ifb-highlight: #c8361f;
-  --ifb-kraft: #dcc39b;
-  --ifb-kraft-deep: #c2a273;
-  --ifb-paper: #fbf4e4;
-  --ifb-ink: #2a1a0e;
-  --ifb-muted: rgba(42, 26, 14, 0.74);
-  --ifb-shadow: 74, 44, 16;
-  --ifb-font-display: 'Rockwell', 'Roboto Slab', 'Zilla Slab', 'Museo Slab', Georgia, serif;
-  --ifb-font-hand: 'Bradley Hand', 'Segoe Print', 'Marker Felt', 'Chalkboard SE', 'Comic Neue', cursive;
-  --ifb-font-ui: 'Avenir Next', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --ifb-fibers: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.9 .28' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.22  0 0 0 0 0.1  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>");
+  --ifb-highlight: #d23a1b;
+  --ifb-surface: #f4f3ef;
+  --ifb-card: #ffffff;
+  --ifb-ink: #16181d;
+  --ifb-muted: #555b66;
+  --ifb-line: rgba(22, 24, 29, 0.14);
+  --ifb-shadow: 22, 24, 29;
+  --ifb-font: 'Avenir Next', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --ifb-play: running;
 
   position: relative;
@@ -251,68 +239,23 @@ export default function ImageFilledBestsellers({
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  padding-block: 72px 40px;
+  padding-block: 40px;
   padding-inline: 20px;
-  border-radius: 28px;
-  background:
-    radial-gradient(120% 90% at 50% 120%, rgba(var(--ifb-shadow), 0.22) 0%, transparent 60%),
-    linear-gradient(180deg, var(--ifb-kraft) 0%, var(--ifb-kraft-deep) 100%);
+  border-radius: 20px;
+  background: var(--ifb-surface);
   color: var(--ifb-ink);
-  font-family: var(--ifb-font-ui);
-  box-shadow: inset 0 0 0 1px rgba(255, 245, 225, 0.35), inset 0 -40px 80px -40px rgba(var(--ifb-shadow), 0.35);
+  font-family: var(--ifb-font);
+  box-shadow: inset 0 0 0 1px var(--ifb-line);
 }
 
 .paused {
   --ifb-play: paused;
 }
 
-.awning,
-.light,
-.grain {
-  position: absolute;
-  pointer-events: none;
-}
-
-.awning {
-  z-index: 1;
-  inset-block-start: 0;
-  inset-inline: 0;
-  block-size: 36px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, transparent 45%, rgba(0, 0, 0, 0.16) 100%),
-    repeating-linear-gradient(90deg, var(--ifb-highlight) 0 36px, var(--ifb-paper) 36px 72px);
-  -webkit-mask:
-    linear-gradient(#000 0 0) top / 100% 18px no-repeat,
-    radial-gradient(circle 18px at 18px 0, #000 97%, transparent 100%) 0 18px / 36px 18px repeat-x;
-  mask:
-    linear-gradient(#000 0 0) top / 100% 18px no-repeat,
-    radial-gradient(circle 18px at 18px 0, #000 97%, transparent 100%) 0 18px / 36px 18px repeat-x;
-  filter: drop-shadow(0 6px 5px rgba(var(--ifb-shadow), 0.3));
-}
-
-.light {
-  z-index: -1;
-  inset-block-start: -20%;
-  inset-inline-start: -10%;
-  inline-size: 70%;
-  aspect-ratio: 1.4;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(255, 238, 205, 0.75), transparent);
-  filter: blur(30px);
-}
-
-.grain {
-  z-index: -1;
-  inset: 0;
-  background-image: var(--ifb-fibers);
-  mix-blend-mode: multiply;
-  opacity: 0.32;
-}
-
 .inner {
   --tagw: 0px;
   display: grid;
-  gap: 28px;
+  gap: 32px;
   max-inline-size: 1080px;
   margin-inline: auto;
 }
@@ -325,117 +268,51 @@ export default function ImageFilledBestsellers({
 
 .titles {
   display: grid;
-  gap: 10px;
+  gap: 16px;
   min-inline-size: 0;
-}
-
-.eyebrow {
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  font-weight: 650;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ifb-muted);
-}
-
-.eyebrow::before {
-  content: '';
-  flex: none;
-  inline-size: 10px;
-  block-size: 10px;
-  border-radius: 50%;
-  background: var(--ifb-highlight);
-  box-shadow: 0 0 0 3px rgba(255, 244, 225, 0.6);
 }
 
 .heading {
   margin: 0;
-  font-family: var(--ifb-font-display);
-  font-size: 46px;
-  font-weight: 800;
-  line-height: 0.94;
-  letter-spacing: -0.035em;
+  font-size: 40px;
+  font-weight: 750;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
   text-wrap: balance;
   overflow-wrap: break-word;
-  text-shadow: 0 1px 0 rgba(255, 246, 228, 0.55);
 }
 
 .readout {
-  position: relative;
   justify-self: start;
   inline-size: min(100%, 280px);
-  padding-block-start: 22px;
-}
-
-.twine {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline-start: 34px;
-  inline-size: 2px;
-  block-size: 34px;
-  background: repeating-linear-gradient(180deg, #8a6a43 0 3px, #a8875c 3px 6px);
-  border-radius: 2px;
-  transform: rotate(-8deg);
-  transform-origin: top;
 }
 
 .readoutCard {
-  position: relative;
   display: grid;
   gap: 4px;
-  padding: 18px 22px 18px 26px;
-  border-radius: 6px 14px 14px 6px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, transparent 40%),
-    var(--ifb-paper);
-  box-shadow:
-    inset 0 -2px 0 rgba(var(--ifb-shadow), 0.08),
-    0 2px 3px rgba(var(--ifb-shadow), 0.2),
-    0 18px 30px -16px rgba(var(--ifb-shadow), 0.55);
-  transform: rotate(-3deg);
-  transform-origin: 34px -12px;
-  animation: sway 5s ease-in-out infinite alternate;
-  animation-play-state: var(--ifb-play);
-}
-
-.readoutCard::before {
-  content: '';
-  position: absolute;
-  inset-block-start: 10px;
-  inset-inline-start: 26px;
-  inline-size: 14px;
-  block-size: 14px;
-  border-radius: 50%;
-  background: var(--ifb-kraft-deep);
-  box-shadow: inset 0 2px 3px rgba(var(--ifb-shadow), 0.5), 0 0 0 3px rgba(var(--ifb-shadow), 0.08);
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: var(--ifb-card);
+  box-shadow: 0 0 0 1px var(--ifb-line), 0 6px 16px -10px rgba(var(--ifb-shadow), 0.25);
 }
 
 .readoutSwing {
-  animation:
-    swing 900ms cubic-bezier(0.34, 1.56, 0.64, 1) both,
-    sway 5s ease-in-out 900ms infinite alternate;
-  animation-play-state: running, var(--ifb-play);
+  animation: settle 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-play-state: var(--ifb-play);
 }
 
 .readoutRank {
-  justify-self: end;
-  font-family: var(--ifb-font-display);
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   color: var(--ifb-highlight);
 }
 
 .readoutName {
-  margin-block-start: 6px;
-  font-family: var(--ifb-font-display);
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.015em;
+  font-size: 19px;
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
   overflow-wrap: anywhere;
 }
 
@@ -444,24 +321,22 @@ export default function ImageFilledBestsellers({
   flex-wrap: wrap;
   align-items: baseline;
   column-gap: 8px;
-  border-block-start: 1.5px dashed rgba(var(--ifb-shadow), 0.3);
-  padding-block-start: 8px;
-  margin-block-start: 6px;
+  border-block-start: 1px dashed var(--ifb-line);
+  padding-block-start: 10px;
+  margin-block-start: 8px;
 }
 
 .readoutNumber {
-  font-family: var(--ifb-font-hand);
-  font-size: 40px;
-  font-weight: 700;
+  font-size: 36px;
+  font-weight: 750;
   line-height: 1;
-  color: var(--ifb-ink);
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .readoutUnit {
-  font-family: var(--ifb-font-hand);
-  font-size: 18px;
+  font-size: 15px;
   color: var(--ifb-muted);
   overflow-wrap: anywhere;
 }
@@ -483,18 +358,16 @@ export default function ImageFilledBestsellers({
 }
 
 .lead {
-  --h: 88px;
+  --h: 84px;
 }
 
 .rank {
-  font-family: var(--ifb-font-display);
-  font-size: 26px;
-  font-weight: 800;
+  font-size: 22px;
+  font-weight: 750;
   line-height: 1;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.03em;
   color: var(--ifb-highlight);
   font-variant-numeric: tabular-nums lining-nums;
-  text-shadow: 0 1px 0 rgba(255, 246, 228, 0.6);
 }
 
 .rankArmed {
@@ -512,8 +385,8 @@ export default function ImageFilledBestsellers({
   box-sizing: border-box;
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr) auto;
-  grid-template-rows: minmax(40px, auto) 12px;
-  column-gap: 10px;
+  grid-template-rows: minmax(40px, auto) 10px;
+  column-gap: 12px;
   row-gap: 10px;
   align-items: center;
   inline-size: 100%;
@@ -521,31 +394,30 @@ export default function ImageFilledBestsellers({
   margin: 0;
   padding: 10px 12px 10px 10px;
   border: 0;
-  border-radius: 18px;
-  background: rgba(255, 248, 234, 0.42);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 1px 2px rgba(var(--ifb-shadow), 0.12);
+  border-radius: 14px;
+  background: var(--ifb-card);
+  box-shadow: 0 0 0 1px var(--ifb-line);
   color: inherit;
   font: inherit;
   text-align: start;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: background-color 240ms ease, box-shadow 240ms ease;
+  transition: box-shadow 200ms ease;
 }
 
 .track:hover {
   --lift: 1;
-  --zoom: 1.06;
+  --zoom: 1.05;
 }
 
 .track:focus-visible {
   outline: 3px solid var(--ifb-ink);
-  outline-offset: 4px;
+  outline-offset: 3px;
 }
 
 .trackActive {
   --lift: 1;
-  background: rgba(255, 248, 234, 0.72);
-  box-shadow: inset 0 0 0 2px var(--ifb-highlight), 0 6px 14px -8px rgba(var(--ifb-shadow), 0.5);
+  box-shadow: 0 0 0 2px var(--ifb-highlight);
 }
 
 .thumb {
@@ -553,9 +425,9 @@ export default function ImageFilledBestsellers({
   position: relative;
   inline-size: 48px;
   block-size: 48px;
-  border-radius: 14px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 0 0 2px var(--ifb-paper), 0 4px 10px -4px rgba(var(--ifb-shadow), 0.6);
+  background: #d9dadd;
 }
 
 .photo {
@@ -566,38 +438,34 @@ export default function ImageFilledBestsellers({
   object-fit: cover;
   pointer-events: none;
   transform: scale(var(--zoom));
-  transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .stripes {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0.12)),
-    repeating-linear-gradient(115deg, var(--ifb-highlight) 0 14px, var(--ifb-paper) 14px 28px);
+  background: repeating-linear-gradient(115deg, #c9cbd0 0 14px, #dcdde1 14px 28px);
 }
 
 .groove,
 .fill {
   grid-column: 2 / -1;
   grid-row: 2;
-  block-size: 12px;
+  block-size: 10px;
   border-radius: 999px;
 }
 
 .groove {
   inline-size: calc(100% - var(--tagw));
-  background: rgba(var(--ifb-shadow), 0.1);
-  box-shadow: inset 0 2px 3px rgba(var(--ifb-shadow), 0.22), inset 0 -1px 0 rgba(255, 250, 238, 0.5);
+  background: rgba(var(--ifb-shadow), 0.08);
 }
 
 .fill {
   position: relative;
   inline-size: calc((100% - var(--tagw)) * var(--fill));
   overflow: hidden;
-  filter: drop-shadow(0 calc(2px + var(--lift) * 4px) calc(3px + var(--lift) * 6px) rgba(var(--ifb-shadow), 0.45));
-  transform: translateY(calc(var(--lift) * -2px));
-  transition: transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 300ms ease;
+  background: #c9cbd0;
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .fillArmed {
@@ -605,7 +473,7 @@ export default function ImageFilledBestsellers({
 }
 
 .fillPlay {
-  animation: grow 1200ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--i) * 120ms + 120ms) both;
+  animation: grow 1100ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--i) * 110ms + 100ms) both;
 }
 
 .reveal {
@@ -614,16 +482,12 @@ export default function ImageFilledBestsellers({
   overflow: hidden;
   border-radius: 999px;
   clip-path: inset(0 calc(100% - var(--ifb-p)) 0 0 round 999px);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
 }
 
 .scrim {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(180deg, rgba(255, 250, 240, 0.32) 0%, transparent 42%, rgba(30, 14, 4, 0.18) 100%),
-    linear-gradient(90deg, rgba(30, 14, 4, 0.18), transparent 70%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -2px 6px rgba(30, 14, 4, 0.25);
+  background: linear-gradient(90deg, rgba(10, 12, 16, 0.12), transparent 70%);
   border-radius: inherit;
 }
 
@@ -631,23 +495,23 @@ export default function ImageFilledBestsellers({
   position: absolute;
   inset-block: 0;
   inset-inline-start: var(--ifb-p);
-  inline-size: 4px;
-  margin-inline-start: -3px;
-  background: linear-gradient(180deg, #fff8e8, #ffd9a0);
-  box-shadow: 0 0 14px 5px rgba(255, 214, 150, 0.85);
+  inline-size: 2px;
+  margin-inline-start: -2px;
+  background: #fff;
+  box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.7);
   opacity: 0;
   pointer-events: none;
 }
 
 .edgePlay {
-  animation: edge 1200ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--i) * 120ms + 120ms) both;
+  animation: edge 1100ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--i) * 110ms + 100ms) both;
 }
 
 .name {
   grid-column: 2;
   grid-row: 1;
   min-inline-size: 0;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 650;
   line-height: 1.25;
   letter-spacing: -0.01em;
@@ -660,7 +524,7 @@ export default function ImageFilledBestsellers({
 }
 
 .namePlay {
-  animation: fadeIn 600ms ease-out calc(var(--i) * 120ms + 700ms) backwards;
+  animation: fadeIn 500ms ease-out calc(var(--i) * 110ms + 600ms) backwards;
 }
 
 .tag {
@@ -669,14 +533,11 @@ export default function ImageFilledBestsellers({
   grid-row: 1;
   justify-self: end;
   align-self: center;
-  filter: drop-shadow(0 4px 4px rgba(var(--ifb-shadow), 0.35));
-  transform: translateY(var(--ty)) rotate(calc(var(--tilt) * (1 + var(--lift) * 0.8)));
-  transform-origin: 0 50%;
-  transition: transform 520ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: translateY(var(--ty));
 }
 
 .tagPlay {
-  animation: tagIn 760ms cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--i) * 120ms + 820ms) backwards;
+  animation: tagIn 600ms cubic-bezier(0.16, 1, 0.3, 1) calc(var(--i) * 110ms + 700ms) backwards;
 }
 
 .tagBody {
@@ -684,41 +545,36 @@ export default function ImageFilledBestsellers({
   display: grid;
   justify-items: start;
   min-inline-size: 56px;
-  padding: 5px 8px 5px 21px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.65), transparent 50%),
-    var(--ifb-paper);
+  padding: 5px 10px 5px 22px;
+  background: var(--ifb-ink);
+  color: #fff;
   clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%);
 }
 
 .tagBody::before {
   content: '';
   position: absolute;
-  inset-inline-start: 9px;
-  inset-block-start: calc(50% - 4px);
-  inline-size: 8px;
-  block-size: 8px;
+  inset-inline-start: 10px;
+  inset-block-start: calc(50% - 3px);
+  inline-size: 6px;
+  block-size: 6px;
   border-radius: 50%;
-  background: var(--ifb-kraft-deep);
-  box-shadow: inset 0 1px 2px rgba(var(--ifb-shadow), 0.6);
+  background: var(--ifb-surface);
 }
 
 .tagCount {
-  font-family: var(--ifb-font-hand);
-  font-size: 19px;
-  font-weight: 700;
-  line-height: 1.05;
-  color: var(--ifb-ink);
+  font-size: 18px;
+  font-weight: 750;
+  line-height: 1.1;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .tagUnit {
-  max-inline-size: 50px;
-  font-family: var(--ifb-font-hand);
+  max-inline-size: 56px;
   font-size: 14px;
-  line-height: 1.1;
-  color: var(--ifb-muted);
+  line-height: 1.15;
+  color: #d4d6db;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -737,22 +593,18 @@ export default function ImageFilledBestsellers({
 }
 
 @container (min-width: 560px) {
+  .root {
+    padding-block: 56px;
+    padding-inline: 32px;
+  }
+
   .inner {
     --tagw: 132px;
-    padding-block: 12px 8px;
-    padding-inline: 16px;
+    gap: 40px;
   }
 
   .tagUnit {
     max-inline-size: calc(var(--tagw) - 52px);
-  }
-
-  .tagBody {
-    padding: 6px 12px 6px 24px;
-  }
-
-  .tagCount {
-    font-size: 22px;
   }
 
   .header {
@@ -766,7 +618,7 @@ export default function ImageFilledBestsellers({
   }
 
   .heading {
-    font-size: 64px;
+    font-size: 52px;
   }
 
   .list {
@@ -774,13 +626,12 @@ export default function ImageFilledBestsellers({
   }
 
   .row {
-    grid-template-columns: 64px minmax(0, 1fr);
+    grid-template-columns: 56px minmax(0, 1fr);
     gap: 16px;
   }
 
   .rank {
-    font-size: 44px;
-    text-align: end;
+    font-size: 36px;
   }
 
   .track {
@@ -794,12 +645,11 @@ export default function ImageFilledBestsellers({
   }
 
   .trackActive {
-    background: transparent;
     box-shadow: none;
   }
 
   .track:focus-visible {
-    outline-offset: 6px;
+    outline-offset: 5px;
   }
 
   .thumb {
@@ -815,27 +665,30 @@ export default function ImageFilledBestsellers({
   }
 
   .groove {
-    box-shadow: inset 0 3px 6px rgba(var(--ifb-shadow), 0.22), inset 0 -1px 0 rgba(255, 250, 238, 0.5);
+    background: rgba(var(--ifb-shadow), 0.07);
+    box-shadow: inset 0 0 0 1px var(--ifb-line);
+  }
+
+  .trackActive .groove {
+    box-shadow: inset 0 0 0 2px var(--ifb-highlight);
   }
 
   .scrim {
-    background:
-      linear-gradient(180deg, rgba(255, 250, 240, 0.3) 0%, transparent 38%, rgba(30, 14, 4, 0.2) 100%),
-      linear-gradient(90deg, rgba(30, 14, 4, 0.82) 0%, rgba(30, 14, 4, 0.5) 40%, rgba(30, 14, 4, 0) 85%);
+    background: linear-gradient(90deg, rgba(10, 12, 16, 0.82) 0%, rgba(10, 12, 16, 0.5) 40%, rgba(10, 12, 16, 0) 85%);
   }
 
   .name {
-    font-size: 16px;
+    font-size: 17px;
     position: absolute;
     inset-block-start: 50%;
     inset-inline-start: 26px;
     max-inline-size: calc((100% - var(--tagw)) * var(--fill) - 44px);
     transform: translateY(-50%);
-    color: #fffaf0;
+    color: #fff;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    text-shadow: 0 1px 6px rgba(20, 8, 0, 0.6);
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
   }
 
   .tag {
@@ -847,13 +700,16 @@ export default function ImageFilledBestsellers({
 }
 
 @container (min-width: 900px) {
+  .root {
+    padding-inline: 48px;
+  }
+
   .inner {
     --tagw: 150px;
-    padding-inline: 36px;
   }
 
   .heading {
-    font-size: 88px;
+    font-size: 60px;
   }
 
   .readout {
@@ -861,20 +717,20 @@ export default function ImageFilledBestsellers({
   }
 
   .readoutNumber {
-    font-size: 48px;
+    font-size: 44px;
   }
 
   .row {
-    grid-template-columns: 84px minmax(0, 1fr);
+    grid-template-columns: 72px minmax(0, 1fr);
     gap: 20px;
   }
 
   .lead {
-    --h: 104px;
+    --h: 100px;
   }
 
   .rank {
-    font-size: 52px;
+    font-size: 44px;
   }
 
   .name {
@@ -882,7 +738,7 @@ export default function ImageFilledBestsellers({
   }
 
   .tagCount {
-    font-size: 24px;
+    font-size: 22px;
   }
 }
 
@@ -931,41 +787,32 @@ export default function ImageFilledBestsellers({
 @keyframes tagIn {
   from {
     opacity: 0;
-    transform: translateY(calc(var(--ty) - 30px)) rotate(-28deg) scale(0.85);
+    transform: translate(-12px, var(--ty));
   }
   to {
     opacity: 1;
-    transform: translateY(var(--ty)) rotate(var(--tilt));
+    transform: translate(0, var(--ty));
   }
 }
 
-@keyframes swing {
+@keyframes settle {
   from {
-    transform: rotate(-14deg);
+    opacity: 0;
+    transform: translateY(8px);
   }
   to {
-    transform: rotate(-3deg);
-  }
-}
-
-@keyframes sway {
-  from {
-    transform: rotate(-3deg);
-  }
-  to {
-    transform: rotate(-1.4deg);
+    opacity: 1;
+    transform: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .readoutCard,
   .readoutSwing {
     animation: fadeIn 300ms ease both;
   }
 
   .photo,
-  .fill,
-  .tag {
+  .fill {
     transition: none;
   }
 }

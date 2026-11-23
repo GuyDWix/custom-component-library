@@ -13,28 +13,27 @@ export interface ImageFilledBestsellersProps {
   numberShown?: number;
   unitLabel?: string;
   highlightColor?: string;
-  eyebrow?: string;
   heading?: string;
   rankLabel?: string;
   className?: string;
 }
 
-const shot = (id: string) => `https://images.unsplash.com/photo-${id}?w=1200&h=360&fit=crop&auto=format&q=70`;
+const Q = '?w=1200&h=360&fit=crop&auto=format&q=70';
+const shot = (u: string) => u + Q;
 
 export const defaultProducts: BestsellerProduct[] = [
-  { name: 'Country sourdough', units: 1284, photo: shot('1509440159596-0249088772ff') },
-  { name: 'Butter croissant', units: 1032, photo: shot('1555507036-ab1f4038808a') },
-  { name: 'Flat white', units: 846, photo: shot('1495474472287-4d71bcdd2085') },
-  { name: 'Wood-fired margherita', units: 612, photo: shot('1565299624946-b28f40a0ae38') },
-  { name: 'Harvest grain bowl', units: 438, photo: shot('1512621776951-a57141f2eefd') },
-  { name: 'Buttermilk pancakes', units: 297, photo: shot('1567620905732-2d1ec7ab7445') },
+  { name: 'Signature classic', units: 1284, photo: shot('https://images.unsplash.com/photo-1509440159596-0249088772ff') },
+  { name: 'Customer favourite', units: 1032, photo: shot('https://images.unsplash.com/photo-1555507036-ab1f4038808a') },
+  { name: 'Everyday essential', units: 846, photo: shot('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085') },
+  { name: 'Seasonal special', units: 612, photo: shot('https://images.unsplash.com/photo-1565299624946-b28f40a0ae38') },
+  { name: 'Starter pick', units: 438, photo: shot('https://images.unsplash.com/photo-1512621776951-a57141f2eefd') },
+  { name: 'Limited edition', units: 297, photo: shot('https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445') },
 ];
 
 type Phase = 'static' | 'armed' | 'play';
 
 const MIN_FILL = 0.16;
 const LIST_HELP = 'Hover or tap a bar to see the details; arrow keys, Home and End move between bars.';
-const TILTS = [-4, 3, -2, 4, -3];
 const numberFormat = new Intl.NumberFormat('en-US');
 const compactFormat = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
 const COMPACT_FROM = 100000;
@@ -46,8 +45,7 @@ export default function ImageFilledBestsellers({
   products = defaultProducts,
   numberShown = 5,
   unitLabel = 'sold',
-  highlightColor = '#c8361f',
-  eyebrow = 'This week at the stall',
+  highlightColor = '#d23a1b',
   heading = 'Best sellers',
   rankLabel = 'No.',
   className,
@@ -121,20 +119,14 @@ export default function ImageFilledBestsellers({
       style={rootStyle}
       aria-label={heading}
     >
-      <span className={styles.awning} aria-hidden="true" />
-      <span className={styles.light} aria-hidden="true" />
-      <span className={styles.grain} aria-hidden="true" />
-
       <div className={styles.inner}>
         <header className={styles.header}>
           <div className={styles.titles}>
-            {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
             <h2 className={styles.heading}>{heading}</h2>
           </div>
 
           {chosen && (
             <div className={styles.readout} aria-live="polite" aria-atomic="true">
-              <span className={styles.twine} aria-hidden="true" />
               <div key={current} className={cx(styles.readoutCard, phase !== 'static' && styles.readoutSwing)}>
                 <span className={styles.readoutRank}>
                   {rankLabel} {current + 1}
@@ -157,7 +149,6 @@ export default function ImageFilledBestsellers({
             const rowStyle = {
               '--fill': fill.toFixed(4),
               '--i': i,
-              '--tilt': `${TILTS[i % TILTS.length]}deg`,
             } as CSSProperties;
             const isActive = i === current;
             return (
