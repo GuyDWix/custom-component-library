@@ -48,6 +48,7 @@ type CellAnim = { e: number; ve: number; delay: number; fade: number; vfade: num
 type ImageRec = { img: HTMLImageElement | null; ok: boolean };
 
 const SQRT3 = Math.sqrt(3);
+const GROUND = '#0b0d12';
 const STIFFNESS = 150;
 const DAMPING = 20;
 const REST_PRESENCE = 0.34;
@@ -73,32 +74,30 @@ const HEX_CLIP = hexPolygon();
 
 function computeLayout(avail: number, count: number, cellSize: number): Layout {
   if (count <= 0) return { cells: [], width: avail, height: 140, floor: 140 };
-  const baseR = clamp(cellSize, 56, 300) / SQRT3;
-  const heroR = baseR * 1.72;
-  const hexW = SQRT3 * baseR;
-  const inset = baseR * 1.15 + 4;
-  const bleed = hexW * 0.55;
-  const cols = Math.max(2, Math.floor((avail - inset + bleed) / hexW) + 1);
-  const latticeCount = count - 1;
-  const topPad = baseR * 0.15 + 4;
-  const rows = Math.ceil((latticeCount + 1) / cols);
-  const latH = topPad + baseR * 2 + baseR * 1.5 * Math.max(0, rows - 1);
-  const focusX = Math.max(heroR + 4, Math.min(avail * 0.3, hexW * 1.6 + inset));
-  const focusY = Math.max(latH * 0.5, heroR + 2);
+  const margin = avail < 520 ? 14 : clamp(avail * 0.05, 18, 56);
+  const inner = avail - margin * 2;
+  const want = SQRT3 * (clamp(cellSize, 56, 300) / SQRT3);
+  const cols = clamp(avail < 520 ? 3 : Math.round(inner / want), 2, Math.max(2, count));
+  const hexW = Math.min(want * 1.35, inner / (cols + 0.5));
+  const baseR = hexW / SQRT3;
+  const cellR = baseR * 0.965;
+  const rows = Math.ceil(count / cols);
+  const padY = baseR * 1.05;
+  const blockW = cols * hexW + (rows > 1 ? hexW / 2 : 0);
+  const x0 = (avail - blockW) / 2 + hexW / 2;
 
   const cellAt = (idx: number) => {
     const row = Math.floor(idx / cols);
-    const col = idx % cols;
-    return {
-      x: inset + col * hexW + (row % 2 ? hexW / 2 : 0),
-      y: topPad + baseR + row * baseR * 1.5,
-    };
+    const rowCount = row === rows - 1 ? count - row * cols : cols;
+    const lead = ((cols - rowCount) * hexW) / 2;
+    return { x: x0 + lead + (idx % cols) * hexW + (row % 2 ? hexW / 2 : 0), y: padY + baseR + row * baseR * 1.5 };
   };
 
-  // the hero takes the lattice slot nearest the focal point; that slot is left as a hole
+  const focusX = avail * 0.42;
+  const focusY = padY + baseR + ((rows - 1) * baseR * 1.5) / 2;
   let holeIdx = 0;
   let heroD = Infinity;
-  for (let i = 0; i <= latticeCount; i++) {
+  for (let i = 0; i < count; i++) {
     const p = cellAt(i);
     const d = Math.hypot(p.x - focusX, p.y - focusY);
     if (d < heroD) {
@@ -107,29 +106,17 @@ function computeLayout(avail: number, count: number, cellSize: number): Layout {
     }
   }
 
-  const sigma = Math.max(150, avail * 0.34);
-  const lattice: Cell[] = [];
-  let created = 0;
-  for (let pos = 0; pos <= latticeCount && created < latticeCount; pos++) {
-    if (pos === holeIdx) continue;
-    const p = cellAt(pos);
-    const d = Math.hypot(p.x - focusX, p.y - focusY);
-    lattice.push({ x: p.x, y: p.y, r: baseR * (0.9 + 0.2 * Math.exp(-(d * d) / (2 * sigma * sigma))), photo: -1, hero: false });
-    created++;
+  const hp = cellAt(holeIdx);
+  const cells: Cell[] = [{ x: hp.x, y: hp.y, r: cellR, photo: 0, hero: true }];
+  let photo = 1;
+  for (let i = 0; i < count; i++) {
+    if (i === holeIdx) continue;
+    const p = cellAt(i);
+    cells.push({ x: p.x, y: p.y, r: cellR, photo: photo++, hero: false });
   }
 
-  const hero: Cell = { x: focusX, y: focusY, r: baseR, photo: 0, hero: true };
-  const cells = [hero, ...lattice];
-  let p = 1;
-  for (const c of cells) {
-    if (!c.hero) c.photo = p++;
-  }
-
-  const reach = (c: Cell) => c.r * (c.hero ? 1 + LENS_GROWTH : 1.14);
-  const floor = cells.reduce((m, c) => Math.max(m, c.y + reach(c)), 0);
-  const right = cells.reduce((m, c) => Math.max(m, c.x + reach(c)), 0);
-  const height = floor + baseR * 0.95 + 10;
-  return { cells, width: Math.max(right, avail), height, floor };
+  const floor = padY + baseR * 2 + (rows - 1) * baseR * 1.5;
+  return { cells, width: avail, height: floor + padY, floor };
 }
 
 /* lens falloff: the cell under the lens swells, neighbours ease back smoothly */
@@ -140,6 +127,18 @@ function falloff(c: Cell, x: number, y: number) {
 
 function growthAt(c: Cell, x: number, y: number, presence: number, strength: number) {
   return LENS_GROWTH * strength * clamp(presence / REST_PRESENCE, 0, 1) * falloff(c, x, y);
+}
+
+/* fisheye displacement: cells move radially off the lens, smoothly, so swollen cells clear their neighbours */
+function displaced(c: Cell, lx: number, ly: number, p: number, strength: number) {
+  const dx = c.x - lx;
+  const dy = c.y - ly;
+  const d = Math.hypot(dx, dy);
+  if (d < 1) return { x: c.x, y: c.y };
+  const s = c.r * 3.4;
+  const amp = c.r * 1.15 * strength * clamp(p / REST_PRESENCE, 0, 1) * clamp(d / (c.r * 0.7), 0, 1);
+  const k = (amp * Math.exp(-((d / s) ** 2))) / d;
+  return { x: c.x + dx * k, y: c.y + dy * k };
 }
 
 function pick(cells: Cell[], x: number, y: number, strength: number, slack = 1) {
@@ -172,7 +171,7 @@ function drawPhoto(ctx: CanvasRenderingContext2D, im: HTMLImageElement, x: numbe
   const iw = im.naturalWidth;
   const ih = im.naturalHeight;
   if (!iw || !ih) return;
-  const faceR = r * 0.96;
+  const faceR = r;
   const drawW = SQRT3 * faceR;
   const drawH = 2 * faceR;
   const s = Math.max(drawW / iw, drawH / ih);
@@ -314,10 +313,9 @@ export default function HoneycombLens({
 
   const drawCell = useCallback((ctx: CanvasRenderingContext2D, c: Cell, idx: number, a: CellAnim, b: number, grow: number, flare: number) => {
     const { lens } = eng.current;
-    const dist = Math.hypot(c.x - lens.x, c.y - lens.y) || 1;
-    const push = b * c.r * 0.3 * (1 - grow / (1 + LENS_GROWTH));
-    const x = c.x + ((c.x - lens.x) / dist) * push;
-    const y = c.y + ((c.y - lens.y) / dist) * push + (1 - a.e) * c.r * 0.35;
+    const pos = displaced(c, lens.x, lens.y, lens.p, eng.current.strength);
+    const x = pos.x;
+    const y = pos.y + (1 - a.e) * c.r * 0.35;
     const r = c.r * (1 + grow) * (0.6 + 0.4 * a.e);
     const alpha = clamp(a.e * 1.7, 0, 1);
     if (alpha <= 0.01 || r <= 1) return;
@@ -325,6 +323,12 @@ export default function HoneycombLens({
     const E2 = eng.current;
     ctx.save();
     ctx.globalAlpha = alpha;
+
+    // crisp gap: a ground-coloured keyline cuts whatever sits beneath this cell
+    hexPath(ctx, x, y, r + 1.6);
+    ctx.strokeStyle = GROUND;
+    ctx.lineWidth = 3.2;
+    ctx.stroke();
 
     // photo (or frosted glass) through the lens — a lens always refracts a little
     ctx.save();
@@ -337,6 +341,17 @@ export default function HoneycombLens({
       if (a.fade < 0.99) drawFrosted(ctx, x, y, r, 1 - a.fade, E2.noise);
     } else {
       drawFrosted(ctx, x, y, r, 1, E2.noise);
+    }
+    // unifying tone: receding cells share one cool, muted grade; the focused cell keeps its true colour
+    const sMax = LENS_GROWTH * Math.max(eng.current.strength, 0.01);
+    const calm = 1 - clamp(grow / sMax, 0, 1);
+    if (calm > 0.01) {
+      ctx.globalCompositeOperation = 'color';
+      ctx.fillStyle = `rgba(112,128,158,${(0.5 * calm).toFixed(3)})`;
+      ctx.fillRect(x - r, y - r, r * 2, r * 2);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = `rgba(8,11,18,${(0.24 * calm).toFixed(3)})`;
+      ctx.fillRect(x - r, y - r, r * 2, r * 2);
     }
     // glass tint — thicker and darker at the edges
     const tint = ctx.createRadialGradient(x - r * 0.18, y - r * 0.22, r * 0.1, x, y, r * 1.05);
@@ -510,7 +525,8 @@ export default function HoneycombLens({
         const lift = 1 + b * 0.9;
         const vis = rec?.ok ? clamp(a.fade, 0, 1) : 1;
         ctx.globalAlpha = clamp((0.26 + b * 0.22) * a.e * vis, 0, 1);
-        hexPath(ctx, c.x + 3.5 * lift, c.y + (5 + b * 9) * lift, c.r * (1 + grow) * 0.97 * (0.6 + 0.4 * a.e));
+        const sp = displaced(c, lens.x, lens.y, lens.p, E2.strength);
+        hexPath(ctx, sp.x + 3.5 * lift, sp.y + (5 + b * 9) * lift, c.r * (1 + grow) * 0.97 * (0.6 + 0.4 * a.e));
         ctx.fillStyle = '#000';
         ctx.fill();
       }
@@ -836,11 +852,10 @@ export default function HoneycombLens({
   const activeCaption = activePhoto ? activePhoto.caption || activePhoto.alt || '' : '';
   const captionBound = Math.min(layout.width, avail);
   const activeR = activeCell ? activeCell.r * (1 + growthAt(activeCell, E.target.x, E.target.y, 1, strength)) : 0;
-  const captionAbove = activeCell ? activeCell.y + activeR * 1.08 > layout.height - 46 : false;
   const captionStyle: CSSProperties | undefined = activeCell
     ? {
-        insetInlineStart: clamp(activeCell.x, 120, captionBound - 120),
-        insetBlockStart: captionAbove ? activeCell.y - activeR * 1.08 - 8 : activeCell.y + activeR * 1.08 + 4,
+        insetInlineStart: clamp(activeCell.x, 110, captionBound - 110),
+        insetBlockStart: activeCell.y + activeR * 0.8,
       }
     : undefined;
 
@@ -898,7 +913,7 @@ export default function HoneycombLens({
       })}
       {activeCaption && captionStyle && (
         <span
-          className={[styles.caption, captionAbove ? styles.captionAbove : ''].filter(Boolean).join(' ')}
+          className={styles.caption}
           style={captionStyle}
           aria-hidden="true"
         >
@@ -979,7 +994,7 @@ export default function HoneycombLens({
   box-sizing: border-box;
   inline-size: 100%;
   contain: inline-size;
-  border-radius: 26px;
+  border-radius: 22px;
   background: var(--hl-ground);
   color: var(--hl-ink);
   font-family: var(--hl-font);
@@ -1001,13 +1016,13 @@ export default function HoneycombLens({
 
 .pool {
   z-index: 0;
-  background: radial-gradient(42% 38% at 26% 34%, rgba(214, 228, 255, 0.05), transparent 70%);
+  background: radial-gradient(50% 46% at 42% 46%, rgba(214, 228, 255, 0.07), transparent 72%);
   animation: poolDrift 26s ease-in-out infinite alternate;
 }
 
 .vignette {
   z-index: 2;
-  box-shadow: inset 0 0 110px 34px rgba(2, 3, 6, 0.6);
+  background: radial-gradient(ellipse 75% 70% at 46% 46%, transparent 40%, rgba(3, 4, 8, 0.7) 100%);
 }
 
 .grain {
@@ -1056,37 +1071,28 @@ export default function HoneycombLens({
 .caption {
   position: absolute;
   z-index: 2;
-  max-inline-size: min(260px, 64%);
-  transform: translateX(-50%);
-  padding-block: 2px 6px;
-  color: var(--hl-mist);
-  font-size: 13px;
-  line-height: 1.35;
-  letter-spacing: 0.01em;
+  max-inline-size: min(300px, 80%);
+  transform: translate(-50%, -50%);
+  padding: 8px 16px;
+  border: 1px solid rgba(230, 233, 239, 0.14);
+  border-radius: 999px;
+  background: rgba(11, 13, 18, 0.78);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--hl-ink);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.005em;
   text-align: center;
   text-wrap: balance;
   overflow-wrap: anywhere;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85);
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.8);
   pointer-events: none;
   transition:
     inset-inline-start 240ms cubic-bezier(0.16, 1, 0.3, 1),
     inset-block-start 240ms cubic-bezier(0.16, 1, 0.3, 1),
     opacity 180ms ease-out;
-}
-
-.captionAbove {
-  transform: translate(-50%, calc(-100% - 10px));
-  padding-block: 0 2px;
-}
-
-.caption::after {
-  content: '';
-  display: block;
-  margin-block-start: 3px;
-  margin-inline: auto;
-  inline-size: 36px;
-  block-size: 1px;
-  background: rgba(204, 210, 222, 0.35);
 }
 
 .srHelp {
