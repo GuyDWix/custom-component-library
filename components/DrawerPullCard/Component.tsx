@@ -57,7 +57,6 @@ export default function DrawerPullCard({
   const interiorRef = useRef<HTMLDivElement>(null);
   const rowsRef = useRef<HTMLDivElement>(null);
   const frontRef = useRef<HTMLButtonElement>(null);
-  const glintRef = useRef<HTMLSpanElement>(null);
   const photoRef = useRef<HTMLImageElement>(null);
   const spring = useRef({ p: 0, v: 0 });
   const travelRef = useRef(190);
@@ -155,11 +154,6 @@ export default function DrawerPullCard({
     return () => cancelAnimationFrame(id);
   }, [reduced, inView, open, paint]);
 
-  useEffect(() => {
-    const glint = glintRef.current;
-    if (glint) glint.style.animationPlayState = inView && !reduced ? 'running' : 'paused';
-  }, [inView, reduced]);
-
   // A remote photo can be slow or fail: the painted scene underneath always shows.
   useEffect(() => {
     setImgStatus('loading');
@@ -188,14 +182,10 @@ export default function DrawerPullCard({
       onKeyDown={onKeyDown}
     >
       <article className={styles.cabinet} aria-labelledby={titleId}>
-        <span className={styles.lamp} aria-hidden="true" />
         <span className={styles.cornice} aria-hidden="true" />
 
         <div className={styles.upper}>
           <div className={`${styles.door} ${styles.doorTitle}`}>
-            <span className={`${styles.hinge} ${styles.hingeTop}`} aria-hidden="true" />
-            <span className={`${styles.hinge} ${styles.hingeBottom}`} aria-hidden="true" />
-            <span className={`${styles.knob} ${styles.knobSide}`} aria-hidden="true" />
             <div className={styles.panel}>
               <h3 id={titleId} className={styles.title}>
                 {title}
@@ -205,20 +195,8 @@ export default function DrawerPullCard({
           </div>
 
           <div className={`${styles.door} ${styles.doorGlass}`}>
-            <span className={`${styles.hinge} ${styles.hingeTop} ${styles.hingeFar}`} aria-hidden="true" />
-            <span className={`${styles.hinge} ${styles.hingeBottom} ${styles.hingeFar}`} aria-hidden="true" />
-            <span className={`${styles.knob} ${styles.knobSideFar}`} aria-hidden="true" />
             <div className={styles.window}>
-              <span className={styles.scene} aria-hidden="true">
-                <span className={styles.sceneLamps} />
-                <span className={styles.sceneWall} />
-                <span className={styles.sceneTable} />
-                <span className={`${styles.sceneGlass} ${styles.sceneGlassA}`} />
-                <span className={`${styles.sceneGlass} ${styles.sceneGlassB}`} />
-                <span className={styles.scenePlate} />
-                <span className={styles.sceneFood} />
-                <span className={styles.sceneCandle} />
-              </span>
+              <span className={styles.scene} aria-hidden="true" />
               {image && imgStatus !== 'failed' && (
                 <img
                   ref={photoRef}
@@ -243,7 +221,6 @@ export default function DrawerPullCard({
 
           <div ref={trayRef} id={drawerId} className={styles.tray}>
             <div ref={interiorRef} className={styles.interior}>
-              <span className={styles.feltTexture} aria-hidden="true" />
               <span className={`${styles.wall} ${styles.wallStart}`} aria-hidden="true" />
               <span className={`${styles.wall} ${styles.wallEnd}`} aria-hidden="true" />
               {rows.length > 0 && (
@@ -281,11 +258,7 @@ export default function DrawerPullCard({
               <span className={styles.holderCard}>{handleLabel}</span>
             </span>
             <span className={styles.pull} aria-hidden="true">
-              <span className={styles.pullPost} />
-              <span className={`${styles.pullPost} ${styles.pullPostEnd}`} />
-              <span className={styles.pullBar}>
-                <span ref={glintRef} className={styles.glint} />
-              </span>
+              <span className={styles.pullBar} />
             </span>
           </button>
         </div>
@@ -293,11 +266,9 @@ export default function DrawerPullCard({
         <div className={styles.lower}>
           <span className={`${styles.lowerDoor} ${styles.lowerDoorA}`} aria-hidden="true">
             <span className={styles.lowerPanel} />
-            <span className={`${styles.knob} ${styles.knobLowerA}`} />
           </span>
           <span className={`${styles.lowerDoor} ${styles.lowerDoorB}`} aria-hidden="true">
             <span className={styles.lowerPanel} />
-            <span className={`${styles.knob} ${styles.knobLowerB}`} />
           </span>
           <span className={styles.lowerShade} aria-hidden="true" />
         </div>
