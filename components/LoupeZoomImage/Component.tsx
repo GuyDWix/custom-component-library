@@ -430,7 +430,6 @@ export default function LoupeZoomImage({
 
   return (
     <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
-      <span className={styles.grain} aria-hidden="true" />
 
       <div
         className={styles.stage}
@@ -460,16 +459,13 @@ export default function LoupeZoomImage({
             <span className={styles.handle}>
               <span className={styles.ferrule} />
               <span className={styles.grip} />
-              <span className={styles.cap} />
             </span>
             <span className={styles.rim} />
-            <span className={styles.bezel} />
             <span className={styles.view}>
               <img ref={lensImgRef} className={styles.lensImage} src={src} alt="" draggable={false} />
               <span className={styles.depth} />
               <span className={styles.fringe} />
               <span className={styles.curved} />
-              <span className={styles.glint} />
             </span>
           </div>
         </div>

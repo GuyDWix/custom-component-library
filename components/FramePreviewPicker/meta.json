@@ -37,5 +37,5 @@
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
   "art_direction": "Gallery wall: soft sage plaster wall, oak, black and brass frame options, gentle raking light shadow",
-  "notes": "Prints taller than ~116 cm are display-clamped to the wall scene, so the silhouette understates true scale; render and craft gates were skipped this build (shot.sh disabled)"
+  "notes": "Prints taller than ~116 cm are display-clamped to the wall scene, so the silhouette understates true scale; render and craft gates were skipped this build (shot.sh disabled) 2026-11-24: polish pass"
 }

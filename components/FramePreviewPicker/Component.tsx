@@ -41,7 +41,7 @@ export const defaultSizes: FrameSizeOption[] = [
 // Scene geometry, all in centimetres. The wall block maps SCENE_CM vertically.
 const SCENE_CM = 225;
 const SOFA_TOP_CM = 75; // sofa backrest height
-const GAP_CM = 13; // air between frame bottom and sofa back
+const GAP_CM = 16; // air between frame bottom and sofa back
 const TOP_MARGIN_CM = 11;
 const HANG_EYE_CM = 145; // gallery hanging height (centre, from floor)
 const MOULDING_CM = 2.7;

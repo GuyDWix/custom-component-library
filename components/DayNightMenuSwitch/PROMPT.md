@@ -66,6 +66,8 @@ const STARS = [
 ];
 
 const SWIPE_DISTANCE = 48;
+const PANEL_LEAD = 64; // room between the panel's top edge and the first menu row (wide layout)
+const WIDE = 760; // keep in sync with the @container breakpoint in the CSS
 
 const cx = (...parts: Array<string | false | undefined>) => parts.filter(Boolean).join(' ');
 
@@ -104,6 +106,8 @@ export default function DayNightMenuSwitch({
   const eveBtn = useRef<HTMLButtonElement>(null);
   const dayWord = useRef<HTMLHeadingElement>(null);
   const eveWord = useRef<HTMLHeadingElement>(null);
+  const dayList = useRef<HTMLUListElement>(null);
+  const eveList = useRef<HTMLUListElement>(null);
   const swipe = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
@@ -135,6 +139,33 @@ export default function DayNightMenuSwitch({
       ro.disconnect();
     };
   }, [dayTitle, eveningTitle]);
+
+  // Wide layout: sit the cream/night panel's top edge PANEL_LEAD above the tallest list, so the first row clears the curve.
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    let raf = 0;
+    const run = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        if (root.clientWidth < WIDE) {
+          root.style.removeProperty('--dn-panel-top');
+          return;
+        }
+        const rootTop = root.getBoundingClientRect().top;
+        const tops = [dayList.current, eveList.current].flatMap((el) => (el ? [el.getBoundingClientRect().top - rootTop] : []));
+        if (tops.length) root.style.setProperty('--dn-panel-top', `${Math.max(0, Math.round(Math.min(...tops) - PANEL_LEAD))}px`);
+      });
+    };
+    run();
+    const ro = new ResizeObserver(run);
+    ro.observe(root);
+    if (typeof document !== 'undefined' && document.fonts) void document.fonts.ready.then(run);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+    };
+  }, [dayItems, eveningItems]);
 
   const onGroupKey = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'Home') {
@@ -179,6 +210,7 @@ export default function DayNightMenuSwitch({
     note: string,
     items: DayNightMenuItem[],
     wordRef: RefObject<HTMLHeadingElement>,
+    listRef: RefObject<HTMLUListElement>,
   ) => {
     const hidden = evening !== isEvening;
     const out = isEvening ? styles.outAfter : styles.outBefore;
@@ -191,7 +223,7 @@ export default function DayNightMenuSwitch({
           <p className={styles.hours}>{hours}</p>
           <p className={styles.note}>{note}</p>
         </div>
-        <ul className={cx(styles.list, isEvening ? styles.toneNight : styles.toneDay, hidden && styles.listOut)}>
+        <ul ref={listRef} className={cx(styles.list, isEvening ? styles.toneNight : styles.toneDay, hidden && styles.listOut)}>
           {items.map((item, i) => (
             <li
               key={`${item.name}-${i}`}
@@ -304,8 +336,8 @@ export default function DayNightMenuSwitch({
           </span>
         </div>
 
-        {renderPeriod(false, dayTitle, dayHours, dayNote, dayItems, dayWord)}
-        {renderPeriod(true, eveningTitle, eveningHours, eveningNote, eveningItems, eveWord)}
+        {renderPeriod(false, dayTitle, dayHours, dayNote, dayItems, dayWord, dayList)}
+        {renderPeriod(true, eveningTitle, eveningHours, eveningNote, eveningItems, eveWord, eveList)}
       </div>
     </div>
   );
@@ -356,7 +388,9 @@ export default function DayNightMenuSwitch({
   box-sizing: border-box;
   inline-size: 100%;
   direction: ltr;
-  border-radius: 28px;
+  --dn-card-r: 28px;
+  --dn-panel-r: calc(var(--dn-card-r) * 1.75);
+  border-radius: var(--dn-card-r);
   background: var(--dn-paper);
   color: var(--dn-ink);
   font-family: var(--dn-font-ui);
@@ -651,8 +685,8 @@ export default function DayNightMenuSwitch({
   inset-block-start: calc(380px - 56px);
   inset-block-end: 0;
   inset-inline: 0;
-  border-start-start-radius: 50% 56px;
-  border-start-end-radius: 50% 56px;
+  border-start-start-radius: var(--dn-panel-r);
+  border-start-end-radius: var(--dn-panel-r);
   transition: opacity 1400ms ease-in-out 80ms;
 }
 
@@ -669,6 +703,12 @@ export default function DayNightMenuSwitch({
     color-mix(in srgb, var(--dn-night) 56%, #000) 100%
   );
   box-shadow: inset 0 1.5px 0 color-mix(in srgb, var(--dn-glow) 46%, transparent);
+}
+
+.groundNight.fadeIn,
+.hillsNight.fadeIn {
+  /* the *Night layers start at opacity 0 further down the file, so .fadeIn alone loses the cascade */
+  opacity: 1;
 }
 
 .lamp {
@@ -1085,9 +1125,12 @@ export default function DayNightMenuSwitch({
   }
 
   .ground {
-    inset-block-start: 30%;
-    inset-inline-start: 36%;
-    border-start-start-radius: 70% 55%;
+    /* the panel starts where the title column ends, so the list sits exactly one gutter inside its left edge;
+       its top is set from the measured list (see Component.tsx) so the first row always clears the curve */
+    --dn-pad: 48px;
+    --dn-gap: 48px;
+    inset-block-start: var(--dn-panel-top, 30%);
+    inset-inline-start: calc(var(--dn-pad) + (100% - var(--dn-pad) * 2 - var(--dn-gap)) * 5 / 11);
     border-start-end-radius: 0;
   }
 
@@ -1110,7 +1153,7 @@ export default function DayNightMenuSwitch({
 
   .list {
     align-self: end;
-    margin-block-start: 0;
+    margin-block-start: 24px;
   }
 
   .word {

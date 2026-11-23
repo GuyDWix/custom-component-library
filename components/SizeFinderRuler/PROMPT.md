@@ -79,7 +79,8 @@ function buildModel(input: SizeRange[] | undefined): Model {
   const mid = list[Math.floor(list.length / 2)];
   const start = clamp(snap((mid.from + mid.to) / 2), min, max);
   const numerals: number[] = [];
-  for (let n = lo; n <= hi; n += 1) numerals.push(n);
+  // numerals run past both ends so the ruler never ends in blank wood
+  for (let n = Math.max(0, lo - 24); n <= hi + 24; n += 1) numerals.push(n);
   return { list, lo, hi, min, max, ppu, labelsFit, start, numerals };
 }
 
@@ -486,6 +487,7 @@ export default function SizeFinderRuler({
 
         <div className={styles.needleLayer} aria-hidden="true">
           <span ref={needleRef} className={pick(styles.needle, styles.needleHidden, styles.needleDrop)} />
+          <span className={pick(styles.needleFoot, styles.needleHidden, styles.needleDrop)} />
         </div>
       </div>
     </section>
@@ -549,6 +551,9 @@ export default function SizeFinderRuler({
 .card {
   --needle: 38cqw;
   --ruler-h: 184px;
+  /* the needle breaks around the size-chip row so it never cuts through the selected label */
+  --gap-top: 90px;
+  --gap-foot: 38px;
   --avail: calc(100cqw - var(--needle) - 92px);
   --glyph-max: min(21cqw, 260px);
   --num-avail: calc(var(--needle) - 66px);
@@ -802,8 +807,9 @@ export default function SizeFinderRuler({
 .ticks {
   position: absolute;
   inset-block-start: 0;
-  inset-inline-start: -2px;
-  inline-size: calc(var(--span) * var(--ppu) + 4px);
+  /* ticks run the full length of the track, so no blank wood at either end; tile phase stays locked to the scale origin */
+  inset-inline-start: calc(-100cqw - 2px);
+  inline-size: calc(var(--span) * var(--ppu) + 200cqw + 4px);
   block-size: 64px;
   filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.42));
 }
@@ -818,31 +824,26 @@ export default function SizeFinderRuler({
 
 .tickMinor {
   block-size: 26px;
-  background-image: repeating-linear-gradient(
-    90deg,
-    transparent 0 1px,
-    rgba(26, 22, 15, 0.86) 1px 3px,
-    transparent 3px calc(var(--ppu) / 10)
-  );
+  background-image: linear-gradient(90deg, transparent 0 1px, rgba(26, 22, 15, 0.86) 1px 3px, transparent 3px);
+  background-size: calc(var(--ppu) / 10) 100%;
+  background-position-x: 100cqw;
+  background-repeat: repeat-x;
 }
 
 .tickMid {
   block-size: 42px;
-  background-image: repeating-linear-gradient(
-    90deg,
-    transparent 0 1px,
-    var(--sfr-ink) 1px 3px,
-    transparent 3px calc(var(--ppu) / 2)
-  );
+  background-image: linear-gradient(90deg, transparent 0 1px, var(--sfr-ink) 1px 3px, transparent 3px);
+  background-size: calc(var(--ppu) / 2) 100%;
+  background-position-x: 100cqw;
+  background-repeat: repeat-x;
 }
 
 .tickMajor {
   block-size: 62px;
-  background-image: repeating-linear-gradient(
-    90deg,
-    var(--sfr-ink) 0 4px,
-    transparent 4px var(--ppu)
-  );
+  background-image: linear-gradient(90deg, var(--sfr-ink) 0 4px, transparent 4px);
+  background-size: var(--ppu) 100%;
+  background-position-x: 100cqw;
+  background-repeat: repeat-x;
 }
 
 .numeral {
@@ -863,7 +864,8 @@ export default function SizeFinderRuler({
   position: absolute;
   inset-block-start: 124px;
   block-size: 40px;
-  inset-inline: -2px;
+  inset-inline-start: -100cqw;
+  inline-size: calc(var(--span) * var(--ppu) + 200cqw);
   box-sizing: border-box;
   border-block: 1.5px solid rgba(26, 22, 15, 0.5);
   background: rgba(120, 78, 28, 0.08);
@@ -912,9 +914,10 @@ export default function SizeFinderRuler({
   pointer-events: none;
 }
 
-.needle {
+.needle,
+.needleFoot {
   position: absolute;
-  inset-block: 0;
+  inset-block: 0 var(--gap-top);
   inset-inline-start: calc(var(--needle) - 2px);
   inline-size: 4px;
   background: var(--sfr-accent);
@@ -922,6 +925,14 @@ export default function SizeFinderRuler({
     0 0 0 1.5px rgba(14, 12, 8, 0.9),
     0 0 22px 2px color-mix(in srgb, var(--sfr-accent) 30%, transparent);
   transform-origin: 50% 0;
+}
+
+.needleFoot {
+  inset-block: auto 0;
+  block-size: var(--gap-foot);
+  inset-inline-start: calc(var(--needle) - 2px);
+  border-radius: 0;
+  transform-origin: 50% 100%;
 }
 
 /* ───────── Intro choreography states ───────── */
@@ -1031,6 +1042,8 @@ export default function SizeFinderRuler({
   .card {
     --needle: 50cqw;
     --ruler-h: 176px;
+    --gap-top: 82px;
+    --gap-foot: 30px;
     --avail: calc(100cqw - 52px);
     --glyph-max: 30cqw;
     --num-avail: calc(100cqw - 52px);

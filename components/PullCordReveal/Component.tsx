@@ -316,37 +316,23 @@ export default function PullCordReveal({
       className={[styles.root, className].filter(Boolean).join(' ')}
       style={rootStyle}
     >
-      <span className={styles.wallGlow} aria-hidden="true" />
       <span className={styles.plaster} aria-hidden="true" />
 
       <svg className={styles.defs} width="0" height="0" aria-hidden="true" focusable="false">
         <defs>
           <linearGradient id={`${uid}b`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#6f4f21" />
-            <stop offset="0.16" stopColor="#ecd093" />
-            <stop offset="0.36" stopColor="#c59d58" />
-            <stop offset="0.6" stopColor="#97702f" />
-            <stop offset="0.82" stopColor="#d2ad6a" />
-            <stop offset="1" stopColor="#573a14" />
+            <stop offset="0" stopColor="#9a7940" />
+            <stop offset="0.45" stopColor="#c4a263" />
+            <stop offset="1" stopColor="#8a6a34" />
           </linearGradient>
           <linearGradient id={`${uid}d`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#fbe7b6" />
-            <stop offset="0.3" stopColor="#d4ac66" />
-            <stop offset="0.62" stopColor="#8f6a2e" />
-            <stop offset="0.82" stopColor="#c79a52" />
-            <stop offset="1" stopColor="#5a3d17" />
+            <stop offset="0" stopColor="#d9bb7e" />
+            <stop offset="1" stopColor="#94733a" />
           </linearGradient>
-          <radialGradient id={`${uid}h`} cx="0.36" cy="0.3" r="0.85">
-            <stop offset="0" stopColor="#f6e2b0" />
-            <stop offset="0.5" stopColor="#b98f4c" />
-            <stop offset="1" stopColor="#5e4119" />
-          </radialGradient>
           <linearGradient id={`${uid}w`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#3a2210" />
-            <stop offset="0.24" stopColor="#8d5c2c" />
-            <stop offset="0.4" stopColor="#c08a45" />
-            <stop offset="0.62" stopColor="#7a4a22" />
-            <stop offset="1" stopColor="#331e0e" />
+            <stop offset="0" stopColor="#6e4a26" />
+            <stop offset="0.45" stopColor="#a47339" />
+            <stop offset="1" stopColor="#5c3d1f" />
           </linearGradient>
         </defs>
       </svg>
@@ -407,10 +393,8 @@ export default function PullCordReveal({
                   )}
                 </div>
                 <span className={styles.shadeWeave} aria-hidden="true" />
-                <span className={styles.shadeSlub} aria-hidden="true" />
-                <span className={styles.shadeGlow} aria-hidden="true" />
-                <span className={styles.shadeGhost} aria-hidden="true" />
-                <span className={styles.shadeTop} aria-hidden="true" />
+                          <span className={styles.shadeGlow} aria-hidden="true" />
+                          <span className={styles.shadeTop} aria-hidden="true" />
                 <span className={styles.shadeEdge} aria-hidden="true" />
               </div>
 
@@ -425,72 +409,23 @@ export default function PullCordReveal({
                   aria-hidden="true"
                   focusable="false"
                 >
-                  <path
-                    d="M2.5 0H33.5V37.5Q33.5 49 18 49Q2.5 49 2.5 37.5Z"
-                    fill={ref('b')}
-                  />
-                  <path
-                    d="M2.5 0V37.5Q2.5 49 18 49"
-                    fill="none"
-                    stroke="rgba(255,240,200,0.6)"
-                    strokeWidth="0.9"
-                  />
-                  <path
-                    d="M33.5 0V37.5Q33.5 49 18 49"
-                    fill="none"
-                    stroke="rgba(40,22,4,0.6)"
-                    strokeWidth="0.9"
-                  />
-                  <path
-                    d="M6 3H30V37Q30 45.5 18 45.5Q6 45.5 6 37Z"
-                    fill="none"
-                    stroke="rgba(60,36,8,0.38)"
-                    strokeWidth="0.8"
-                  />
-                  <circle cx="18" cy="22.3" r="9.8" fill="rgba(30,16,3,0.8)" />
-                  <circle cx="18" cy="22.3" r="8.2" fill={ref('h')} />
-                  <circle cx="18" cy="22.3" r="3.4" fill="#3a2308" />
-                  <circle cx="17" cy="21.3" r="1.1" fill="rgba(255,236,190,0.75)" />
-                  <circle cx="18" cy="6.8" r="2.9" fill={ref('h')} stroke="rgba(40,22,4,0.7)" strokeWidth="0.6" />
-                  <path d="M16.2 7.6L19.8 6" stroke="rgba(40,22,4,0.85)" strokeWidth="0.8" />
-                  <circle cx="18" cy="41" r="2.5" fill={ref('h')} stroke="rgba(40,22,4,0.7)" strokeWidth="0.6" />
-                  <path d="M16.6 40.4L19.4 41.6" stroke="rgba(40,22,4,0.85)" strokeWidth="0.8" />
+                  <path d="M3 0H33V37.5Q33 48 18 48Q3 48 3 37.5Z" fill={ref('b')} />
+                  <circle cx="18" cy="22" r="7.6" fill="rgba(40,24,6,0.55)" />
+                  <circle cx="18" cy="22" r="6" fill={ref('b')} />
+                  <circle cx="18" cy="22" r="2.6" fill="#3a2a12" />
                 </svg>
               ))}
 
               <svg className={styles.arm} viewBox="0 0 30 66" aria-hidden="true" focusable="false">
-                <rect x="6" y="0" width="18" height="8.5" rx="1.6" fill={ref('b')} />
-                <circle cx="15" cy="4.2" r="2" fill={ref('h')} stroke="rgba(40,22,4,0.7)" strokeWidth="0.5" />
+                <rect x="6" y="0" width="18" height="8" rx="1.6" fill={ref('b')} />
                 <rect x="12.2" y="8" width="5.6" height="28" fill={ref('b')} />
-                <rect x="12.2" y="8" width="1.1" height="28" fill="rgba(255,244,214,0.5)" />
-                <circle cx="15" cy="46" r="12.6" fill="rgba(24,12,2,0.75)" />
                 <g className={styles.wheel}>
-                  <circle cx="15" cy="46" r="11.4" fill={ref('h')} />
-                  <circle cx="15" cy="46" r="8.4" fill="#2a1a08" />
-                  {NOTCHES.map((a) => (
-                    <path
-                      key={a}
-                      d="M15 35.6V37.6"
-                      stroke="rgba(50,28,6,0.7)"
-                      strokeWidth="0.9"
-                      transform={`rotate(${a} 15 46)`}
-                    />
-                  ))}
-                  <circle cx="15" cy="46" r="3" fill={ref('h')} />
+                  <circle cx="15" cy="46" r="11.4" fill={ref('b')} />
+                  <circle cx="15" cy="46" r="8" fill="#2a1a08" />
+                  <path d="M15 38.4V41.4" stroke="rgba(214,180,120,0.8)" strokeWidth="1.2" />
+                  <circle cx="15" cy="46" r="2.6" fill={ref('b')} />
                 </g>
-                <path
-                  d="M6.8 46A8.2 8.2 0 0 0 23.2 46"
-                  fill="none"
-                  stroke="#cdb27c"
-                  strokeWidth="2.6"
-                />
-                <path
-                  d="M6.8 46A8.2 8.2 0 0 0 23.2 46"
-                  fill="none"
-                  stroke="rgba(60,40,12,0.55)"
-                  strokeWidth="0.8"
-                  strokeDasharray="1.2 1.6"
-                />
+                <path d="M6.8 46A8.2 8.2 0 0 0 23.2 46" fill="none" stroke="#cdb88c" strokeWidth="2" />
               </svg>
 
               <div
@@ -517,52 +452,17 @@ export default function PullCordReveal({
                   onKeyDown={onKeyDown}
                 >
                   <svg viewBox="0 0 64 64" className={styles.ringSvg} aria-hidden="true" focusable="false">
-                    <circle cx="32" cy="32" r="24" fill="none" stroke={ref('d')} strokeWidth="9" />
-                    <circle cx="32" cy="32" r="19.4" fill="none" stroke="rgba(30,16,2,0.6)" strokeWidth="1.2" />
-                    <circle cx="32" cy="32" r="28.4" fill="none" stroke="rgba(40,22,4,0.45)" strokeWidth="1" />
-                    <circle
-                      cx="32"
-                      cy="32"
-                      r="25.6"
-                      fill="none"
-                      stroke="rgba(255,246,220,0.7)"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeDasharray="34 140"
-                      strokeDashoffset="-92"
-                    />
-                    <circle
-                      cx="32"
-                      cy="32"
-                      r="22.4"
-                      fill="none"
-                      stroke="rgba(30,16,2,0.4)"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                      strokeDasharray="36 106"
-                      strokeDashoffset="-8"
-                    />
-                    <ellipse cx="14.2" cy="22" rx="1.4" ry="2.6" fill="rgba(255,252,236,0.85)" transform="rotate(35 14.2 22)" />
+                    <circle cx="32" cy="32" r="25" fill="none" stroke={ref('d')} strokeWidth="6" />
                   </svg>
                 </div>
                 <div ref={dropRef} className={styles.drop}>
                   <svg viewBox="0 0 24 54" className={styles.acorn} aria-hidden="true" focusable="false">
                     <ellipse cx="12" cy="3" rx="3.4" ry="3" fill="none" stroke={ref('b')} strokeWidth="1.5" />
-                    <path d="M7.4 5.2H16.6V9L18.6 11.6H5.4L7.4 9Z" fill={ref('b')} />
-                    <path d="M7.6 5.6V9" stroke="rgba(255,244,214,0.7)" strokeWidth="0.7" />
-                    <path d="M5.8 11.2H18.2" stroke="rgba(40,22,4,0.6)" strokeWidth="0.7" />
-                    <ellipse cx="12" cy="13.4" rx="5.8" ry="2.3" fill={ref('w')} />
+                    <path d="M7 6H17L18.6 12H5.4Z" fill={ref('b')} />
                     <path
                       d="M9.4 15.2C4 18.4 2 27.2 5 34C7 38.6 10 41 10.8 44L10 47C10 49.6 11 52 12 52C13 52 14 49.6 14 47L13.2 44C14 41 17 38.6 19 34C22 27.2 20 18.4 14.6 15.2Z"
                       fill={ref('w')}
                     />
-                    <path d="M4.5 24.5Q12 27.6 19.5 24.5" fill="none" stroke="rgba(28,13,3,0.75)" strokeWidth="0.8" />
-                    <path d="M4.7 25.7Q12 28.8 19.3 25.7" fill="none" stroke="rgba(255,214,150,0.35)" strokeWidth="0.6" />
-                    <path d="M6.6 36.4Q12 39 17.4 36.4" fill="none" stroke="rgba(28,13,3,0.7)" strokeWidth="0.8" />
-                    <path d="M9 18C8 27 9 36 11.2 44" fill="none" stroke="rgba(40,20,6,0.28)" strokeWidth="0.6" />
-                    <path d="M14.6 19C15.6 27 15 35 13.2 43" fill="none" stroke="rgba(40,20,6,0.28)" strokeWidth="0.6" />
-                    <path d="M7.4 20C5.8 26 6.4 31 8.2 35" fill="none" stroke="rgba(255,232,184,0.6)" strokeWidth="1.5" strokeLinecap="round" />
-                    <circle cx="12" cy="52" r="0.9" fill="#2a1608" />
                   </svg>
                   {cordLabel && (
                     <div className={styles.tagSwing}>

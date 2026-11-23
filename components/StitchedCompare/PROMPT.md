@@ -58,7 +58,6 @@ const PATH_KEYS = [
   'uBands',
   'uRidges',
   'uSheen',
-  'uGlint',
   'oShadowSoft',
   'oShadow',
   'oBase',
@@ -66,7 +65,6 @@ const PATH_KEYS = [
   'oBands',
   'oRidges',
   'oSheen',
-  'oGlint',
   'holes',
   'holeLip',
   'fray',
@@ -207,7 +205,6 @@ const buildSeam = (pos: number, w: number, h: number, n: number, tens: number[],
     }
     const hl = shifted(hx * W * 0.2, hy * W * 0.2);
     p[`${g}Sheen`] += hl;
-    p[`${g}Glint`] += hl;
 
     // Ply twist: oblique grooves and crests across the thread.
     const arcLen = len + (8 * sag * sag) / (3 * len);
@@ -338,7 +335,7 @@ const buildSeam = (pos: number, w: number, h: number, n: number, tens: number[],
     gap,
     cut: gap / 2 + hw - 8,
     tw: W * (1 - 0.14 * tg),
-    sheen: 0.55 + 0.4 * tg,
+    sheen: 0.22 + 0.2 * tg,
     pk: 0.45 + 0.55 * tg,
   };
 };
@@ -604,7 +601,6 @@ export default function StitchedCompare({
     <div ref={rootRef} className={cx(styles.root, className)} style={rootStyle}>
       <span className={styles.grain} aria-hidden="true" />
       <div className={styles.table}>
-        <span className={styles.chalkRule} aria-hidden="true" />
         <div
           ref={plateRef}
           className={styles.plate}
@@ -626,9 +622,6 @@ export default function StitchedCompare({
                 <span className={styles.ink}>{beforeLabel}</span>
               </span>
               <span className={cx(styles.pin, styles.pinBefore)} aria-hidden="true">
-                <span className={styles.pinHole} />
-                <span className={styles.pinCast} />
-                <span className={styles.pinNeedle} />
                 <span className={cx(styles.pinHead, styles.pinHeadRed)} />
               </span>
             </div>
@@ -645,9 +638,6 @@ export default function StitchedCompare({
                 <span className={styles.ink}>{afterLabel}</span>
               </span>
               <span className={cx(styles.pin, styles.pinAfter)} aria-hidden="true">
-                <span className={styles.pinHole} />
-                <span className={styles.pinCast} />
-                <span className={styles.pinNeedle} />
                 <span className={cx(styles.pinHead, styles.pinHeadPearl)} />
               </span>
             </div>
@@ -752,14 +742,11 @@ export default function StitchedCompare({
   --sc-tape-lo: #e0d4b4;
   --sc-ink: #2a2017;
   --sc-paper: #f8f1de;
-  --sc-chalk-blue: rgba(86, 120, 156, 0.82);
-  --sc-chalk-white: rgba(255, 253, 246, 0.95);
   --sc-weave: rgba(100, 74, 40, 0.2);
   --sc-font-note: 'SC Caveat', 'Segoe Print', 'Bradley Hand', cursive;
   --sc-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.38  0 0 0 0 0.26  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   --sc-slub-h: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='h'><feTurbulence type='fractalNoise' baseFrequency='.004 .32' numOctaves='3' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.36  0 0 0 0 0.27  0 0 0 0 0.15  0 0 0 1.2 -.4'/></filter><rect width='100%' height='100%' filter='url(%23h)'/></svg>");
   --sc-slub-v: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='v'><feTurbulence type='fractalNoise' baseFrequency='.32 .004' numOctaves='3' seed='9' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.36  0 0 0 0 0.27  0 0 0 0 0.15  0 0 0 1.2 -.4'/></filter><rect width='100%' height='100%' filter='url(%23v)'/></svg>");
-  --sc-chalk-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='c'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 3 -.9'/></filter><rect width='100%' height='100%' filter='url(%23c)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -797,40 +784,15 @@ export default function StitchedCompare({
   z-index: 0;
   pointer-events: none;
   background-image: var(--sc-noise);
-  opacity: 0.28;
+  opacity: 0.14;
   mix-blend-mode: multiply;
 }
 
 .table {
   position: relative;
   z-index: 1;
-  padding-block: 32px 40px;
+  padding-block: 32px;
   padding-inline: clamp(18px, 4cqw, 42px);
-}
-
-/* Tailor's chalk: powdery marks on the cloth. */
-.chalkRule {
-  position: absolute;
-  pointer-events: none;
-  -webkit-mask-image: var(--sc-chalk-mask);
-  mask-image: var(--sc-chalk-mask);
-  -webkit-mask-size: 120px 120px;
-  mask-size: 120px 120px;
-}
-
-.chalkRule {
-  inset-block-end: 11px;
-  inset-inline-start: clamp(18px, 4cqw, 42px);
-  inline-size: min(46%, 380px);
-  block-size: 12px;
-  rotate: 0.2deg;
-  background-image:
-    linear-gradient(var(--sc-chalk-blue), var(--sc-chalk-blue)),
-    repeating-linear-gradient(90deg, var(--sc-chalk-blue) 0 1.5px, transparent 1.5px 10px),
-    repeating-linear-gradient(90deg, var(--sc-chalk-blue) 0 1.7px, transparent 1.7px 50px);
-  background-repeat: no-repeat;
-  background-size: 100% 1.6px, 100% 5px, 100% 12px;
-  background-position: 0 100%, 0 100%, 0 100%;
 }
 
 .plate {
@@ -856,9 +818,8 @@ export default function StitchedCompare({
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
   box-shadow:
-    0 0 0 0.5px rgba(36, 24, 10, 0.35),
-    2px 3px 3px rgba(36, 24, 10, 0.2),
-    9px 16px 30px rgba(36, 24, 10, 0.22);
+    0 0 0 0.5px rgba(36, 24, 10, 0.3),
+    6px 12px 24px rgba(36, 24, 10, 0.18);
 }
 
 /* The cut between the panels: the table showing through, in shade. */
@@ -1023,7 +984,6 @@ export default function StitchedCompare({
 .uBands,
 .uRidges,
 .uSheen,
-.uGlint,
 .oShadowSoft,
 .oShadow,
 .oBase,
@@ -1031,7 +991,6 @@ export default function StitchedCompare({
 .oBands,
 .oRidges,
 .oSheen,
-.oGlint,
 .holeLip,
 .fray {
   fill: none;
@@ -1099,13 +1058,13 @@ export default function StitchedCompare({
 
 .uShadowSoft,
 .oShadowSoft {
-  stroke: rgba(30, 18, 6, 0.12);
-  stroke-width: calc(var(--sc-tw) * 2.4);
+  stroke: rgba(30, 18, 6, 0.08);
+  stroke-width: calc(var(--sc-tw) * 2);
 }
 
 .uShadow,
 .oShadow {
-  stroke: rgba(30, 18, 6, 0.34);
+  stroke: rgba(30, 18, 6, 0.24);
   stroke-width: calc(var(--sc-tw) * 1.1);
 }
 
@@ -1134,21 +1093,13 @@ export default function StitchedCompare({
   stroke: var(--sc-thread-hi);
   stroke-width: calc(var(--sc-tw) * 0.16);
   stroke-linecap: butt;
-  opacity: 0.42;
+  opacity: 0.2;
 }
 
 .uSheen,
 .oSheen {
   stroke: var(--sc-thread-hi);
   stroke-width: calc(var(--sc-tw) * 0.3);
-  opacity: var(--sc-sheen);
-}
-
-.uGlint,
-.oGlint {
-  stroke: #fff2de;
-  stroke-width: calc(var(--sc-tw) * 0.14);
-  stroke-dasharray: 1.4 3.6;
   opacity: var(--sc-sheen);
 }
 
@@ -1178,13 +1129,13 @@ export default function StitchedCompare({
 
 .tagBefore {
   inset-inline-start: 16px;
-  rotate: -2.2deg;
+  rotate: -1deg;
   transform-origin: 22px 13px;
 }
 
 .tagAfter {
   inset-inline-end: 16px;
-  rotate: 1.8deg;
+  rotate: 0.8deg;
   transform-origin: calc(100% - 22px) 13px;
 }
 
@@ -1196,15 +1147,10 @@ export default function StitchedCompare({
   padding-block: 17px 10px;
   padding-inline: 15px;
   border-radius: 1.5px 2px 1px 3px;
-  background-image:
-    linear-gradient(315deg, #efe5ca 0 9px, rgba(90, 66, 36, 0.3) 9px 10px, transparent 10px),
-    linear-gradient(165deg, rgba(255, 255, 255, 0.55), transparent 42%, rgba(120, 92, 52, 0.12)),
-    var(--sc-noise),
-    linear-gradient(180deg, #fbf5e4, var(--sc-paper));
+  background: var(--sc-paper);
   box-shadow:
-    0 0 0 0.5px rgba(60, 40, 16, 0.25),
-    1px 1.5px 1px rgba(36, 24, 10, 0.22),
-    4px 7px 9px rgba(36, 24, 10, 0.28);
+    0 0 0 0.5px rgba(60, 40, 16, 0.2),
+    1px 2px 4px rgba(36, 24, 10, 0.18);
 }
 
 .ink {
@@ -1217,11 +1163,10 @@ export default function StitchedCompare({
   line-height: 1.12;
   letter-spacing: 0.01em;
   color: var(--sc-ink);
-  text-shadow: 0 0 0.7px rgba(42, 32, 23, 0.55);
   text-wrap: balance;
 }
 
-/* Dressmaker's pin: the origin of .pin is where the shaft enters the paper. */
+/* A plain pin head holds each label. */
 .pin {
   position: absolute;
   inset-block-start: 13px;
@@ -1231,79 +1176,38 @@ export default function StitchedCompare({
 
 .pinBefore {
   --sc-pa: 220deg;
-  --sc-hx: -7.7px;
-  --sc-hy: -6.4px;
+  --sc-hx: -6px;
+  --sc-hy: -5px;
   inset-inline-start: 22px;
 }
 
 .pinAfter {
   --sc-pa: 320deg;
-  --sc-hx: 7.7px;
-  --sc-hy: -6.4px;
+  --sc-hx: 6px;
+  --sc-hy: -5px;
   inset-inline-end: 22px;
-}
-
-.pinHole {
-  position: absolute;
-  inset-inline-start: 0;
-  inset-block-start: 0;
-  inline-size: 3.6px;
-  block-size: 3.6px;
-  translate: -50% -50%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(30, 20, 8, 0.7) 0 35%, rgba(80, 58, 28, 0.25) 62%, transparent 72%);
-  box-shadow: 0.5px 0.6px 0 rgba(255, 255, 255, 0.5);
-}
-
-.pinCast {
-  position: absolute;
-  inset-inline-start: 0;
-  inset-block-start: 0;
-  inline-size: 11px;
-  block-size: 1.6px;
-  transform-origin: 0 50%;
-  translate: 2.4px 4.2px;
-  rotate: var(--sc-pa);
-  background: rgba(30, 18, 6, 0.38);
-  filter: blur(0.9px);
-}
-
-.pinNeedle {
-  position: absolute;
-  inset-inline-start: 0;
-  inset-block-start: 0;
-  inline-size: 10.5px;
-  block-size: 1.4px;
-  margin-block-start: -0.7px;
-  transform-origin: 0 50%;
-  rotate: var(--sc-pa);
-  background: linear-gradient(180deg, #f6f8fa, #9aa0a6 50%, #4b5056);
 }
 
 .pinHead {
   position: absolute;
   inset-inline-start: var(--sc-hx);
   inset-block-start: var(--sc-hy);
-  inline-size: 11px;
-  block-size: 11px;
+  inline-size: 9px;
+  block-size: 9px;
   translate: -50% -50%;
   border-radius: 50%;
-  box-shadow:
-    inset -1.3px -1.9px 2.4px rgba(0, 0, 0, 0.42),
-    inset 0.8px 0.8px 1.2px rgba(255, 255, 255, 0.35),
-    2.6px 4.6px 3.4px rgba(30, 18, 6, 0.36);
+  box-shadow: 1px 2px 2.5px rgba(30, 18, 6, 0.28);
 }
 
 .pinHeadRed {
-  background:
-    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.95) 0 9%, rgba(255, 255, 255, 0) 24%),
-    radial-gradient(circle at 36% 32%, var(--sc-thread-hi), var(--sc-thread) 52%, var(--sc-thread-dk) 100%);
+  background: var(--sc-thread);
 }
 
 .pinHeadPearl {
-  background:
-    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 1) 0 10%, rgba(255, 255, 255, 0) 26%),
-    radial-gradient(circle at 36% 32%, #fffaf0, #e7dcc4 52%, #a99a78 100%);
+  background: #ece3cf;
+  box-shadow:
+    0 0 0 0.5px rgba(90, 66, 36, 0.35),
+    1px 2px 2.5px rgba(30, 18, 6, 0.28);
 }
 
 /* The button sewn on the seam is the handle. */
@@ -1400,13 +1304,8 @@ export default function StitchedCompare({
 
 @container (max-width: 540px) {
   .table {
-    padding-block: 20px 28px;
+    padding-block: 20px;
     padding-inline: 14px;
-  }
-
-  .chalkRule {
-    inset-block-end: 9px;
-    inset-inline-start: 14px;
   }
 
   .plate {

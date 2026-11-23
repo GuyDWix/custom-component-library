@@ -40,5 +40,5 @@
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
   "art_direction": "Dusk window seen straight on: painted deep-green sash window with mitred casing, deep reveal and mullions over a warm-graded restaurant view; woven ecru linen roller shade on a fixed brass axle with brass end brackets, pulley arm and twisted cord; turned wooden acorn and ring pull with a paper tag. Warm amber window glow against a dark wall, ring and tag as the focal point.",
-  "notes": "2026-11-23: quality redo (Sonnet 5.5). Rebuilt hardware, linen weave/translucency, window depth and dusk lighting after Guy's 'ugly' verdict. Visual quality unverified (no screenshots per token-saving directive). Cord drag span scales with window height; tap-to-toggle and arrow keys cover small windows."
+  "notes": "2026-11-23: quality redo (Sonnet 5.5). Rebuilt hardware, linen weave/translucency, window depth and dusk lighting after Guy's 'ugly' verdict. Visual quality unverified (no screenshots per token-saving directive). Cord drag span scales with window height; tap-to-toggle and arrow keys cover small windows. 2026-11-24: de-skeuomorphic pass: dusk saturation and ember glow removed (natural light); bracket/pulley/ring/acorn simplified and scaled toward real objects; thinner cord; linen slub/ghost-bar texture removed."
 }

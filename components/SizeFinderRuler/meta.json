@@ -36,5 +36,5 @@
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
   "art_direction": "Drafting desk: warm maple ruler strip, black engraved ticks, citrus-yellow indicator needle, clean paper-white readout",
-  "notes": "Never rendered by the builder (render and craft deferred to QA). Maple grain and paper texture are CSS-embedded SVG noise, so tune their strength on first look. Needle uses a fixed citrus-on-dark pairing: a dark accent colour would lose contrast on the mat."
+  "notes": "Never rendered by the builder (render and craft deferred to QA). Maple grain and paper texture are CSS-embedded SVG noise, so tune their strength on first look. Needle uses a fixed citrus-on-dark pairing: a dark accent colour would lose contrast on the mat. 2026-11-24: polish pass"
 }

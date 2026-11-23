@@ -38,5 +38,5 @@
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
   "art_direction": "Paper theatre: layered matte cut-paper in dusk coral and indigo, soft stepped shadows between planes, grainy print texture",
-  "notes": "Defaults are painted in code (dusk sky, paper hot-air balloon) so no cut-out image is needed; setting a background or foreground image swaps those planes. Self-hosted Gabarito font. Not yet seen in a browser: layout positions were set by calculation only. 2026-11-23: targeted fix (Sonnet 5.5, QA near-pass): title floor raised above the near-hill tips so it is never covered at any length; hanging tag width capped to the string anchor and clamped to 5 lines so text stays inside the card. Pending QA re-sweep. 2026-11-23: surgical fix 2 (worst-375): long captions (>90 chars) at narrow widths get a tighter size and lower position so they clear the title above."
+  "notes": "2026-11-24: broken-fix pass. Narrow title width 84% -> 76% so long titles are no longer clipped by the right drape; hanging-tag line clamp moved to an inner text span so the tag's padding can never reveal a sixth line. captionLong rule kept (verified at worst-375, still clear of the title). Checked headless at 1280 / 375 / worst 1280 / worst 375."
 }

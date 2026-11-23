@@ -497,7 +497,7 @@ export default function LayeredDepthCard({
                   <span className={styles.string} />
                   <span className={styles.tag}>
                     <span className={styles.hole} />
-                    {label}
+                    <span className={styles.tagText}>{label}</span>
                   </span>
                 </div>
               </div>

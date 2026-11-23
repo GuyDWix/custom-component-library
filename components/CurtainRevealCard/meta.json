@@ -39,5 +39,5 @@
   "status": "built",
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
-  "notes": "2026-11-23: render/craft gates skipped per token-saving instruction, so the velvet fold gradient and open-state geometry are unverified visually; the fold period (80px) may need tuning once shot. | 2026-11-23: quality redo 2 (Sonnet 5.5, QA fail): theatre now fills the whole card, half-open reveal in the hero state, big draggable tassel, worst case fixed (no flanking rules, fixed aspect, line clamps). Checked only with private headless captures at 1280/700/375, worst, reduced; QA re-sweep pending."
+  "notes": "2026-11-23: render/craft gates skipped per token-saving instruction, so the velvet fold gradient and open-state geometry are unverified visually; the fold period (80px) may need tuning once shot. | 2026-11-23: quality redo 2 (Sonnet 5.5, QA fail): theatre now fills the whole card, half-open reveal in the hero state, big draggable tassel, worst case fixed (no flanking rules, fixed aspect, line clamps). Checked only with private headless captures at 1280/700/375, worst, reduced; QA re-sweep pending. 2026-11-24: polish pass"
 }

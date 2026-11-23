@@ -36,5 +36,5 @@
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
   "art_direction": "Origami studio: coral-red folded stock, cream type, sharp light and shadow planes on each facet, matte paper grain",
-  "notes": "Scroll-mapped unfold needs scroll room below the strip; on a very short page it never fully opens"
+  "notes": "2026-11-24: broken-fix pass. Replaced the scroll-mapped unfold with an in-view trigger (opens when comfortably on screen or fully visible at page end, folds back after leaving). Also fixed: strip had no height (text clipped to a ~50px bar) - an invisible sizer now gives the real headline height so long text wraps to 2-3 lines, then shrinks, never clips; facets are now one facet wide each (the chain was k times too wide); lead facet rotation was missing, and the --cx crease angles lacked the deg unit so every mid-unfold frame lost its crease transforms. Checked headless folded / unfolded at 1280, 375, worst."
 }

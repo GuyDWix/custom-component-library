@@ -38,5 +38,5 @@
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
   "art_direction": "Apothecary glass (warm-earned): amber syrup rising in thick clear glass on a sunlit apothecary shelf; refraction glints at the walls, a climbing meniscus, fine rising bubbles, golden caustics on the shelf; the cork pops open at 100%. Giant ink numeral behind the glass, cream paper label carries the type. Light mode.",
-  "notes": "2026-11-23: redesigned (batch B) to apothecary glass (refraction, meniscus, rising bubbles, caustics, cork pop); parked contrast QA flag fixed — small text moved off the glass onto the cream paper label (ink 12.6:1, soft ink 5.3:1). Weakest point: giant numeral overlaps the glass only at mid-percent values; very low or very wide percents sit clear of the jar."
+  "notes": "2026-11-23: redesigned (batch B) to apothecary glass (refraction, meniscus, rising bubbles, caustics, cork pop); parked contrast QA flag fixed — small text moved off the glass onto the cream paper label (ink 12.6:1, soft ink 5.3:1). Weakest point: giant numeral overlaps the glass only at mid-percent values; very low or very wide percents sit clear of the jar. 2026-11-24: polish pass"
 }

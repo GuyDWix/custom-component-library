@@ -52,8 +52,9 @@
 }
 
 .stage {
+  --gj-jw: min(58cqi, 250px);
   position: relative;
-  block-size: clamp(580px, 165cqi, 700px);
+  block-size: clamp(480px, 138cqi, 600px);
 }
 
 .lightGlow {
@@ -90,21 +91,53 @@
   background: linear-gradient(180deg, var(--gj-shelf-line) 0 2px, var(--gj-shelf-top) 2px 38%, var(--gj-shelf-face) 100%);
 }
 
+/* the percentage: one giant tabular numeral behind the glass, scaled to the jar.
+   The same numeral is repeated inside the liquid (see .liquidLayer) so it flips from ink to cream at the surface. */
 .numeral {
   position: absolute;
-  z-index: 4;
-  inset-block-start: 4%;
-  inset-inline: 0;
+  inset-inline-start: 50%;
+  inset-block-start: 43.4%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.03em;
   margin: 0;
-  text-align: center;
   font-family: var(--gj-font-display);
   font-weight: 700;
-  font-size: clamp(64px, 23cqi, 96px);
-  line-height: 0.82;
-  letter-spacing: -0.05em;
+  font-size: calc(var(--gj-jw) * var(--gj-nk, 0.9));
+  line-height: 0.8;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
   color: var(--gj-ink);
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
   pointer-events: none;
+  user-select: none;
+}
+
+.pct {
+  font-size: 0.4em;
+  line-height: 1;
+  margin-block-start: 0.12em;
+  letter-spacing: 0;
+  font-weight: 700;
+}
+
+/* inside the glass: the numeral again, lit from within, only where there is liquid */
+.liquidLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent calc((0.9 - var(--gj-fill) * 0.8) * 100%), #000 calc((0.9 - var(--gj-fill) * 0.8) * 100% + 10px));
+  mask-image: linear-gradient(180deg, transparent calc((0.9 - var(--gj-fill) * 0.8) * 100%), #000 calc((0.9 - var(--gj-fill) * 0.8) * 100% + 10px));
+}
+
+.numeralIn {
+  inset-block-start: 31%;
+  font-size: calc((100cqi + 10px) * var(--gj-nk, 0.9));
+  color: rgba(255, 246, 222, 0.82);
 }
 
 .caustics {
@@ -162,7 +195,7 @@
   z-index: 5;
   inset-block-end: 14%;
   inset-inline-start: 50%;
-  inline-size: min(58cqi, 250px);
+  inline-size: var(--gj-jw);
   aspect-ratio: 0.74;
   transform: translateX(-50%);
   display: grid;
@@ -329,9 +362,9 @@
   position: absolute;
   z-index: 2;
   inset-inline: 8%;
-  inset-block-start: 40%;
+  inset-block-end: 9%;
   box-sizing: border-box;
-  padding: 4cqi 3cqi 4.5cqi;
+  padding: 3.4cqi 3cqi 3.8cqi;
   display: grid;
   justify-items: center;
   text-align: center;
@@ -352,6 +385,10 @@
   line-height: 1.35;
   overflow-wrap: anywhere;
   text-wrap: balance;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
 }
 
 .rule {
@@ -452,34 +489,11 @@
 
 @container (min-width: 560px) {
   .stage {
-    block-size: clamp(520px, 62cqi, 720px);
+    block-size: clamp(520px, 58cqi, 680px);
   }
 
-  .numeral {
-    inset-inline: auto;
-    inset-inline-start: 29%;
-    inset-block-start: 9%;
-    text-align: start;
-    font-size: clamp(88px, 15.5cqi, 200px);
-  }
-
-  .jar {
-    inset-inline-start: auto;
-    inset-inline-end: 11%;
-    transform: none;
-    inline-size: min(34cqi, 370px);
-  }
-
-  .halo {
-    inset-inline-start: auto;
-    inset-inline-end: 6%;
-    transform: none;
-  }
-
-  .caustics {
-    inset-inline-start: auto;
-    inset-inline-end: 3%;
-    inline-size: 48%;
+  .stage {
+    --gj-jw: min(34cqi, 370px);
   }
 }
 

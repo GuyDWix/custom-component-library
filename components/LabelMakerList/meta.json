@@ -37,5 +37,5 @@
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
   "art_direction": "Workshop shelf: glossy cobalt and cream tape strips, white raised letters, slight curl at the cut end, pegboard-grey ground",
-  "notes": "Untested visually this pass (render/craft gates skipped): the entrance motion and the curl at the cut end were tuned blind, and the curl is a single rotateY flap, not a true rolled curl."
+  "notes": "Untested visually this pass (render/craft gates skipped): the entrance motion and the curl at the cut end were tuned blind, and the curl is a single rotateY flap, not a true rolled curl. 2026-11-24: polish pass"
 }

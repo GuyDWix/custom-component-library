@@ -1,4 +1,4 @@
-/* Jeweller's bench — linen, a polished brass loupe, ebony grip, a bleeding product print */
+/* Optical bench — plain linen, a slim brass-rimmed loupe with a matte black grip */
 
 @font-face {
   font-family: 'Schibsted Grotesk';
@@ -26,7 +26,6 @@
   --lz-muted: #5a5242;
   --lz-font-display: 'Schibsted Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --lz-font-ui: 'Schibsted Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --lz-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.38  0 0 0 0 0.3  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -45,16 +44,6 @@
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--lz-ink) 10%, transparent),
     0 30px 60px -34px rgba(52, 40, 18, 0.55);
-}
-
-.grain {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image: var(--lz-noise);
-  opacity: 0.16;
-  mix-blend-mode: multiply;
 }
 
 .stage {
@@ -115,7 +104,7 @@
   border-radius: 50%;
   pointer-events: none;
   opacity: 0;
-  background: radial-gradient(closest-side, rgba(36, 26, 8, 0.5) 0%, rgba(36, 26, 8, 0.22) 66%, transparent 100%);
+  background: radial-gradient(closest-side, rgba(36, 26, 8, 0.34) 0%, rgba(36, 26, 8, 0.14) 66%, transparent 100%);
   filter: blur(13px);
   transform:
     translate3d(calc(var(--lz-tx) + var(--lz-drag)), calc(var(--lz-ty) + var(--lz-size) * 0.07), 0)
@@ -133,7 +122,7 @@
   pointer-events: none;
   opacity: 0;
   will-change: transform;
-  filter: drop-shadow(0 3px 3px rgba(30, 22, 6, 0.4));
+  filter: drop-shadow(0 2px 3px rgba(30, 22, 6, 0.28));
   transform:
     translate3d(var(--lz-tx), var(--lz-ty), 0)
     translate(-50%, -50%)
@@ -141,13 +130,13 @@
     scale(var(--lz-scale));
 }
 
-/* handle: brass ferrule, ebony grip with a turned rib pattern, brass end cap */
+/* handle: slim brass collar into a matte black grip */
 .handle {
   position: absolute;
   inset-block-start: 50%;
-  inset-inline-start: calc(50% - var(--lz-size) * 0.07);
-  inline-size: calc(var(--lz-size) * 0.14);
-  block-size: calc(var(--lz-size) * 1.2);
+  inset-inline-start: calc(50% - var(--lz-size) * 0.04);
+  inline-size: calc(var(--lz-size) * 0.08);
+  block-size: calc(var(--lz-size) * 1.1);
   transform-origin: 50% 0;
   /* mirrored toward the side of the frame with room (--lz-hx/--lz-hy) and shortened to fit (--lz-hk) */
   transform: scale(var(--lz-hx, 1), var(--lz-hy, 1)) rotate(-45deg) scale(1, var(--lz-hk, 1));
@@ -162,92 +151,44 @@
 
 .ferrule {
   position: absolute;
-  inset-block-start: calc(var(--lz-size) * 0.4);
-  inset-inline: 0;
-  block-size: calc(var(--lz-size) * 0.24);
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--lz-rim), #000 58%) 0%,
-    color-mix(in srgb, var(--lz-rim), #fff 52%) 26%,
-    color-mix(in srgb, var(--lz-rim), #000 8%) 54%,
-    color-mix(in srgb, var(--lz-rim), #000 62%) 100%
-  );
-  clip-path: polygon(24% 0, 76% 0, 100% 100%, 0 100%);
+  inset-block-start: calc(var(--lz-size) * 0.46);
+  inset-inline: 8%;
+  block-size: calc(var(--lz-size) * 0.12);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--lz-rim), #000 30%), color-mix(in srgb, var(--lz-rim), #fff 18%) 45%, color-mix(in srgb, var(--lz-rim), #000 36%));
 }
 
 .grip {
   position: absolute;
-  inset-block-start: calc(var(--lz-size) * 0.6);
-  inset-inline: 9%;
-  block-size: calc(var(--lz-size) * 0.5);
-  background:
-    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0 2px, transparent 2px calc(var(--lz-size) * 0.055)),
-    linear-gradient(90deg, #070504 0%, #4b3b2b 26%, #1b140d 56%, #060403 100%);
-  clip-path: polygon(0 0, 100% 0, 112% 100%, -12% 100%);
+  inset-block-start: calc(var(--lz-size) * 0.58);
+  inset-inline: 0;
+  block-size: calc(var(--lz-size) * 0.48);
+  border-radius: 2px 2px 999px 999px;
+  background: linear-gradient(90deg, #14110d 0%, #2c2620 40%, #14110d 100%);
 }
 
-.cap {
-  position: absolute;
-  inset-block-start: calc(var(--lz-size) * 1.07);
-  inset-inline: -7%;
-  block-size: calc(var(--lz-size) * 0.12);
-  border-radius: 45% 45% 50% 50%;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--lz-rim), #000 58%) 0%,
-    color-mix(in srgb, var(--lz-rim), #fff 56%) 30%,
-    color-mix(in srgb, var(--lz-rim), #000 12%) 62%,
-    color-mix(in srgb, var(--lz-rim), #000 60%) 100%
-  );
-}
-
-/* the thick polished brass rim */
+/* a slim machined brass rim */
 .rim {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: conic-gradient(
-    from 210deg,
-    color-mix(in srgb, var(--lz-rim), #fff 62%) 0%,
-    color-mix(in srgb, var(--lz-rim), #000 14%) 12%,
-    color-mix(in srgb, var(--lz-rim), #fff 34%) 26%,
-    color-mix(in srgb, var(--lz-rim), #000 42%) 45%,
-    color-mix(in srgb, var(--lz-rim), #fff 66%) 60%,
-    color-mix(in srgb, var(--lz-rim), #fff 6%) 74%,
-    color-mix(in srgb, var(--lz-rim), #000 22%) 86%,
-    color-mix(in srgb, var(--lz-rim), #fff 62%) 100%
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--lz-rim), #fff 30%) 0%,
+    var(--lz-rim) 45%,
+    color-mix(in srgb, var(--lz-rim), #000 34%) 100%
   );
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--lz-rim), #000 62%),
-    inset 0 2px 1px color-mix(in srgb, var(--lz-rim), #fff 74%),
-    inset 0 -3px 5px color-mix(in srgb, var(--lz-rim), #000 52%);
-}
-
-/* inner stepped bezel, catches light opposite the outer edge */
-.bezel {
-  position: absolute;
-  inset: calc(var(--lz-size) * 0.052);
-  border-radius: 50%;
-  background: conic-gradient(
-    from 30deg,
-    color-mix(in srgb, var(--lz-rim), #000 52%),
-    color-mix(in srgb, var(--lz-rim), #fff 40%),
-    color-mix(in srgb, var(--lz-rim), #000 40%),
-    color-mix(in srgb, var(--lz-rim), #fff 30%),
-    color-mix(in srgb, var(--lz-rim), #000 52%)
-  );
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--lz-rim), #000 66%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--lz-rim), #000 55%);
 }
 
 .view {
   position: absolute;
-  inset: calc(var(--lz-size) * 0.082);
+  inset: calc(var(--lz-size) * 0.04);
   border-radius: 50%;
   overflow: hidden;
   background: #211b10;
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--lz-rim), #000 62%),
-    inset 0 3px 10px rgba(24, 18, 6, 0.55);
+    inset 0 2px 6px rgba(24, 18, 6, 0.3);
 }
 
 .lensImage {
@@ -263,52 +204,36 @@
   transform: translate3d(var(--lz-mx), var(--lz-my), 0);
 }
 
-/* thick-glass edge: darkens and bends toward the rim */
+/* glass edge: a faint darkening toward the rim */
 .depth {
   position: absolute;
   inset: 0;
   border-radius: 50%;
   pointer-events: none;
-  background: radial-gradient(closest-side, transparent 66%, rgba(20, 14, 4, 0.18) 88%, rgba(20, 14, 4, 0.5) 100%);
+  background: radial-gradient(closest-side, transparent 72%, rgba(20, 14, 4, 0.1) 90%, rgba(20, 14, 4, 0.28) 100%);
 }
 
-/* chromatic fringe: red and blue dispersion at the glass edge */
+/* a whisper of dispersion at the glass edge */
 .fringe {
   position: absolute;
   inset: 0;
   border-radius: 50%;
   pointer-events: none;
   box-shadow:
-    inset 4px 0 7px rgba(255, 52, 52, 0.55),
-    inset -4px 0 7px rgba(52, 118, 255, 0.6),
-    inset 0 4px 7px rgba(90, 255, 170, 0.22),
-    inset 0 -4px 7px rgba(255, 70, 200, 0.2);
+    inset 2px 0 4px rgba(255, 70, 70, 0.14),
+    inset -2px 0 4px rgba(70, 120, 255, 0.16);
   mix-blend-mode: screen;
-  opacity: 0.8;
 }
 
-/* curved glare: a crescent hugging the upper-left of the glass, drifting with velocity */
+/* one restrained glare, drifting with velocity */
 .curved {
   position: absolute;
   inset: 3%;
   border-radius: 50%;
   pointer-events: none;
-  background: linear-gradient(142deg, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0.2) 38%, transparent 56%);
+  background: linear-gradient(142deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.08) 34%, transparent 52%);
   -webkit-mask-image: radial-gradient(ellipse 54% 54% at 60% 62%, transparent 95%, #000 100%);
   mask-image: radial-gradient(ellipse 54% 54% at 60% 62%, transparent 95%, #000 100%);
-  transform: translate3d(var(--lz-gx), var(--lz-gy), 0);
-  mix-blend-mode: screen;
-}
-
-.glint {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  pointer-events: none;
-  background:
-    radial-gradient(5% 4.5% at 70% 12%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.25) 50%, transparent 78%),
-    radial-gradient(22% 9% at 30% 90%, rgba(255, 255, 255, 0.2) 0%, transparent 100%),
-    linear-gradient(210deg, rgba(255, 255, 255, 0.1) 0%, transparent 34%);
   transform: translate3d(var(--lz-gx), var(--lz-gy), 0);
   mix-blend-mode: screen;
 }

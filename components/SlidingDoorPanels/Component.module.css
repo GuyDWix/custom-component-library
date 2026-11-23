@@ -24,15 +24,12 @@
   --sd-bar: clamp(2px, 0.34cqi, 4px);
   --sd-cast: clamp(5px, 0.9cqi, 10px);
 
-  /* procedural material tiles: cedar grain, washi tooth lit from low left, washi fibre */
+  /* procedural material tiles: cedar grain, a whisper of washi tooth */
   --sd-grain-dark-v: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='360'><filter id='g' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.85 .011' numOctaves='3' seed='11' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .40  0 0 0 0 .25  0 0 0 0 .11  2.4 0 0 0 -1.05'/></filter><rect width='220' height='360' filter='url(%23g)'/></svg>");
   --sd-grain-light-v: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='170' height='290'><filter id='g' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.5 .008' numOctaves='2' seed='5' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 .93  0 0 0 0 .76  2.2 0 0 0 -1.12'/></filter><rect width='170' height='290' filter='url(%23g)'/></svg>");
   --sd-grain-dark-h: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='360' height='220'><filter id='g' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.011 .85' numOctaves='3' seed='23' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .40  0 0 0 0 .25  0 0 0 0 .11  2.4 0 0 0 -1.05'/></filter><rect width='360' height='220' filter='url(%23g)'/></svg>");
   --sd-grain-light-h: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='290' height='170'><filter id='g' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.008 .5' numOctaves='2' seed='8' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 .93  0 0 0 0 .76  2.2 0 0 0 -1.12'/></filter><rect width='290' height='170' filter='url(%23g)'/></svg>");
-  --sd-tooth-shade: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='p' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.7 .45' numOctaves='3' seed='7' stitchTiles='stitch' result='n'/><feDiffuseLighting in='n' surfaceScale='1' diffuseConstant='1.4' lighting-color='%23ffffff'><feDistantLight azimuth='205' elevation='42'/></feDiffuseLighting><feColorMatrix values='0 0 0 0 .34  0 0 0 0 .23  0 0 0 0 .1  -1.5 0 0 0 1.4'/></filter><rect width='240' height='240' filter='url(%23p)'/></svg>");
   --sd-tooth-lit: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='p' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.7 .45' numOctaves='3' seed='7' stitchTiles='stitch' result='n'/><feDiffuseLighting in='n' surfaceScale='1' diffuseConstant='1.4' lighting-color='%23ffffff'><feDistantLight azimuth='205' elevation='42'/></feDiffuseLighting><feColorMatrix values='0 0 0 0 1  0 0 0 0 .93  0 0 0 0 .8  1.5 0 0 0 -1.4'/></filter><rect width='240' height='240' filter='url(%23p)'/></svg>");
-  --sd-fibre-a: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='f' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.012 .5' numOctaves='2' seed='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .66  0 0 0 0 .52  0 0 0 0 .34  3 0 0 0 -1.72'/></filter><rect width='300' height='300' filter='url(%23f)'/></svg>");
-  --sd-fibre-b: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='f' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.45 .016' numOctaves='2' seed='14' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .7  0 0 0 0 .56  0 0 0 0 .38  3 0 0 0 -1.78'/></filter><rect width='260' height='260' filter='url(%23f)'/></svg>");
 
   /* spring-settle easings: glide, arrive, tiny rebound */
   --sd-dwell: 7000ms;
@@ -236,9 +233,8 @@
     360px 220px,
     auto;
   box-shadow:
-    inset 0 -1px 0 rgba(60, 36, 10, 0.55),
-    0 7px 12px -4px rgba(24, 12, 2, 0.55),
-    0 2px 3px rgba(24, 12, 2, 0.35);
+    inset 0 -1px 0 rgba(60, 36, 10, 0.4),
+    0 5px 9px -4px rgba(24, 12, 2, 0.35);
 }
 
 .railBottom {
@@ -307,14 +303,12 @@
 
 .panelLeft {
   box-shadow:
-    5px 0 9px -2px rgba(24, 12, 2, 0.5),
-    1px 0 2px rgba(24, 12, 2, 0.4);
+    4px 0 8px -3px rgba(24, 12, 2, 0.3);
 }
 
 .panelRight {
   box-shadow:
-    -5px 0 9px -2px rgba(24, 12, 2, 0.5),
-    -1px 0 2px rgba(24, 12, 2, 0.4);
+    -4px 0 8px -3px rgba(24, 12, 2, 0.3);
 }
 
 /* outer bevel: lit edge toward the window light, shaded edge away */
@@ -521,83 +515,28 @@
   block-size: var(--sd-rail-b);
 }
 
-/* through-tenons: end grain showing on the stiles */
-.railT::before,
-.railT::after,
-.railB::before,
-.railB::after {
-  content: '';
-  position: absolute;
-  inline-size: calc(var(--sd-stile) * 0.58);
-  border-radius: 1px;
-  background:
-    repeating-radial-gradient(
-      ellipse at 34% 62%,
-      rgba(86, 54, 22, 0) 0,
-      rgba(86, 54, 22, 0) 0.7px,
-      rgba(86, 54, 22, 0.55) 0.7px,
-      rgba(86, 54, 22, 0.55) 1.3px
-    ),
-    var(--sd-end-grain);
-  box-shadow:
-    0 0 0 0.5px rgba(46, 26, 6, 0.65),
-    inset 0 1px 0 rgba(255, 236, 200, 0.3);
-}
-
-.railT::before,
-.railT::after {
-  inset-block-start: calc(var(--sd-lintel) * 0.5 + var(--sd-rail-t) * 0.2);
-  block-size: calc(var(--sd-rail-t) * 0.6);
-}
-
-.railB::before,
-.railB::after {
-  inset-block-start: 20%;
-  block-size: 60%;
-}
-
-.railT::before,
-.railB::before {
-  inset-inline-start: calc(var(--sd-stile) * -0.79);
-}
-
-.railT::after,
-.railB::after {
-  inset-inline-end: calc(var(--sd-stile) * -0.79);
-}
-
 /* washi: translucent, so the photo ghosts through when the leaves close */
 .paper {
   position: absolute;
   inset-block: calc(var(--sd-lintel) * 0.5 + var(--sd-rail-t)) var(--sd-rail-b);
   inset-inline: var(--sd-stile);
-  background:
-    linear-gradient(104deg, rgba(255, 220, 156, 0.34) 0%, rgba(255, 220, 156, 0.08) 48%, transparent 72%),
-    var(--sd-tooth-lit),
-    var(--sd-tooth-shade),
-    var(--sd-fibre-a),
-    var(--sd-fibre-b),
-    var(--sd-washi);
-  background-size:
-    auto,
-    240px 240px,
-    240px 240px,
-    300px 300px,
-    260px 260px,
-    auto;
-  background-position:
-    0 0,
-    calc(var(--sd-i, 0) * -53px) calc(var(--sd-i, 0) * -31px),
-    calc(var(--sd-i, 0) * -53px) calc(var(--sd-i, 0) * -31px),
-    calc(var(--sd-i, 0) * -71px) calc(var(--sd-i, 0) * -17px),
-    calc(var(--sd-i, 0) * -29px) calc(var(--sd-i, 0) * -61px),
-    0 0;
+  background: var(--sd-washi);
   -webkit-backdrop-filter: blur(3.5px) saturate(0.82) brightness(1.1);
   backdrop-filter: blur(3.5px) saturate(0.82) brightness(1.1);
   box-shadow:
-    inset 0 0 0 1px rgba(78, 52, 24, 0.5),
-    inset 3px 4px 7px -2px rgba(40, 22, 4, 0.5),
-    inset -2px -2px 5px -2px rgba(255, 240, 210, 0.5);
+    inset 0 0 0 1px rgba(78, 52, 24, 0.32),
+    inset 2px 3px 5px -2px rgba(40, 22, 4, 0.22);
+}
+
+.paper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--sd-tooth-lit);
+  background-size: 240px 240px;
+  background-position: calc(var(--sd-i, 0) * -53px) calc(var(--sd-i, 0) * -31px);
+  opacity: 0.3;
+  pointer-events: none;
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -614,7 +553,7 @@
   pointer-events: none;
   opacity: 0;
   background:
-    radial-gradient(80% 60% at 50% 42%, rgba(255, 238, 196, 0.62) 0%, rgba(255, 226, 168, 0.2) 70%, transparent 100%);
+    radial-gradient(80% 60% at 50% 42%, rgba(255, 246, 224, 0.22) 0%, rgba(255, 240, 210, 0.07) 70%, transparent 100%);
 }
 
 .root[data-phase='closing'] .glow {
@@ -663,26 +602,26 @@
     linear-gradient(
       180deg,
       transparent calc(100% - var(--sd-bar)),
-      rgba(255, 244, 214, 0.95) calc(100% - var(--sd-bar)),
+      rgba(255, 244, 214, 0.6) calc(100% - var(--sd-bar)),
       var(--sd-cedar-hi) calc(100% - var(--sd-bar) + 1px),
       var(--sd-cedar) calc(100% - 1px),
-      var(--sd-cedar-ink) calc(100% - 1px)
+      var(--sd-cedar-lo) calc(100% - 1px)
     ),
     /* vertical bars */
     linear-gradient(
       90deg,
       transparent calc(100% - var(--sd-bar)),
-      rgba(255, 244, 214, 0.95) calc(100% - var(--sd-bar)),
+      rgba(255, 244, 214, 0.6) calc(100% - var(--sd-bar)),
       var(--sd-cedar-hi) calc(100% - var(--sd-bar) + 1px),
       var(--sd-cedar) calc(100% - 1px),
-      var(--sd-cedar-ink) calc(100% - 1px)
+      var(--sd-cedar-lo) calc(100% - 1px)
     ),
     /* shadow thrown by vertical bars onto the paper (light from upper left) */
-    linear-gradient(90deg, rgba(48, 28, 8, 0.4) 0, rgba(48, 28, 8, 0.14) calc(var(--sd-cast) * 0.38), transparent var(--sd-cast)),
+    linear-gradient(90deg, rgba(48, 28, 8, 0.16) 0, rgba(48, 28, 8, 0.05) calc(var(--sd-cast) * 0.38), transparent var(--sd-cast)),
     /* shadow thrown by horizontal bars */
-    linear-gradient(180deg, rgba(48, 28, 8, 0.36) 0, rgba(48, 28, 8, 0.12) calc(var(--sd-cast) * 0.38), transparent var(--sd-cast)),
+    linear-gradient(180deg, rgba(48, 28, 8, 0.14) 0, rgba(48, 28, 8, 0.045) calc(var(--sd-cast) * 0.38), transparent var(--sd-cast)),
     /* backlit centre of each cell */
-    radial-gradient(60% 56% at 48% 50%, rgba(255, 238, 200, 0.26) 0%, transparent 100%);
+    radial-gradient(60% 56% at 48% 50%, rgba(255, 244, 220, 0.08) 0%, transparent 100%);
   background-size:
     100% calc(100% / var(--sd-rows)),
     calc(100% / var(--sd-cols)) 100%,
@@ -699,7 +638,7 @@
   inset-inline: 2% -10%;
   block-size: calc(var(--sd-sill) * 0.5);
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(30, 16, 3, 0.62) 0%, rgba(30, 16, 3, 0.26) 42%, transparent 100%);
+  background: linear-gradient(180deg, rgba(30, 16, 3, 0.38) 0%, rgba(30, 16, 3, 0.14) 42%, transparent 100%);
   -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 10%, #000 84%, transparent 100%);
   mask-image: linear-gradient(90deg, transparent 0, #000 10%, #000 84%, transparent 100%);
 }
@@ -712,14 +651,13 @@
   pointer-events: none;
   background: linear-gradient(
     108deg,
-    rgba(255, 214, 150, 0.2) 0%,
-    rgba(255, 214, 150, 0.06) 34%,
-    transparent 56%,
-    rgba(30, 16, 4, 0.2) 100%
+    rgba(255, 244, 226, 0.08) 0%,
+    transparent 50%,
+    rgba(30, 16, 4, 0.08) 100%
   );
   box-shadow:
-    inset 0 0 0 1px rgba(30, 16, 4, 0.6),
-    inset 5px 7px 14px -6px rgba(24, 12, 2, 0.6);
+    inset 0 0 0 1px rgba(30, 16, 4, 0.4),
+    inset 3px 4px 9px -5px rgba(24, 12, 2, 0.35);
 }
 
 /* ---------- controls ---------- */

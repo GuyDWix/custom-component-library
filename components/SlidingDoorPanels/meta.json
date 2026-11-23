@@ -36,5 +36,5 @@
   "status": "built",
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
-  "notes": "2026-11-23: quality redo (Sonnet 5.5): flat cream slabs replaced by lit washi over cedar frames, koshi lattice with cast shadows, track and sill, spring-settle cascade; not yet reviewed in the gallery (no screenshots taken). Risk: backdrop-filter on up to 10 panels. | 2026-11-23: QA nit fixes. 01 / 05 counter now sits on a scrim chip (rgba dark pill + blur + hairline ring)."
+  "notes": "2026-11-23: quality redo (Sonnet 5.5): flat cream slabs replaced by lit washi over cedar frames, koshi lattice with cast shadows, track and sill, spring-settle cascade; not yet reviewed in the gallery (no screenshots taken). Risk: backdrop-filter on up to 10 panels. | 2026-11-23: QA nit fixes. 01 / 05 counter now sits on a scrim chip (rgba dark pill + blur + hairline ring). 2026-11-24: de-skeuomorphic pass: lattice cast shadows, washi texture (fibre, shade tooth), lantern glow and warm sheen cut back; tenon end-grain removed; panel motion kept."
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import styles from './Component.module.css';
 
@@ -54,6 +54,8 @@ const INSET = NEAT + NEAT_BAND;
 const D2R = Math.PI / 180;
 const DEFAULT_WIDTH = 1200;
 
+const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 const r1 = (n: number) => Math.round(n * 10) / 10;
 const pt = (cx: number, cy: number, r: number, deg: number) => ({
@@ -80,14 +82,23 @@ interface Geometry {
   card: Rect | null;
 }
 
+interface Size {
+  w: number;
+  h: number;
+}
+
 interface Placed {
   x: number;
   y: number;
   side: 'right' | 'left';
   order: number;
   maxW: number;
+  /** true when the full label could not be placed without a collision; only the dot shows (name appears on hover/focus) */
+  dotOnly: boolean;
 }
 
+/** widest a wide-layout label may grow before its text wraps at word boundaries */
+const LABEL_MAX = 176;
 const sizeFor = (text: string): 'L' | 'M' | 'S' => (text.length <= 11 ? 'L' : text.length <= 20 ? 'M' : 'S');
 const SIZE_PX = { L: 44, M: 32, S: 24 };
 
@@ -131,27 +142,72 @@ function computeGeometry(width: number, rings: ServiceAreaRing[]): Geometry {
 const overlaps = (a: Rect, b: Rect, pad = 0) =>
   a.x0 < b.x1 + pad && a.x1 > b.x0 - pad && a.y0 < b.y1 + pad && a.y1 > b.y0 - pad;
 
-function placeNeighbourhoods(g: Geometry, hoods: ServiceAreaNeighbourhood[], n: number): Placed[] {
+/** nearest / farthest distance from a point to a rectangle */
+function rectSpan(px: number, py: number, r: Rect): [number, number] {
+  const dx = Math.max(r.x0 - px, 0, px - r.x1);
+  const dy = Math.max(r.y0 - py, 0, py - r.y1);
+  const fx = Math.max(Math.abs(px - r.x0), Math.abs(px - r.x1));
+  const fy = Math.max(Math.abs(py - r.y0), Math.abs(py - r.y1));
+  return [Math.hypot(dx, dy), Math.hypot(fx, fy)];
+}
+
+/**
+ * Collision-aware label layout. Every label is placed from its MEASURED size: the dot sits on its
+ * ring and the text body must fit inside one band (never straddling a ring line), clear of the
+ * compass, the facts card, the chart frame and every other label. A label that cannot fit falls back
+ * to a dot (name on hover/focus), so text never overlaps and never breaks letter by letter.
+ */
+function placeNeighbourhoods(g: Geometry, hoods: ServiceAreaNeighbourhood[], n: number, sizes: Size[] | null): Placed[] {
   const out: Placed[] = new Array(hoods.length);
   const taken: Rect[] = [];
   const byRing: number[][] = Array.from({ length: n }, () => []);
   hoods.forEach((h, i) => byRing[clamp(Math.round(h.ring) - 1, 0, n - 1)].push(i));
 
-  const sideOf = (x: number) => (x < (g.compact ? g.width * 0.52 : g.width - 190) ? 'right' : 'left');
-  const boxOf = (x: number, y: number, side: 'right' | 'left', name: string): Rect => {
-    if (g.compact) return { x0: x - 15, y0: y - 15, x1: x + 15, y1: y + 15 };
-    const textW = name.length * 7.2;
-    const w = Math.min(158, 40 + textW);
-    const lines = Math.max(1, Math.ceil(textW / (w - 40)));
-    const h = Math.max(32, lines * 17 + 14);
-    return side === 'right'
-      ? { x0: x - 14, y0: y - h / 2, x1: x - 14 + w, y1: y + h / 2 }
-      : { x0: x + 14 - w, y0: y - h / 2, x1: x + 14, y1: y + h / 2 };
-  };
+  const DOT = 15; // half the dot cell
+  const sideOf = (x: number) => (x < g.width * 0.52 ? 'right' : 'left');
   const dotOk = (x: number, y: number) => {
     if (g.compact) return x >= 34 && x <= g.width - 34 && y >= 42 && y <= g.pinY - 30;
     if (x < 56 || x > g.width - 44 || y < 54 || y > g.pinY - 36) return false;
     if (g.card && overlaps({ x0: x - 4, y0: y - 4, x1: x + 4, y1: y + 4 }, g.card, 8)) return false;
+    return true;
+  };
+
+  /** full box + text-body box for a label whose dot centre is (x, y) */
+  const boxesOf = (x: number, y: number, side: 'right' | 'left', size: Size | null) => {
+    if (!size) {
+      const dot = { x0: x - DOT, y0: y - DOT, x1: x + DOT, y1: y + DOT };
+      return { box: dot, body: null as Rect | null };
+    }
+    const { w, h } = size;
+    const box =
+      side === 'right'
+        ? { x0: x - 14, y0: y - h / 2, x1: x - 14 + w, y1: y + h / 2 }
+        : { x0: x + 14 - w, y0: y - h / 2, x1: x + 14, y1: y + h / 2 };
+    const body = side === 'right' ? { ...box, x0: x + DOT } : { ...box, x1: x - DOT };
+    return { box, body };
+  };
+
+  const frame: Rect = { x0: INSET + 6, y0: INSET + 6, x1: g.width - INSET - 6, y1: g.pinY - 10 };
+  const inside = (b: Rect) => b.x0 >= frame.x0 && b.x1 <= frame.x1 && b.y0 >= frame.y0 && b.y1 <= frame.y1;
+
+  const feasible = (x: number, y: number, side: 'right' | 'left', size: Size | null, pad = 4) => {
+    const { box, body } = boxesOf(x, y, side, size);
+    if (g.compact) {
+      if (box.x0 < 8 || box.x1 > g.width - 8) return false;
+    } else if (!inside(box)) {
+      return false;
+    }
+    if (taken.some((t) => overlaps(box, t, pad))) return false;
+    if (g.card && overlaps(box, g.card, 6)) return false;
+    if (!g.compact) {
+      // keep clear of the compass rose and the pin
+      if (rectSpan(g.pinX, g.pinY, box)[0] < g.roseR + 10) return false;
+      // the text body may not straddle any ring line
+      if (body) {
+        const [mn, mx] = rectSpan(g.pinX, g.pinY, body);
+        if (g.radii.some((r) => mn - 2 < r && r < mx + 2)) return false;
+      }
+    }
     return true;
   };
 
@@ -162,35 +218,51 @@ function placeNeighbourhoods(g: Geometry, hoods: ServiceAreaNeighbourhood[], n: 
       const p = pt(g.pinX, g.pinY, radius, d);
       if (dotOk(p.x, p.y)) valid.push(d);
     }
-    const validSet = new Set(valid);
-    const offsets = [0];
-    for (let o = 1; o <= 44; o += 1) offsets.push(o, -o);
+    const k = list.length;
+    const targetOf = (j: number) =>
+      valid.length ? valid[Math.min(valid.length - 1, Math.floor(((j + 0.5) * valid.length) / k))] : 50;
 
-    list.forEach((hi, j) => {
-      const k = list.length;
-      const target = valid.length ? valid[Math.min(valid.length - 1, Math.floor(((j + 0.5) * valid.length) / k))] : 50;
-      let chosen = target;
-      for (const o of offsets) {
-        const d = target + o;
-        if (valid.length && !validSet.has(d)) continue;
-        const p = pt(g.pinX, g.pinY, radius, d);
-        const box = boxOf(p.x, p.y, sideOf(p.x), hoods[hi].name);
-        const clash = taken.some((t) => overlaps(box, t, 3)) || (g.card ? overlaps(box, g.card, 4) : false);
-        if (!clash) {
-          chosen = d;
-          break;
+    // widest labels choose first: they have the fewest places to go
+    const order = list.map((hi, j) => ({ hi, j })).sort((a, b) => (sizes?.[b.hi]?.w ?? 0) - (sizes?.[a.hi]?.w ?? 0) || a.j - b.j);
+
+    order.forEach(({ hi, j }) => {
+      const target = targetOf(j);
+      const size = !g.compact && sizes ? sizes[hi] ?? null : null;
+      const tryPlace = (sz: Size | null, pad = 4) => {
+        let best: { d: number; side: 'right' | 'left'; cost: number } | null = null;
+        for (const d of valid) {
+          const p = pt(g.pinX, g.pinY, radius, d);
+          const sides: Array<'right' | 'left'> = g.compact ? [sideOf(p.x)] : ['left', 'right'];
+          for (const side of sides) {
+            // prefer the inward body (towards the pin column), then the outward one
+            const inward = p.x > g.pinX ? 'left' : 'right';
+            const cost = Math.abs(d - target) + (side === inward ? 0 : 2);
+            if (best && cost >= best.cost) continue;
+            if (feasible(p.x, p.y, side, sz, pad)) best = { d, side, cost };
+          }
         }
+        return best;
+      };
+      let dotOnly = g.compact || !size;
+      let pick = tryPlace(dotOnly ? null : size);
+      if (!pick && !dotOnly) {
+        dotOnly = true;
+        pick = tryPlace(null);
       }
-      const p = pt(g.pinX, g.pinY, radius, chosen);
-      const side = sideOf(p.x);
-      taken.push(boxOf(p.x, p.y, side, hoods[hi].name));
+      // overcrowded ring: let the dots sit edge to edge rather than on top of each other
+      if (!pick) pick = tryPlace(null, 0);
+      const d = pick ? pick.d : target;
+      const p = pt(g.pinX, g.pinY, radius, d);
+      const side = pick ? pick.side : sideOf(p.x);
+      taken.push(boxesOf(p.x, p.y, side, dotOnly ? null : size).box);
       const avail = side === 'right' ? g.width - p.x - 22 : p.x - 22;
       out[hi] = {
         x: r1(p.x),
         y: r1(p.y),
         side,
         order: j,
-        maxW: Math.round(clamp(avail, 96, g.compact ? 190 : 158)),
+        maxW: Math.round(clamp(avail, 96, g.compact ? 190 : LABEL_MAX)),
+        dotOnly,
       };
     });
   });
@@ -372,7 +444,42 @@ export default function ServiceAreaRings({
 
   const ready = width > 0;
   const geo = useMemo(() => computeGeometry(ready ? width : DEFAULT_WIDTH, rings), [ready, width, rings]);
-  const placed = useMemo(() => placeNeighbourhoods(geo, neighbourhoods, n), [geo, neighbourhoods, n]);
+  const [sizes, setSizes] = useState<Size[] | null>(null);
+  const [fontTick, setFontTick] = useState(0);
+  const measureRefs = useRef<Array<HTMLSpanElement | null>>([]);
+  const namesKey = neighbourhoods.map((h) => h.name).join('\u0001');
+
+  useEffect(() => {
+    const f = typeof document !== 'undefined' ? document.fonts : undefined;
+    if (!f) return;
+    let live = true;
+    const bump = () => live && setFontTick((t) => t + 1);
+    f.ready.then(bump);
+    f.addEventListener?.('loadingdone', bump);
+    return () => {
+      live = false;
+      f.removeEventListener?.('loadingdone', bump);
+    };
+  }, []);
+
+  // measure the real rendered label boxes (wide layout); re-measure when text or fonts change
+  useIsoLayoutEffect(() => {
+    if (!ready || geo.compact) return;
+    const next = neighbourhoods.map((_, i) => {
+      const el = measureRefs.current[i];
+      return { w: el ? el.offsetWidth : 120, h: el ? el.offsetHeight : 30 };
+    });
+    setSizes((prev) =>
+      prev && prev.length === next.length && prev.every((s, i) => s.w === next[i].w && s.h === next[i].h) ? prev : next,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, geo.compact, namesKey, fontTick]);
+
+  const sizesOk = !geo.compact && sizes != null && sizes.length === neighbourhoods.length ? sizes : null;
+  const placed = useMemo(
+    () => placeNeighbourhoods(geo, neighbourhoods, n, sizesOk),
+    [geo, neighbourhoods, n, sizesOk],
+  );
 
   const art = useMemo(() => {
     const { pinX, pinY, radii, roseR } = geo;
@@ -667,44 +774,63 @@ export default function ServiceAreaRings({
                   insetBlockStart: geo.pinY + 20,
                   maxInlineSize: geo.compact
                     ? geo.width - INSET * 2 - 32
-                    : Math.min(340, geo.pinX + geo.radii[0] * 0.5 - INSET - 16),
+                    : Math.max(90, geo.pinX - geo.roseR - 6 - (INSET + 16)),
                 }}
               >
                 {centreLabel}
               </p>
 
-              {neighbourhoods.map((h, i) => {
-                const p = placed[i];
-                const active = hoodShown === i;
-                const r = clampRing(Math.round(h.ring) - 1);
-                const delay = 980 + r * 140 + p.order * 70;
-                return (
-                  <button
-                    key={i}
-                    type="button"
-                    className={cx(styles.hood, p.side === 'left' && styles.hoodLeft, geo.compact && styles.hoodCompact)}
-                    style={
-                      {
-                        insetInlineStart: p.x,
-                        insetBlockStart: p.y,
-                        maxInlineSize: p.maxW,
-                        '--d': `${delay}ms`,
-                      } as CSSProperties
-                    }
-                    data-active={active}
-                    aria-pressed={pinned.hood === i}
-                    aria-label={`${h.name}, ${ringSummary(rings[r])}`}
-                    onClick={() => pickHood(i)}
-                    onPointerEnter={previewHood(i)}
-                    onPointerLeave={clearHover}
-                    onFocus={() => setHover({ ring: r, hood: i })}
-                    onBlur={clearHover}
-                  >
-                    <span className={styles.hoodMark} aria-hidden="true" />
-                    {(!geo.compact || active) && <span className={styles.hoodText}>{h.name}</span>}
-                  </button>
-                );
-              })}
+              {!geo.compact && (
+                <div className={styles.measure} aria-hidden="true">
+                  {neighbourhoods.map((h, i) => (
+                    <span
+                      key={i}
+                      ref={(el) => {
+                        measureRefs.current[i] = el;
+                      }}
+                      className={styles.hood}
+                    >
+                      <span className={styles.hoodMark} />
+                      <span className={styles.hoodText}>{h.name}</span>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {(geo.compact || sizesOk) &&
+                neighbourhoods.map((h, i) => {
+                  const p = placed[i];
+                  const active = hoodShown === i;
+                  const r = clampRing(Math.round(h.ring) - 1);
+                  const delay = 980 + r * 140 + p.order * 70;
+                  const dot = geo.compact || p.dotOnly;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      className={cx(styles.hood, p.side === 'left' && styles.hoodLeft, dot && styles.hoodCompact)}
+                      style={
+                        {
+                          insetInlineStart: p.x,
+                          insetBlockStart: p.y,
+                          ...(dot ? { maxInlineSize: p.maxW } : {}),
+                          '--d': `${delay}ms`,
+                        } as CSSProperties
+                      }
+                      data-active={active}
+                      aria-pressed={pinned.hood === i}
+                      aria-label={`${h.name}, ${ringSummary(rings[r])}`}
+                      onClick={() => pickHood(i)}
+                      onPointerEnter={previewHood(i)}
+                      onPointerLeave={clearHover}
+                      onFocus={() => setHover({ ring: r, hood: i })}
+                      onBlur={clearHover}
+                    >
+                      <span className={styles.hoodMark} aria-hidden="true" />
+                      {(!dot || active) && <span className={styles.hoodText}>{h.name}</span>}
+                    </button>
+                  );
+                })}
 
               {!geo.compact && tabs}
             </div>

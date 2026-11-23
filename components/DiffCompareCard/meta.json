@@ -37,5 +37,5 @@
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
   "art_direction": "Assay balance in ink and mint: the two options hang from a tilting beam as heavy nameplates; differing rows are slotted masses strung on each rod (heavier value = wider ink slab, lighter = mint), matching rows are small grey tare weights that drop off when differences-only is on; a dial hub shows the tally",
-  "notes": "2026-11-23: composition round 2 (Sonnet 5.5): replaced the comparison table with a physical balance (beam tilts toward the heavier option from parsed numbers; weak spot: non-numeric differing rows carry no weight so the beam stays level if every difference is text). Sticky names dropped; render/craft re-judged by QA."
+  "notes": "2026-11-23: composition round 2 (Sonnet 5.5): replaced the comparison table with a physical balance (beam tilts toward the heavier option from parsed numbers; weak spot: non-numeric differing rows carry no weight so the beam stays level if every difference is text). Sticky names dropped; render/craft re-judged by QA. 2026-11-24: polish pass"
 }

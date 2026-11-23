@@ -42,8 +42,8 @@ const stripVars = (index: number, tape: string, textStyle: LabelTextStyle, perRo
       textStyle === 'printed'
         ? 'none'
         : isLightTape(tape)
-          ? '0 1px 0 rgba(255, 255, 255, 0.5), 0 2px 6px rgba(46, 34, 20, 0.3)'
-          : '0 -1px 0 rgba(5, 8, 20, 0.16), 0 1px 1px rgba(5, 8, 20, 0.42), 0 3px 7px rgba(5, 8, 20, 0.32)',
+          ? '0 -1px 0 rgba(255, 255, 255, 0.75), 0 1px 0 rgba(48, 36, 22, 0.38), 0 2px 2px rgba(46, 34, 20, 0.3), 0 4px 8px rgba(46, 34, 20, 0.2)'
+          : '0 -1px 0 rgba(255, 255, 255, 0.26), 0 1px 0 rgba(4, 8, 24, 0.55), 0 2px 2px rgba(4, 8, 24, 0.42), 0 4px 8px rgba(4, 8, 24, 0.3)',
     '--tilt': `${index % 2 === 0 ? -0.5 : 0.45}deg`,
     '--i': `${index}`,
     '--max-w': `calc((100% - ${(perRow - 1) * COLUMN_GAP}px) / ${perRow})`,
@@ -102,6 +102,9 @@ export default function LabelMakerList({
             >
               <div className={[styles.tilt, inView ? styles.tiltRun : ''].filter(Boolean).join(' ')}>
                 <span className={styles.text}>{text}</span>
+                <span className={styles.curl} aria-hidden="true">
+                  <span className={styles.curlTip} />
+                </span>
               </div>
             </li>
           ))}

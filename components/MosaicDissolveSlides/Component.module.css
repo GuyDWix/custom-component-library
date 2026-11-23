@@ -5,7 +5,7 @@
   --md-frame: #2c2924;
   --md-frame-deep: #242119;
   --md-frame-hi: rgba(255, 255, 255, 0.08);
-  --md-grout: #b5ada0;
+  --md-grout: #cdc6b8;
   --md-ink: #26231e;
   --md-light: #ece7dd;
   --md-light-muted: rgba(236, 231, 221, 0.64);
@@ -67,7 +67,7 @@
   aspect-ratio: 3 / 2;
   border-radius: 10px;
   overflow: hidden;
-  perspective: 1400px;
+  contain: paint;
   background: var(--md-grout);
   cursor: pointer;
   touch-action: pan-y;
@@ -90,95 +90,72 @@
 .flipper {
   position: absolute;
   inset: 0;
-  transform: rotateY(0deg);
-  transform-style: preserve-3d;
 }
 
+/* The flip is driven from one rAF loop (scaleX with a face swap at the edge-on point), so the layer is only
+   promoted while a flip is running and the idle page carries no per-tile compositor layers. */
 .root[data-motion='full'][data-phase='flip'] .flipper {
-  transform: rotateY(-180deg);
-  transition: transform var(--md-flip, 640ms) cubic-bezier(0.3, 1.26, 0.42, 1);
-  transition-delay: var(--d);
   will-change: transform;
 }
 
 .face {
   position: absolute;
   inset: 0;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
   background-repeat: no-repeat;
   background-color: #c9c2b4;
 }
 
-.faceBack {
-  transform: rotateY(180deg);
+/* the hidden face is never painted at rest */
+.root[data-motion='full'] .faceBack {
+  visibility: hidden;
+}
+
+.root[data-motion='full'] .flipper[data-b] .faceFront {
+  visibility: hidden;
+}
+
+.root[data-motion='full'] .flipper[data-b] .faceBack {
+  visibility: visible;
 }
 
 .facePlaceholder {
   background-image: linear-gradient(150deg, #d6cfc2 0%, #bab2a3 55%, #a89f8f 100%);
 }
 
-/* Resting per-tile gloss: each chip reads as a glazed ceramic square. */
-.tile::before {
-  content: '';
+/* Resting gloss: one overlay tiled to the grid, so every chip still reads as a glazed square. */
+.gloss {
   position: absolute;
   inset: 0;
   z-index: 2;
   pointer-events: none;
-  background: linear-gradient(168deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.05) 22%, transparent 40%);
+  /* gloss from the top left, a hairline of shade on the far edges so each chip sits in its grout */
+  background-image:
+    linear-gradient(to top, transparent 2px, rgba(30, 24, 14, 0.2) 2px, transparent 5px),
+    linear-gradient(to left, transparent 2px, rgba(30, 24, 14, 0.2) 2px, transparent 5px),
+    linear-gradient(168deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 22%, transparent 40%);
+  background-size: calc((100% - 2px) / var(--md-cols, 12)) calc((100% - 2px) / var(--md-rows, 8));
+  background-position: 2px 2px;
+  background-repeat: repeat;
 }
 
-/* Flip highlight: a specular glint sweeping each tile as it turns. */
-.tile::after {
-  content: '';
+/* Flip glint: a single soft ring that rides the wave front (scaled from JS, compositor only). */
+.ring {
   position: absolute;
-  inset: 0;
   z-index: 3;
+  inline-size: 0;
+  block-size: 0;
+  border-radius: 50%;
   pointer-events: none;
-  background: linear-gradient(
-    118deg,
-    transparent 22%,
-    rgba(255, 255, 255, 0.95) 47%,
-    rgba(255, 255, 255, 0.25) 56%,
-    transparent 80%
-  );
   opacity: 0;
-}
-
-.root[data-motion='full'][data-phase='flip'] .tile::after {
-  animation: tile-glint var(--md-flip, 640ms) cubic-bezier(0.3, 0.9, 0.2, 1) var(--d) both;
-}
-
-/* Secondary motion: each tile lifts as it flips and settles back. */
-.root[data-motion='full'][data-phase='flip'] .tile {
-  animation: tile-lift var(--md-flip, 640ms) cubic-bezier(0.3, 1.26, 0.42, 1) var(--d) both;
-}
-
-@keyframes tile-glint {
-  0% {
-    opacity: 0;
-  }
-  35% {
-    opacity: 0.85;
-  }
-  62% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes tile-lift {
-  0% {
-    transform: scale(1);
-  }
-  42% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
+  transform: translate(-50%, -50%) scale(0);
+  background: radial-gradient(
+    closest-side,
+    transparent 0 80%,
+    rgba(255, 255, 255, 0.1) 88%,
+    rgba(255, 255, 255, 0.5) 96%,
+    transparent 100%
+  );
+  will-change: transform, opacity;
 }
 
 /* Reduced motion: the whole surface crossfades, no ripple, no lift. */
@@ -203,44 +180,54 @@
   position: absolute;
   inset: 0;
   z-index: 4;
+  overflow: hidden;
   pointer-events: none;
-  background: linear-gradient(
-    112deg,
-    transparent 34%,
-    rgba(255, 255, 255, 0.12) 46%,
-    rgba(255, 255, 255, 0.26) 50%,
-    rgba(255, 255, 255, 0.12) 54%,
-    transparent 66%
-  );
-  background-size: 300% 100%;
-  background-repeat: no-repeat;
-  opacity: 0;
-  animation: sheen-sweep 9s ease-in-out infinite;
 }
 
-.root[data-inview='out'] .sheen,
-.root[data-motion='reduced'] .sheen {
+.sheen::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 60%;
+  background: linear-gradient(
+    112deg,
+    transparent 22%,
+    rgba(255, 255, 255, 0.1) 42%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(255, 255, 255, 0.1) 58%,
+    transparent 78%
+  );
+  opacity: 0;
+  transform: translateX(-100%);
+  animation: sheen-sweep 9s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.root[data-inview='out'] .sheen::before,
+.root[data-phase='flip'] .sheen::before,
+.root[data-motion='reduced'] .sheen::before {
   animation-play-state: paused;
 }
 
 @keyframes sheen-sweep {
   0% {
-    background-position: 140% 0;
+    transform: translateX(-100%);
     opacity: 0;
   }
   5% {
     opacity: 0.6;
   }
   24% {
-    background-position: -40% 0;
+    transform: translateX(180%);
     opacity: 0.6;
   }
   32% {
-    background-position: -40% 0;
+    transform: translateX(180%);
     opacity: 0;
   }
   100% {
-    background-position: -40% 0;
+    transform: translateX(180%);
     opacity: 0;
   }
 }

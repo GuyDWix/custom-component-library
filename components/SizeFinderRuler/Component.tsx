@@ -74,7 +74,8 @@ function buildModel(input: SizeRange[] | undefined): Model {
   const mid = list[Math.floor(list.length / 2)];
   const start = clamp(snap((mid.from + mid.to) / 2), min, max);
   const numerals: number[] = [];
-  for (let n = lo; n <= hi; n += 1) numerals.push(n);
+  // numerals run past both ends so the ruler never ends in blank wood
+  for (let n = Math.max(0, lo - 24); n <= hi + 24; n += 1) numerals.push(n);
   return { list, lo, hi, min, max, ppu, labelsFit, start, numerals };
 }
 
@@ -481,6 +482,7 @@ export default function SizeFinderRuler({
 
         <div className={styles.needleLayer} aria-hidden="true">
           <span ref={needleRef} className={pick(styles.needle, styles.needleHidden, styles.needleDrop)} />
+          <span className={pick(styles.needleFoot, styles.needleHidden, styles.needleDrop)} />
         </div>
       </div>
     </section>

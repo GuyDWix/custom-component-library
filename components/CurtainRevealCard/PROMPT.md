@@ -344,7 +344,7 @@ export default function CurtainRevealCard({
   --cv-r: clamp(15px, 3.4cqi, 36px);
   --cv-valance: calc(var(--cv-r) * 3.1);
   --cv-gutter: clamp(28px, 9cqi, 96px);
-  --cv-foot: 13px;
+  --cv-foot: 12px;
   --cv-fold: clamp(58px, 10.5cqi, 120px);
   --cv-tw: clamp(40px, 5.4cqi, 62px);
   --cv-pw: max(52px, calc(var(--cv-tw) * 1.5));
@@ -994,15 +994,18 @@ export default function CurtainRevealCard({
 
 .footlights {
   position: absolute;
-  inset-block-end: 0;
+  inset-block-end: 7px;
   inset-inline: calc(50.5% * var(--cv-sx) * 0.7);
   z-index: 9;
   block-size: var(--cv-foot);
   pointer-events: none;
   opacity: 0.8;
+  /* small whole bulbs on a soft floor glow; the ends fade out instead of cutting off */
   background:
-    radial-gradient(circle 6px at 50% 100%, #fff4d6 0 1.6px, rgba(255, 200, 120, 0.95) 3.4px, transparent 7px) 0 0 / 26px 100% repeat-x,
-    linear-gradient(0deg, color-mix(in srgb, var(--cv-glow) 75%, transparent), transparent);
+    radial-gradient(circle 3.4px at 50% 50%, #fff4d6 0 1.3px, rgba(255, 204, 128, 0.9) 2.3px, transparent 3.4px) 0 0 / 26px 100% repeat-x,
+    radial-gradient(ellipse 50% 90% at 50% 60%, color-mix(in srgb, var(--cv-glow) 60%, transparent), transparent 75%);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
   transition:
     inset-inline var(--cv-speed) var(--cv-ease),
     opacity var(--cv-speed) ease;

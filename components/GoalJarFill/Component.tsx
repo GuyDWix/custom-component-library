@@ -68,6 +68,7 @@ export default function GoalJarFill({
   const amountRef = useRef<HTMLSpanElement>(null);
   const percentRef = useRef<HTMLSpanElement>(null);
   const numeralRef = useRef<HTMLSpanElement>(null);
+  const numeralInRef = useRef<HTMLSpanElement>(null);
   const wake = useRef<() => void>(() => {});
   const bubblesRef = useRef<Bubble[]>([]);
   const poppedRef = useRef(false);
@@ -202,7 +203,8 @@ export default function GoalJarFill({
       if (amountRef.current) amountRef.current.textContent = done ? l.amountText : money(l.symbol, l.amount * shown);
       const pct = done ? l.percent : Math.round(l.percent * shown);
       if (percentRef.current) percentRef.current.textContent = `${pct}%`;
-      if (numeralRef.current) numeralRef.current.textContent = `${pct}%`;
+      if (numeralRef.current) numeralRef.current.textContent = String(pct);
+      if (numeralInRef.current) numeralInRef.current.textContent = String(pct);
       root.style.setProperty('--gj-fill', clamp(s.fill, 0, 1).toFixed(4));
     };
 
@@ -534,7 +536,14 @@ export default function GoalJarFill({
     disturb(0.3, -5);
   };
 
-  const rootStyle = { '--gj-liquid': liquidColor, '--gj-fill': clamp(ratio, 0, 1).toFixed(4) } as CSSProperties;
+  // the giant numeral scales with the jar, and shrinks as the digit count grows so it always fits
+  const digits = String(Math.max(0, percent)).length;
+  const numeralK = Math.min(1, 1.45 / (0.6 * digits + 0.4));
+  const rootStyle = {
+    '--gj-liquid': liquidColor,
+    '--gj-fill': clamp(ratio, 0, 1).toFixed(4),
+    '--gj-nk': numeralK.toFixed(3),
+  } as CSSProperties;
   const amountStyle = { '--gj-chars': Math.max(6, amountText.length) } as CSSProperties;
 
   return (
@@ -542,9 +551,6 @@ export default function GoalJarFill({
       <div className={styles.stage}>
         <span className={styles.lightGlow} aria-hidden="true" />
         <span className={styles.halo} aria-hidden="true" />
-        <span ref={numeralRef} className={styles.numeral} aria-hidden="true">
-          {percent}%
-        </span>
         <div className={styles.shelf} aria-hidden="true" />
         <canvas ref={causticRef} className={styles.caustics} aria-hidden="true" />
 
@@ -564,6 +570,10 @@ export default function GoalJarFill({
           onKeyDown={onKeyDown}
         >
           <span className={styles.shadow} aria-hidden="true" />
+          <span className={styles.numeral} aria-hidden="true">
+            <span ref={numeralRef}>{percent}</span>
+            <span className={styles.pct}>%</span>
+          </span>
           <span
             className={[styles.corkShadow, popped ? styles.corkShadowOpen : ''].filter(Boolean).join(' ')}
             aria-hidden="true"
@@ -578,6 +588,12 @@ export default function GoalJarFill({
           <span className={styles.neck} aria-hidden="true" />
           <div ref={glassRef} className={styles.glass}>
             <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
+            <span className={styles.liquidLayer} aria-hidden="true">
+              <span className={`${styles.numeral} ${styles.numeralIn}`}>
+                <span ref={numeralInRef}>{percent}</span>
+                <span className={styles.pct}>%</span>
+              </span>
+            </span>
             <span className={styles.ticks} aria-hidden="true" />
             <div className={styles.paper}>
               {label && <p id={labelId} className={styles.name}>{label}</p>}
