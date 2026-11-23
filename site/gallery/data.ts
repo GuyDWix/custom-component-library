@@ -64,7 +64,7 @@ function toEntry(name: string, meta: RawMeta = {}): Entry {
 }
 
 const metaByName = Object.fromEntries(Object.entries(metas).map(([p, m]) => [folderOf(p), m]));
-const shuffleKey = (name: string) => [...name].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 2654435761) >>> 0, 7);
+const shuffleKey = (name: string) => [...name].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 2654435761) >>> 0, 13);
 const names = [...new Set([...previewPaths.map(folderOf), ...Object.keys(metaByName)])].sort((a, b) => shuffleKey(a) - shuffleKey(b));
 
 export const entries: Entry[] = names.map((n) => toEntry(n, metaByName[n]));
