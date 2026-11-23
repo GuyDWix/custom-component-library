@@ -70,8 +70,8 @@ function pose(p: number, n: number): number[] {
 
 export default function ConcertinaFAQ({
   questions = defaultQuestions,
-  paperColor = '#c8a06a',
-  accentColor = '#0a4249',
+  paperColor = '#f1ebdf',
+  accentColor = '#2b3a8c',
   allowMultipleOpen = false,
 }: ConcertinaFAQProps) {
   const items = questions.filter((q) => q.question);

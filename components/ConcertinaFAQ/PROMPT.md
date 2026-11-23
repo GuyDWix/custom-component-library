@@ -75,8 +75,8 @@ function pose(p: number, n: number): number[] {
 
 export default function ConcertinaFAQ({
   questions = defaultQuestions,
-  paperColor = '#c8a06a',
-  accentColor = '#0a4249',
+  paperColor = '#f1ebdf',
+  accentColor = '#2b3a8c',
   allowMultipleOpen = false,
 }: ConcertinaFAQProps) {
   const items = questions.filter((q) => q.question);
@@ -405,16 +405,16 @@ export default function ConcertinaFAQ({
 }
 
 .root {
-  --cf-paper: #c8a06a;
-  --cf-accent: #0a4249;
-  --cf-paper-hi: color-mix(in srgb, var(--cf-paper) 88%, #ffffff);
-  --cf-paper-lo: color-mix(in srgb, var(--cf-paper) 90%, #3a1d00);
-  --cf-fold: color-mix(in srgb, var(--cf-paper) 50%, #2a1300);
-  --cf-cream: color-mix(in srgb, var(--cf-paper) 8%, #fffbf0);
-  --cf-ink: color-mix(in srgb, var(--cf-accent) 30%, #1b1108);
-  --cf-shadow: color-mix(in srgb, var(--cf-accent) 60%, #000000);
-  --cf-surface-hi: color-mix(in srgb, var(--cf-accent) 82%, #ffffff);
-  --cf-surface-lo: color-mix(in srgb, var(--cf-accent) 62%, #000000);
+  --cf-paper: #f1ebdf;
+  --cf-accent: #2b3a8c;
+  --cf-ink: color-mix(in srgb, var(--cf-accent) 14%, #15130f);
+  --cf-paper-hi: color-mix(in srgb, var(--cf-paper) 72%, #ffffff);
+  --cf-paper-lo: color-mix(in srgb, var(--cf-paper) 93%, var(--cf-ink));
+  --cf-fold: color-mix(in srgb, var(--cf-paper) 80%, var(--cf-ink));
+  --cf-cream: color-mix(in srgb, var(--cf-paper) 55%, #ffffff);
+  --cf-shadow: color-mix(in srgb, var(--cf-ink) 80%, #000000);
+  --cf-surface-hi: color-mix(in srgb, var(--cf-paper) 86%, var(--cf-ink));
+  --cf-surface-lo: var(--cf-surface-hi);
   --cf-font: 'Concertina Bricolage', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   position: relative;
   isolation: isolate;
@@ -423,23 +423,12 @@ export default function ConcertinaFAQ({
   box-sizing: border-box;
   inline-size: 100%;
   border-radius: 20px;
-  background: linear-gradient(155deg, var(--cf-surface-hi) 0%, var(--cf-accent) 48%, var(--cf-surface-lo) 100%);
-  color: var(--cf-accent);
+  background: var(--cf-surface-hi);
+  color: var(--cf-ink);
   font-family: var(--cf-font);
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--cf-shadow) 70%, transparent),
-    0 1px 0 rgba(255, 255, 255, 0.14) inset,
-    0 28px 40px -30px color-mix(in srgb, var(--cf-shadow) 70%, transparent);
-}
-
-/* One soft light from the upper left across the surface. */
-.root::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: radial-gradient(120% 90% at 8% 0%, rgba(255, 255, 255, 0.16) 0%, transparent 60%);
+    0 0 0 1px color-mix(in srgb, var(--cf-ink) 12%, transparent),
+    0 24px 36px -30px color-mix(in srgb, var(--cf-shadow) 40%, transparent);
 }
 
 .frame {
@@ -491,14 +480,14 @@ export default function ConcertinaFAQ({
   padding-inline: var(--cf-pad) clamp(1rem, 3.5cqi, 2.5rem);
   border: 0;
   border-radius: 0;
-  color: var(--cf-accent);
+  color: var(--cf-ink);
   font-family: var(--cf-font);
   text-align: start;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    inset 0 -1px 0 color-mix(in srgb, var(--cf-fold) 70%, transparent);
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 color-mix(in srgb, var(--cf-fold) 60%, transparent);
 }
 
 .bandEven {
@@ -518,7 +507,7 @@ export default function ConcertinaFAQ({
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(255, 250, 235, 0.18);
+  background: rgba(255, 255, 255, 0.35);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.22s ease-out;
@@ -572,7 +561,7 @@ export default function ConcertinaFAQ({
   inline-size: 2rem;
   block-size: 2rem;
   color: var(--cf-accent);
-  opacity: calc(0.72 + var(--hv) * 0.28);
+  opacity: calc(0.8 + var(--hv) * 0.28);
   transition: opacity 0.2s ease-out;
 }
 
@@ -654,7 +643,7 @@ export default function ConcertinaFAQ({
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: linear-gradient(180deg, #fffefa 0%, var(--cf-cream) 100%);
+  background: var(--cf-cream);
 }
 
 .sliceLast {
@@ -726,9 +715,9 @@ export default function ConcertinaFAQ({
   inset-block: 0;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0.28) 0%,
     rgba(255, 255, 255, 0) 40%,
-    color-mix(in srgb, var(--cf-shadow) 22%, transparent) 100%
+    color-mix(in srgb, var(--cf-shadow) 8%, transparent) 100%
   );
 }
 
@@ -736,15 +725,15 @@ export default function ConcertinaFAQ({
   inset-block: 0;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--cf-shadow) 42%, transparent) 0%,
-    color-mix(in srgb, var(--cf-shadow) 16%, transparent) 55%,
-    rgba(255, 255, 255, 0.12) 100%
+    color-mix(in srgb, var(--cf-shadow) 20%, transparent) 0%,
+    color-mix(in srgb, var(--cf-shadow) 7%, transparent) 55%,
+    rgba(255, 255, 255, 0.08) 100%
   );
 }
 
 .crease {
   inset-block-start: 0;
   block-size: 1px;
-  background: color-mix(in srgb, var(--cf-shadow) 35%, transparent);
+  background: color-mix(in srgb, var(--cf-shadow) 22%, transparent);
 }
 ```
