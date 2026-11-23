@@ -1,0 +1,38 @@
+{
+  "id": "c051",
+  "name": "BlackHoleIntro",
+  "display_name": "Black Hole Intro",
+  "category": "heroes",
+  "tier": "showpiece",
+  "job": "A stretchable dark background overlay: hundreds of star trails orbit a centre label; clicking spreads the stars across the whole box. Stars only; the owner places their own content over it",
+  "visitor_action": "hover or focus the centre to pull the stars into a ring; click, Enter or Space to open; Escape closes",
+  "owner_settings": [
+    "Centre label",
+    "Star color",
+    "Accent color",
+    "Star density",
+    "Content shown beneath (children)"
+  ],
+  "site_types": [
+    "portfolio",
+    "events",
+    "business",
+    "store"
+  ],
+  "mobile": "tap the centre to open; canvas scales to the container and DPR",
+  "motion": "orbiting star trails with per-star speed, ring contraction on hover, outward expansion on open; reduced motion: static ring",
+  "scores": {
+    "concept": 3,
+    "usefulness": 2,
+    "uniqueness": 3,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "see notes",
+    "craft": "self-review only"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Event horizon: near-black ink, cool pale star trails, a single ember accent on the hot inner stars and the CTA, one medium-weight grotesk with tight tracking"
+}
