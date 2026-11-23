@@ -199,6 +199,7 @@ export default function ClothesPegGallery({
 
   const rootRef = useRef<HTMLDivElement>(null);
   const hangerRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const shadowRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const triggerRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const stringRefs = useRef<(SVGPathElement | null)[]>([]);
   const flyRef = useRef<HTMLDivElement>(null);
@@ -403,7 +404,7 @@ export default function ClothesPegGallery({
           el.style.setProperty('--cpg-tx', `${(anchor.x - g.x).toFixed(2)}px`);
           el.style.setProperty('--cpg-ty', `${(anchor.y - g.y).toFixed(2)}px`);
           el.style.setProperty('--cpg-swing', `${sw.a.toFixed(2)}deg`);
-          el.style.setProperty('--cpg-swingN', sw.a.toFixed(3));
+          shadowRefs.current[i]?.style.setProperty('--cpg-sh', Math.min(1, Math.abs(sw.a) / 14).toFixed(3));
           el.style.setProperty('--cpg-curlN', sw.curl.toFixed(3));
         }
       }
@@ -571,6 +572,14 @@ export default function ClothesPegGallery({
               data-away={away ? '' : undefined}
               style={{ insetInlineStart: g.x, insetBlockStart: g.y }}
             >
+              <span
+                ref={(el) => {
+                  shadowRefs.current[i] = el;
+                }}
+                className={styles.shadow}
+                aria-hidden="true"
+                style={{ '--cpg-pw': `${g.w}px`, '--cpg-ph': `${g.h}px` } as CSSProperties}
+              />
               <div
                 ref={(el) => {
                   hangerRefs.current[i] = el;
@@ -584,7 +593,6 @@ export default function ClothesPegGallery({
                   } as CSSProperties
                 }
               >
-                <span className={styles.shadow} aria-hidden="true" />
                 <button
                   ref={(el) => {
                     triggerRefs.current[i] = el;

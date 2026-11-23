@@ -116,7 +116,7 @@ export default function FramePreviewPicker({
   // Display size: true-to-scale unless the print is taller or wider than the scene allows,
   // then the silhouette is clamped (labels keep the real measurements).
   const sceneWcm = sceneW / scale;
-  const maxHalfW = Math.min(0.54 * sceneWcm - 58 / scale, 0.46 * sceneWcm - 86 / scale);
+  const maxHalfW = 0.5 * sceneWcm - 86 / scale;
   const fit = Math.min(
     1,
     MAX_HALF_CM / ((artHcm + OUTER_CM) / 2),
@@ -452,7 +452,7 @@ export default function FramePreviewPicker({
   --fpp-dim-text: rgba(30, 36, 26, 0.88);
   --fpp-mat: #f5f2e9;
   --fpp-shadow-ink: rgba(44, 52, 38, 0.42);
-  --fpp-font: 'Inter Tight', 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --fpp-font: 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --fpp-plaster: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='700' viewBox='0 0 1200 700'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='.005 .012' numOctaves='4' seed='7'/><feDiffuseLighting surfaceScale='2.6' diffuseConstant='1' lighting-color='%23ffffff'><feDistantLight azimuth='0' elevation='56'/></feDiffuseLighting></filter><rect x='-60' y='-60' width='1320' height='820' filter='url(%23p)'/></svg>");
   --fpp-play: running;
   --fpp-skin: skinIn 260ms ease-out both;
@@ -534,7 +534,7 @@ export default function FramePreviewPicker({
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(125% 115% at 58% 36%, transparent 52%, rgba(46, 56, 38, 0.3) 100%),
+    radial-gradient(125% 115% at 50% 40%, transparent 52%, rgba(46, 56, 38, 0.3) 100%),
     linear-gradient(0deg, rgba(46, 56, 38, 0.07), transparent 22%);
 }
 
@@ -582,7 +582,7 @@ export default function FramePreviewPicker({
 .sofaWrap {
   position: absolute;
   inset-block-end: 0;
-  inset-inline-start: 54%;
+  inset-inline-start: 50%;
   transform: translateX(-50%);
   block-size: 37.33%;
   aspect-ratio: 180 / 84;
@@ -630,7 +630,7 @@ export default function FramePreviewPicker({
   --sh: 0;
   --mld: 3.4em;
   position: absolute;
-  inset-inline-start: 54%;
+  inset-inline-start: 50%;
   transform: translate(-50%, -50%);
   z-index: 3;
   inline-size: 166px;

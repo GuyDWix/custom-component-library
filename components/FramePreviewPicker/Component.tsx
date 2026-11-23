@@ -111,7 +111,7 @@ export default function FramePreviewPicker({
   // Display size: true-to-scale unless the print is taller or wider than the scene allows,
   // then the silhouette is clamped (labels keep the real measurements).
   const sceneWcm = sceneW / scale;
-  const maxHalfW = Math.min(0.54 * sceneWcm - 58 / scale, 0.46 * sceneWcm - 86 / scale);
+  const maxHalfW = 0.5 * sceneWcm - 86 / scale;
   const fit = Math.min(
     1,
     MAX_HALF_CM / ((artHcm + OUTER_CM) / 2),
