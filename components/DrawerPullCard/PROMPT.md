@@ -364,7 +364,7 @@ export default function DrawerPullCard({
 .info {
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 1rem;
   min-inline-size: 0;
 }
