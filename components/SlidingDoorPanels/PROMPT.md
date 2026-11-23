@@ -487,9 +487,10 @@ export default function SlidingDoorPanels({
 
 .slide {
   position: absolute;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
+  /* bleed past the clipped window: no edge bands at fractional sizes */
+  inset: -3px;
+  inline-size: calc(100% + 6px);
+  block-size: calc(100% + 6px);
   object-fit: cover;
   opacity: 0;
   transform: scale(1.02);
@@ -523,7 +524,7 @@ export default function SlidingDoorPanels({
 /* low grade so type and controls hold on any photo */
 .light {
   position: absolute;
-  inset: 0;
+  inset: -3px;
   z-index: 2;
   pointer-events: none;
   background:
@@ -542,8 +543,9 @@ export default function SlidingDoorPanels({
 
 .panel {
   position: absolute;
-  inset-block: 0;
-  /* opaque slabs + edge shadow: no see-through seams */
+  /* bleed past the clipped window so subpixel rounding never shows the photo */
+  inset-block: -3px;
+  /* opaque slabs: no see-through seams */
   margin-inline-end: -1px;
   box-sizing: content-box;
   padding-inline-end: 1px;
@@ -587,7 +589,7 @@ export default function SlidingDoorPanels({
   font-family: var(--sd-font-display);
   font-weight: 300;
   font-size: clamp(30px, 6.2cqi, 92px);
-  line-height: 1;
+  line-height: 1.08;
   letter-spacing: -0.035em;
   text-wrap: balance;
   overflow-wrap: anywhere;
@@ -596,7 +598,6 @@ export default function SlidingDoorPanels({
   -webkit-line-clamp: 3;
   line-clamp: 3;
   overflow: hidden;
-  padding-block-end: 0.08em;
   color: var(--sd-ink);
   opacity: 0;
   transform: translateY(0.35em);
