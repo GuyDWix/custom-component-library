@@ -10,6 +10,8 @@ export interface LenticularSwitchProps {
   imageB?: string;
   imageBAlt?: string;
   stripWidth?: number;
+  /** Tint of the strips while they flip: a CSS colour or gradient (e.g. `#ff7a00`, `linear-gradient(90deg, gold, hotpink)`). Gradients span the whole print. Empty = default multicolour sheen. */
+  stripColor?: string;
   hint?: boolean;
   className?: string;
 }
@@ -56,6 +58,7 @@ export default function LenticularSwitch({
   imageB = defaultImageB,
   imageBAlt = 'Pair of black knit sneakers with white soles on a plinth',
   stripWidth = 26,
+  stripColor,
   hint = true,
   className,
 }: LenticularSwitchProps) {
@@ -252,6 +255,7 @@ export default function LenticularSwitch({
     '--ls-img-b': imageB ? `url("${imageB}")` : 'none',
     '--ls-ar-a': ratioA,
     '--ls-ar-b': ratioB,
+    ...(stripColor ? { '--ls-tint': stripColor } : {}),
   } as CSSProperties;
   const openingStyle = { '--ls-n': stripCount } as CSSProperties;
   const ariaLabel = `Lenticular print switching between ${imageAAlt} and ${imageBAlt}`;
@@ -286,7 +290,7 @@ export default function LenticularSwitch({
             <span className={styles.flatB} aria-hidden="true" style={{ opacity: showB ? 1 : 0 }} />
           </>
         ) : (
-          <div className={styles.strips} aria-hidden="true">
+          <div className={[styles.strips, stripColor && styles.tinted].filter(Boolean).join(' ')} aria-hidden="true">
             {Array.from({ length: stripCount }, (_, i) => (
               <div
                 key={i}

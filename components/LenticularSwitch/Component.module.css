@@ -106,6 +106,15 @@
   pointer-events: none;
 }
 
+.tinted .faceA::before,
+.tinted .faceB::before {
+  background: var(--ls-tint);
+  background-size: 100cqw 100%;
+  background-position: calc(var(--i) * -100cqw / var(--ls-n)) 0;
+  mix-blend-mode: normal;
+  opacity: calc(var(--s) * 0.55);
+}
+
 .faceA::after,
 .faceB::after {
   z-index: 2;
