@@ -1,0 +1,35 @@
+{
+  "id": "c140",
+  "name": "PostcardReviews",
+  "display_name": "Postcard Reviews",
+  "category": "social",
+  "tier": "showpiece",
+  "job": "Show reviews as postcards from customers laid on a table, each with a postmark of their town; the tapped card slides to the centre and turns to its message (social proof that shows where customers come from)",
+  "visitor_action": "tap a postcard to open it; tap again or press Esc to return it; arrow keys cycle",
+  "owner_settings": [
+    "Reviews (message, name, town)",
+    "Card heading (e.g. Greetings from)",
+    "Stamp icon (shell, wave, sun, anchor)",
+    "Card colours (border, accent, card stock, ink, table)"
+  ],
+  "site_types": ["restaurant", "store", "events", "services", "portfolio"],
+  "mobile": "cards stack in a loose pile with each town showing; tap opens the card at full width",
+  "motion": "card slides to centre and flips with spring, others settle back with a stagger (reduced-motion: card crossfades to its message)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (1 fix: open card did not move/scale at wide widths, container rule overrode it; pile strip raised so towns show at 375)",
+    "craft": "pass (3, after 1 polish pass: fade on overflowing messages)"
+  },
+  "craft_score": 3,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Seaside post: faded aqua and coral card borders, cream card stock, blue-black pen script, round postmark ink, matte",
+  "notes": "Hero (slide + flip) only shows on tap, so stills show the table; on phones the opened card stays ~1x so the script message is ~13px, and very long messages scroll inside the card."
+}

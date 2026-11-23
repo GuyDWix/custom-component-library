@@ -1,0 +1,49 @@
+{
+  "id": "c080",
+  "name": "ImageFilledBestsellers",
+  "display_name": "Image-Filled Best Sellers",
+  "category": "data",
+  "tier": "everyday",
+  "job": "Rank best sellers as horizontal bars filled with each product's photo, where bar length shows units sold, so a ranking doubles as a product lineup",
+  "visitor_action": "hover or tap a bar to see units sold and the product name (shown on the big hanging tag); arrow keys move between bars",
+  "owner_settings": [
+    "Products (name, photo, units sold)",
+    "Number shown",
+    "Unit label",
+    "Highlight color",
+    "Small heading",
+    "Heading",
+    "Rank label"
+  ],
+  "site_types": [
+    "store",
+    "restaurant",
+    "portfolio",
+    "business"
+  ],
+  "mobile": "bars become full-width rows with photo thumbnails, a slim photo-filled bar under each name, counts at the end",
+  "motion": "bars grow left to right in a stagger with the photo revealed behind a glowing moving edge, then price tags drop in on a spring; the big tag swings when the selection changes (reduced-motion: full bars, static tags, simple fade)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "judge_scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass",
+    "craft": 2
+  },
+  "craft_score": 2,
+  "status": "backlog",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Market stall: warm kraft background, photo-filled bars with rounded ends, tomato-red rank numbers, handwritten-feel price tags",
+  "notes": "Backlog 2026-11-23: render gate overran its cap (2 fixes), and at 375 default names break mid-word ('sour dough', 'margheri ta') because the count tag squeezes the name column."
+}

@@ -1,0 +1,33 @@
+{
+  "name": "QuoteMarquee",
+  "display_name": "Quote Marquee",
+  "category": "social",
+  "tier": "everyday",
+  "job": "Compact drop-in slider of customer quote cards gliding endlessly in a row, sitting inside any section, so social proof feels abundant and alive",
+  "visitor_action": "hover/focus pauses and lifts a card; drag to scrub on touch; pause button for accessibility",
+  "owner_settings": [
+    "Quotes (text, person name, role, photo, star rating)",
+    "Speed",
+    "Direction",
+    "Number of rows (1 by default, or 2)",
+    "Accent color"
+  ],
+  "site_types": [
+    "business",
+    "store",
+    "services",
+    "course",
+    "app"
+  ],
+  "mobile": "one row, swipe to scrub",
+  "motion": "continuous seamless glide with soft edge fades and depth/tilt on the focused card (reduced-motion: static scrollable row)",
+  "scores": null,
+  "checks": {
+    "build_tsc": "pass",
+    "render": "pending",
+    "craft": "pending"
+  },
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false
+}

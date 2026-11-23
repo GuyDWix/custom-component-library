@@ -1,0 +1,33 @@
+{
+  "id": "c046",
+  "name": "InlineImagePillText",
+  "display_name": "Inline Image Pill Text",
+  "category": "text",
+  "tier": "everyday",
+  "job": "A sentence where chosen words are replaced by small rounded photo pills that widen on hover or tap",
+  "visitor_action": "hover, tap or focus a photo pill to widen it; Enter toggles; Esc closes",
+  "owner_settings": [
+    "Sentence",
+    "Pills (position = word number to replace, image)",
+    "Pill height",
+    "Text color",
+    "Background color",
+    "Small label",
+    "Accessibility description"
+  ],
+  "site_types": ["portfolio", "business", "restaurant", "store", "events"],
+  "mobile": "pills stay inline; a tap widens one at a time; word captions hidden in narrow widths",
+  "motion": "pills pop in one by one, ease wider with a spring while neighbouring words slide aside; one gentle auto-open of the first pill (reduced-motion: pills fixed at medium width, no entrance or auto-open)",
+  "scores": { "concept": 3, "usefulness": 3, "uniqueness": 3, "reach": 3 },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (1 fix: CSS keyframe entrance instead of rAF-gated spring)",
+    "craft": "pass (1 polish pass: wider open ratio, panoramic crops, lift scale, caption hidden when narrow)"
+  },
+  "craft_score": 3,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Gallery wall label: pale lilac-grey paper, deep ink sans in large sentence case, photo pills with thin white border and soft lift shadow",
+  "notes": "Widening reflows the sentence, so words can jump to the next line while a pill is open. 2026-11-23: removed on-screen hint per contract §2 rule"
+}

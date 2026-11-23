@@ -1,0 +1,36 @@
+{
+  "id": "c047",
+  "name": "ReceiptCard",
+  "display_name": "Receipt Card",
+  "category": "cards",
+  "tier": "everyday",
+  "job": "Present a short list (menu, order summary, package contents) as a thermal receipt that prints out of a slot",
+  "visitor_action": "none (prints in view); hover lifts the curled bottom edge",
+  "owner_settings": [
+    "Title",
+    "Address line",
+    "Order details line",
+    "Line items (name, price)",
+    "Total label",
+    "Currency symbol",
+    "Footer note",
+    "Paper tint",
+    "Ink color",
+    "Background color"
+  ],
+  "site_types": ["restaurant", "store", "events", "business"],
+  "mobile": "full width, prints shorter",
+  "motion": "paper feeds down line by line with tiny jitter, edge curls (reduced-motion: printed receipt, flat)",
+  "scores": { "concept": 3, "usefulness": 3, "uniqueness": 2, "reach": 2 },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (1 fix: feed loop stalled when frames were starved; now time-scheduled with timer backup)",
+    "craft": "3 (after 1 polish pass: real cork grain, seamless curl tail, printer width on mobile)"
+  },
+  "craft_score": 3,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Corner cafe: thermal-paper white with faint warm fade, monospaced dark-grey print, torn zig-zag edge, soft drop shadow on a cork-tone ground",
+  "notes": "Total is summed from item prices (no tax/discount lines); the hover curl is subtle and absent on touch."
+}

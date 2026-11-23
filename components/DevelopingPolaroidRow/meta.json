@@ -1,0 +1,40 @@
+{
+  "id": "c003",
+  "name": "DevelopingPolaroidRow",
+  "display_name": "Developing Polaroid Row",
+  "category": "media",
+  "tier": "everyday",
+  "job": "Show photos as instant prints that slowly develop from milky blank to full colour as they scroll in, then straighten when hovered",
+  "visitor_action": "scroll or swipe to develop; hover or focus a print to straighten it; click, tap, Enter or Space enlarges it, Escape sets it down",
+  "owner_settings": [
+    "Photos (image, caption)",
+    "Print tilt",
+    "Develop speed",
+    "Border tone"
+  ],
+  "site_types": [
+    "events",
+    "restaurant",
+    "portfolio",
+    "blog"
+  ],
+  "mobile": "horizontal swipe row of 2 visible prints; tap enlarges",
+  "motion": "image fades from milky blur to sharp with eased saturation ramp, staggered per print, tilt springs flat on hover (reduced-motion: fully developed, static tilt)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (1 fix: develop waits for image load, default speed 4s to 3.2s)",
+    "craft": "pass (3, no polish pass)"
+  },
+  "craft_score": 3,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Instant film: cream plastic borders, faded cyan-green developing haze, handwritten blue-ink captions, soft table shadow",
+  "notes": "Stills catch prints mid-develop (hazy) by design; at 375 the second print ends flush with no third-print peek, so swipe is less obvious. Handwritten font falls back to system cursive unless the site loads Caveat."
+}

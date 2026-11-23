@@ -1,0 +1,37 @@
+{
+  "id": "c048",
+  "name": "WaxSealInvite",
+  "display_name": "Wax Seal Invite",
+  "category": "cards",
+  "tier": "showpiece",
+  "job": "An envelope sealed with wax; opening it slides out a card with the owner's announcement or invitation",
+  "visitor_action": "click/tap or Enter on the seal to open; click again to close",
+  "owner_settings": [
+    "Card heading",
+    "Card text",
+    "Date line",
+    "Seal initials",
+    "Seal color",
+    "Envelope color"
+  ],
+  "site_types": ["events", "restaurant", "business", "store"],
+  "mobile": "same, scaled to width",
+  "motion": "seal cracks, flap folds back in 3D, card rises with spring (reduced-motion: crossfade to open state)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (1 fix: seal shadow box artifact, worst-case date hidden by pocket, fibre texture too streaky)",
+    "craft": "pass (3, after 1 polish pass)"
+  },
+  "craft_score": 3,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Letterpress: heavy cotton-paper envelope in sage, oxblood wax with embossed initials and glossy highlight, debossed card type, paper fibre texture",
+  "notes": "Reserves headroom for the opened card, so the closed state sits in a tall, mostly empty block; very long card text makes the component tall."
+}

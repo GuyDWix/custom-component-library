@@ -1,0 +1,501 @@
+.root {
+  --mb-sp: 0;
+  --mb-mat: #e9e0cf;
+  --mb-wall: #ebe4d7;
+  --mb-wood: #b3844e;
+  --mb-brass-light: #d9bd78;
+  --mb-brass: #c3a05a;
+  --mb-brass-dark: #a98432;
+  --mb-engrave: #1c160d;
+  --mb-ink: #2a231a;
+  --mb-paper: #f7f2e8;
+  --mb-font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  --mb-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --mb-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.4  0 0 0 0 0.33  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --mb-grain-h: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='60'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.006 .42' numOctaves='4' seed='7' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.22  0 0 0 0 0.12  0 0 0 0 0.04  0 0 0 1.5 -0.38'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
+  --mb-grain-v: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='600'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.42 .006' numOctaves='4' seed='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.22  0 0 0 0 0.12  0 0 0 0 0.04  0 0 0 1.5 -0.38'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
+  --mb-profile: rgba(255, 244, 222, 0.32) 0%, rgba(255, 244, 222, 0.08) 14%, transparent 38%, rgba(30, 16, 4, 0.14) 66%,
+    rgba(255, 238, 205, 0.34) 80%, rgba(30, 16, 4, 0.42) 100%;
+
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  container-type: inline-size;
+  box-sizing: border-box;
+  inline-size: 100%;
+  padding-block: 56px 48px;
+  padding-inline: 20px;
+  border-radius: 24px;
+  background:
+    radial-gradient(70% 55% at 32% 0%, rgba(255, 252, 244, 0.7) 0%, transparent 70%),
+    linear-gradient(180deg, var(--mb-wall) 0%, color-mix(in srgb, var(--mb-wall) 88%, #8a6f4c) 100%);
+  color: var(--mb-ink);
+  font-family: var(--mb-font-ui);
+}
+
+.finishOak {
+  --mb-wood: #b3844e;
+}
+
+.finishWalnut {
+  --mb-wood: #5f3e28;
+}
+
+.finishEbony {
+  --mb-wood: #24201c;
+}
+
+.finishWhite {
+  --mb-wood: #eee9df;
+  --mb-grain-h: var(--mb-noise);
+  --mb-grain-v: var(--mb-noise);
+}
+
+.wallGrain {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--mb-noise);
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.piece {
+  --mb-fw: clamp(16px, 3.6cqi, 30px);
+  --mb-mw: clamp(20px, 6.8cqi, 58px);
+  --mb-bw: clamp(4px, 0.7cqi, 6px);
+
+  display: grid;
+  justify-items: center;
+  row-gap: 30px;
+  margin: 0 auto;
+  max-inline-size: 760px;
+}
+
+.hang {
+  position: relative;
+  inline-size: 100%;
+  max-inline-size: 440px;
+}
+
+.spot {
+  position: absolute;
+  z-index: -1;
+  inset-block-start: -22%;
+  inset-inline: -30%;
+  block-size: 90%;
+  background: radial-gradient(50% 50% at 50% 30%, rgba(255, 246, 226, 0.75) 0%, rgba(255, 246, 226, 0.2) 45%, transparent 75%);
+  transform: translateY(calc(var(--mb-sp) * 14px));
+  pointer-events: none;
+}
+
+.wallShadow {
+  position: absolute;
+  z-index: -1;
+  inset: 4% 3% -2% 3%;
+  border-radius: 6px;
+  background: rgba(58, 40, 20, 0.5);
+  filter: blur(22px);
+  transform: translate(calc(var(--mb-sp) * -4px), calc(20px - var(--mb-sp) * 12px));
+  pointer-events: none;
+}
+
+.frame {
+  position: relative;
+  padding: var(--mb-fw);
+  background: var(--mb-wood);
+  box-shadow:
+    0 0 0 1px rgba(30, 18, 6, 0.28),
+    0 1px 1px rgba(30, 18, 6, 0.35),
+    0 6px 10px -4px rgba(30, 18, 6, 0.35);
+}
+
+.railTop,
+.railBottom,
+.railLeft,
+.railRight {
+  position: absolute;
+  background-color: var(--mb-wood);
+  pointer-events: none;
+}
+
+.railTop,
+.railBottom {
+  inset-inline: 0;
+  block-size: var(--mb-fw);
+}
+
+.railLeft,
+.railRight {
+  inset-block: 0;
+  inline-size: var(--mb-fw);
+}
+
+.railTop {
+  inset-block-start: 0;
+  clip-path: polygon(0 0, 100% 0, calc(100% - var(--mb-fw)) 100%, var(--mb-fw) 100%);
+  background-image:
+    linear-gradient(rgba(255, 248, 232, 0.12), rgba(255, 248, 232, 0.12)),
+    linear-gradient(to bottom, var(--mb-profile)),
+    var(--mb-grain-h);
+}
+
+.railBottom {
+  inset-block-end: 0;
+  clip-path: polygon(var(--mb-fw) 0, calc(100% - var(--mb-fw)) 0, 100% 100%, 0 100%);
+  background-image:
+    linear-gradient(rgba(20, 10, 2, 0.2), rgba(20, 10, 2, 0.2)),
+    linear-gradient(to top, var(--mb-profile)),
+    var(--mb-grain-h);
+  background-position: 0 0, 0 0, 120px 20px;
+}
+
+.railLeft {
+  inset-inline-start: 0;
+  clip-path: polygon(0 0, 100% var(--mb-fw), 100% calc(100% - var(--mb-fw)), 0 100%);
+  background-image:
+    linear-gradient(rgba(255, 248, 232, 0.04), rgba(255, 248, 232, 0.04)),
+    linear-gradient(to right, var(--mb-profile)),
+    var(--mb-grain-v);
+}
+
+.railRight {
+  inset-inline-end: 0;
+  clip-path: polygon(0 var(--mb-fw), 100% 0, 100% 100%, 0 calc(100% - var(--mb-fw)));
+  background-image:
+    linear-gradient(rgba(20, 10, 2, 0.12), rgba(20, 10, 2, 0.12)),
+    linear-gradient(to left, var(--mb-profile)),
+    var(--mb-grain-v);
+  background-position: 0 0, 0 0, 20px 200px;
+}
+
+.mat {
+  position: relative;
+  z-index: 1;
+  padding: var(--mb-mw);
+  background:
+    radial-gradient(90% 70% at 28% 8%, rgba(255, 253, 247, 0.45) 0%, transparent 70%),
+    var(--mb-mat);
+  box-shadow:
+    inset 0 2px 3px rgba(30, 18, 6, 0.32),
+    inset 2px 0 3px rgba(30, 18, 6, 0.16),
+    inset 0 0 0 1px rgba(30, 18, 6, 0.12);
+}
+
+.matTexture {
+  position: absolute;
+  inset: 0;
+  background-image: var(--mb-noise);
+  opacity: 0.32;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.window {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  box-shadow: 0 0 0 0.5px rgba(40, 26, 10, 0.18);
+}
+
+.art,
+.textArt,
+.recess {
+  position: absolute;
+  inset: var(--mb-bw);
+}
+
+.art {
+  display: block;
+  inline-size: calc(100% - var(--mb-bw) * 2);
+  block-size: calc(100% - var(--mb-bw) * 2);
+  object-fit: cover;
+  user-select: none;
+  background: #2a2520;
+}
+
+.textArt {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  padding: 12%;
+  overflow: hidden;
+  background:
+    radial-gradient(80% 60% at 40% 20%, #fffdf8 0%, transparent 70%),
+    var(--mb-paper);
+}
+
+.textArtCopy {
+  margin: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 7;
+  overflow: hidden;
+  font-family: var(--mb-font-display);
+  font-style: italic;
+  font-size: clamp(20px, 4.2cqi, 34px);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  color: var(--mb-ink);
+}
+
+.recess {
+  box-shadow:
+    inset 0 3px 6px rgba(10, 6, 2, 0.4),
+    inset 2px 0 4px rgba(10, 6, 2, 0.18),
+    inset 0 0 0 1px rgba(10, 6, 2, 0.28);
+  pointer-events: none;
+}
+
+.bevel,
+.bevelLight {
+  position: absolute;
+  inset: 0;
+  border: var(--mb-bw) solid;
+  pointer-events: none;
+}
+
+.bevel {
+  border-block-start-color: color-mix(in srgb, var(--mb-mat) 45%, #cfc4b0);
+  border-inline-start-color: color-mix(in srgb, var(--mb-mat) 25%, #f1ebdf);
+  border-inline-end-color: #fbf8f1;
+  border-block-end-color: #fffdf8;
+}
+
+.bevelLight {
+  border-block-start-color: rgba(255, 253, 247, 0.6);
+  border-inline-start-color: rgba(255, 253, 247, 0.85);
+  border-inline-end-color: rgba(190, 176, 150, 0.35);
+  border-block-end-color: rgba(255, 253, 247, 0);
+  opacity: calc(0.45 - var(--mb-sp) * 0.45);
+}
+
+.glass {
+  position: absolute;
+  z-index: 2;
+  inset: var(--mb-fw);
+  background: linear-gradient(
+    118deg,
+    transparent 34%,
+    rgba(255, 255, 255, 0.16) 44%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 60%
+  );
+  background-size: 260% 100%;
+  background-position: calc(50% + var(--mb-sp) * 36%) 0;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.plaque {
+  position: relative;
+  box-sizing: border-box;
+  inline-size: min(100%, 320px);
+  margin: 0;
+  padding-block: 14px;
+  padding-inline: 24px;
+  border-radius: 3px;
+  color: var(--mb-engrave);
+  text-shadow: 0 1px 0 rgba(255, 240, 200, 0.55);
+  box-shadow:
+    0 1px 1px rgba(40, 26, 6, 0.3),
+    0 8px 16px -10px rgba(40, 26, 6, 0.5);
+  transform: translateY(0);
+  transition:
+    transform 460ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 460ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.plaqueOpen {
+  transform: translateY(-6px);
+  box-shadow:
+    0 1px 1px rgba(40, 26, 6, 0.25),
+    0 18px 26px -14px rgba(40, 26, 6, 0.55);
+}
+
+.brass {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background:
+    var(--mb-noise),
+    repeating-linear-gradient(180deg, rgba(255, 250, 230, 0.07) 0 1px, transparent 1px 3px),
+    linear-gradient(100deg, rgba(255, 250, 230, 0) 25%, rgba(255, 250, 230, 0.1) 50%, rgba(255, 250, 230, 0) 75%),
+    linear-gradient(180deg, var(--mb-brass-light) 0%, var(--mb-brass) 100%);
+  background-blend-mode: soft-light, normal, normal, normal;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 247, 220, 0.65),
+    inset 0 -1px 0 rgba(90, 62, 12, 0.45),
+    inset 0 0 0 1px rgba(110, 78, 20, 0.35);
+}
+
+.screwStart,
+.screwEnd {
+  position: absolute;
+  inset-block-start: 50%;
+  inline-size: 7px;
+  aspect-ratio: 1;
+  margin-block-start: -3.5px;
+  border-radius: 50%;
+  background:
+    linear-gradient(45deg, transparent 42%, rgba(70, 48, 10, 0.75) 42% 58%, transparent 58%),
+    radial-gradient(circle at 35% 30%, var(--mb-brass-light), var(--mb-brass-dark));
+  box-shadow:
+    0 0.5px 0 rgba(255, 247, 220, 0.7),
+    inset 0 0 0 0.5px rgba(70, 48, 10, 0.5);
+}
+
+.screwStart {
+  inset-inline-start: 8px;
+}
+
+.screwEnd {
+  inset-inline-end: 8px;
+}
+
+.plaqueHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 3px;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: 44px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  text-shadow: inherit;
+}
+
+.plaqueButton {
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.plaqueHead:focus-visible {
+  outline: 2px solid var(--mb-engrave);
+  outline-offset: 5px;
+}
+
+.title {
+  grid-column: 1;
+  font-family: var(--mb-font-display);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.price {
+  grid-column: 1;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+  opacity: 0.82;
+}
+
+.chevron {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  inline-size: 8px;
+  aspect-ratio: 1;
+  margin-inline-end: 2px;
+  border-inline-end: 1.5px solid currentColor;
+  border-block-end: 1.5px solid currentColor;
+  opacity: 0.7;
+  transform: translateY(-2px) rotate(-135deg);
+  transition: transform 460ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.noteWrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows 460ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 460ms;
+}
+
+.noteClip {
+  min-block-size: 0;
+  overflow: hidden;
+}
+
+.note {
+  margin: 0;
+  padding-block-start: 10px;
+  margin-block-start: 10px;
+  border-block-start: 1px solid rgba(70, 48, 10, 0.3);
+  font-size: 14px;
+  line-height: 1.5;
+  text-shadow: none;
+  overflow-wrap: anywhere;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 300ms ease-out,
+    transform 460ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.noteWrapOpen {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition:
+    grid-template-rows 460ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s;
+}
+
+.noteShown {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 360ms ease-out 90ms,
+    transform 460ms cubic-bezier(0.22, 1, 0.36, 1) 60ms;
+}
+
+.chevronOpen {
+  transform: translateY(2px) rotate(45deg);
+}
+
+@container (min-width: 680px) {
+  .root {
+    padding-block: 80px 72px;
+  }
+
+  .piece {
+    grid-template-columns: minmax(0, 440px) 240px;
+    justify-content: center;
+    align-items: end;
+    column-gap: 48px;
+  }
+
+  .plaque {
+    inline-size: 100%;
+    margin-block-end: 14%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plaque,
+  .chevron,
+  .noteWrap,
+  .noteWrapOpen,
+  .note,
+  .noteShown {
+    transition: none;
+  }
+}

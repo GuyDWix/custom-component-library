@@ -1,0 +1,39 @@
+{
+  "id": "c015",
+  "name": "HoneycombLens",
+  "display_name": "Honeycomb Lens",
+  "category": "media",
+  "tier": "everyday",
+  "job": "Lay out many photos as a honeycomb where cells near the pointer swell like a fisheye lens while the rest recede",
+  "visitor_action": "hover/drag across the grid; tap a cell to open it; arrow keys move between photos, Enter opens one",
+  "owner_settings": [
+    "Photos (image, caption)",
+    "Cell size",
+    "Lens strength"
+  ],
+  "site_types": [
+    "portfolio",
+    "store",
+    "restaurant",
+    "events"
+  ],
+  "mobile": "fixed 3-wide grid, drag across to magnify, tap opens",
+  "motion": "cells scale by distance to the pointer with smooth spring (reduced-motion: uniform grid, hover outline only)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (1 fix: CSS entrance stuck invisible in the 375 iframe, replaced by lens bloom; partial last row broke the hex lattice)",
+    "craft": "pass (3, after 1 polish pass)"
+  },
+  "craft_score": 3,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Apiary: honey-amber cell edges, beeswax cream ground, dark-bark captions, matte wax texture",
+  "notes": "Photos show blank in the 375 headless-iframe shot (lazy images; the shipped ContactSheetGallery does the same), and a partial last row sits left-weighted on the lattice."
+}

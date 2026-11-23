@@ -1,0 +1,30 @@
+{
+  "id": "c122",
+  "name": "WatercolourWashField",
+  "display_name": "Watercolour Wash Field",
+  "category": "ambient",
+  "tier": "showpiece",
+  "job": "Paint a slow watercolour wash behind content that blooms in from the edges as the block enters view, pigment pooling at the borders",
+  "visitor_action": "scroll in; none required",
+  "owner_settings": [
+    "Small heading, headline, paragraph, button label and link",
+    "Colours (2)",
+    "Wash intensity",
+    "Edge style (soft | torn)"
+  ],
+  "site_types": ["restaurant", "services", "blog", "events", "store"],
+  "mobile": "smaller canvas (lower render resolution, smaller wash reach), static after bloom",
+  "motion": "wash spreads with a warped-noise shader for ~3.4s, rims darken as it 'dries', then stops completely; text staggers in (reduced-motion: finished painted wash, text shown at once)",
+  "scores": { "concept": 3, "usefulness": 1, "uniqueness": 3, "reach": 3 },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (fix used: grid column minmax(0,1fr) + content width; the 375 shot's right-edge crop is the headless minimum-window artifact, also seen on CardStack; verified no overflow at a real 375 viewport)",
+    "craft": "3 after polish pass (noise scale and wash reach tied to block size, finer mobile render scale)"
+  },
+  "craft_score": 3,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Paper wash: cold-press paper grain, dusty rose and sea-glass blooms, darker pigment rims, always low contrast behind text",
+  "notes": "WebGL-only wash (CSS gradient fallback if WebGL is missing); headless screenshots catch it mid-bloom, the reduced-motion shot shows the finished look; one-shot under 4s so no pause button."
+}

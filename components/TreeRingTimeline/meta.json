@@ -1,0 +1,41 @@
+{
+  "id": "c071",
+  "name": "TreeRingTimeline",
+  "display_name": "Tree Ring Timeline",
+  "category": "data",
+  "tier": "showpiece",
+  "job": "Present the years a business has been going as tree rings that grow outward from the centre, each ring labelled with that year's milestone",
+  "visitor_action": "hover or tap a ring to read its milestone; arrow keys step through years",
+  "owner_settings": [
+    "Milestones (year, title, short note)",
+    "Centre label",
+    "Wood tone",
+    "Ring thickness style"
+  ],
+  "site_types": [
+    "business",
+    "restaurant",
+    "services",
+    "portfolio",
+    "store"
+  ],
+  "mobile": "smaller disc, milestone list underneath instead of hover labels",
+  "motion": "rings draw outward one by one with eased stroke, hovered ring thickens with spring (reduced-motion: all rings drawn, static)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (1 fix: single-column grid track at narrow widths + no list auto-scroll on load)",
+    "craft": "3"
+  },
+  "craft_score": 3,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Cut oak: pale birch ground, honey and walnut rings with tiny growth-line irregularities, ink-brown serif labels, matte wood grain",
+  "notes": "Rings stay undrawn until the element is seen on screen (draw-in waits for an in-view signal); with 30+ milestones rings get thin, so tapping a specific one on the disc is fiddly and the list below is the reliable path. 2026-11-23: removed on-screen hint/replay per contract §2 rule"
+}

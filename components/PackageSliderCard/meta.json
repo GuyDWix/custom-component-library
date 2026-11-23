@@ -1,0 +1,40 @@
+{
+  "id": "c090",
+  "name": "PackageSliderCard",
+  "display_name": "Package Slider Card",
+  "category": "controls",
+  "tier": "everyday",
+  "job": "A single slider with named stops that morphs one package card (name, price, included items) as the visitor drags between tiers",
+  "visitor_action": "drag the thumb or press arrow keys; tap a stop label",
+  "owner_settings": [
+    "Packages (name, price, short tagline, included items one per line)",
+    "Accent color",
+    "Currency symbol",
+    "Price note (e.g. per garment)"
+  ],
+  "site_types": [
+    "services",
+    "business",
+    "events",
+    "store"
+  ],
+  "mobile": "slider above card, thumb snaps to stops",
+  "motion": "thumb snaps with spring, price counts to the new value, included items check in one by one (reduced-motion: instant card swap)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (1 fix: worst-case stop labels showed a clipped third line)",
+    "craft": "pass (3, no polish pass needed)"
+  },
+  "craft_score": 3,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Tailor's counter: pale oat card, deep claret thumb and track ticks, tape-measure numerals, fine pinstripe edge",
+  "notes": "Drag, spring snap and check-in stagger are not visible in stills and were not interaction-tested in a live browser; long stop names clamp to 2 lines under the tape (full name shows on the card)."
+}

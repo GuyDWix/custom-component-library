@@ -1,0 +1,194 @@
+.root {
+  --wash-color-one: #d6a2a6;
+  --wash-color-two: #98c6bb;
+  --wash-paper: #f7f2ea;
+  --wash-ink: #3b3437;
+  --wash-ink-soft: #6a5e61;
+  --wash-accent: #8e4f5a;
+  --wash-display-font: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  --wash-body-font: 'Avenir Next', Avenir, 'Segoe UI', 'Helvetica Neue', sans-serif;
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  container-type: inline-size;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: 480px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  place-items: center;
+  padding-block: clamp(64px, 10%, 128px);
+  padding-inline: clamp(24px, 8%, 120px);
+  background: var(--wash-paper);
+  color: var(--wash-ink);
+  font-family: var(--wash-body-font);
+  border-radius: 6px;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.7) inset,
+    0 0 0 1px rgb(80 60 60 / 0.06),
+    0 30px 60px -34px rgb(70 45 50 / 0.35);
+}
+
+.fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 55% at 0% 0%, color-mix(in srgb, var(--wash-color-one) 70%, transparent), transparent 70%),
+    radial-gradient(ellipse 55% 60% at 100% 100%, color-mix(in srgb, var(--wash-color-two) 70%, transparent), transparent 70%),
+    radial-gradient(ellipse 45% 50% at 100% 0%, color-mix(in srgb, var(--wash-color-two) 45%, transparent), transparent 70%),
+    radial-gradient(ellipse 50% 45% at 0% 100%, color-mix(in srgb, var(--wash-color-one) 45%, transparent), transparent 70%),
+    var(--wash-paper);
+  box-shadow: inset 0 0 28px color-mix(in srgb, var(--wash-color-one) 55%, transparent);
+}
+
+.canvas,
+.canvasHidden {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  transition: opacity 400ms ease-out;
+}
+
+.canvasHidden {
+  opacity: 0;
+}
+
+.veil {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 52% 46% at 50% 50%,
+    color-mix(in srgb, var(--wash-paper) 62%, transparent),
+    transparent 100%
+  );
+}
+
+.content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(14px, 2cqi, 22px);
+  inline-size: 100%;
+  max-inline-size: 40rem;
+  min-inline-size: 0;
+  text-align: center;
+}
+
+.item,
+.itemHidden {
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  transition:
+    opacity 900ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1100ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(700ms + var(--stagger, 0) * 140ms);
+}
+
+.itemHidden {
+  opacity: 0;
+  transform: translateY(14px);
+  filter: blur(6px);
+  transition-delay: 0ms;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--wash-accent);
+  overflow-wrap: anywhere;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--wash-display-font);
+  font-weight: 500;
+  font-size: clamp(32px, 6.4cqi, 66px);
+  line-height: 1.04;
+  letter-spacing: -0.022em;
+  color: var(--wash-ink);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.45);
+}
+
+.body {
+  margin: 0;
+  max-inline-size: 34rem;
+  font-size: clamp(15px, 1.7cqi, 18px);
+  line-height: 1.6;
+  color: var(--wash-ink-soft);
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+
+.extra {
+  max-inline-size: 100%;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 46px;
+  max-inline-size: 100%;
+  box-sizing: border-box;
+  margin-block-start: 6px;
+  padding-block: 12px;
+  padding-inline: 26px;
+  border-radius: 999px;
+  background: var(--wash-ink);
+  color: var(--wash-paper);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  text-align: center;
+  overflow-wrap: anywhere;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.18) inset,
+    0 10px 22px -12px rgb(59 52 55 / 0.7);
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 200ms ease-out;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+  background: var(--wash-accent);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.2) inset,
+    0 16px 28px -14px rgb(142 79 90 / 0.75);
+}
+
+.button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--wash-accent);
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item,
+  .itemHidden,
+  .canvas,
+  .canvasHidden,
+  .button {
+    transition: none;
+  }
+}

@@ -1,0 +1,541 @@
+@property --wcm-dot-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #5f6f86;
+}
+
+@property --wcm-arc-color {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #8eeaff;
+}
+
+.root {
+  --wcm-font: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --wcm-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+  --wcm-play: paused;
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  inline-size: 100%;
+  container: wcm / inline-size;
+  border-radius: 28px;
+  background-color: var(--wcm-bg);
+  background-image:
+    radial-gradient(90% 75% at 44% 22%, var(--wcm-surface-hi) 0%, transparent 70%),
+    linear-gradient(180deg, transparent 55%, var(--wcm-floor) 100%);
+  border: 1px solid var(--wcm-frame);
+  box-shadow: var(--wcm-shadow);
+  color: var(--wcm-ink);
+  font-family: var(--wcm-font);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.themeDark {
+  --wcm-bg: #03060d;
+  --wcm-surface-hi: #0c1a2f;
+  --wcm-floor: #010309;
+  --wcm-frame: rgba(170, 225, 255, 0.08);
+  --wcm-shadow: inset 0 1px 0 rgba(200, 235, 255, 0.07), 0 50px 90px -50px rgba(0, 4, 12, 0.9);
+  --wcm-dot-color: #5f6f86;
+  --wcm-arc-color: #8eeaff;
+  --wcm-pulse-color: color-mix(in srgb, var(--wcm-arc-color) 12%, #ffffff);
+  --wcm-glow-color: #2fe0c0;
+  --wcm-ink: #f2f9ff;
+  --wcm-ink-muted: rgba(214, 233, 248, 0.72);
+  --wcm-chip-bg: rgba(5, 11, 22, 0.86);
+  --wcm-chip-border: rgba(170, 225, 255, 0.12);
+  --wcm-chip-shine: rgba(220, 245, 255, 0.09);
+  --wcm-dot-opacity: 1;
+  --wcm-grain-opacity: 0.09;
+  --wcm-grain-blend: overlay;
+  --wcm-glow-strength: 9%;
+}
+
+.themeLight {
+  --wcm-bg: #e4ebf2;
+  --wcm-surface-hi: #f8fbfe;
+  --wcm-floor: #d3dde8;
+  --wcm-frame: rgba(20, 40, 70, 0.09);
+  --wcm-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 50px 90px -55px rgba(20, 45, 80, 0.45);
+  --wcm-dot-color: #2a3a52;
+  --wcm-arc-color: #0a8db8;
+  --wcm-pulse-color: color-mix(in srgb, var(--wcm-arc-color) 65%, #00141f);
+  --wcm-glow-color: #19b8a0;
+  --wcm-ink: #13202f;
+  --wcm-ink-muted: rgba(19, 32, 47, 0.72);
+  --wcm-chip-bg: rgba(248, 251, 254, 0.9);
+  --wcm-chip-border: rgba(20, 40, 70, 0.1);
+  --wcm-chip-shine: rgba(255, 255, 255, 0.9);
+  --wcm-dot-opacity: 0.62;
+  --wcm-grain-opacity: 0.16;
+  --wcm-grain-blend: multiply;
+  --wcm-glow-strength: 14%;
+}
+
+.revealed {
+  --wcm-play: running;
+}
+
+.offscreen {
+  --wcm-play: paused;
+}
+
+.paused {
+  --wcm-draw-duration: 0s;
+  --wcm-draw-delay: 0s;
+  --wcm-motion-display: none;
+}
+
+.atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(55% 38% at 50% 8%, color-mix(in srgb, var(--wcm-glow-color) var(--wcm-glow-strength), transparent) 0%, transparent 75%),
+    radial-gradient(40% 44% at 62% 52%, color-mix(in srgb, var(--wcm-arc-color) calc(var(--wcm-glow-strength) * 0.6), transparent) 0%, transparent 72%),
+    radial-gradient(120% 90% at 50% 50%, transparent 55%, var(--wcm-floor) 100%);
+}
+
+.map {
+  --arc-line: 0.5;
+  --arc-halo: 2;
+  --arc-pulse: 0.9;
+  --arc-ring: 0.32;
+
+  position: relative;
+  direction: ltr;
+  aspect-ratio: 360 / 142;
+  margin-block: 44px 52px;
+  margin-inline: 28px;
+}
+
+.equator,
+.tropic {
+  position: absolute;
+  inset-inline: 4%;
+  block-size: 1px;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(90deg, var(--wcm-dot-color) 0 2px, transparent 2px 8px);
+  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+}
+
+.equator {
+  opacity: 0.22;
+}
+
+.tropic {
+  opacity: 0.09;
+}
+
+.dotsBase,
+.dotsFx {
+  position: absolute;
+  inset: 0;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+  mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
+}
+
+.dotsBase {
+  opacity: var(--wcm-dot-opacity);
+}
+
+.arcs {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.stopFaint {
+  stop-color: var(--wcm-arc-color);
+  stop-opacity: 0.4;
+}
+
+.stopFull {
+  stop-color: var(--wcm-arc-color);
+  stop-opacity: 1;
+}
+
+.stopSoft {
+  stop-color: var(--wcm-arc-color);
+  stop-opacity: 0.8;
+}
+
+.arc {
+  --arc-boost: 1;
+  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.arcLit {
+  --arc-boost: 1.7;
+}
+
+.arcDim {
+  opacity: 0.12;
+}
+
+.arcHalo,
+.arcLine {
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 100 100;
+  animation: wcmDraw var(--wcm-draw-duration, 2s) cubic-bezier(0.65, 0, 0.35, 1) both;
+  animation-delay: var(--wcm-draw-delay, var(--draw-delay));
+  animation-play-state: var(--wcm-play);
+}
+
+.arcHalo {
+  stroke: var(--wcm-arc-color);
+  stroke-width: calc(var(--arc-halo) * var(--arc-boost));
+  opacity: 0.18;
+  transition: stroke-width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.arcLine {
+  stroke-width: calc(var(--arc-line) * var(--arc-boost));
+  transition: stroke-width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pulse,
+.pulseTrail {
+  display: var(--wcm-motion-display, inline);
+  fill: none;
+  stroke-linecap: round;
+  stroke-dashoffset: var(--from);
+  animation: wcmPulse var(--pulse-duration) linear var(--pulse-delay) infinite;
+  animation-play-state: var(--wcm-play);
+}
+
+.pulse {
+  --from: 4;
+  --to: -100;
+  stroke: var(--wcm-pulse-color);
+  stroke-width: var(--arc-pulse);
+  stroke-dasharray: 4 300;
+}
+
+.pulseTrail {
+  --from: 18;
+  --to: -86;
+  stroke: var(--wcm-arc-color);
+  stroke-width: calc(var(--arc-pulse) * 0.7);
+  stroke-dasharray: 18 300;
+  opacity: 0.85;
+}
+
+.landing {
+  display: var(--wcm-motion-display, inline);
+  fill: none;
+  stroke: var(--wcm-pulse-color);
+  stroke-width: var(--arc-ring);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: wcmLand var(--pulse-duration) linear var(--pulse-delay) infinite;
+  animation-play-state: var(--wcm-play);
+}
+
+.marker {
+  position: absolute;
+  z-index: 2;
+  inline-size: 44px;
+  block-size: 44px;
+  margin-block-start: -22px;
+  margin-inline-start: -22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.marker:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--wcm-arc-color);
+}
+
+.markerLinked {
+  z-index: 3;
+}
+
+.markerActive {
+  z-index: 4;
+}
+
+.markerDim {
+  opacity: 0.32;
+}
+
+.core,
+.ring {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  inline-size: 9px;
+  block-size: 9px;
+  margin-block-start: -4.5px;
+  margin-inline-start: -4.5px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.core {
+  background: radial-gradient(circle at 35% 30%, var(--wcm-pulse-color), var(--wcm-arc-color) 60%);
+  box-shadow:
+    0 0 0 2.5px var(--wcm-bg),
+    0 0 0 3.5px color-mix(in srgb, var(--wcm-arc-color) 40%, transparent),
+    0 0 18px 3px color-mix(in srgb, var(--wcm-arc-color) 55%, transparent);
+  transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.coreActive {
+  transform: scale(1.55);
+}
+
+.ring {
+  display: var(--wcm-motion-display, block);
+  border: 1.5px solid var(--wcm-arc-color);
+  opacity: 0;
+  animation: wcmRing 3.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+  animation-delay: calc(var(--i) * -0.43s);
+  animation-play-state: var(--wcm-play);
+}
+
+.label {
+  position: absolute;
+  inset-block-start: calc(50% + var(--ly, -14px));
+  inset-inline-start: calc(50% + var(--lx, 12px));
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  inline-size: max-content;
+  max-inline-size: 22ch;
+  padding-block: 6px;
+  padding-inline: 10px 11px;
+  border: 1px solid var(--wcm-chip-border);
+  border-radius: 10px;
+  background: var(--wcm-chip-bg);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  box-shadow:
+    inset 0 1px 0 var(--wcm-chip-shine),
+    0 12px 28px -14px rgba(0, 0, 0, 0.6);
+  color: var(--wcm-ink);
+  text-align: start;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.92);
+  transform-origin: left center;
+  transition:
+    opacity 0.3s ease,
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.3s ease;
+}
+
+.labelShown {
+  opacity: 1;
+  transform: none;
+}
+
+.labelLinked {
+  opacity: 1;
+  transform: none;
+}
+
+.labelActive {
+  opacity: 1;
+  transform: none;
+  max-inline-size: 30ch;
+  border-color: color-mix(in srgb, var(--wcm-arc-color) 45%, transparent);
+}
+
+.labelName {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.labelNameFull {
+  -webkit-line-clamp: 4;
+}
+
+.labelMeta {
+  display: none;
+  color: var(--wcm-ink-muted);
+  font-family: var(--wcm-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1.3;
+  white-space: pre;
+  font-variant-numeric: tabular-nums;
+}
+
+.labelMetaShown {
+  display: block;
+}
+
+.playToggle {
+  position: absolute;
+  inset-block-end: 14px;
+  inset-inline-end: 14px;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  padding: 0;
+  border: 1px solid var(--wcm-chip-border);
+  border-radius: 50%;
+  background: var(--wcm-chip-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 var(--wcm-chip-shine);
+  color: var(--wcm-ink);
+  cursor: pointer;
+  opacity: 0.6;
+  transition:
+    opacity 0.25s ease,
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.playToggle:hover {
+  opacity: 1;
+}
+
+.playToggle:active {
+  transform: scale(0.92);
+}
+
+.playToggle:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--wcm-arc-color);
+  outline-offset: 3px;
+}
+
+.playIcon {
+  inline-size: 18px;
+  block-size: 18px;
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  opacity: var(--wcm-grain-opacity);
+  mix-blend-mode: var(--wcm-grain-blend);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@container wcm (max-width: 640px) {
+  .map {
+    --arc-line: 0.85;
+    --arc-halo: 3;
+    --arc-pulse: 1.4;
+    --arc-ring: 0.7;
+    margin-block: 28px 64px;
+    margin-inline: 12px;
+  }
+
+  .label {
+    padding-block: 4px;
+    padding-inline: 8px 9px;
+    border-radius: 8px;
+  }
+
+  .labelActive {
+    max-inline-size: 20ch;
+  }
+
+  .labelName {
+    font-size: 12.5px;
+  }
+
+  .labelMeta {
+    font-size: 10px;
+  }
+}
+
+@container wcm (min-width: 1100px) {
+  .map {
+    margin-block: 64px 72px;
+    margin-inline: 40px;
+  }
+}
+
+@keyframes wcmDraw {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes wcmPulse {
+  0% {
+    stroke-dashoffset: var(--from);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1);
+  }
+  70%,
+  100% {
+    stroke-dashoffset: var(--to);
+  }
+}
+
+@keyframes wcmLand {
+  0%,
+  47% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  53% {
+    opacity: 0.95;
+    transform: scale(0.8);
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+  88%,
+  100% {
+    opacity: 0;
+    transform: scale(3.6);
+  }
+}
+
+@keyframes wcmRing {
+  0% {
+    opacity: 0.65;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(4.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .label,
+  .core,
+  .arc,
+  .arcLine,
+  .arcHalo {
+    transition-duration: 0.01ms;
+  }
+}

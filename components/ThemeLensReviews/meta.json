@@ -1,0 +1,44 @@
+{
+  "id": "c137",
+  "name": "ThemeLensReviews",
+  "display_name": "Theme Lens Reviews",
+  "category": "social",
+  "tier": "everyday",
+  "job": "Show a set of reviews with theme chips (service, price, speed, quality); choosing a chip highlights the matching sentences across all reviews and fades the rest",
+  "visitor_action": "tap a chip; tap again to clear; keyboard focus on chips (arrow keys move between chips)",
+  "owner_settings": [
+    "Reviews (text, name, optional detail line)",
+    "Themes (label, words to highlight)",
+    "Highlight colour",
+    "Theme highlighted at start",
+    "Small heading",
+    "Heading",
+    "Summary line"
+  ],
+  "site_types": [
+    "business",
+    "store",
+    "restaurant",
+    "services",
+    "events"
+  ],
+  "mobile": "chips scroll sideways, reviews stack single column",
+  "motion": "highlight bands sweep across matched phrases, other text dims to 55 percent (reduced-motion: static highlight, no sweep)",
+  "art_direction": "Highlighter peach: warm paper cards, peach-orange highlighter bands, charcoal serif text, subtle paper grain",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass",
+    "craft": 3
+  },
+  "craft_score": 3,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "notes": "Render rejection voided 2026-11-23: it came from the false ~500px headless crop. At a true 375 the chip row is a clipped horizontal scroller (no page overflow). Craft 3 scored by the orchestrator, not the builder."
+}

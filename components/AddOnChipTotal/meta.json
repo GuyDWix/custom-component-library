@@ -1,0 +1,37 @@
+{
+  "id": "c099",
+  "name": "AddOnChipTotal",
+  "display_name": "Add-On Chip Total",
+  "category": "controls",
+  "tier": "everyday",
+  "job": "Selectable add-on chips that fly into a tidy summary tray when chosen, building a running list and total the visitor can take to the booking link",
+  "visitor_action": "click/tap chips to add or remove; Enter on the summary opens the link",
+  "owner_settings": [
+    "Heading",
+    "Base item and price",
+    "Add-ons (name, price, selected by default)",
+    "Currency symbol",
+    "Summary title and total label",
+    "Button label and link"
+  ],
+  "site_types": ["services", "store", "restaurant", "events"],
+  "mobile": "chips wrap, tray docks under them",
+  "motion": "chip duplicate arcs into the tray on a spring with a lifting shadow, row lands with a tint flash, count badge pops, total digits roll (reduced-motion: chip state changes, tray updates instantly)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass",
+    "craft": "pass (3, after 1 polish pass)"
+  },
+  "craft_score": 3,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Pastry counter: pistachio and cream palette, raspberry active chips, soft rounded cards (UI kept flat and contemporary; gloss dropped per brief)",
+  "notes": "2026-11-23 restyled after Guy's rejection of the glossy look: flat hairline chips, tinted selected state, clean tray, flat CTA. The still frame is calm; the delight lives in the chip flight and rolling total, which only show on interaction."
+}

@@ -1,0 +1,38 @@
+{
+  "id": "c151",
+  "name": "CalendarLeafEventCard",
+  "display_name": "Calendar Leaf Event Card",
+  "category": "cards",
+  "tier": "everyday",
+  "job": "An event card whose date is a wall-calendar leaf; a tap tears the leaf and turns it into an add-to-calendar download, so visitors save the event instead of forgetting it",
+  "visitor_action": "tap the leaf or press Enter to add the event to the calendar; the card itself links to details",
+  "owner_settings": [
+    "Event title and photo",
+    "Short description",
+    "Start and end date and time",
+    "Venue",
+    "Details link and its label",
+    "Add-to-calendar and confirmation labels",
+    "Leaf color"
+  ],
+  "site_types": ["events", "restaurant", "business", "services", "store"],
+  "mobile": "leaf sits top-left over the photo, 112px tap target; card stacks photo over details, side by side from 700px",
+  "motion": "leaf tears and curls away along an eased arc, tick draws in on the page beneath; leaf flutters twice when first seen (reduced-motion: leaf swaps to the tick, no flutter)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (1 fix: clamp long add-to-calendar label on the leaf to 2 lines)",
+    "craft": "pass (3)"
+  },
+  "craft_score": 3,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Wall calendar: warm white card, tomato-red leaf header, charcoal numerals, kraft backing strip, soft paper shadow",
+  "notes": "Add to calendar downloads an .ics file (floating local time, no time zone); no Google Calendar link. The leaf stays torn until reload."
+}

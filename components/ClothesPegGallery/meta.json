@@ -1,0 +1,39 @@
+{
+  "id": "c010",
+  "name": "ClothesPegGallery",
+  "display_name": "Clothes Peg Gallery",
+  "category": "media",
+  "tier": "everyday",
+  "job": "Hang photos from a sagging string with clothes pegs; they sway in the breeze and a tapped photo unclips and floats to a large view",
+  "visitor_action": "tap a photo to unclip it; tap away or Esc to re-hang it",
+  "owner_settings": [
+    "Photos (image, caption)",
+    "Breeze strength",
+    "String colour"
+  ],
+  "site_types": [
+    "events",
+    "blog",
+    "portfolio",
+    "restaurant"
+  ],
+  "mobile": "two rows of short strings, tap opens full width",
+  "motion": "pendulum sway with damping, photo detaches with spring and soft shadow (reduced-motion: still hung, instant open)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (1 fix: eager images, larger prints/full captions, line vertically balanced)",
+    "craft": "pass (3, after 1 polish pass: flat hairline pause/close controls replacing glass blur and heavy shadow)"
+  },
+  "craft_score": 3,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Washing line: sky-blue backdrop, jute string, bleached wooden pegs, white-bordered prints, gentle sunlight",
+  "notes": "Captions are single-line on the line (ellipsis on narrow prints; full text shows in the open view); at 375 six photos make three short strings, not two."
+}

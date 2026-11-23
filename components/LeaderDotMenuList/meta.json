@@ -1,0 +1,43 @@
+{
+  "id": "c031",
+  "name": "LeaderDotMenuList",
+  "display_name": "Leader Dot Menu List",
+  "category": "text",
+  "tier": "everyday",
+  "job": "Present menu items or services as a typeset price list with dotted leaders; focusing a row unfolds its description and lights its leader",
+  "visitor_action": "hover or focus a row to light its leader; click, tap or press Enter to unfold its description (one open at a time); arrow keys move between rows",
+  "owner_settings": [
+    "Items (name, price, description)",
+    "Currency symbol",
+    "Heading",
+    "Small line above the heading",
+    "Text color",
+    "Accent color",
+    "Paper color"
+  ],
+  "site_types": [
+    "restaurant",
+    "services",
+    "store",
+    "events"
+  ],
+  "mobile": "tap a row to expand, one open at a time; type steps down in narrow containers",
+  "motion": "leader dots fill in sequence toward the price, price warms to the accent, description unfolds with eased height (reduced-motion: all descriptions visible, no transitions)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (1 fix: removed IntersectionObserver entrance fade that left rows invisible in the 375 iframe shot)",
+    "craft": "pass (3, after 1 polish pass: narrower type and leader below 440px so names stop wrapping at 375)"
+  },
+  "craft_score": 3,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Bistro ivory: ivory menu stock, ink-navy serif with small caps, brick-red leader dots, thin double rule",
+  "notes": "Serif relies on system fonts (Palatino/Georgia fallback), so small caps are synthesized; the leader fill sweeps left-to-right even in right-to-left languages."
+}
