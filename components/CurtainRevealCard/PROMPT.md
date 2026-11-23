@@ -40,7 +40,7 @@ const PULL_LABEL = 'Reveal the price and details';
 const CARD_HELP =
   'Hover, focus or tap to part the curtains. Tap again to keep them open or to close them. Escape also closes them.';
 
-// How far (px) the tassel can be pulled down, and how much of it counts as a "pull".
+// How far (px) the pull cord can be drawn down, and how much of it counts as a "pull".
 const PULL_MAX = 88;
 const PULL_COMMIT = 0.42;
 
@@ -53,7 +53,7 @@ export default function CurtainRevealCard({
   details = defaultDetails,
   image = 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=1400&h=900&fit=crop',
   imageAlt = 'A spa still life with a lotion bottle, a rolled towel and a lit candle',
-  curtainColor = '#6d2342',
+  curtainColor = '#3a2433',
   openSpeed = 650,
   className,
 }: CurtainRevealCardProps) {
@@ -205,23 +205,17 @@ export default function CurtainRevealCard({
             </span>
           )}
           <span className={styles.stageGlow} aria-hidden="true" />
-          <span className={styles.beamLeft} aria-hidden="true" />
-          <span className={styles.beamRight} aria-hidden="true" />
           <span className={styles.stageDim} aria-hidden="true" />
         </div>
 
         <div className={styles.curtainLeft} aria-hidden="true">
           <span className={styles.clothLeft}>
-            <span className={styles.grain} />
-            <span className={styles.spillLeft} />
             <span className={styles.foldShade} />
           </span>
         </div>
 
         <div className={styles.curtainRight} aria-hidden="true">
           <span className={styles.clothRight}>
-            <span className={styles.grain} />
-            <span className={styles.spillRight} />
             <span className={styles.foldShade} />
           </span>
         </div>
@@ -239,25 +233,16 @@ export default function CurtainRevealCard({
           onPointerCancel={(e) => endPull(e, true)}
           onClick={onPullClick}
         >
-          <span className={styles.tasselSwing}>
-            <span className={styles.tasselCord} aria-hidden="true" />
-            <span className={styles.tasselCollar} aria-hidden="true" />
-            <span className={styles.tasselHead} aria-hidden="true" />
-            <span className={styles.tasselNeck} aria-hidden="true" />
-            <span className={styles.tasselSkirt} aria-hidden="true" />
-          </span>
+          <span className={styles.pullCord} aria-hidden="true" />
+          <span className={styles.pullGrip} aria-hidden="true" />
         </button>
 
-        <div className={styles.valance} aria-hidden="true">
-          <span className={styles.valanceCloth}>
-            <span className={styles.valanceShade} />
-          </span>
-          <span className={styles.valanceTrim} />
-        </div>
+        <div className={styles.valance} aria-hidden="true" />
         <span className={styles.railLine} aria-hidden="true" />
 
         <div className={styles.overlay}>
           <div id={revealId} className={styles.reveal}>
+           <div className={styles.panel}>
             <div className={styles.priceRow} style={{ '--i': 0 } as CSSProperties}>
               <span className={styles.price}>{price}</span>
               {duration && <span className={styles.duration}>{duration}</span>}
@@ -266,12 +251,15 @@ export default function CurtainRevealCard({
               <ul className={styles.inclusions}>
                 {details.map((d, i) => (
                   <li key={i} className={styles.inclusion} style={{ '--i': i + 1 } as CSSProperties}>
-                    <span className={styles.inclusionDot} aria-hidden="true" />
+                    <span className={styles.inclusionNo} aria-hidden="true">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
                     <span className={styles.inclusionText}>{d.text}</span>
                   </li>
                 ))}
               </ul>
             )}
+           </div>
           </div>
 
           <div className={styles.bill}>
@@ -281,8 +269,6 @@ export default function CurtainRevealCard({
             </h3>
           </div>
         </div>
-
-        <span className={styles.footlights} aria-hidden="true" />
       </div>
     </div>
   );
@@ -300,23 +286,21 @@ export default function CurtainRevealCard({
 }
 
 .root {
-  --cv-curtain: #6d2342;
-  --cv-curtain-deep: color-mix(in srgb, var(--cv-curtain) 66%, #140710);
-  --cv-curtain-mid: color-mix(in srgb, var(--cv-curtain) 86%, #20091a);
-  --cv-curtain-ridge: color-mix(in srgb, var(--cv-curtain) 66%, #e8b3c0);
-  --cv-wall: #12060b;
-  --cv-brass: #c99a4b;
-  --cv-brass-deep: #7d5a22;
-  --cv-brass-light: #ecc67c;
-  --cv-ink: #14060c;
-  --cv-cream: #f6e9dc;
-  --cv-glow: #ffb168;
+  --cv-curtain: #3a2433;
+  --cv-curtain-deep: color-mix(in srgb, var(--cv-curtain) 62%, #07040a);
+  --cv-curtain-mid: color-mix(in srgb, var(--cv-curtain) 88%, #07040a);
+  --cv-curtain-ridge: color-mix(in srgb, var(--cv-curtain) 88%, #f0dfe8);
+  --cv-wall: #0d080c;
+  --cv-gold: #c9a45c;
+  --cv-gold-light: #e2c88f;
+  --cv-hair: color-mix(in srgb, var(--cv-gold) 46%, transparent);
+  --cv-cream: #f4ece4;
+  --cv-glow: #ffc58a;
   --cv-font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
   --cv-font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
   --cv-speed: 650ms;
-  --cv-ease: cubic-bezier(0.28, 0.9, 0.3, 1.06);
+  --cv-ease: cubic-bezier(0.3, 0.8, 0.3, 1);
   --cv-ease-out: cubic-bezier(0.22, 0.9, 0.3, 1);
-  --cv-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   display: block;
   box-sizing: border-box;
@@ -327,48 +311,30 @@ export default function CurtainRevealCard({
 }
 
 .root ::selection {
-  background: color-mix(in srgb, var(--cv-curtain) 62%, transparent);
+  background: color-mix(in srgb, var(--cv-gold) 40%, transparent);
   color: var(--cv-cream);
 }
 
-/* ---------- the card is the theatre ---------- */
-
 .card {
-  /* drape openness: --cv-p 0 = half-drawn hero state, 1 = fully gathered */
+  /* drape openness: --cv-p 0 = half-drawn hero state, 1 = gathered to the sides */
   --cv-p: 0;
-  --cv-rest: 0.72;
+  --cv-rest: 0.7;
   --cv-gather: 0.15;
   --cv-sx: calc(var(--cv-rest) + (var(--cv-gather) - var(--cv-rest)) * var(--cv-p));
   --cv-tug: 0px;
   --cv-lines: 2;
-  --cv-r: clamp(15px, 3.4cqi, 36px);
-  --cv-valance: calc(var(--cv-r) * 3.1);
+  --cv-valance: clamp(14px, 2.4cqi, 24px);
   --cv-gutter: clamp(28px, 9cqi, 96px);
-  --cv-foot: 12px;
-  --cv-fold: clamp(58px, 10.5cqi, 120px);
-  --cv-tw: clamp(40px, 5.4cqi, 62px);
-  --cv-pw: max(52px, calc(var(--cv-tw) * 1.5));
-  --cv-cord: clamp(64px, 13cqi, 170px);
+  --cv-fold: clamp(44px, 7.5cqi, 84px);
+  --cv-pw: 44px;
+  --cv-cord: clamp(40px, 8cqi, 96px);
   --cv-velvet:
     repeating-linear-gradient(
       90deg,
-      rgba(8, 2, 6, 0) 0,
-      rgba(8, 2, 6, 0) calc(var(--cv-fold) * 0.82),
-      rgba(8, 2, 6, 0.5) calc(var(--cv-fold) * 0.95),
-      rgba(8, 2, 6, 0) var(--cv-fold)
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 205, 220, 0) 0,
-      rgba(255, 205, 220, 0.14) calc(var(--cv-fold) * 0.7),
-      rgba(255, 205, 220, 0) calc(var(--cv-fold) * 1.37)
-    ),
-    repeating-linear-gradient(
-      90deg,
       var(--cv-curtain-deep) 0,
-      var(--cv-curtain-mid) calc(var(--cv-fold) * 0.24),
-      var(--cv-curtain-ridge) calc(var(--cv-fold) * 0.48),
-      var(--cv-curtain) calc(var(--cv-fold) * 0.7),
+      var(--cv-curtain-mid) calc(var(--cv-fold) * 0.3),
+      var(--cv-curtain-ridge) calc(var(--cv-fold) * 0.5),
+      var(--cv-curtain-mid) calc(var(--cv-fold) * 0.72),
       var(--cv-curtain-deep) var(--cv-fold)
     );
 
@@ -378,9 +344,9 @@ export default function CurtainRevealCard({
   inline-size: 100%;
   aspect-ratio: 16 / 10;
   overflow: clip;
-  border-radius: clamp(18px, 3cqi, 30px);
+  border-radius: clamp(10px, 1.6cqi, 16px);
   background: var(--cv-wall);
-  box-shadow: 0 34px 60px -34px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 30px 50px -34px rgba(0, 0, 0, 0.75);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -396,43 +362,27 @@ export default function CurtainRevealCard({
   z-index: 10;
   pointer-events: none;
   border-radius: inherit;
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--cv-brass) 38%, transparent),
-    inset 0 0 40px rgba(6, 1, 5, 0.45);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cv-gold) 30%, transparent);
 }
 
-/* ---------- the stage behind the drapes ---------- */
+/* ---------- stage ---------- */
 
 .stage {
   position: absolute;
   inset: 0;
   z-index: 1;
   overflow: clip;
-  background:
-    radial-gradient(70% 90% at 50% 100%, color-mix(in srgb, var(--cv-glow) 50%, #2a0d12), #1a0810 75%);
-}
-
-.stage::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  mix-blend-mode: multiply;
-  background:
-    radial-gradient(60% 80% at 50% 70%, rgba(255, 190, 120, 0.5), rgba(120, 40, 40, 0.9) 100%),
-    linear-gradient(180deg, rgba(70, 16, 34, 0.5), transparent 60%);
+  background: radial-gradient(70% 90% at 50% 100%, #3b2a24, #140d12 75%);
 }
 
 .stageImg {
   position: absolute;
-  z-index: 0;
   inset: 0;
   inline-size: 100%;
   block-size: 100%;
   object-fit: cover;
-  transform: scale(1.16);
-  filter: sepia(0.4) saturate(1.25) contrast(1.12) brightness(0.86);
+  transform: scale(1.1);
+  filter: saturate(0.7) contrast(1.05) brightness(0.8);
   transition: transform calc(var(--cv-speed) * 1.6) var(--cv-ease-out);
   user-select: none;
 }
@@ -447,17 +397,16 @@ export default function CurtainRevealCard({
   display: grid;
   place-items: center;
   background:
-    radial-gradient(50% 70% at 50% 82%, color-mix(in srgb, var(--cv-glow) 70%, transparent), transparent 72%),
-    radial-gradient(70% 60% at 50% 20%, color-mix(in srgb, var(--cv-glow) 24%, transparent), transparent 70%),
-    #25100f;
+    radial-gradient(50% 70% at 50% 85%, color-mix(in srgb, var(--cv-glow) 38%, transparent), transparent 72%),
+    #1c1217;
 }
 
 .stageMonogram {
   font-family: var(--cv-font-display);
   font-size: clamp(120px, 40cqi, 420px);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1;
-  color: color-mix(in srgb, var(--cv-brass-light) 34%, transparent);
+  color: color-mix(in srgb, var(--cv-gold-light) 22%, transparent);
 }
 
 .stageGlow {
@@ -466,37 +415,7 @@ export default function CurtainRevealCard({
   inset: 0;
   pointer-events: none;
   mix-blend-mode: screen;
-  background:
-    radial-gradient(46% 62% at 50% 104%, color-mix(in srgb, var(--cv-glow) 60%, transparent), transparent 74%),
-    radial-gradient(30% 34% at 50% 6%, color-mix(in srgb, var(--cv-brass-light) 20%, transparent), transparent 76%);
-}
-
-.beamLeft,
-.beamRight {
-  position: absolute;
-  z-index: 2;
-  inset-block: 0;
-  inline-size: 34%;
-  pointer-events: none;
-  mix-blend-mode: screen;
-  filter: blur(12px);
-  background: linear-gradient(180deg, rgba(255, 226, 180, 0.34), rgba(255, 190, 120, 0.1) 66%, transparent);
-  animation: beamBreathe 5.4s ease-in-out infinite alternate;
-}
-
-.beamLeft {
-  inset-inline-start: 28%;
-  clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
-  transform-origin: 50% 0;
-  rotate: 7deg;
-}
-
-.beamRight {
-  inset-inline-start: 38%;
-  clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
-  transform-origin: 50% 0;
-  rotate: -7deg;
-  animation-delay: -2.4s;
+  background: radial-gradient(44% 70% at 50% 108%, color-mix(in srgb, var(--cv-glow) 36%, transparent), transparent 74%);
 }
 
 .stageDim {
@@ -505,16 +424,16 @@ export default function CurtainRevealCard({
   inset: 0;
   pointer-events: none;
   opacity: 0;
-  background: radial-gradient(90% 100% at 30% 55%, rgba(26, 8, 16, 0.64), rgba(14, 4, 9, 0.9));
+  background: linear-gradient(180deg, rgba(13, 8, 12, 0.72), rgba(13, 8, 12, 0.9));
   transition: opacity calc(var(--cv-speed) * 0.9) ease;
 }
 
 .card[data-open='true'] .stageDim {
-  opacity: 0.74;
+  opacity: 0.86;
   transition-delay: calc(var(--cv-speed) * 0.12);
 }
 
-/* ---------- velvet drapes ---------- */
+/* ---------- drapes ---------- */
 
 .curtainLeft,
 .curtainRight {
@@ -527,7 +446,6 @@ export default function CurtainRevealCard({
   will-change: transform;
   transform: scaleX(var(--cv-sx));
   transition: transform var(--cv-speed) var(--cv-ease);
-  filter: drop-shadow(0 0 24px rgba(5, 1, 4, 0.7));
 }
 
 .curtainLeft {
@@ -538,7 +456,7 @@ export default function CurtainRevealCard({
 .curtainRight {
   inset-inline-end: 0;
   transform-origin: right center;
-  transition-delay: calc(var(--cv-speed) * 0.07);
+  transition-delay: calc(var(--cv-speed) * 0.06);
 }
 
 .card[data-drag='true'] .curtainLeft,
@@ -552,51 +470,24 @@ export default function CurtainRevealCard({
   inset: 0;
   overflow: clip;
   background:
-    linear-gradient(180deg, rgba(8, 2, 6, 0.78) 0%, rgba(8, 2, 6, 0) 26%),
-    linear-gradient(0deg, rgba(8, 2, 6, 0.55) 0%, rgba(8, 2, 6, 0) 24%),
-    radial-gradient(130% 62% at 50% 40%, rgba(255, 214, 228, 0.17), transparent 72%),
+    linear-gradient(180deg, rgba(5, 3, 6, 0.55), rgba(5, 3, 6, 0) 30%),
+    linear-gradient(0deg, rgba(5, 3, 6, 0.5), rgba(5, 3, 6, 0) 28%),
     var(--cv-velvet);
 }
 
-/* the inner edge sweeps outward toward the floor, like a drape pulled to the wings */
 .clothLeft {
-  clip-path: polygon(0 0, 100% 0, 100% 34%, 98.6% 44%, 95.4% 54%, 90% 65%, 83% 77%, 76.5% 89%, 72% 100%, 0 100%);
+  box-shadow: inset -1px 0 0 var(--cv-hair), 6px 0 28px rgba(0, 0, 0, 0.55);
 }
 
 .clothRight {
-  clip-path: polygon(100% 0, 0 0, 0 34%, 1.4% 44%, 4.6% 54%, 10% 65%, 17% 77%, 23.5% 89%, 28% 100%, 100% 100%);
-}
-
-.grain {
-  position: absolute;
-  inset: 0;
-  background-image: var(--cv-noise);
-  opacity: 0.32;
-  mix-blend-mode: overlay;
-  pointer-events: none;
-}
-
-.spillLeft,
-.spillRight {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  mix-blend-mode: screen;
-}
-
-.spillLeft {
-  background: linear-gradient(270deg, rgba(255, 168, 92, 0.5) 0%, rgba(255, 168, 92, 0.16) 16%, transparent 38%);
-}
-
-.spillRight {
-  background: linear-gradient(90deg, rgba(255, 168, 92, 0.5) 0%, rgba(255, 168, 92, 0.16) 16%, transparent 38%);
+  box-shadow: inset 1px 0 0 var(--cv-hair), -6px 0 28px rgba(0, 0, 0, 0.55);
 }
 
 .foldShade {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(90deg, rgba(8, 2, 6, 0.55), transparent 42%, rgba(8, 2, 6, 0.55));
+  background: linear-gradient(90deg, rgba(5, 3, 6, 0.4), transparent 45%, rgba(5, 3, 6, 0.4));
   opacity: 0;
   transition: opacity var(--cv-speed) ease;
 }
@@ -605,7 +496,7 @@ export default function CurtainRevealCard({
   opacity: 0.6;
 }
 
-/* ---------- the tassel pull ---------- */
+/* ---------- pull cord ---------- */
 
 .pull {
   position: absolute;
@@ -624,7 +515,7 @@ export default function CurtainRevealCard({
   touch-action: none;
   user-select: none;
   transition: inset-inline-end var(--cv-speed) var(--cv-ease);
-  transition-delay: calc(var(--cv-speed) * 0.07);
+  transition-delay: calc(var(--cv-speed) * 0.06);
 }
 
 .card[data-drag='true'] .pull {
@@ -633,131 +524,40 @@ export default function CurtainRevealCard({
 }
 
 .pull:focus-visible {
-  outline: 2px solid var(--cv-brass-light);
-  outline-offset: 3px;
-  border-radius: 14px;
+  outline: 2px solid var(--cv-gold-light);
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 
-.tasselSwing {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  inline-size: 100%;
-  transform-origin: 50% 0;
-  filter: drop-shadow(0 8px 7px rgba(4, 1, 3, 0.6));
-  animation:
-    tasselSway 5.6s ease-in-out infinite alternate,
-    tasselInvite 6.4s ease-in-out 1.2s infinite;
-}
-
-.card[data-open='true'] .tasselSwing {
-  animation:
-    tasselSway 5.6s ease-in-out infinite alternate,
-    tasselTug calc(var(--cv-speed) * 1.4) ease-out 1;
-}
-
-.tasselCord {
+.pullCord {
   flex: none;
-  inline-size: 5px;
+  inline-size: 1px;
   block-size: calc(var(--cv-valance) + var(--cv-cord) + var(--cv-tug));
-  border-radius: 3px;
-  background:
-    repeating-linear-gradient(
-      155deg,
-      var(--cv-brass-light) 0 2px,
-      var(--cv-brass) 2px 3px,
-      var(--cv-brass-deep) 3px 5px
-    );
-  box-shadow: inset 1px 0 0 rgba(255, 244, 214, 0.45), inset -1px 0 0 rgba(60, 32, 6, 0.5);
-  transition: block-size calc(var(--cv-speed) * 0.7) cubic-bezier(0.3, 1.7, 0.5, 1);
+  background: linear-gradient(180deg, transparent, var(--cv-gold) 30%);
+  transition: block-size calc(var(--cv-speed) * 0.6) var(--cv-ease-out);
 }
 
-.card[data-drag='true'] .tasselCord {
+.card[data-drag='true'] .pullCord {
   transition: none;
 }
 
-.tasselCollar {
+.pullGrip {
   flex: none;
-  inline-size: calc(var(--cv-tw) * 0.46);
-  block-size: calc(var(--cv-tw) * 0.2);
-  border-radius: 4px;
-  background: linear-gradient(90deg, var(--cv-brass-deep), var(--cv-brass-light) 38%, var(--cv-brass) 62%, var(--cv-brass-deep));
+  inline-size: 18px;
+  block-size: 30px;
+  border-radius: 9px;
+  border: 1px solid var(--cv-gold);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--cv-gold) 28%, #120b10), #120b10);
+  box-shadow: 0 6px 12px -4px rgba(0, 0, 0, 0.7);
+  transition: border-color 200ms ease;
 }
 
-.tasselHead {
-  flex: none;
-  inline-size: calc(var(--cv-tw) * 0.72);
-  block-size: calc(var(--cv-tw) * 0.82);
-  border-radius: 46% 46% 50% 50% / 40% 40% 60% 60%;
-  background:
-    linear-gradient(
-      180deg,
-      transparent 36%,
-      rgba(70, 38, 6, 0.42) 38%,
-      transparent 43%,
-      transparent 57%,
-      rgba(70, 38, 6, 0.38) 59%,
-      transparent 64%
-    ),
-    radial-gradient(circle at 34% 26%, #fff6d8 0 5%, var(--cv-brass-light) 24%, var(--cv-brass) 58%, var(--cv-brass-deep) 100%);
-  box-shadow:
-    inset 0 -3px 6px rgba(60, 30, 4, 0.5),
-    0 0 0 0 rgba(236, 198, 124, 0);
-  animation: headPing 4.8s ease-out 1.2s infinite;
+.pull:hover .pullGrip,
+.pull:focus-visible .pullGrip {
+  border-color: var(--cv-gold-light);
 }
 
-.card[data-open='true'] .tasselHead {
-  animation: none;
-}
-
-.tasselNeck {
-  flex: none;
-  inline-size: calc(var(--cv-tw) * 0.4);
-  block-size: calc(var(--cv-tw) * 0.2);
-  margin-block-start: -1px;
-  border-radius: 2px 2px 5px 5px;
-  background: linear-gradient(90deg, var(--cv-brass-deep), var(--cv-brass-light) 40%, var(--cv-brass-deep));
-}
-
-.tasselSkirt {
-  flex: none;
-  inline-size: var(--cv-tw);
-  block-size: calc(var(--cv-tw) * 1.9);
-  margin-block-start: -2px;
-  transform-origin: 50% 0;
-  clip-path: polygon(
-    22% 0,
-    78% 0,
-    94% 28%,
-    100% 100%,
-    92% 95%,
-    85% 100%,
-    77% 96%,
-    69% 100%,
-    61% 95%,
-    54% 100%,
-    46% 96%,
-    38% 100%,
-    30% 95%,
-    22% 100%,
-    14% 96%,
-    7% 100%,
-    0 100%,
-    6% 28%
-  );
-  background:
-    linear-gradient(180deg, rgba(40, 20, 3, 0.55) 0%, transparent 26%, rgba(255, 242, 206, 0.22) 74%, transparent 100%),
-    repeating-linear-gradient(
-      90deg,
-      var(--cv-brass-light) 0 1.2px,
-      var(--cv-brass) 1.2px 2.4px,
-      var(--cv-brass-deep) 2.4px 3.5px,
-      rgba(60, 30, 4, 0.7) 3.5px 4.2px
-    );
-  animation: skirtSwing 5.6s ease-in-out -1.4s infinite alternate;
-}
-
-/* ---------- valance, rail ---------- */
+/* ---------- valance + rail ---------- */
 
 .valance {
   position: absolute;
@@ -766,59 +566,23 @@ export default function CurtainRevealCard({
   z-index: 6;
   block-size: var(--cv-valance);
   pointer-events: none;
-  filter: drop-shadow(0 7px 8px rgba(5, 1, 4, 0.6));
-}
-
-.valanceCloth {
-  position: absolute;
-  inset: 0;
   background:
-    linear-gradient(180deg, rgba(8, 2, 6, 0.6) 0%, transparent 34%),
+    linear-gradient(180deg, rgba(5, 3, 6, 0.4), transparent),
     var(--cv-velvet);
-  -webkit-mask:
-    linear-gradient(#000 0 0) top / 100% calc(100% - var(--cv-r)) no-repeat,
-    radial-gradient(var(--cv-r) at 50% 0, #000 97%, transparent 100%) bottom / calc(var(--cv-r) * 2) var(--cv-r) repeat-x;
-  mask:
-    linear-gradient(#000 0 0) top / 100% calc(100% - var(--cv-r)) no-repeat,
-    radial-gradient(var(--cv-r) at 50% 0, #000 97%, transparent 100%) bottom / calc(var(--cv-r) * 2) var(--cv-r) repeat-x;
-}
-
-.valanceShade {
-  position: absolute;
-  inset: 0;
-  background-image: var(--cv-noise);
-  opacity: 0.3;
-  mix-blend-mode: overlay;
-}
-
-.valanceTrim {
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: 0;
-  block-size: var(--cv-r);
-  clip-path: inset(0 0 2px 0);
-  background:
-    radial-gradient(
-        circle var(--cv-r) at 50% 0,
-        transparent calc(var(--cv-r) - 6px),
-        var(--cv-brass-light) calc(var(--cv-r) - 6px),
-        var(--cv-brass) calc(var(--cv-r) - 4px),
-        transparent calc(var(--cv-r) - 2.5px)
-      )
-      bottom / calc(var(--cv-r) * 2) var(--cv-r) repeat-x;
+  box-shadow: 0 8px 18px -6px rgba(0, 0, 0, 0.7);
 }
 
 .railLine {
   position: absolute;
   inset-inline: 0;
-  inset-block-start: 0;
+  inset-block-start: var(--cv-valance);
   z-index: 7;
-  block-size: 5px;
+  block-size: 1px;
   pointer-events: none;
-  background: linear-gradient(180deg, var(--cv-brass-light), var(--cv-brass) 55%, var(--cv-brass-deep));
+  background: linear-gradient(90deg, transparent, var(--cv-gold) 12%, var(--cv-gold) 88%, transparent);
 }
 
-/* ---------- the reveal + playbill ---------- */
+/* ---------- reveal panel + title ---------- */
 
 .overlay {
   position: absolute;
@@ -836,18 +600,39 @@ export default function CurtainRevealCard({
   display: flex;
   flex-direction: column;
   justify-content: safe center;
-  gap: clamp(12px, 2.4cqi, 22px);
-  padding-inline: var(--cv-gutter) calc(var(--cv-gutter) + 18px);
+  padding-inline: var(--cv-gutter);
   overflow: clip;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2cqi, 20px);
+  inline-size: 100%;
+  box-sizing: border-box;
+  padding: clamp(14px, 2.4cqi, 28px);
+  border: 1px solid var(--cv-hair);
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(20, 13, 18, 0.72), rgba(13, 8, 12, 0.82));
+  opacity: 0;
+  transition: opacity calc(var(--cv-speed) * 0.3) ease;
+}
+
+.card[data-open='true'] .panel {
+  opacity: 1;
+  transition: opacity calc(var(--cv-speed) * 0.55) ease calc(var(--cv-speed) * 0.3);
 }
 
 .priceRow {
   display: flex;
-  align-items: center;
+  align-items: baseline;
+  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 8px 16px;
+  gap: 6px 16px;
+  padding-block-end: clamp(10px, 1.6cqi, 16px);
+  border-block-end: 1px solid var(--cv-hair);
   opacity: 0;
-  transform: translateY(18px);
+  transform: translateY(10px);
   transition:
     opacity calc(var(--cv-speed) * 0.3) ease,
     transform calc(var(--cv-speed) * 0.3) ease;
@@ -861,33 +646,31 @@ export default function CurtainRevealCard({
   overflow: hidden;
   min-inline-size: 0;
   font-family: var(--cv-font-display);
-  font-size: clamp(30px, 4.4cqi, 50px);
-  font-weight: 600;
-  line-height: 1.04;
-  letter-spacing: -0.015em;
+  font-size: clamp(28px, 4cqi, 44px);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
-  color: var(--cv-brass-light);
+  color: var(--cv-gold-light);
   overflow-wrap: anywhere;
 }
 
 .duration {
-  display: inline-block;
   max-inline-size: 100%;
-  padding: 6px 14px;
-  border: 1px solid color-mix(in srgb, var(--cv-cream) 38%, transparent);
-  border-radius: 999px;
-  font-size: 13.5px;
-  line-height: 1.25;
-  letter-spacing: 0.04em;
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   font-variant-numeric: tabular-nums;
-  color: var(--cv-cream);
+  color: color-mix(in srgb, var(--cv-cream) 80%, transparent);
   overflow-wrap: anywhere;
 }
 
 .inclusions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px clamp(18px, 4cqi, 44px);
+  gap: 10px clamp(18px, 3.4cqi, 40px);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -895,23 +678,23 @@ export default function CurtainRevealCard({
 
 .inclusion {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  align-items: baseline;
+  gap: 12px;
   min-inline-size: 0;
   opacity: 0;
-  transform: translateY(18px);
+  transform: translateY(10px);
   transition:
     opacity calc(var(--cv-speed) * 0.3) ease,
     transform calc(var(--cv-speed) * 0.3) ease;
 }
 
-.inclusionDot {
+.inclusionNo {
   flex: none;
-  inline-size: 7px;
-  block-size: 7px;
-  margin-block-start: 0.5em;
-  rotate: 45deg;
-  background: var(--cv-brass);
+  font-family: var(--cv-font-display);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: var(--cv-gold);
 }
 
 .inclusionText {
@@ -921,9 +704,9 @@ export default function CurtainRevealCard({
   line-clamp: var(--cv-lines);
   overflow: hidden;
   min-inline-size: 0;
-  font-size: 15.5px;
-  line-height: 1.3;
-  color: color-mix(in srgb, var(--cv-cream) 92%, transparent);
+  font-size: 15px;
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--cv-cream) 90%, transparent);
   overflow-wrap: anywhere;
 }
 
@@ -932,44 +715,33 @@ export default function CurtainRevealCard({
   opacity: 1;
   transform: none;
   transition:
-    opacity calc(var(--cv-speed) * 0.55) ease calc(var(--cv-speed) * 0.34 + var(--i) * 70ms),
-    transform calc(var(--cv-speed) * 0.8) var(--cv-ease-out) calc(var(--cv-speed) * 0.34 + var(--i) * 70ms);
+    opacity calc(var(--cv-speed) * 0.5) ease calc(var(--cv-speed) * 0.34 + var(--i) * 60ms),
+    transform calc(var(--cv-speed) * 0.7) var(--cv-ease-out) calc(var(--cv-speed) * 0.34 + var(--i) * 60ms);
 }
 
 .bill {
   position: relative;
   flex: none;
   padding-inline: var(--cv-gutter);
-  padding-block: 12px calc(var(--cv-foot) + 14px);
+  padding-block: 12px clamp(18px, 2.6cqi, 28px);
 }
 
 .bill::before {
   content: '';
   position: absolute;
   inset-inline: 0;
-  inset-block: calc(var(--cv-r) * -1.6) 0;
+  inset-block: -28px 0;
   z-index: -1;
   pointer-events: none;
-  background: linear-gradient(0deg, rgba(14, 4, 9, 0.96) 0%, rgba(14, 4, 9, 0.82) 58%, rgba(14, 4, 9, 0) 100%);
+  background: linear-gradient(0deg, rgba(13, 8, 12, 0.95) 0%, rgba(13, 8, 12, 0.8) 60%, rgba(13, 8, 12, 0) 100%);
 }
 
 .billRule {
-  position: relative;
   display: block;
+  inline-size: 40px;
   block-size: 1px;
-  margin-block-end: 14px;
-  background: linear-gradient(90deg, var(--cv-brass), color-mix(in srgb, var(--cv-brass) 50%, transparent) 46%, transparent);
-}
-
-.billRule::before {
-  content: '';
-  position: absolute;
-  inset-block-start: -3px;
-  inset-inline-start: 0;
-  inline-size: 7px;
-  block-size: 7px;
-  rotate: 45deg;
-  background: var(--cv-brass-light);
+  margin-block-end: 12px;
+  background: var(--cv-gold);
 }
 
 .title {
@@ -980,43 +752,13 @@ export default function CurtainRevealCard({
   overflow: hidden;
   margin: 0;
   font-family: var(--cv-font-display);
-  font-size: clamp(23px, 3.7cqi, 44px);
-  font-weight: 600;
-  line-height: 1.1;
-  letter-spacing: -0.015em;
+  font-size: clamp(22px, 3.4cqi, 40px);
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
   text-wrap: balance;
   overflow-wrap: anywhere;
   color: var(--cv-cream);
-  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55);
-}
-
-/* ---------- footlights ---------- */
-
-.footlights {
-  position: absolute;
-  inset-block-end: 7px;
-  inset-inline: calc(50.5% * var(--cv-sx) * 0.7);
-  z-index: 9;
-  block-size: var(--cv-foot);
-  pointer-events: none;
-  opacity: 0.8;
-  /* small whole bulbs on a soft floor glow; the ends fade out instead of cutting off */
-  background:
-    radial-gradient(circle 3.4px at 50% 50%, #fff4d6 0 1.3px, rgba(255, 204, 128, 0.9) 2.3px, transparent 3.4px) 0 0 / 26px 100% repeat-x,
-    radial-gradient(ellipse 50% 90% at 50% 60%, color-mix(in srgb, var(--cv-glow) 60%, transparent), transparent 75%);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
-  transition:
-    inset-inline var(--cv-speed) var(--cv-ease),
-    opacity var(--cv-speed) ease;
-}
-
-.card[data-open='true'] .footlights {
-  opacity: 1;
-}
-
-.card[data-drag='true'] .footlights {
-  transition: none;
 }
 
 /* ---------- container sizing ---------- */
@@ -1028,21 +770,24 @@ export default function CurtainRevealCard({
   }
 
   .price {
-    font-size: clamp(28px, 5.4cqi, 42px);
+    font-size: clamp(26px, 5cqi, 38px);
   }
 
   .title {
-    font-size: clamp(23px, 4.6cqi, 34px);
+    font-size: clamp(22px, 4.4cqi, 32px);
   }
 }
 
 @container (max-width: 430px) {
   .card {
-    --cv-rest: 0.74;
+    --cv-rest: 0.72;
     --cv-gather: 0.11;
-    --cv-gutter: clamp(26px, 9.5cqi, 36px);
-    --cv-tw: 38px;
+    --cv-gutter: clamp(20px, 7cqi, 30px);
     aspect-ratio: 2 / 3;
+  }
+
+  .panel {
+    padding: 14px;
   }
 
   .inclusions {
@@ -1055,106 +800,13 @@ export default function CurtainRevealCard({
   }
 
   .price {
-    font-size: 30px;
+    font-size: 28px;
   }
 
   .title {
     -webkit-line-clamp: 3;
     line-clamp: 3;
-    font-size: 23px;
-  }
-}
-
-.root[data-off='true'] .tasselSwing,
-.root[data-off='true'] .tasselHead,
-.root[data-off='true'] .tasselSkirt,
-.root[data-off='true'] .beamLeft,
-.root[data-off='true'] .beamRight {
-  animation-play-state: paused;
-}
-
-/* ---------- motion ---------- */
-
-@keyframes beamBreathe {
-  from {
-    opacity: 0.62;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes tasselSway {
-  from {
-    rotate: -1.4deg;
-  }
-  to {
-    rotate: 1.6deg;
-  }
-}
-
-@keyframes skirtSwing {
-  from {
-    rotate: -3deg;
-  }
-  to {
-    rotate: 3.4deg;
-  }
-}
-
-/* an occasional tug that says "pull me" */
-@keyframes tasselInvite {
-  0%,
-  72%,
-  100% {
-    transform: translateY(0);
-  }
-  80% {
-    transform: translateY(14px);
-  }
-  88% {
-    transform: translateY(-3px);
-  }
-  94% {
-    transform: translateY(3px);
-  }
-}
-
-@keyframes tasselTug {
-  0% {
-    transform: translateY(0);
-  }
-  22% {
-    transform: translateY(16px);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
-  76% {
-    transform: translateY(2px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-
-@keyframes headPing {
-  0%,
-  62%,
-  100% {
-    box-shadow:
-      inset 0 -3px 6px rgba(60, 30, 4, 0.5),
-      0 0 0 0 rgba(236, 198, 124, 0);
-  }
-  66% {
-    box-shadow:
-      inset 0 -3px 6px rgba(60, 30, 4, 0.5),
-      0 0 0 0 rgba(236, 198, 124, 0.6);
-  }
-  92% {
-    box-shadow:
-      inset 0 -3px 6px rgba(60, 30, 4, 0.5),
-      0 0 0 18px rgba(236, 198, 124, 0);
+    font-size: 22px;
   }
 }
 
@@ -1166,11 +818,10 @@ export default function CurtainRevealCard({
   .curtainLeft,
   .curtainRight,
   .pull,
-  .footlights,
   .foldShade,
   .stageDim,
   .stageImg,
-  .tasselCord {
+  .pullCord {
     transition: none;
   }
 
@@ -1179,34 +830,19 @@ export default function CurtainRevealCard({
   }
 
   .stageDim {
-    opacity: 0.74;
+    opacity: 0.86;
   }
 
   .foldShade {
     opacity: 0.6;
   }
 
-  .footlights {
-    opacity: 1;
-  }
-
+  .panel,
   .priceRow,
   .inclusion {
     opacity: 1;
     transform: none;
     transition: none;
-  }
-
-  .tasselSwing,
-  .tasselHead,
-  .tasselSkirt,
-  .beamLeft,
-  .beamRight {
-    animation: none;
-  }
-
-  .tasselSwing {
-    rotate: -2deg;
   }
 }
 ```

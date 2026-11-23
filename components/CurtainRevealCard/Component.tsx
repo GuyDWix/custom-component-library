@@ -35,7 +35,7 @@ const PULL_LABEL = 'Reveal the price and details';
 const CARD_HELP =
   'Hover, focus or tap to part the curtains. Tap again to keep them open or to close them. Escape also closes them.';
 
-// How far (px) the tassel can be pulled down, and how much of it counts as a "pull".
+// How far (px) the pull cord can be drawn down, and how much of it counts as a "pull".
 const PULL_MAX = 88;
 const PULL_COMMIT = 0.42;
 
@@ -48,7 +48,7 @@ export default function CurtainRevealCard({
   details = defaultDetails,
   image = 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=1400&h=900&fit=crop',
   imageAlt = 'A spa still life with a lotion bottle, a rolled towel and a lit candle',
-  curtainColor = '#6d2342',
+  curtainColor = '#3a2433',
   openSpeed = 650,
   className,
 }: CurtainRevealCardProps) {
@@ -200,23 +200,17 @@ export default function CurtainRevealCard({
             </span>
           )}
           <span className={styles.stageGlow} aria-hidden="true" />
-          <span className={styles.beamLeft} aria-hidden="true" />
-          <span className={styles.beamRight} aria-hidden="true" />
           <span className={styles.stageDim} aria-hidden="true" />
         </div>
 
         <div className={styles.curtainLeft} aria-hidden="true">
           <span className={styles.clothLeft}>
-            <span className={styles.grain} />
-            <span className={styles.spillLeft} />
             <span className={styles.foldShade} />
           </span>
         </div>
 
         <div className={styles.curtainRight} aria-hidden="true">
           <span className={styles.clothRight}>
-            <span className={styles.grain} />
-            <span className={styles.spillRight} />
             <span className={styles.foldShade} />
           </span>
         </div>
@@ -234,25 +228,16 @@ export default function CurtainRevealCard({
           onPointerCancel={(e) => endPull(e, true)}
           onClick={onPullClick}
         >
-          <span className={styles.tasselSwing}>
-            <span className={styles.tasselCord} aria-hidden="true" />
-            <span className={styles.tasselCollar} aria-hidden="true" />
-            <span className={styles.tasselHead} aria-hidden="true" />
-            <span className={styles.tasselNeck} aria-hidden="true" />
-            <span className={styles.tasselSkirt} aria-hidden="true" />
-          </span>
+          <span className={styles.pullCord} aria-hidden="true" />
+          <span className={styles.pullGrip} aria-hidden="true" />
         </button>
 
-        <div className={styles.valance} aria-hidden="true">
-          <span className={styles.valanceCloth}>
-            <span className={styles.valanceShade} />
-          </span>
-          <span className={styles.valanceTrim} />
-        </div>
+        <div className={styles.valance} aria-hidden="true" />
         <span className={styles.railLine} aria-hidden="true" />
 
         <div className={styles.overlay}>
           <div id={revealId} className={styles.reveal}>
+           <div className={styles.panel}>
             <div className={styles.priceRow} style={{ '--i': 0 } as CSSProperties}>
               <span className={styles.price}>{price}</span>
               {duration && <span className={styles.duration}>{duration}</span>}
@@ -261,12 +246,15 @@ export default function CurtainRevealCard({
               <ul className={styles.inclusions}>
                 {details.map((d, i) => (
                   <li key={i} className={styles.inclusion} style={{ '--i': i + 1 } as CSSProperties}>
-                    <span className={styles.inclusionDot} aria-hidden="true" />
+                    <span className={styles.inclusionNo} aria-hidden="true">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
                     <span className={styles.inclusionText}>{d.text}</span>
                   </li>
                 ))}
               </ul>
             )}
+           </div>
           </div>
 
           <div className={styles.bill}>
@@ -276,8 +264,6 @@ export default function CurtainRevealCard({
             </h3>
           </div>
         </div>
-
-        <span className={styles.footlights} aria-hidden="true" />
       </div>
     </div>
   );
