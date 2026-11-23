@@ -29,45 +29,6 @@ const eyebrow: CSSProperties = {
   color: 'rgba(245,242,235,0.55)',
 };
 
-const headline: CSSProperties = {
-  margin: '18px 0 0',
-  fontSize: 'clamp(38px, 6.2vw, 92px)',
-  fontWeight: 600,
-  lineHeight: 0.94,
-  letterSpacing: '-0.045em',
-  textWrap: 'balance',
-};
-
-function Header() {
-  return (
-    <header
-      style={{
-        ...inner,
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'flex-end',
-        justifyContent: 'space-between',
-        gap: 24,
-      }}
-    >
-      <div>
-        <p style={eyebrow}>
-          <span style={{ width: 7, height: 7, borderRadius: 9, background: '#8eeaff', boxShadow: '0 0 12px #8eeaff' }} />
-          Meridian Freight — Network 2026
-        </p>
-        <h1 style={headline}>
-          Eleven cities.
-          <br />
-          <span style={{ color: 'rgba(245,242,235,0.38)' }}>One quiet engine.</span>
-        </h1>
-      </div>
-      <p style={{ margin: 0, maxWidth: 300, fontSize: 16, lineHeight: 1.5, color: 'rgba(245,242,235,0.6)' }}>
-        Hover or tab through a city to trace the lanes that run through it.
-      </p>
-    </header>
-  );
-}
-
 const WORST_SINGLE: MapLocation[] = [
   {
     name: 'Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch Regional Distribution and Returns Centre',
@@ -137,7 +98,6 @@ export default function Preview() {
 
   return (
     <main style={stage}>
-      <Header />
       <section style={inner}>
         <WorldConnectionsMap />
       </section>
