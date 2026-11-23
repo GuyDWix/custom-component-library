@@ -152,6 +152,152 @@ const resolveRgb = (css: string): [number, number, number] => {
 
 const pigmentOf = (v: InkSwatchVariant | undefined) => v?.color || PIGMENT_FALLBACK;
 
+/* ───────────────────────── painted fallback (no photo / photo failed) ─────────────────────────
+   A flat-colour painted sneaker silhouette on a composed, pigment-tinted stage (horizon, sun disc,
+   cast shadow). One scene description feeds both the SVG (resting state) and the canvas (ink bloom),
+   so the reveal paints exactly what the frame ends up showing. Never a gradient, never a bloom. */
+
+type RGB = [number, number, number];
+type Shape = { d: string; fill?: string; stroke?: string; sw?: number; shoe?: boolean };
+
+const SHOE_SX = 1.14;
+const SHOE_SY = 1.06;
+const SHOE_M: [number, number, number, number, number, number] = [SHOE_SX, 0, 0, SHOE_SY, 320 * (1 - SHOE_SX), 392 * (1 - SHOE_SY)];
+const SCENE_W = 600;
+const SCENE_H = 500;
+const CREAM: RGB = [239, 234, 224];
+const INK: RGB = [31, 27, 22];
+const WHITE: RGB = [255, 255, 255];
+
+const mixRgb = (a: RGB, b: RGB, t: number): RGB => [
+  a[0] + (b[0] - a[0]) * t,
+  a[1] + (b[1] - a[1]) * t,
+  a[2] + (b[2] - a[2]) * t,
+];
+const rgbCss = (c: RGB) => `rgb(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])})`;
+
+const UPPER = 'M140 362C132 322 134 272 148 238C154 224 168 216 186 218C208 222 226 238 240 256C252 244 264 220 284 210C296 204 308 210 316 222C332 248 352 268 386 282C428 298 480 302 504 334C512 344 514 354 514 362Z';
+const HEEL = 'M140 362C132 322 134 272 148 238C154 226 166 220 176 220C186 252 192 300 194 362Z';
+const QUARTER = 'M196 236C222 240 254 268 298 306C312 318 322 332 328 362L196 362Z';
+const TOE_CAP = 'M440 296C466 300 492 310 508 338L514 362L442 362C450 340 450 314 440 296Z';
+const COLLAR = 'M148 238C154 224 168 216 186 218C208 222 226 238 240 256C228 252 214 250 200 252C180 252 160 248 148 238Z';
+const TONGUE = 'M240 256C252 244 264 220 284 210C296 204 308 210 316 222C322 232 328 242 336 250C320 242 304 240 292 244C276 248 260 256 250 268Z';
+const SOLE = 'M132 374C132 363 138 356 150 356L488 356C506 356 516 366 514 376C512 386 500 392 486 392L152 392C140 392 132 386 132 374Z';
+const OUTSOLE = 'M133 380H513C510 388 500 392 486 392H152C142 392 135 388 133 380Z';
+
+// Lace bars straddle the eyestay line that runs from the tongue down to the vamp.
+const laceBars = (() => {
+  const dx = 0.818;
+  const dy = 0.576;
+  const px = -dy;
+  const py = dx;
+  const out: string[] = [];
+  for (let i = 0; i < 4; i++) {
+    const x = 302 + i * 28;
+    const y = 226 + i * 20;
+    const x0 = x + px * 2;
+    const y0 = y + py * 2;
+    const x1 = x + px * 26;
+    const y1 = y + py * 26;
+    out.push(`M${x0.toFixed(1)} ${y0.toFixed(1)}L${x1.toFixed(1)} ${y1.toFixed(1)}`);
+  }
+  return out;
+})();
+
+const sceneCache = new Map<string, Shape[]>();
+
+const buildScene = (p: RGB): Shape[] => {
+  const key = p.map(Math.round).join(',');
+  const hit = sceneCache.get(key);
+  if (hit) return hit;
+  const lum = (0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]) / 255;
+  const dark = lum < 0.4;
+  // Dark pigments get a pale stage, light pigments a deep one: the shoe always separates cleanly.
+  const stage = dark ? mixRgb(p, CREAM, 0.78) : mixRgb(p, INK, 0.66);
+  const disc = dark ? mixRgb(p, CREAM, 0.9) : mixRgb(p, INK, 0.5);
+  const floor = dark ? mixRgb(p, CREAM, 0.6) : mixRgb(p, INK, 0.78);
+  const shadow = dark ? mixRgb(p, CREAM, 0.42) : mixRgb(p, INK, 0.9);
+  const toward = dark ? WHITE : INK;
+  const scene: Shape[] = [
+    { d: 'M-900 -700H1500V1200H-900Z', fill: rgbCss(stage) },
+    { d: 'M100 290a230 230 0 1 0 460 0a230 230 0 1 0 -460 0Z', fill: rgbCss(disc) },
+    { d: 'M-900 384H1500V1200H-900Z', fill: rgbCss(floor) },
+    { d: 'M110 395a215 11 0 1 0 430 0a215 11 0 1 0 -430 0Z', fill: rgbCss(shadow), shoe: true },
+    { d: UPPER, fill: rgbCss(p), shoe: true },
+    { d: QUARTER, fill: rgbCss(mixRgb(p, toward, 0.14)), shoe: true },
+    { d: HEEL, fill: rgbCss(mixRgb(p, toward, 0.3)), shoe: true },
+    { d: TOE_CAP, fill: rgbCss(mixRgb(p, WHITE, 0.38)), shoe: true },
+    { d: TONGUE, fill: rgbCss(mixRgb(p, WHITE, 0.38)), shoe: true },
+    { d: COLLAR, fill: rgbCss(mixRgb(p, INK, 0.62)), shoe: true },
+    ...laceBars.map((d) => ({ d, stroke: rgbCss(mixRgb(p, WHITE, 0.9)), sw: 9, shoe: true })),
+    { d: SOLE, fill: rgbCss(mixRgb(p, WHITE, 0.84)), shoe: true },
+    { d: OUTSOLE, fill: rgbCss(mixRgb(p, INK, 0.5)), shoe: true },
+  ];
+  sceneCache.set(key, scene);
+  return scene;
+};
+
+// Same scene on a canvas, fitted like the SVG (xMidYMid meet; the stage rects overshoot so any aspect ratio is filled).
+const paintScene = (c: CanvasRenderingContext2D, W: number, H: number, p: RGB) => {
+  const s = Math.min(W / SCENE_W, H / SCENE_H);
+  c.save();
+  c.setTransform(s, 0, 0, s, (W - SCENE_W * s) / 2, (H - SCENE_H * s) / 2);
+  c.lineCap = 'round';
+  for (const sh of buildScene(p)) {
+    const path = new Path2D(sh.d);
+    c.save();
+    if (sh.shoe) c.transform(...SHOE_M);
+    if (sh.fill) {
+      c.fillStyle = sh.fill;
+      c.fill(path);
+    }
+    if (sh.stroke) {
+      c.strokeStyle = sh.stroke;
+      c.lineWidth = sh.sw ?? 1;
+      c.stroke(path);
+    }
+    c.restore();
+  }
+  c.restore();
+};
+
+function PaintedFallback({
+  pigment,
+  label,
+  className,
+  decorative,
+}: {
+  pigment: string;
+  label?: string;
+  className?: string;
+  decorative?: boolean;
+}) {
+  const shapes = buildScene(resolveRgb(pigment));
+  return (
+    <svg
+      className={className}
+      viewBox={`0 0 ${SCENE_W} ${SCENE_H}`}
+      preserveAspectRatio="xMidYMid meet"
+      role={decorative ? undefined : 'img'}
+      aria-label={decorative ? undefined : label}
+      aria-hidden={decorative ? true : undefined}
+      focusable="false"
+    >
+      {shapes.map((sh, i) => (
+        <path
+          key={i}
+          d={sh.d}
+          fill={sh.fill ?? 'none'}
+          stroke={sh.stroke}
+          strokeWidth={sh.sw}
+          strokeLinecap="round"
+          transform={sh.shoe ? `matrix(${SHOE_M.join(' ')})` : undefined}
+        />
+      ))}
+    </svg>
+  );
+}
+
 type Layer = { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D; data: ImageData };
 
 const makeLayer = (gw: number, gh: number): Layer | null => {
@@ -188,6 +334,7 @@ export default function InkSwatchProduct({
   const [active, setActive] = useState(() => clampIdx(defaultIndex));
   const [fadeIdx, setFadeIdx] = useState<number | null>(null);
   const [fadeOn, setFadeOn] = useState(false);
+  const [failed, setFailed] = useState<Record<string, true>>({});
 
   const rootRef = useRef<HTMLDivElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
@@ -239,7 +386,9 @@ export default function InkSwatchProduct({
       if (!v.image) return null;
       const im = new Image();
       im.decoding = 'async';
-      im.src = v.image;
+      const url = v.image;
+      im.onerror = () => setFailed((f) => (f[url] ? f : { ...f, [url]: true }));
+      im.src = url;
       return im;
     });
   }, [imageKey]);
@@ -427,12 +576,7 @@ export default function InkSwatchProduct({
         const dh = src.naturalHeight * sc;
         c.drawImage(src, (W - dw) / 2, (H - dh) / 2, dw, dh);
       } else {
-        const g = c.createRadialGradient(W * 0.3, H * 0.22, 0, W * 0.3, H * 0.22, Math.max(W, H));
-        g.addColorStop(0, `rgb(${Math.min(255, pr + (255 - pr) * 0.45)},${Math.min(255, pg + (255 - pg) * 0.45)},${Math.min(255, pb + (255 - pb) * 0.45)})`);
-        g.addColorStop(0.62, `rgb(${pr},${pg},${pb})`);
-        g.addColorStop(1, `rgb(${pr * 0.8},${pg * 0.8},${pb * 0.8})`);
-        c.fillStyle = g;
-        c.fillRect(0, 0, W, H);
+        paintScene(c, W, H, [pr, pg, pb]);
       }
     };
 
@@ -624,6 +768,8 @@ export default function InkSwatchProduct({
   const base = variants[Math.min(active, Math.max(0, variants.length - 1))];
   const fadeV = fadeIdx !== null ? variants[fadeIdx] : undefined;
   const pigActive = pigmentOf(variants[sel]);
+  const hasPhoto = (v: InkSwatchVariant | undefined) => !!v?.image && !failed[v.image];
+  const markFailed = (url: string) => setFailed((f) => (f[url] ? f : { ...f, [url]: true }));
   const altFor = (v: InkSwatchVariant | undefined) => (v ? v.alt || `${title} in ${v.name}` : title);
   const square = swatchShape === 'square';
   const titleLen = title.length;
@@ -641,30 +787,29 @@ export default function InkSwatchProduct({
             <div className={styles.haloShape} />
           </div>
           <div className={styles.frame} ref={boxRef}>
-            {base?.image ? (
-              <img className={styles.photo} src={base.image} alt={altFor(base)} />
-            ) : (
-              <div
-                className={styles.pigment}
-                style={{ '--pig': pigmentOf(base) } as CSSProperties}
-                role="img"
-                aria-label={altFor(base)}
+            {hasPhoto(base) ? (
+              <img
+                className={styles.photo}
+                src={base?.image}
+                alt={altFor(base)}
+                onError={() => base?.image && markFailed(base.image)}
               />
+            ) : (
+              <PaintedFallback className={styles.pigment} pigment={pigmentOf(base)} label={altFor(base)} />
             )}
             {fadeV &&
-              (fadeV.image ? (
+              (hasPhoto(fadeV) ? (
                 <img
                   className={[styles.fadeImg, fadeOn ? styles.fadeImgOn : ''].filter(Boolean).join(' ')}
                   src={fadeV.image}
                   alt=""
+                  onError={() => fadeV.image && markFailed(fadeV.image)}
                 />
               ) : (
-                <div
-                  className={[styles.pigment, styles.fadeImg, fadeOn ? styles.fadeImgOn : '']
-                    .filter(Boolean)
-                    .join(' ')}
-                  style={{ '--pig': pigmentOf(fadeV) } as CSSProperties}
-                  aria-hidden="true"
+                <PaintedFallback
+                  className={[styles.pigment, styles.fadeImg, fadeOn ? styles.fadeImgOn : ''].filter(Boolean).join(' ')}
+                  pigment={pigmentOf(fadeV)}
+                  decorative
                 />
               ))}
             <canvas ref={canvasRef} className={styles.bloom} aria-hidden="true" />
@@ -851,9 +996,9 @@ export default function InkSwatchProduct({
 .pigment {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(85% 70% at 30% 22%, color-mix(in srgb, var(--pig) 55%, #fff) 0%, var(--pig) 62%),
-    var(--pig);
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
 }
 
 .fadeImg {

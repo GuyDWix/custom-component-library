@@ -111,9 +111,9 @@
 .pigment {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(85% 70% at 30% 22%, color-mix(in srgb, var(--pig) 55%, #fff) 0%, var(--pig) 62%),
-    var(--pig);
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
 }
 
 .fadeImg {
