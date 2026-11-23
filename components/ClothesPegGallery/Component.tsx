@@ -37,7 +37,7 @@ type Pulse = { x: number; dir: number; amp: number; sigma: number; speed: number
 
 const PAD_TOP = 64;
 const GRIP = 14;
-const BORDER = 10;
+const BORDER = 8;
 const CAP_H = 36;
 const OPEN_CAP_H = 96;
 const X_BLEED = 48;
@@ -51,7 +51,7 @@ const FLIGHT_C = 19;
 const SIZE_CYCLE = [1.14, 0.85, 1.03, 0.92, 1.1, 0.88];
 
 const HELP =
-  'Photos hang on a washing line in the noon sun. Press Enter on a photo to unclip it to a large view; Escape re-hangs it.';
+  'Photos hang from a line. Press Enter on a photo to unclip it to a large view; Escape re-hangs it.';
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 const lerp = (a: number, b: number, p: number) => a + (b - a) * p;
@@ -138,7 +138,7 @@ function layoutFor(width: number, count: number): Layout {
   const balanced = Math.ceil(count / rows);
   const slot = (width - 28) / balanced;
   const basePw = clamp(slot * 0.8, 100, 235);
-  const sagMax = clamp(width * 0.05, 22, 58);
+  const sagMax = clamp(width * 0.022, 10, 26);
   const geo: Geo[] = [];
   const rowMaxPh: number[] = [];
   for (let r = 0; r < rows; r++) rowMaxPh.push(0);
@@ -186,7 +186,7 @@ function openRect(width: number, height: number, ph: number): Rect & { frame: nu
 export default function ClothesPegGallery({
   photos = defaultPhotos,
   breezeStrength = 4,
-  stringColor = '#7d93a3',
+  stringColor = '#6f6a62',
   className,
 }: ClothesPegGalleryProps) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
@@ -213,11 +213,6 @@ export default function ClothesPegGallery({
   breeze.current = clamp(breezeStrength, 0, 10);
   const L = useMemo(() => layoutFor(width, photos.length), [width, photos.length]);
   const pathD = useMemo(() => L.sims.map(cordPath), [L]);
-  const farCord = useMemo(() => {
-    const y = Math.max(46, PAD_TOP * 0.55);
-    const dip = clamp(width * 0.03, 12, 38);
-    return `M -48 ${y} Q ${width / 2} ${(y + dip * 2).toFixed(1)} ${width + 48} ${y}`;
-  }, [width]);
 
   const resetSims = useCallback(() => {
     sims.current = L.sims.map((s) => ({ ...s, pts: s.pts.map((p) => ({ ...p })) }));
@@ -380,7 +375,7 @@ export default function ClothesPegGallery({
       /* redraw cord strokes */
       for (let r = 0; r < live.length; r++) {
         const d = cordPath(live[r]);
-        for (let k = 0; k < 3; k++) stringRefs.current[r * 3 + k]?.setAttribute('d', d);
+        for (let k = 0; k < 2; k++) stringRefs.current[r * 2 + k]?.setAttribute('d', d);
       }
       /* prints: pendulum + paper curl, forced by cord movement and wind */
       let energy = 0;
@@ -497,7 +492,6 @@ export default function ClothesPegGallery({
   const shown = active !== null ? photos[active] : null;
   const dialogLabel = shown ? shown.caption || shown.alt || 'Photo' : '';
   const steelId = `cpg${uid}steel`;
-  const wireId = `cpg${uid}wire`;
 
   return (
     <div
@@ -506,31 +500,14 @@ export default function ClothesPegGallery({
       style={rootStyle}
       data-still={reduced || !playing || !inView ? '' : undefined}
     >
-      <span className={styles.sun} aria-hidden="true" />
-      <span className={styles.cloudA} aria-hidden="true" />
-      <span className={styles.cloudB} aria-hidden="true" />
-      <span className={styles.grain} aria-hidden="true" />
-
       <svg className={styles.defs} aria-hidden="true" focusable="false">
         <defs>
           <linearGradient id={steelId} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#7c8b96" />
-            <stop offset="0.16" stopColor="#dfe8ee" />
-            <stop offset="0.5" stopColor="#f7fafc" />
-            <stop offset="0.84" stopColor="#bcc8d1" />
-            <stop offset="1" stopColor="#677680" />
-          </linearGradient>
-          <linearGradient id={wireId} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#8d9aa5" />
-            <stop offset="0.5" stopColor="#f1f6f8" />
-            <stop offset="1" stopColor="#8d9aa5" />
+            <stop offset="0" stopColor="#4a4f56" />
+            <stop offset="0.45" stopColor="#8b9199" />
+            <stop offset="1" stopColor="#3a3e44" />
           </linearGradient>
         </defs>
-      </svg>
-
-      <svg className={styles.farCord} aria-hidden="true" viewBox={`-48 0 ${width + 96} 200`} preserveAspectRatio="none">
-        <path className={styles.farBase} d={farCord} vectorEffect="non-scaling-stroke" />
-        <path className={styles.farTwist} d={farCord} vectorEffect="non-scaling-stroke" />
       </svg>
 
       <ul className={styles.line} aria-label="Photo gallery" aria-description={HELP} aria-hidden={open || undefined}>
@@ -546,11 +523,11 @@ export default function ClothesPegGallery({
               viewBox={`-48 0 ${width + 96} ${sim.vh}`}
               preserveAspectRatio="none"
             >
-              {[styles.stringShadow, styles.stringBase, styles.stringTwist].map((cls, k) => (
+              {[styles.stringShadow, styles.stringBase].map((cls, k) => (
                 <path
                   key={cls}
                   ref={(el) => {
-                    stringRefs.current[r * 3 + k] = el;
+                    stringRefs.current[r * 2 + k] = el;
                   }}
                   className={cls}
                   d={pathD[r] ?? cordPath(sim)}
@@ -613,11 +590,8 @@ export default function ClothesPegGallery({
                         {label.charAt(0)}
                       </span>
                     )}
-                    <span className={styles.bleed} aria-hidden="true" />
                   </span>
                   {p.caption && <span className={styles.caption}>{p.caption}</span>}
-                  <span className={styles.gloss} aria-hidden="true" />
-                  <span className={styles.paper} aria-hidden="true" />
                 </button>
                 <svg
                   className={styles.peg}
@@ -627,24 +601,15 @@ export default function ClothesPegGallery({
                   focusable="false"
                 >
                   <g className={styles.pegJawL}>
-                    <rect x="4.9" y="14.2" width="5.4" height="37" rx="2.7" fill={`url(#${steelId})`} />
-                    <rect x="9.4" y="15.8" width="0.9" height="33.6" rx="0.45" fill="rgba(35,55,69,0.38)" />
-                    <rect x="5.7" y="15.6" width="0.9" height="34.4" rx="0.45" fill="rgba(255,255,255,0.75)" />
+                    <rect x="7.3" y="14" width="3.5" height="33" rx="1.75" fill={`url(#${steelId})`} />
                   </g>
                   <g className={styles.pegJawR}>
-                    <rect x="11.7" y="14.2" width="5.4" height="37" rx="2.7" fill={`url(#${steelId})`} />
-                    <rect x="11.7" y="15.8" width="0.9" height="33.6" rx="0.45" fill="rgba(35,55,69,0.38)" />
-                    <rect x="15.4" y="15.6" width="0.9" height="34.4" rx="0.45" fill="rgba(255,255,255,0.75)" />
+                    <rect x="11.2" y="14" width="3.5" height="33" rx="1.75" fill={`url(#${steelId})`} />
                   </g>
                   <g className={styles.pegCoil}>
-                    <ellipse cx="11" cy="8.1" rx="6.4" ry="2.7" fill="none" stroke="rgba(35,55,69,0.3)" strokeWidth="1.7" />
-                    <ellipse cx="11" cy="7.4" rx="6.4" ry="2.7" fill="none" stroke={`url(#${wireId})`} strokeWidth="1.6" />
-                    <ellipse cx="11" cy="11.6" rx="6.4" ry="2.7" fill="none" stroke="rgba(35,55,69,0.3)" strokeWidth="1.7" />
-                    <ellipse cx="11" cy="10.9" rx="6.4" ry="2.7" fill="none" stroke={`url(#${wireId})`} strokeWidth="1.6" />
-                    <ellipse cx="11" cy="15.1" rx="6.4" ry="2.7" fill="none" stroke="rgba(35,55,69,0.3)" strokeWidth="1.7" />
-                    <ellipse cx="11" cy="14.4" rx="6.4" ry="2.7" fill="none" stroke={`url(#${wireId})`} strokeWidth="1.6" />
+                    <circle cx="11" cy="10.5" r="3.1" fill="none" stroke="#4a4f56" strokeWidth="1.1" />
                   </g>
-                  <circle cx="11" cy="17.4" r="1.6" fill="#8d9aa5" />
+                  <circle cx="11" cy="14.6" r="1.3" fill="#2f3338" />
                 </svg>
               </div>
             </li>
@@ -693,7 +658,6 @@ export default function ClothesPegGallery({
                   {dialogLabel.charAt(0)}
                 </span>
               )}
-              <span className={styles.bleed} aria-hidden="true" />
             </span>
             <span className={styles.flyFoot}>
               <span id={`${uid}-cap`} className={styles.flyCaption}>
@@ -703,7 +667,6 @@ export default function ClothesPegGallery({
                 {String((active ?? 0) + 1).padStart(2, '0')} / {String(photos.length).padStart(2, '0')}
               </span>
             </span>
-            <span className={styles.paper} aria-hidden="true" />
             <button ref={closeRef} type="button" className={styles.close} aria-label="Re-hang photo" onClick={rehang}>
               <svg viewBox="0 0 16 16" className={styles.closeIcon} aria-hidden="true">
                 <path d="M4 4l8 8M12 4l-8 8" />

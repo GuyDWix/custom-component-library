@@ -42,7 +42,7 @@ type Pulse = { x: number; dir: number; amp: number; sigma: number; speed: number
 
 const PAD_TOP = 64;
 const GRIP = 14;
-const BORDER = 10;
+const BORDER = 8;
 const CAP_H = 36;
 const OPEN_CAP_H = 96;
 const X_BLEED = 48;
@@ -56,7 +56,7 @@ const FLIGHT_C = 19;
 const SIZE_CYCLE = [1.14, 0.85, 1.03, 0.92, 1.1, 0.88];
 
 const HELP =
-  'Photos hang on a washing line in the noon sun. Press Enter on a photo to unclip it to a large view; Escape re-hangs it.';
+  'Photos hang from a line. Press Enter on a photo to unclip it to a large view; Escape re-hangs it.';
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 const lerp = (a: number, b: number, p: number) => a + (b - a) * p;
@@ -143,7 +143,7 @@ function layoutFor(width: number, count: number): Layout {
   const balanced = Math.ceil(count / rows);
   const slot = (width - 28) / balanced;
   const basePw = clamp(slot * 0.8, 100, 235);
-  const sagMax = clamp(width * 0.05, 22, 58);
+  const sagMax = clamp(width * 0.022, 10, 26);
   const geo: Geo[] = [];
   const rowMaxPh: number[] = [];
   for (let r = 0; r < rows; r++) rowMaxPh.push(0);
@@ -191,7 +191,7 @@ function openRect(width: number, height: number, ph: number): Rect & { frame: nu
 export default function ClothesPegGallery({
   photos = defaultPhotos,
   breezeStrength = 4,
-  stringColor = '#7d93a3',
+  stringColor = '#6f6a62',
   className,
 }: ClothesPegGalleryProps) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
@@ -218,11 +218,6 @@ export default function ClothesPegGallery({
   breeze.current = clamp(breezeStrength, 0, 10);
   const L = useMemo(() => layoutFor(width, photos.length), [width, photos.length]);
   const pathD = useMemo(() => L.sims.map(cordPath), [L]);
-  const farCord = useMemo(() => {
-    const y = Math.max(46, PAD_TOP * 0.55);
-    const dip = clamp(width * 0.03, 12, 38);
-    return `M -48 ${y} Q ${width / 2} ${(y + dip * 2).toFixed(1)} ${width + 48} ${y}`;
-  }, [width]);
 
   const resetSims = useCallback(() => {
     sims.current = L.sims.map((s) => ({ ...s, pts: s.pts.map((p) => ({ ...p })) }));
@@ -385,7 +380,7 @@ export default function ClothesPegGallery({
       /* redraw cord strokes */
       for (let r = 0; r < live.length; r++) {
         const d = cordPath(live[r]);
-        for (let k = 0; k < 3; k++) stringRefs.current[r * 3 + k]?.setAttribute('d', d);
+        for (let k = 0; k < 2; k++) stringRefs.current[r * 2 + k]?.setAttribute('d', d);
       }
       /* prints: pendulum + paper curl, forced by cord movement and wind */
       let energy = 0;
@@ -502,7 +497,6 @@ export default function ClothesPegGallery({
   const shown = active !== null ? photos[active] : null;
   const dialogLabel = shown ? shown.caption || shown.alt || 'Photo' : '';
   const steelId = `cpg${uid}steel`;
-  const wireId = `cpg${uid}wire`;
 
   return (
     <div
@@ -511,31 +505,14 @@ export default function ClothesPegGallery({
       style={rootStyle}
       data-still={reduced || !playing || !inView ? '' : undefined}
     >
-      <span className={styles.sun} aria-hidden="true" />
-      <span className={styles.cloudA} aria-hidden="true" />
-      <span className={styles.cloudB} aria-hidden="true" />
-      <span className={styles.grain} aria-hidden="true" />
-
       <svg className={styles.defs} aria-hidden="true" focusable="false">
         <defs>
           <linearGradient id={steelId} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#7c8b96" />
-            <stop offset="0.16" stopColor="#dfe8ee" />
-            <stop offset="0.5" stopColor="#f7fafc" />
-            <stop offset="0.84" stopColor="#bcc8d1" />
-            <stop offset="1" stopColor="#677680" />
-          </linearGradient>
-          <linearGradient id={wireId} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#8d9aa5" />
-            <stop offset="0.5" stopColor="#f1f6f8" />
-            <stop offset="1" stopColor="#8d9aa5" />
+            <stop offset="0" stopColor="#4a4f56" />
+            <stop offset="0.45" stopColor="#8b9199" />
+            <stop offset="1" stopColor="#3a3e44" />
           </linearGradient>
         </defs>
-      </svg>
-
-      <svg className={styles.farCord} aria-hidden="true" viewBox={`-48 0 ${width + 96} 200`} preserveAspectRatio="none">
-        <path className={styles.farBase} d={farCord} vectorEffect="non-scaling-stroke" />
-        <path className={styles.farTwist} d={farCord} vectorEffect="non-scaling-stroke" />
       </svg>
 
       <ul className={styles.line} aria-label="Photo gallery" aria-description={HELP} aria-hidden={open || undefined}>
@@ -551,11 +528,11 @@ export default function ClothesPegGallery({
               viewBox={`-48 0 ${width + 96} ${sim.vh}`}
               preserveAspectRatio="none"
             >
-              {[styles.stringShadow, styles.stringBase, styles.stringTwist].map((cls, k) => (
+              {[styles.stringShadow, styles.stringBase].map((cls, k) => (
                 <path
                   key={cls}
                   ref={(el) => {
-                    stringRefs.current[r * 3 + k] = el;
+                    stringRefs.current[r * 2 + k] = el;
                   }}
                   className={cls}
                   d={pathD[r] ?? cordPath(sim)}
@@ -618,11 +595,8 @@ export default function ClothesPegGallery({
                         {label.charAt(0)}
                       </span>
                     )}
-                    <span className={styles.bleed} aria-hidden="true" />
                   </span>
                   {p.caption && <span className={styles.caption}>{p.caption}</span>}
-                  <span className={styles.gloss} aria-hidden="true" />
-                  <span className={styles.paper} aria-hidden="true" />
                 </button>
                 <svg
                   className={styles.peg}
@@ -632,24 +606,15 @@ export default function ClothesPegGallery({
                   focusable="false"
                 >
                   <g className={styles.pegJawL}>
-                    <rect x="4.9" y="14.2" width="5.4" height="37" rx="2.7" fill={`url(#${steelId})`} />
-                    <rect x="9.4" y="15.8" width="0.9" height="33.6" rx="0.45" fill="rgba(35,55,69,0.38)" />
-                    <rect x="5.7" y="15.6" width="0.9" height="34.4" rx="0.45" fill="rgba(255,255,255,0.75)" />
+                    <rect x="7.3" y="14" width="3.5" height="33" rx="1.75" fill={`url(#${steelId})`} />
                   </g>
                   <g className={styles.pegJawR}>
-                    <rect x="11.7" y="14.2" width="5.4" height="37" rx="2.7" fill={`url(#${steelId})`} />
-                    <rect x="11.7" y="15.8" width="0.9" height="33.6" rx="0.45" fill="rgba(35,55,69,0.38)" />
-                    <rect x="15.4" y="15.6" width="0.9" height="34.4" rx="0.45" fill="rgba(255,255,255,0.75)" />
+                    <rect x="11.2" y="14" width="3.5" height="33" rx="1.75" fill={`url(#${steelId})`} />
                   </g>
                   <g className={styles.pegCoil}>
-                    <ellipse cx="11" cy="8.1" rx="6.4" ry="2.7" fill="none" stroke="rgba(35,55,69,0.3)" strokeWidth="1.7" />
-                    <ellipse cx="11" cy="7.4" rx="6.4" ry="2.7" fill="none" stroke={`url(#${wireId})`} strokeWidth="1.6" />
-                    <ellipse cx="11" cy="11.6" rx="6.4" ry="2.7" fill="none" stroke="rgba(35,55,69,0.3)" strokeWidth="1.7" />
-                    <ellipse cx="11" cy="10.9" rx="6.4" ry="2.7" fill="none" stroke={`url(#${wireId})`} strokeWidth="1.6" />
-                    <ellipse cx="11" cy="15.1" rx="6.4" ry="2.7" fill="none" stroke="rgba(35,55,69,0.3)" strokeWidth="1.7" />
-                    <ellipse cx="11" cy="14.4" rx="6.4" ry="2.7" fill="none" stroke={`url(#${wireId})`} strokeWidth="1.6" />
+                    <circle cx="11" cy="10.5" r="3.1" fill="none" stroke="#4a4f56" strokeWidth="1.1" />
                   </g>
-                  <circle cx="11" cy="17.4" r="1.6" fill="#8d9aa5" />
+                  <circle cx="11" cy="14.6" r="1.3" fill="#2f3338" />
                 </svg>
               </div>
             </li>
@@ -698,7 +663,6 @@ export default function ClothesPegGallery({
                   {dialogLabel.charAt(0)}
                 </span>
               )}
-              <span className={styles.bleed} aria-hidden="true" />
             </span>
             <span className={styles.flyFoot}>
               <span id={`${uid}-cap`} className={styles.flyCaption}>
@@ -708,7 +672,6 @@ export default function ClothesPegGallery({
                 {String((active ?? 0) + 1).padStart(2, '0')} / {String(photos.length).padStart(2, '0')}
               </span>
             </span>
-            <span className={styles.paper} aria-hidden="true" />
             <button ref={closeRef} type="button" className={styles.close} aria-label="Re-hang photo" onClick={rehang}>
               <svg viewBox="0 0 16 16" className={styles.closeIcon} aria-hidden="true">
                 <path d="M4 4l8 8M12 4l-8 8" />
@@ -723,15 +686,7 @@ export default function ClothesPegGallery({
 ```
 
 ```css
-/* Bright noon line — Verlet cord, spring-steel pegs, backlit prints */
-
-@font-face {
-  font-family: 'Caveat';
-  src: url('./fonts/caveat.woff2') format('woff2');
-  font-weight: 560;
-  font-style: normal;
-  font-display: swap;
-}
+/* Editorial gallery line: taut cord, slim metal pegs, clean prints */
 
 @font-face {
   font-family: 'Familjen Grotesk';
@@ -742,21 +697,14 @@ export default function ClothesPegGallery({
 }
 
 .root {
-  --cpg-string: #7d93a3;
-  --cpg-sky-top: #b7d9ec;
-  --cpg-sky-mid: #dcebf1;
-  --cpg-sky-low: #fdfcf5;
-  --cpg-sun: #ffe9a8;
-  --cpg-paper: #fefdf8;
-  --cpg-paper-shade: #ece6d6;
-  --cpg-ink: #233745;
-  --cpg-muted: rgba(35, 55, 69, 0.66);
-  --cpg-steel-hi: #f4f8fa;
-  --cpg-steel: #aab7c1;
-  --cpg-steel-lo: #64737e;
-  --cpg-font-caption: 'Caveat', cursive;
+  --cpg-string: #6f6a62;
+  --cpg-stage-top: #f1f0ec;
+  --cpg-stage-low: #e5e3dd;
+  --cpg-paper: #ffffff;
+  --cpg-ink: #25282d;
+  --cpg-muted: rgba(37, 40, 45, 0.64);
+  --cpg-shadow: 28, 26, 22;
   --cpg-font-ui: 'Familjen Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --cpg-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -764,81 +712,18 @@ export default function ClothesPegGallery({
   overflow: clip;
   box-sizing: border-box;
   inline-size: 100%;
-  border-radius: 28px;
+  border-radius: 20px;
   background:
-    radial-gradient(46% 36% at 86% -8%, #ffffff 0%, #fffcf0 26%, rgba(255, 244, 200, 0) 66%),
-    linear-gradient(180deg, var(--cpg-sky-top) 0%, var(--cpg-sky-mid) 34%, #eff0e9 62%, var(--cpg-sky-low) 100%);
+    radial-gradient(70% 50% at 50% -10%, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(180deg, var(--cpg-stage-top) 0%, var(--cpg-stage-low) 100%);
+  box-shadow: inset 0 0 0 1px rgba(var(--cpg-shadow), 0.06);
   color: var(--cpg-ink);
   font-family: var(--cpg-font-ui);
 }
 
 .root::selection {
-  background: color-mix(in srgb, var(--cpg-sky-top) 55%, #fff);
+  background: rgba(var(--cpg-shadow), 0.14);
   color: var(--cpg-ink);
-}
-
-.sun,
-.cloudA,
-.cloudB,
-.grain {
-  position: absolute;
-  pointer-events: none;
-  z-index: -1;
-}
-
-.sun {
-  inset-block-start: -230px;
-  inset-inline-end: -150px;
-  inline-size: 580px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, #fff 0%, #fffdf2 16%, color-mix(in srgb, var(--cpg-sun) 50%, transparent) 40%, transparent 72%);
-}
-
-.cloudA,
-.cloudB {
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
-  filter: blur(13px);
-  animation: cloud 80s ease-in-out infinite alternate;
-}
-
-.cloudA {
-  inset-block-start: 6%;
-  inset-inline-start: 5%;
-  inline-size: 34%;
-  block-size: 72px;
-}
-
-.cloudB {
-  inset-block-end: 11%;
-  inset-inline-start: 54%;
-  inline-size: 30%;
-  block-size: 62px;
-  opacity: 0.65;
-  animation-duration: 110s;
-  animation-delay: -40s;
-}
-
-.root[data-still] .cloudA,
-.root[data-still] .cloudB {
-  animation-play-state: paused;
-}
-
-@keyframes cloud {
-  from {
-    transform: translate3d(-4%, 0, 0);
-  }
-  to {
-    transform: translate3d(10%, 4px, 0);
-  }
-}
-
-.grain {
-  inset: 0;
-  background-image: var(--cpg-noise);
-  opacity: 0.14;
-  mix-blend-mode: overlay;
 }
 
 .defs {
@@ -846,29 +731,6 @@ export default function ClothesPegGallery({
   inline-size: 0;
   block-size: 0;
   overflow: hidden;
-}
-
-.farCord {
-  position: absolute;
-  inset-inline: -48px;
-  block-size: 200px;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.5;
-  filter: blur(0.4px);
-}
-
-.farBase {
-  fill: none;
-  stroke: #c3d2da;
-  stroke-width: 2px;
-}
-
-.farTwist {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.55);
-  stroke-width: 0.8px;
-  stroke-dasharray: 2 4;
 }
 
 .line {
@@ -894,29 +756,21 @@ export default function ClothesPegGallery({
 }
 
 .stringShadow,
-.stringBase,
-.stringTwist {
+.stringBase {
   fill: none;
   stroke-linecap: round;
 }
 
 .stringShadow {
-  stroke: rgba(35, 55, 69, 0.08);
-  stroke-width: 3px;
-  transform: translateY(3px);
-  filter: blur(2px);
+  stroke: rgba(var(--cpg-shadow), 0.12);
+  stroke-width: 1.5px;
+  transform: translateY(4px);
+  filter: blur(2.5px);
 }
 
 .stringBase {
   stroke: var(--cpg-string);
-  stroke-width: 2px;
-}
-
-.stringTwist {
-  stroke: color-mix(in srgb, var(--cpg-string) 38%, #fff);
-  stroke-width: 0.8px;
-  stroke-dasharray: 2 3.4;
-  opacity: 0.6;
+  stroke-width: 1.25px;
 }
 
 .slot {
@@ -935,12 +789,12 @@ export default function ClothesPegGallery({
 
 .shadow {
   position: absolute;
-  inset-inline-start: calc(var(--cpg-pw) / -2 + 8px);
+  inset-inline-start: calc(var(--cpg-pw) / -2 + 10px);
   inset-block-start: calc(var(--cpg-ph) + 30px);
-  inline-size: calc(var(--cpg-pw) - 16px);
-  block-size: 14px;
+  inline-size: calc(var(--cpg-pw) - 20px);
+  block-size: 10px;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(35, 55, 69, 0.15), rgba(35, 55, 69, 0));
+  background: radial-gradient(closest-side, rgba(var(--cpg-shadow), 0.16), rgba(var(--cpg-shadow), 0));
   pointer-events: none;
   opacity: calc(1 - var(--cpg-sh, 0) * 0.3);
   transform: scaleX(calc(1 - var(--cpg-sh, 0) * 0.12));
@@ -957,25 +811,24 @@ export default function ClothesPegGallery({
   inset-inline-start: calc(var(--cpg-pw) / -2);
   box-sizing: border-box;
   display: grid;
-  grid-template-rows: 1fr 38px;
+  grid-template-rows: 1fr 36px;
   inline-size: var(--cpg-pw);
   block-size: var(--cpg-ph);
   margin: 0;
-  padding: 9px 9px 0;
+  padding: 8px 8px 0;
   border: 0;
-  border-radius: 1px;
-  background: linear-gradient(178deg, #ffffff 0%, var(--cpg-paper) 55%, color-mix(in srgb, var(--cpg-paper) 90%, var(--cpg-paper-shade)) 100%);
+  border-radius: 2px;
+  background: var(--cpg-paper);
   color: var(--cpg-ink);
   font: inherit;
-  text-align: center;
+  text-align: start;
   cursor: zoom-in;
   transform: perspective(760px) rotateX(calc(var(--cpg-curlN, 0.3) * -1deg));
   transform-origin: 50% 2px;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.95) inset,
-    0 0 0 1px rgba(35, 55, 69, 0.06),
-    0 1px 2px rgba(35, 55, 69, 0.1),
-    0 6px 14px -6px rgba(35, 55, 69, 0.16);
+    0 0 0 1px rgba(var(--cpg-shadow), 0.08),
+    0 1px 2px rgba(var(--cpg-shadow), 0.08),
+    0 10px 20px -12px rgba(var(--cpg-shadow), 0.24);
   transition: box-shadow 240ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 160ms ease;
   -webkit-tap-highlight-color: transparent;
   will-change: transform;
@@ -983,14 +836,13 @@ export default function ClothesPegGallery({
 
 .print:hover {
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.95) inset,
-    0 0 0 1px rgba(35, 55, 69, 0.08),
-    0 1px 2px rgba(35, 55, 69, 0.12),
-    0 10px 20px -8px rgba(35, 55, 69, 0.22);
+    0 0 0 1px rgba(var(--cpg-shadow), 0.1),
+    0 1px 2px rgba(var(--cpg-shadow), 0.1),
+    0 14px 24px -12px rgba(var(--cpg-shadow), 0.3);
 }
 
 .print:focus-visible {
-  outline: 3px solid var(--cpg-ink);
+  outline: 2px solid var(--cpg-ink);
   outline-offset: 4px;
 }
 
@@ -1005,9 +857,8 @@ export default function ClothesPegGallery({
   overflow: hidden;
   min-block-size: 0;
   border-radius: 1px;
-  background: color-mix(in srgb, var(--cpg-sky-top) 30%, var(--cpg-paper));
-  box-shadow:
-    inset 0 0 0 1px rgba(35, 55, 69, 0.08);
+  background: color-mix(in srgb, var(--cpg-ink) 8%, var(--cpg-paper));
+  box-shadow: inset 0 0 0 1px rgba(var(--cpg-shadow), 0.07);
 }
 
 .photo {
@@ -1016,61 +867,33 @@ export default function ClothesPegGallery({
   block-size: 100%;
   object-fit: cover;
   user-select: none;
-  filter: saturate(1.02) contrast(0.99);
 }
 
 .blank {
   display: grid;
   place-items: center;
   block-size: 100%;
-  font-family: var(--cpg-font-caption);
-  font-weight: 560;
-  font-size: 42px;
-  color: color-mix(in srgb, var(--cpg-ink) 42%, transparent);
-}
-
-.bleed {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(120% 95% at 50% 120%, rgba(255, 248, 220, 0.5), transparent 55%);
-  mix-blend-mode: soft-light;
-  pointer-events: none;
+  font-family: var(--cpg-font-ui);
+  font-weight: 500;
+  font-size: 36px;
+  color: color-mix(in srgb, var(--cpg-ink) 36%, transparent);
 }
 
 .caption {
   align-self: center;
   overflow: hidden;
-  padding-inline: 4px;
-  font-family: var(--cpg-font-caption);
-  font-weight: 560;
-  font-size: clamp(14px, calc(var(--cpg-pw) * 0.09), 17px);
-  line-height: 1.1;
+  padding-inline: 2px;
+  font-family: var(--cpg-font-ui);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
   color: var(--cpg-ink);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.paper {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background-image: var(--cpg-noise);
-  opacity: 0.06;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-}
-
-.gloss {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 24%, rgba(35, 55, 69, 0) 72%, rgba(35, 55, 69, 0.16) 100%);
-  mix-blend-mode: soft-light;
-  opacity: 0.35;
-  pointer-events: none;
-}
-
-/* spring-steel peg */
+/* slim metal peg */
 
 .peg {
   position: absolute;
@@ -1079,7 +902,7 @@ export default function ClothesPegGallery({
   inline-size: 22px;
   block-size: 58px;
   overflow: visible;
-  filter: drop-shadow(0 1px 1.5px rgba(35, 55, 69, 0.22));
+  filter: drop-shadow(0 1px 1px rgba(var(--cpg-shadow), 0.22));
   pointer-events: none;
   z-index: 2;
 }
@@ -1130,7 +953,7 @@ export default function ClothesPegGallery({
   color: var(--cpg-ink);
   cursor: pointer;
   opacity: 0.7;
-  box-shadow: 0 1px 2px rgba(35, 55, 69, 0.08);
+  box-shadow: 0 1px 2px rgba(var(--cpg-shadow), 0.08);
   transition: opacity 180ms ease, background-color 180ms ease;
 }
 
@@ -1163,9 +986,9 @@ export default function ClothesPegGallery({
   position: absolute;
   inset: 0;
   z-index: 3;
-  background: linear-gradient(180deg, rgba(214, 231, 242, 0.74), rgba(232, 238, 240, 0.62));
-  -webkit-backdrop-filter: blur(9px) saturate(1.15);
-  backdrop-filter: blur(9px) saturate(1.15);
+  background: rgba(236, 234, 229, 0.78);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   cursor: zoom-out;
 }
 
@@ -1182,20 +1005,15 @@ export default function ClothesPegGallery({
   grid-template-rows: 1fr var(--cpg-foot);
   padding: var(--cpg-pad) var(--cpg-pad) 0;
   border-radius: 3px;
-  background: linear-gradient(178deg, #ffffff 0%, var(--cpg-paper) 60%, color-mix(in srgb, var(--cpg-paper) 92%, var(--cpg-paper-shade)) 100%);
+  background: var(--cpg-paper);
   color: var(--cpg-ink);
   cursor: zoom-out;
   transform: rotate(var(--cpg-rot));
   will-change: left, top, width, height, transform;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.95) inset,
-    0 0 0 1px rgba(35, 55, 69, 0.05),
-    0 0 calc(16px + var(--cpg-lift) * 26px) rgb(255 249 220 / calc(var(--cpg-lift) * 0.5)),
-    0 calc(10px + var(--cpg-lift) * 18px) calc(20px + var(--cpg-lift) * 30px) rgba(35, 55, 69, calc(0.14 + var(--cpg-lift) * 0.1));
-}
-
-.fly .photo {
-  filter: saturate(1.05) contrast(0.98) brightness(calc(1.03 + var(--cpg-lift) * 0.08));
+    0 0 0 1px rgba(var(--cpg-shadow), 0.08),
+    0 1px 2px rgba(var(--cpg-shadow), 0.1),
+    0 calc(8px + var(--cpg-lift) * 22px) calc(16px + var(--cpg-lift) * 34px) calc(var(--cpg-lift) * -10px) rgba(var(--cpg-shadow), calc(0.16 + var(--cpg-lift) * 0.12));
 }
 
 .fly:focus-visible {
@@ -1220,10 +1038,11 @@ export default function ClothesPegGallery({
   overflow: hidden;
   min-inline-size: 0;
   padding-block-end: 4px;
-  font-family: var(--cpg-font-caption);
-  font-weight: 560;
-  font-size: clamp(22px, 2.9cqi, 30px);
-  line-height: 1.08;
+  font-family: var(--cpg-font-ui);
+  font-weight: 500;
+  font-size: clamp(17px, 2.1cqi, 22px);
+  letter-spacing: -0.005em;
+  line-height: 1.25;
   text-align: start;
   text-wrap: balance;
   overflow-wrap: anywhere;
@@ -1252,7 +1071,7 @@ export default function ClothesPegGallery({
   background: color-mix(in srgb, #fff 88%, transparent);
   color: var(--cpg-ink);
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(35, 55, 69, 0.12);
+  box-shadow: 0 1px 3px rgba(var(--cpg-shadow), 0.12);
   opacity: clamp(0, calc((var(--cpg-lift) - 0.7) * 3.4), 1);
   transition: background-color 160ms ease;
 }
@@ -1282,11 +1101,6 @@ export default function ClothesPegGallery({
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cloudA,
-  .cloudB {
-    animation: none;
-  }
-
   .pegJawL,
   .pegJawR,
   .pegCoil {
