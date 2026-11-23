@@ -19,26 +19,27 @@ function craftPill(raw: unknown): Pill {
   return { label: 'Craft —', tone: 'muted', title };
 }
 
-function statusPill(e: Entry, detailed: boolean): Pill | null {
+function statusPill(e: Entry): Pill | null {
   const title = e.statusRaw;
-  switch (e.status) {
-    case 'rejected': return { label: 'Rejected', tone: 'bad', title };
-    case 'backlog': return { label: 'Backlog', tone: 'warn', title };
-    case 'built': return detailed ? { label: 'Built', tone: 'good', title } : null;
-    default: return detailed ? { label: 'Status unknown', tone: 'muted', title } : null;
-  }
+  if (e.status === 'rejected') return { label: 'Rejected', tone: 'bad', title };
+  if (e.status === 'backlog') return { label: 'Backlog', tone: 'warn', title };
+  return null;
 }
 
-function studio2Pill(raw: unknown, detailed: boolean): Pill | null {
+const needsAttention = (p: Pill) => p.tone === 'warn' || p.tone === 'bad';
+
+function studio2Pill(raw: unknown): Pill | null {
   if (raw === true) return { label: 'Studio 2 ✓', tone: 'good', title: 'Tested in Studio 2' };
   if (typeof raw === 'string' && raw.trim()) return { label: 'Studio 2 ⚠', tone: 'warn', title: raw };
-  return detailed ? { label: 'Not in Studio 2', tone: 'muted' } : null;
+  return null;
 }
 
-export default function Badges({ entry, detailed = false }: { entry: Entry; detailed?: boolean }) {
+export default function Badges({ entry }: { entry: Entry }) {
   if (!SHOW_REVIEW) return null;
-  const pills = [statusPill(entry, detailed), craftPill(entry.craft), studio2Pill(entry.studio2, detailed)]
+  const craft = craftPill(entry.craft);
+  const pills = [statusPill(entry), needsAttention(craft) ? craft : null, studio2Pill(entry.studio2)]
     .filter((p): p is Pill => !!p);
+  if (!pills.length) return null;
   return (
     <ul className="g-badges" aria-label="Review status">
       {pills.map((p) => (
