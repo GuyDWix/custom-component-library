@@ -48,7 +48,7 @@ type Phase = 'open' | 'closing' | 'opening';
 
 const SLIDE_MS = 700;
 const STAGGER_MS = 62;
-/* closed beat: leaves rattle to rest while the photo ghosts through the paper */
+/* closed beat: leaves settle while the photo ghosts through the glass */
 const HOLD_MS = 380;
 /* tail after the last leaf parks, so its rebound finishes before the caption returns */
 const SETTLE_MS = 380;
@@ -233,8 +233,8 @@ export default function SlidingDoorPanels({
 
   const kLeft = Math.ceil(panelN / 2);
   const kRight = panelN - kLeft;
-  const cols = narrow ? 3 : panelN <= 2 ? 8 : panelN === 3 ? 5 : panelN <= 5 ? 4 : panelN <= 7 ? 3 : 2;
-  const rows = narrow ? 7 : 6;
+  const cols = narrow ? 2 : panelN <= 2 ? 6 : panelN === 3 ? 4 : panelN <= 5 ? 3 : 2;
+  const rows = narrow ? 6 : 5;
 
   const dataPhase = count === 0 ? 'closed' : phase;
   const current = count > 0 ? images[Math.min(index, count - 1)] : undefined;
@@ -304,57 +304,6 @@ export default function SlidingDoorPanels({
             </div>
           )}
 
-          {count > 1 && (
-            <span className={styles.count} aria-hidden="true">
-              {String(index + 1).padStart(2, '0')}
-              <span className={styles.countSep}> / </span>
-              {String(count).padStart(2, '0')}
-            </span>
-          )}
-
-          {count > 1 && (
-            <>
-              <button
-                type="button"
-                className={`${styles.nav} ${styles.navPrev}`}
-                aria-label="Previous image"
-                onClick={() => step(-1)}
-              >
-                <svg
-                  className={styles.navIcon}
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M10 3 5 8l5 5" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                className={`${styles.nav} ${styles.navNext}`}
-                aria-label="Next image"
-                onClick={() => step(1)}
-              >
-                <svg
-                  className={styles.navIcon}
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M6 3l5 5-5 5" />
-                </svg>
-              </button>
-            </>
-          )}
-
           <span className={styles.railBottom} aria-hidden="true" />
 
           <span className={styles.deck} aria-hidden="true">
@@ -382,11 +331,7 @@ export default function SlidingDoorPanels({
                   }
                 >
                   <span className={styles.paper} />
-                  <span className={styles.glow} />
                   <span className={styles.lattice} />
-                  <span className={styles.railT} />
-                  <span className={styles.railB} />
-                  <span className={styles.shadow} />
                 </span>
               );
             })}
@@ -394,25 +339,78 @@ export default function SlidingDoorPanels({
           <span className={styles.railTop} aria-hidden="true" />
           <span className={styles.sheen} aria-hidden="true" />
 
-          {count > 1 && autoAdvance && (
+        </div>
+        <div className={styles.bar}>
+        {count > 1 && (
+          <span className={styles.count} aria-hidden="true">
+            {String(index + 1).padStart(2, '0')}
+            <span className={styles.countSep}> / </span>
+            {String(count).padStart(2, '0')}
+          </span>
+        )}
+
+        {count > 1 && autoAdvance && (
+          <button
+            type="button"
+            className={styles.pauseBtn}
+            aria-label={playOn ? 'Pause slideshow' : 'Play slideshow'}
+            onClick={() => setPlayOn((p) => !p)}
+          >
+            {playOn ? (
+              <svg className={styles.pauseIcon} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <rect x="4" y="3" width="2.6" height="10" rx="1" />
+                <rect x="9.4" y="3" width="2.6" height="10" rx="1" />
+              </svg>
+            ) : (
+              <svg className={styles.pauseIcon} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <path d="M5.5 3.4a1 1 0 0 1 1.52-.86l7 4.6a1 1 0 0 1 0 1.72l-7 4.6a1 1 0 0 1-1.52-.86V3.4Z" />
+              </svg>
+            )}
+          </button>
+        )}
+        {count > 1 && (
+          <>
             <button
               type="button"
-              className={styles.pauseBtn}
-              aria-label={playOn ? 'Pause slideshow' : 'Play slideshow'}
-              onClick={() => setPlayOn((p) => !p)}
+              className={`${styles.nav} ${styles.navPrev}`}
+              aria-label="Previous image"
+              onClick={() => step(-1)}
             >
-              {playOn ? (
-                <svg className={styles.pauseIcon} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                  <rect x="4" y="3" width="2.6" height="10" rx="1" />
-                  <rect x="9.4" y="3" width="2.6" height="10" rx="1" />
-                </svg>
-              ) : (
-                <svg className={styles.pauseIcon} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                  <path d="M5.5 3.4a1 1 0 0 1 1.52-.86l7 4.6a1 1 0 0 1 0 1.72l-7 4.6a1 1 0 0 1-1.52-.86V3.4Z" />
-                </svg>
-              )}
+              <svg
+                className={styles.navIcon}
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M10 3 5 8l5 5" />
+              </svg>
             </button>
-          )}
+            <button
+              type="button"
+              className={`${styles.nav} ${styles.navNext}`}
+              aria-label="Next image"
+              onClick={() => step(1)}
+            >
+              <svg
+                className={styles.navIcon}
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 3l5 5-5 5" />
+              </svg>
+            </button>
+          </>
+        )}
+
         </div>
       </div>
 

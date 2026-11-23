@@ -53,7 +53,7 @@ type Phase = 'open' | 'closing' | 'opening';
 
 const SLIDE_MS = 700;
 const STAGGER_MS = 62;
-/* closed beat: leaves rattle to rest while the photo ghosts through the paper */
+/* closed beat: leaves settle while the photo ghosts through the glass */
 const HOLD_MS = 380;
 /* tail after the last leaf parks, so its rebound finishes before the caption returns */
 const SETTLE_MS = 380;
@@ -238,8 +238,8 @@ export default function SlidingDoorPanels({
 
   const kLeft = Math.ceil(panelN / 2);
   const kRight = panelN - kLeft;
-  const cols = narrow ? 3 : panelN <= 2 ? 8 : panelN === 3 ? 5 : panelN <= 5 ? 4 : panelN <= 7 ? 3 : 2;
-  const rows = narrow ? 7 : 6;
+  const cols = narrow ? 2 : panelN <= 2 ? 6 : panelN === 3 ? 4 : panelN <= 5 ? 3 : 2;
+  const rows = narrow ? 6 : 5;
 
   const dataPhase = count === 0 ? 'closed' : phase;
   const current = count > 0 ? images[Math.min(index, count - 1)] : undefined;
@@ -309,57 +309,6 @@ export default function SlidingDoorPanels({
             </div>
           )}
 
-          {count > 1 && (
-            <span className={styles.count} aria-hidden="true">
-              {String(index + 1).padStart(2, '0')}
-              <span className={styles.countSep}> / </span>
-              {String(count).padStart(2, '0')}
-            </span>
-          )}
-
-          {count > 1 && (
-            <>
-              <button
-                type="button"
-                className={`${styles.nav} ${styles.navPrev}`}
-                aria-label="Previous image"
-                onClick={() => step(-1)}
-              >
-                <svg
-                  className={styles.navIcon}
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M10 3 5 8l5 5" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                className={`${styles.nav} ${styles.navNext}`}
-                aria-label="Next image"
-                onClick={() => step(1)}
-              >
-                <svg
-                  className={styles.navIcon}
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M6 3l5 5-5 5" />
-                </svg>
-              </button>
-            </>
-          )}
-
           <span className={styles.railBottom} aria-hidden="true" />
 
           <span className={styles.deck} aria-hidden="true">
@@ -387,11 +336,7 @@ export default function SlidingDoorPanels({
                   }
                 >
                   <span className={styles.paper} />
-                  <span className={styles.glow} />
                   <span className={styles.lattice} />
-                  <span className={styles.railT} />
-                  <span className={styles.railB} />
-                  <span className={styles.shadow} />
                 </span>
               );
             })}
@@ -399,25 +344,78 @@ export default function SlidingDoorPanels({
           <span className={styles.railTop} aria-hidden="true" />
           <span className={styles.sheen} aria-hidden="true" />
 
-          {count > 1 && autoAdvance && (
+        </div>
+        <div className={styles.bar}>
+        {count > 1 && (
+          <span className={styles.count} aria-hidden="true">
+            {String(index + 1).padStart(2, '0')}
+            <span className={styles.countSep}> / </span>
+            {String(count).padStart(2, '0')}
+          </span>
+        )}
+
+        {count > 1 && autoAdvance && (
+          <button
+            type="button"
+            className={styles.pauseBtn}
+            aria-label={playOn ? 'Pause slideshow' : 'Play slideshow'}
+            onClick={() => setPlayOn((p) => !p)}
+          >
+            {playOn ? (
+              <svg className={styles.pauseIcon} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <rect x="4" y="3" width="2.6" height="10" rx="1" />
+                <rect x="9.4" y="3" width="2.6" height="10" rx="1" />
+              </svg>
+            ) : (
+              <svg className={styles.pauseIcon} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <path d="M5.5 3.4a1 1 0 0 1 1.52-.86l7 4.6a1 1 0 0 1 0 1.72l-7 4.6a1 1 0 0 1-1.52-.86V3.4Z" />
+              </svg>
+            )}
+          </button>
+        )}
+        {count > 1 && (
+          <>
             <button
               type="button"
-              className={styles.pauseBtn}
-              aria-label={playOn ? 'Pause slideshow' : 'Play slideshow'}
-              onClick={() => setPlayOn((p) => !p)}
+              className={`${styles.nav} ${styles.navPrev}`}
+              aria-label="Previous image"
+              onClick={() => step(-1)}
             >
-              {playOn ? (
-                <svg className={styles.pauseIcon} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                  <rect x="4" y="3" width="2.6" height="10" rx="1" />
-                  <rect x="9.4" y="3" width="2.6" height="10" rx="1" />
-                </svg>
-              ) : (
-                <svg className={styles.pauseIcon} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                  <path d="M5.5 3.4a1 1 0 0 1 1.52-.86l7 4.6a1 1 0 0 1 0 1.72l-7 4.6a1 1 0 0 1-1.52-.86V3.4Z" />
-                </svg>
-              )}
+              <svg
+                className={styles.navIcon}
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M10 3 5 8l5 5" />
+              </svg>
             </button>
-          )}
+            <button
+              type="button"
+              className={`${styles.nav} ${styles.navNext}`}
+              aria-label="Next image"
+              onClick={() => step(1)}
+            >
+              <svg
+                className={styles.navIcon}
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 3l5 5-5 5" />
+              </svg>
+            </button>
+          </>
+        )}
+
         </div>
       </div>
 
@@ -431,82 +429,61 @@ export default function SlidingDoorPanels({
 
 ```css
 .root {
-  /* palette: pale cedar, washi, sumi, lantern light */
-  --sd-cedar-hi: #efdab0;
-  --sd-cedar: #d9bc8c;
-  --sd-cedar-lo: #b5905c;
-  --sd-cedar-ink: #6e4c28;
-  --sd-end-grain: #b98f58;
-  --sd-washi: rgba(251, 246, 232, 0.6);
-  --sd-washi-solid: #f7f1e1;
-  --sd-lantern: rgba(255, 226, 168, 0.5);
-  --sd-ink: #231c14;
-  --sd-cream: #fbf5e6;
-  --sd-room: #2a2016;
-  --sd-font-caption: 'SD Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', 'Iowan Old Style', Georgia, serif;
-  --sd-font-ui: var(--sd-font-caption);
+  /* palette: graphite, frosted glass, one cool highlight */
+  --sd-graphite: #14161a;
+  --sd-graphite-hi: #1d2025;
+  --sd-line: rgba(255, 255, 255, 0.14);
+  --sd-glass: rgba(236, 240, 245, 0.3);
+  --sd-ink: #e9ebee;
+  --sd-ink-dim: rgba(233, 235, 238, 0.52);
+  --sd-room: #101216;
+  --sd-font-caption: 'SD Mincho', 'Iowan Old Style', Georgia, serif;
+  --sd-font-ui: system-ui, -apple-system, sans-serif;
 
   /* geometry (everything sizes from the container) */
-  --sd-jamb: clamp(7px, 1.1cqi, 13px);
-  --sd-lintel: clamp(14px, 3cqi, 30px);
-  --sd-sill: clamp(22px, 4.4cqi, 46px);
-  --sd-stile: clamp(6px, 1.25cqi, 14px);
-  --sd-rail-t: clamp(7px, 1.4cqi, 15px);
-  --sd-rail-b: clamp(13px, 3.1cqi, 34px);
-  --sd-bar: clamp(2px, 0.34cqi, 4px);
-  --sd-cast: clamp(5px, 0.9cqi, 10px);
+  --sd-jamb: clamp(6px, 0.9cqi, 10px);
+  --sd-track: clamp(4px, 0.7cqi, 8px);
+  --sd-stile: clamp(3px, 0.55cqi, 6px);
+  --sd-bar: clamp(12px, 1.8cqi, 18px);
 
-  /* procedural material tiles: cedar grain, a whisper of washi tooth */
-  --sd-grain-dark-v: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='360'><filter id='g' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.85 .011' numOctaves='3' seed='11' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .40  0 0 0 0 .25  0 0 0 0 .11  2.4 0 0 0 -1.05'/></filter><rect width='220' height='360' filter='url(%23g)'/></svg>");
-  --sd-grain-light-v: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='170' height='290'><filter id='g' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.5 .008' numOctaves='2' seed='5' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 .93  0 0 0 0 .76  2.2 0 0 0 -1.12'/></filter><rect width='170' height='290' filter='url(%23g)'/></svg>");
-  --sd-grain-dark-h: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='360' height='220'><filter id='g' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.011 .85' numOctaves='3' seed='23' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .40  0 0 0 0 .25  0 0 0 0 .11  2.4 0 0 0 -1.05'/></filter><rect width='360' height='220' filter='url(%23g)'/></svg>");
-  --sd-grain-light-h: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='290' height='170'><filter id='g' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.008 .5' numOctaves='2' seed='8' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 .93  0 0 0 0 .76  2.2 0 0 0 -1.12'/></filter><rect width='290' height='170' filter='url(%23g)'/></svg>");
-  --sd-tooth-lit: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='p' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.7 .45' numOctaves='3' seed='7' stitchTiles='stitch' result='n'/><feDiffuseLighting in='n' surfaceScale='1' diffuseConstant='1.4' lighting-color='%23ffffff'><feDistantLight azimuth='205' elevation='42'/></feDiffuseLighting><feColorMatrix values='0 0 0 0 1  0 0 0 0 .93  0 0 0 0 .8  1.5 0 0 0 -1.4'/></filter><rect width='240' height='240' filter='url(%23p)'/></svg>");
-
-  /* spring-settle easings: glide, arrive, tiny rebound */
   --sd-dwell: 7000ms;
   --sd-n: 6;
   --sd-kl: 3;
   --sd-kr: 3;
-  --sd-cols: 3;
-  --sd-rows: 6;
+  --sd-cols: 2;
+  --sd-rows: 5;
 
   position: relative;
   isolation: isolate;
   box-sizing: border-box;
   inline-size: 100%;
   container-type: inline-size;
-  border-radius: 16px;
+  border-radius: 14px;
   overflow: clip;
-  background: var(--sd-room);
-  color: var(--sd-cream);
+  background: var(--sd-graphite);
+  color: var(--sd-ink);
   font-family: var(--sd-font-ui);
   outline: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 28px 56px -32px rgba(10, 12, 16, 0.6);
 }
 
 .root ::selection {
-  background: color-mix(in srgb, var(--sd-cedar) 60%, #fff);
-  color: var(--sd-ink);
+  background: rgba(255, 255, 255, 0.3);
+  color: #fff;
 }
 
 .root:focus-visible {
-  outline: 2px solid var(--sd-cream);
-  outline-offset: -5px;
+  outline: 2px solid #fff;
+  outline-offset: -4px;
 }
 
-/* jamb: the wall opening the screens run in */
 .frame {
   position: relative;
   box-sizing: border-box;
   padding: var(--sd-jamb);
-  background:
-    var(--sd-grain-light-v),
-    var(--sd-grain-dark-v),
-    linear-gradient(100deg, var(--sd-cedar-hi) 0%, var(--sd-cedar) 42%, var(--sd-cedar-lo) 100%);
-  background-size:
-    170px 290px,
-    220px 360px,
-    auto;
+  background: linear-gradient(180deg, var(--sd-graphite-hi) 0%, var(--sd-graphite) 100%);
 }
 
 .window {
@@ -538,7 +515,7 @@ export default function SlidingDoorPanels({
   opacity: 0;
   transform: scale(1.02);
   transition: opacity 420ms ease;
-  background: linear-gradient(168deg, #3a2e20 0%, #261d13 100%);
+  background: linear-gradient(168deg, #262a31 0%, #181b20 100%);
   pointer-events: none;
   user-select: none;
 }
@@ -564,22 +541,19 @@ export default function SlidingDoorPanels({
   }
 }
 
-/* scrims so cream type holds on any photo */
+/* scrim so caption type holds on any photo */
 .light {
   position: absolute;
   inset: 0;
   z-index: 2;
   pointer-events: none;
-  background:
-    linear-gradient(0deg, rgba(24, 15, 6, 0.74) 0%, rgba(24, 15, 6, 0.4) 20%, transparent 46%),
-    linear-gradient(180deg, rgba(24, 15, 6, 0.42) 0%, transparent 24%),
-    radial-gradient(120% 90% at 20% 0%, rgba(255, 226, 168, 0.14) 0%, transparent 55%);
+  background: linear-gradient(0deg, rgba(10, 12, 16, 0.7) 0%, rgba(10, 12, 16, 0.32) 22%, transparent 48%);
 }
 
 .caption {
   position: absolute;
   z-index: 3;
-  inset-block-end: calc(var(--sd-sill) + clamp(12px, 2.2cqi, 24px));
+  inset-block-end: calc(var(--sd-track) + clamp(14px, 2.4cqi, 28px));
   inset-inline-start: calc(var(--sd-kl) * 30% / var(--sd-n) + clamp(16px, 2.4cqi, 28px));
   max-inline-size: min(58%, 540px);
   opacity: 0;
@@ -587,6 +561,15 @@ export default function SlidingDoorPanels({
   transition:
     opacity 380ms ease,
     transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.caption::before {
+  content: '';
+  display: block;
+  inline-size: 28px;
+  block-size: 1px;
+  margin-block-end: 10px;
+  background: rgba(255, 255, 255, 0.75);
 }
 
 .root[data-phase='open'] .caption {
@@ -607,106 +590,34 @@ export default function SlidingDoorPanels({
   font-size: clamp(15px, 2.1cqi, 24px);
   line-height: 1.4;
   letter-spacing: 0.02em;
-  color: var(--sd-cream);
-  text-shadow: 0 1px 14px rgba(20, 12, 4, 0.55);
+  color: #fff;
+  text-shadow: 0 1px 14px rgba(8, 10, 14, 0.5);
   overflow-wrap: anywhere;
 }
 
-.count {
-  position: absolute;
-  z-index: 3;
-  inset-block-start: calc(var(--sd-lintel) + clamp(10px, 1.8cqi, 20px));
-  inset-inline-start: calc(var(--sd-kl) * 30% / var(--sd-n) + clamp(16px, 2.4cqi, 28px));
-  font-family: var(--sd-font-caption);
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.14em;
-  color: var(--sd-cream);
-  /* scrim chip: keeps the counter legible over any photo */
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(20, 12, 4, 0.58);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 0 0 1px rgba(255, 244, 220, 0.14);
-}
+/* ---------- tracks ---------- */
 
-.countSep {
-  opacity: 0.7;
-}
-
-/* ---------- track: lintel (kamoi) above, sill (shikii) below ---------- */
-
-.railTop {
-  position: absolute;
-  inset-inline: 0;
-  inset-block-start: 0;
-  z-index: 10;
-  block-size: var(--sd-lintel);
-  pointer-events: none;
-  background:
-    /* upper groove the panels tuck into */
-    linear-gradient(
-      180deg,
-      transparent 0,
-      transparent 62%,
-      rgba(40, 22, 5, 0.62) 62%,
-      rgba(40, 22, 5, 0.62) calc(62% + 2px),
-      rgba(255, 240, 205, 0.5) calc(62% + 2px),
-      rgba(255, 240, 205, 0.5) calc(62% + 3px),
-      transparent calc(62% + 3px)
-    ),
-    var(--sd-grain-light-h),
-    var(--sd-grain-dark-h),
-    linear-gradient(180deg, var(--sd-cedar-lo) 0%, var(--sd-cedar) 38%, var(--sd-cedar-lo) 100%);
-  background-size:
-    auto,
-    290px 170px,
-    360px 220px,
-    auto;
-  box-shadow:
-    inset 0 -1px 0 rgba(60, 36, 10, 0.4),
-    0 5px 9px -4px rgba(24, 12, 2, 0.35);
-}
-
+.railTop,
 .railBottom {
   position: absolute;
   inset-inline: 0;
-  inset-block-end: 0;
-  z-index: 3;
-  block-size: var(--sd-sill);
+  z-index: 10;
+  block-size: var(--sd-track);
   pointer-events: none;
-  background:
-    /* rear groove (panels stand in it), front groove, front arris */
-    linear-gradient(
-      180deg,
-      rgba(40, 22, 5, 0.5) 0,
-      rgba(40, 22, 5, 0.14) 30%,
-      transparent 40%,
-      rgba(40, 22, 5, 0.58) 40%,
-      rgba(40, 22, 5, 0.58) calc(40% + 2px),
-      rgba(255, 240, 205, 0.42) calc(40% + 2px),
-      rgba(255, 240, 205, 0.42) calc(40% + 3px),
-      transparent calc(40% + 3px),
-      transparent 74%,
-      rgba(40, 22, 5, 0.42) 74%,
-      rgba(40, 22, 5, 0.42) calc(74% + 1px),
-      rgba(255, 240, 205, 0.5) calc(74% + 1px),
-      rgba(255, 240, 205, 0.5) calc(74% + 2px),
-      rgba(40, 22, 5, 0.12) calc(74% + 2px)
-    ),
-    var(--sd-grain-light-h),
-    var(--sd-grain-dark-h),
-    linear-gradient(180deg, var(--sd-cedar-lo) 0%, var(--sd-cedar) 40%, var(--sd-cedar-hi) 74%, var(--sd-cedar) 100%);
-  background-size:
-    auto,
-    290px 170px,
-    360px 220px,
-    auto;
-  box-shadow: inset 0 1px 0 rgba(40, 22, 5, 0.5);
+  background: linear-gradient(180deg, #23262c 0%, #101216 100%);
 }
 
-/* ---------- shoji panels ---------- */
+.railTop {
+  inset-block-start: 0;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.railBottom {
+  inset-block-end: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ---------- frosted glass panels ---------- */
 
 .deck {
   position: absolute;
@@ -717,42 +628,29 @@ export default function SlidingDoorPanels({
 
 .panel {
   position: absolute;
-  inset-block-start: calc(var(--sd-lintel) * 0.5);
-  inset-block-end: calc(var(--sd-sill) * 0.62);
+  inset-block: var(--sd-track);
   box-sizing: border-box;
   transform-origin: 50% 100%;
   transition: transform var(--sd-dur, 700ms) cubic-bezier(0.5, 0, 0.2, 1) var(--sd-d, 0ms);
   will-change: transform;
-  background:
-    var(--sd-grain-light-v),
-    var(--sd-grain-dark-v),
-    linear-gradient(100deg, var(--sd-cedar-hi) 0%, var(--sd-cedar) 50%, var(--sd-cedar-lo) 100%);
-  background-size:
-    170px 290px,
-    220px 360px,
-    auto;
+  background: linear-gradient(180deg, #23262c 0%, #17191e 100%);
 }
 
 .panelLeft {
-  box-shadow:
-    4px 0 8px -3px rgba(24, 12, 2, 0.3);
+  box-shadow: 6px 0 14px -8px rgba(6, 8, 12, 0.5);
 }
 
 .panelRight {
-  box-shadow:
-    -4px 0 8px -3px rgba(24, 12, 2, 0.3);
+  box-shadow: -6px 0 14px -8px rgba(6, 8, 12, 0.5);
 }
 
-/* outer bevel: lit edge toward the window light, shaded edge away */
+/* hairline catching the light on the slim aluminium frame */
 .panel::after {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
-  box-shadow:
-    inset 1px 0 0 rgba(255, 244, 214, 0.6),
-    inset -1px 0 0 rgba(70, 42, 12, 0.5),
-    inset 0 1px 0 rgba(255, 244, 214, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
 /* parked in the rear tracks: each panel shows its leading stile */
@@ -919,266 +817,133 @@ export default function SlidingDoorPanels({
   }
 }
 
-/* frame members */
-.railT,
-.railB {
-  position: absolute;
-  inset-inline: var(--sd-stile);
-  background:
-    var(--sd-grain-light-h),
-    var(--sd-grain-dark-h),
-    linear-gradient(180deg, var(--sd-cedar-hi) 0%, var(--sd-cedar) 55%, var(--sd-cedar-lo) 100%);
-  background-size:
-    290px 170px,
-    360px 220px,
-    auto;
-  box-shadow:
-    inset 1px 0 0 rgba(70, 42, 12, 0.4),
-    inset -1px 0 0 rgba(70, 42, 12, 0.4);
-}
-
-.railT {
-  inset-block-start: 0;
-  block-size: calc(var(--sd-rail-t) + var(--sd-lintel) * 0.5);
-}
-
-.railB {
-  inset-block-end: 0;
-  block-size: var(--sd-rail-b);
-}
-
-/* washi: translucent, so the photo ghosts through when the leaves close */
+/* matte frosted glass: the photo ghosts through when the leaves close */
 .paper {
   position: absolute;
-  inset-block: calc(var(--sd-lintel) * 0.5 + var(--sd-rail-t)) var(--sd-rail-b);
-  inset-inline: var(--sd-stile);
-  background: var(--sd-washi);
-  -webkit-backdrop-filter: blur(3.5px) saturate(0.82) brightness(1.1);
-  backdrop-filter: blur(3.5px) saturate(0.82) brightness(1.1);
-  box-shadow:
-    inset 0 0 0 1px rgba(78, 52, 24, 0.32),
-    inset 2px 3px 5px -2px rgba(40, 22, 4, 0.22);
-}
-
-.paper::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: var(--sd-tooth-lit);
-  background-size: 240px 240px;
-  background-position: calc(var(--sd-i, 0) * -53px) calc(var(--sd-i, 0) * -31px);
-  opacity: 0.3;
-  pointer-events: none;
+  inset: var(--sd-stile);
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.16) 0%, transparent 42%),
+    var(--sd-glass);
+  -webkit-backdrop-filter: blur(12px) saturate(0.9) brightness(1.08);
+  backdrop-filter: blur(12px) saturate(0.9) brightness(1.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .paper {
-    background-color: rgba(247, 241, 225, 0.82);
+    background-color: rgba(214, 220, 228, 0.78);
   }
 }
 
-/* lantern glow: paper catches the light as each leaf arrives */
-.glow {
-  position: absolute;
-  inset-block: calc(var(--sd-lintel) * 0.5 + var(--sd-rail-t)) var(--sd-rail-b);
-  inset-inline: var(--sd-stile);
-  pointer-events: none;
-  opacity: 0;
-  background:
-    radial-gradient(80% 60% at 50% 42%, rgba(255, 246, 224, 0.22) 0%, rgba(255, 240, 210, 0.07) 70%, transparent 100%);
-}
-
-.root[data-phase='closing'] .glow {
-  animation: sdGlowIn calc(var(--sd-dur, 700ms) + 380ms) ease-out var(--sd-d, 0ms) both;
-}
-
-.root[data-phase='opening'] .glow {
-  animation: sdGlowOut var(--sd-dur, 700ms) ease-in var(--sd-d, 0ms) both;
-}
-
-.root[data-phase='closed'] .glow {
-  opacity: 1;
-}
-
-@keyframes sdGlowIn {
-  0%,
-  45% {
-    opacity: 0;
-  }
-
-  80%,
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes sdGlowOut {
-  0% {
-    opacity: 1;
-  }
-
-  55%,
-  100% {
-    opacity: 0;
-  }
-}
-
-/* koshi lattice: slender cedar bars standing proud of the paper, each casting a soft shadow into its cell */
+/* fine mullions: a dark hairline paired with a pale one */
 .lattice {
   position: absolute;
-  inset-block: calc(var(--sd-lintel) * 0.5 + var(--sd-rail-t)) var(--sd-rail-b);
-  inset-inline: var(--sd-stile);
+  inset: var(--sd-stile);
   pointer-events: none;
   background-image:
-    /* horizontal bars: lit top edge, face, shaded underside */
     linear-gradient(
       180deg,
-      transparent calc(100% - var(--sd-bar)),
-      rgba(255, 244, 214, 0.6) calc(100% - var(--sd-bar)),
-      var(--sd-cedar-hi) calc(100% - var(--sd-bar) + 1px),
-      var(--sd-cedar) calc(100% - 1px),
-      var(--sd-cedar-lo) calc(100% - 1px)
+      transparent calc(100% - 2px),
+      rgba(16, 18, 22, 0.3) calc(100% - 2px),
+      rgba(16, 18, 22, 0.3) calc(100% - 1px),
+      rgba(255, 255, 255, 0.5) calc(100% - 1px)
     ),
-    /* vertical bars */
     linear-gradient(
       90deg,
-      transparent calc(100% - var(--sd-bar)),
-      rgba(255, 244, 214, 0.6) calc(100% - var(--sd-bar)),
-      var(--sd-cedar-hi) calc(100% - var(--sd-bar) + 1px),
-      var(--sd-cedar) calc(100% - 1px),
-      var(--sd-cedar-lo) calc(100% - 1px)
-    ),
-    /* shadow thrown by vertical bars onto the paper (light from upper left) */
-    linear-gradient(90deg, rgba(48, 28, 8, 0.16) 0, rgba(48, 28, 8, 0.05) calc(var(--sd-cast) * 0.38), transparent var(--sd-cast)),
-    /* shadow thrown by horizontal bars */
-    linear-gradient(180deg, rgba(48, 28, 8, 0.14) 0, rgba(48, 28, 8, 0.045) calc(var(--sd-cast) * 0.38), transparent var(--sd-cast)),
-    /* backlit centre of each cell */
-    radial-gradient(60% 56% at 48% 50%, rgba(255, 244, 220, 0.08) 0%, transparent 100%);
+      transparent calc(100% - 2px),
+      rgba(16, 18, 22, 0.3) calc(100% - 2px),
+      rgba(16, 18, 22, 0.3) calc(100% - 1px),
+      rgba(255, 255, 255, 0.5) calc(100% - 1px)
+    );
   background-size:
     100% calc(100% / var(--sd-rows)),
-    calc(100% / var(--sd-cols)) 100%,
-    calc(100% / var(--sd-cols)) 100%,
-    100% calc(100% / var(--sd-rows)),
-    calc(100% / var(--sd-cols)) calc(100% / var(--sd-rows));
-  background-repeat: repeat;
+    calc(100% / var(--sd-cols)) 100%;
 }
 
-/* soft contact shadow on the sill */
-.shadow {
-  position: absolute;
-  inset-block-start: 100%;
-  inset-inline: 2% -10%;
-  block-size: calc(var(--sd-sill) * 0.5);
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(30, 16, 3, 0.38) 0%, rgba(30, 16, 3, 0.14) 42%, transparent 100%);
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 10%, #000 84%, transparent 100%);
-  mask-image: linear-gradient(90deg, transparent 0, #000 10%, #000 84%, transparent 100%);
-}
-
-/* window-light raking across everything, and the depth of the opening */
+/* window-light raking across the glass, and the depth of the opening */
 .sheen {
   position: absolute;
   inset: 0;
   z-index: 11;
   pointer-events: none;
-  background: linear-gradient(
-    108deg,
-    rgba(255, 244, 226, 0.08) 0%,
-    transparent 50%,
-    rgba(30, 16, 4, 0.08) 100%
-  );
-  box-shadow:
-    inset 0 0 0 1px rgba(30, 16, 4, 0.4),
-    inset 3px 4px 9px -5px rgba(24, 12, 2, 0.35);
+  background: linear-gradient(108deg, rgba(255, 255, 255, 0.06) 0%, transparent 50%, rgba(8, 10, 14, 0.1) 100%);
+  box-shadow: inset 0 0 0 1px rgba(8, 10, 14, 0.5);
 }
 
-/* ---------- controls ---------- */
+/* ---------- controls: a quiet bar below the image ---------- */
 
-.nav {
-  position: absolute;
-  z-index: 12;
-  inset-block-start: 50%;
-  translate: 0 -50%;
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-block-start: var(--sd-bar);
+  padding-inline: 2px;
+}
+
+.count {
+  margin-inline-end: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.14em;
+  color: var(--sd-ink);
+}
+
+.countSep {
+  inline-size: 28px;
+  block-size: 1px;
+  background: var(--sd-ink-dim);
+  font-size: 0;
+}
+
+.count > :last-child:not(.countSep) {
+  color: var(--sd-ink-dim);
+}
+
+.nav,
+.pauseBtn {
   display: grid;
   place-items: center;
   inline-size: 44px;
   aspect-ratio: 1;
   padding: 0;
-  border: 1px solid rgba(110, 76, 40, 0.5);
+  border: 1px solid var(--sd-line);
   border-radius: 50%;
-  background: rgba(251, 246, 232, 0.9);
+  background: transparent;
   color: var(--sd-ink);
   cursor: pointer;
-  box-shadow: 0 6px 16px -8px rgba(24, 12, 2, 0.6);
   transition:
     background-color 200ms ease,
-    transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    border-color 200ms ease;
 }
 
-.nav:hover {
-  background: #fffdf5;
-  transform: scale(1.05);
+.nav:hover,
+.pauseBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.34);
 }
 
-.nav:active {
-  transform: scale(0.97);
+.nav:active,
+.pauseBtn:active {
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .nav:focus-visible,
 .pauseBtn:focus-visible {
-  outline: 2px solid var(--sd-cream);
+  outline: 2px solid #fff;
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(35, 28, 20, 0.7);
-}
-
-.navPrev {
-  inset-inline-start: calc(var(--sd-kl) * 30% / var(--sd-n) + clamp(10px, 1.6cqi, 18px));
-}
-
-.navNext {
-  inset-inline-end: calc(var(--sd-kr) * 30% / var(--sd-n) + clamp(10px, 1.6cqi, 18px));
 }
 
 .navIcon {
-  inline-size: 17px;
-  block-size: 17px;
-}
-
-.pauseBtn {
-  position: absolute;
-  z-index: 13;
-  inset-block-start: calc(var(--sd-lintel) + clamp(8px, 1.4cqi, 16px));
-  inset-inline-end: calc(var(--sd-kr) * 30% / var(--sd-n) + clamp(10px, 1.6cqi, 18px));
-  display: grid;
-  place-items: center;
-  inline-size: 36px;
-  aspect-ratio: 1;
-  padding: 0;
-  border: 1px solid rgba(110, 76, 40, 0.5);
-  border-radius: 50%;
-  background: rgba(251, 246, 232, 0.9);
-  color: var(--sd-ink);
-  cursor: pointer;
-  box-shadow: 0 5px 12px -6px rgba(24, 12, 2, 0.6);
-  opacity: 0.86;
-  transition:
-    opacity 200ms ease,
-    background-color 200ms ease;
-}
-
-.root:hover .pauseBtn,
-.root:focus-within .pauseBtn,
-.root[data-playing='false'] .pauseBtn {
-  opacity: 1;
-}
-
-.pauseBtn:hover {
-  background: #fffdf5;
+  inline-size: 16px;
+  block-size: 16px;
 }
 
 .pauseIcon {
-  inline-size: 14px;
-  block-size: 14px;
+  inline-size: 13px;
+  block-size: 13px;
 }
 
 .srOnly {
@@ -1193,15 +958,11 @@ export default function SlidingDoorPanels({
   white-space: nowrap;
 }
 
-/* reduced motion: the screens stay parked (still framed, still shoji), photos simply crossfade */
+/* reduced motion: the panels stay parked, photos simply crossfade */
 @media (prefers-reduced-motion: reduce) {
   .panel {
     transition: none;
     animation: none;
-  }
-
-  .glow {
-    display: none;
   }
 
   .slide {
@@ -1225,7 +986,7 @@ export default function SlidingDoorPanels({
 
   .nav,
   .pauseBtn {
-    transition: opacity 200ms ease;
+    transition: none;
   }
 }
 
