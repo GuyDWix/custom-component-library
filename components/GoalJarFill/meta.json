@@ -4,8 +4,8 @@
   "display_name": "Goal Jar Fill",
   "category": "data",
   "tier": "showpiece",
-  "job": "Show progress to a sales, donation or booking goal as an apothecary glass jar filling with liquid whose surface sloshes, with the raised amount and goal printed on the jar's paper label",
-  "visitor_action": "none; moving the pointer across the jar sloshes the liquid, a tap makes a ripple, Enter swirls it when focused, and the cork pops when the goal is reached",
+  "job": "Show progress to a sales, donation or booking goal as a soft-UI liquid tablet: amber liquid rises in a pressed clay well while a giant percentage numeral inverts ink at the waterline, with the label and raised amount printed beneath",
+  "visitor_action": "none; moving the pointer across the tablet sloshes the liquid, a tap makes a ripple, Enter stirs it when focused",
   "owner_settings": [
     "Amount reached",
     "Goal amount",
@@ -20,8 +20,8 @@
     "business",
     "services"
   ],
-  "mobile": "jar centred, tap makes a ripple, no tilt slosh",
-  "motion": "liquid rises with eased fill while the spring-wave surface sloshes and tilts, fine bubbles drift up and the amount counts; idle bubbles keep it alive; at 100% the cork pops with a spring overshoot, a fizz bursts, the caustics flare and a goal-reached pill springs in (reduced-motion: filled jar, still surface, frozen bubbles, cork resting open)",
+  "mobile": "tablet turns portrait (4:5), numeral scales to fit, tap makes a ripple",
+  "motion": "liquid rises with an eased fill while the spring-wave surface sloshes and idles; percent and amount count up; at 100% a goal-reached pill springs in (reduced-motion: filled tablet, still surface, no count)",
   "scores": {
     "concept": 3,
     "usefulness": 2,
@@ -35,5 +35,5 @@
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Apothecary glass (warm-earned): amber syrup rising in thick clear glass on a sunlit apothecary shelf; refraction glints at the walls, a climbing meniscus, fine rising bubbles, golden caustics on the shelf; the cork pops open at 100%. Giant ink numeral behind the glass, cream paper label carries the type. Light mode."
+  "art_direction": "Soft-UI liquid tablet: pressed clay well, amber liquid with a sheen and deep base, giant numeral that flips from dark ink to cream at the waterline. No jar metaphor."
 }
