@@ -1,0 +1,38 @@
+{
+  "id": "c_elasticchoice",
+  "name": "ElasticChoice",
+  "display_name": "Elastic Choice",
+  "category": "forms",
+  "tier": "standard",
+  "job": "A plan or option picker whose selection ring draws itself on with a springy settle",
+  "visitor_action": "click or tap a circle, or use arrow keys",
+  "owner_settings": [
+    "Group heading",
+    "Options (label, description, price)",
+    "Selected option",
+    "Primary color (pink)",
+    "Secondary color (blue)"
+  ],
+  "site_types": [
+    "store",
+    "services",
+    "booking",
+    "business"
+  ],
+  "mobile": "circles wrap in an auto-fit grid",
+  "motion": "ring draws on via stroke-dashoffset with an elastic overshoot, blue copy trails by 70ms, label glow fades in; deselect 0.3s ease-out (reduced-motion: instant, static duotone)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pending",
+    "craft": "pending"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Duotone neon: near-black navy stage, hot pink ring with glow overlapped by an electric-blue copy blended with color-dodge, Inter Tight"
+}
