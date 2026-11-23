@@ -108,7 +108,8 @@ export default function LenticularSwitch({
   useEffect(() => {
     if (reduced || !inView) return;
     const opening = openingRef.current;
-    if (!opening) return;
+    const root = rootRef.current;
+    if (!opening || !root) return;
     const m = motion.current;
     if (m.p.length !== stripCount) {
       m.p = new Float32Array(stripCount);
@@ -149,12 +150,14 @@ export default function LenticularSwitch({
           m.p[i] += m.v[i] * h;
         }
       }
-      opening.style.setProperty('--ls-rot', `${((m.gt - 0.5) * 10).toFixed(2)}deg`);
       opening.style.setProperty('--ls-gx', m.gt.toFixed(3));
+      root.style.setProperty('--ls-gx', m.gt.toFixed(3));
       const els = stripEls.current;
       for (let i = 0; i < n; i++) {
         const el = els[i];
-        if (el) el.style.transform = `rotateY(${(m.p[i] * 180).toFixed(2)}deg)`;
+        if (!el) continue;
+        el.style.transform = `rotateY(${(m.p[i] * 180).toFixed(2)}deg)`;
+        el.style.setProperty('--s', Math.sin(Math.PI * m.p[i]).toFixed(3));
       }
       id = requestAnimationFrame(loop);
     };
@@ -236,58 +239,61 @@ export default function LenticularSwitch({
   const openingStyle = { '--ls-n': stripCount } as CSSProperties;
   const ariaLabel = `Lenticular print switching between ${imageAAlt} and ${imageBAlt}`;
 
+  const reducedStyle = reduced ? ({ '--ls-gx': showB ? 1 : 0 } as CSSProperties) : undefined;
+
   return (
-    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
-      <span className={styles.halo} aria-hidden="true" />
-      <div className={styles.mat}>
-        <span className={styles.registration} aria-hidden="true">
-          <span className={styles.chipC} />
-          <span className={styles.chipM} />
-          <span className={styles.chipY} />
-          <span className={styles.chipK} />
+    <figure
+      ref={rootRef}
+      className={[styles.root, className].filter(Boolean).join(' ')}
+      style={{ ...rootStyle, ...reducedStyle }}
+    >
+      <div
+        ref={openingRef}
+        className={styles.opening}
+        style={openingStyle}
+        role="img"
+        aria-label={ariaLabel}
+        aria-description={reduced ? HELP_REDUCED : HELP_ANIMATED}
+        tabIndex={0}
+        onKeyDown={onKeyDown}
+        onBlur={release}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerEnd}
+        onPointerCancel={onPointerEnd}
+        onPointerLeave={onPointerEnd}
+      >
+        {reduced ? (
+          <>
+            <span className={styles.flatA} aria-hidden="true" />
+            <span className={styles.flatB} aria-hidden="true" style={{ opacity: showB ? 1 : 0 }} />
+          </>
+        ) : (
+          <div className={styles.strips} aria-hidden="true">
+            {Array.from({ length: stripCount }, (_, i) => (
+              <div
+                key={i}
+                className={styles.strip}
+                style={{ '--i': i } as CSSProperties}
+                ref={(el) => {
+                  stripEls.current[i] = el;
+                }}
+              >
+                <span className={styles.faceA} />
+                <span className={styles.faceB} />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <figcaption className={styles.caption}>
+        <span className={styles.numerals} aria-hidden="true">
+          <span className={styles.numA}>01</span>
+          <span className={styles.numB}>02</span>
         </span>
-        <div
-          ref={openingRef}
-          className={styles.opening}
-          style={openingStyle}
-          role="img"
-          aria-label={ariaLabel}
-          aria-description={reduced ? HELP_REDUCED : HELP_ANIMATED}
-          tabIndex={0}
-          onKeyDown={onKeyDown}
-          onBlur={release}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerEnd}
-          onPointerCancel={onPointerEnd}
-          onPointerLeave={onPointerEnd}
-        >
-          <span className={styles.backing} aria-hidden="true" />
-          {reduced ? (
-            <>
-              <span className={styles.flatA} aria-hidden="true" />
-              <span className={styles.flatB} aria-hidden="true" style={{ opacity: showB ? 1 : 0 }} />
-            </>
-          ) : (
-            <div className={styles.strips} aria-hidden="true">
-              {Array.from({ length: stripCount }, (_, i) => (
-                <div
-                  key={i}
-                  className={styles.strip}
-                  style={{ '--i': i } as CSSProperties}
-                  ref={(el) => {
-                    stripEls.current[i] = el;
-                  }}
-                >
-                  <span className={styles.faceA} />
-                  <span className={styles.faceB} />
-                </div>
-              ))}
-            </div>
-          )}
-          <span className={styles.ribs} aria-hidden="true" />
-          <span className={styles.glare} aria-hidden="true" />
-        </div>
+        <span className={styles.hintText} aria-hidden="true">
+          {reduced ? 'Tap to switch' : 'Move across to turn'}
+        </span>
         {hintOn && !reduced && (
           <button
             type="button"
@@ -305,8 +311,7 @@ export default function LenticularSwitch({
             </svg>
           </button>
         )}
-      </div>
-      <span className={styles.grain} aria-hidden="true" />
-    </div>
+      </figcaption>
+    </figure>
   );
 }

@@ -7,7 +7,7 @@ const worst: LenticularSwitchProps = {
   imageAAlt:
     'A very long alternative text for the first photo, written the way a meticulous site owner might describe every last detail of the scene, the weather, the light and the season all at once',
   imageBAlt:
-    'An equally very long alternative text for the second photo, which in this worst case is missing entirely and falls back to a flat process-magenta panel',
+    'An equally very long alternative text for the second photo, which in this worst case is missing entirely and falls back to the paper tone',
   stripWidth: 8,
   hint: false,
 };
@@ -18,7 +18,7 @@ const stage = {
   display: 'grid',
   placeItems: 'center',
   padding: 'clamp(16px, 4vw, 56px)',
-  background: 'linear-gradient(180deg, #f5f4f1 0%, #e9e6e1 100%)',
+  background: '#f5f4f1',
 };
 
 export default function Preview() {

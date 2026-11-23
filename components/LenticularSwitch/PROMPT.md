@@ -113,7 +113,8 @@ export default function LenticularSwitch({
   useEffect(() => {
     if (reduced || !inView) return;
     const opening = openingRef.current;
-    if (!opening) return;
+    const root = rootRef.current;
+    if (!opening || !root) return;
     const m = motion.current;
     if (m.p.length !== stripCount) {
       m.p = new Float32Array(stripCount);
@@ -154,12 +155,14 @@ export default function LenticularSwitch({
           m.p[i] += m.v[i] * h;
         }
       }
-      opening.style.setProperty('--ls-rot', `${((m.gt - 0.5) * 10).toFixed(2)}deg`);
       opening.style.setProperty('--ls-gx', m.gt.toFixed(3));
+      root.style.setProperty('--ls-gx', m.gt.toFixed(3));
       const els = stripEls.current;
       for (let i = 0; i < n; i++) {
         const el = els[i];
-        if (el) el.style.transform = `rotateY(${(m.p[i] * 180).toFixed(2)}deg)`;
+        if (!el) continue;
+        el.style.transform = `rotateY(${(m.p[i] * 180).toFixed(2)}deg)`;
+        el.style.setProperty('--s', Math.sin(Math.PI * m.p[i]).toFixed(3));
       }
       id = requestAnimationFrame(loop);
     };
@@ -241,58 +244,61 @@ export default function LenticularSwitch({
   const openingStyle = { '--ls-n': stripCount } as CSSProperties;
   const ariaLabel = `Lenticular print switching between ${imageAAlt} and ${imageBAlt}`;
 
+  const reducedStyle = reduced ? ({ '--ls-gx': showB ? 1 : 0 } as CSSProperties) : undefined;
+
   return (
-    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
-      <span className={styles.halo} aria-hidden="true" />
-      <div className={styles.mat}>
-        <span className={styles.registration} aria-hidden="true">
-          <span className={styles.chipC} />
-          <span className={styles.chipM} />
-          <span className={styles.chipY} />
-          <span className={styles.chipK} />
+    <figure
+      ref={rootRef}
+      className={[styles.root, className].filter(Boolean).join(' ')}
+      style={{ ...rootStyle, ...reducedStyle }}
+    >
+      <div
+        ref={openingRef}
+        className={styles.opening}
+        style={openingStyle}
+        role="img"
+        aria-label={ariaLabel}
+        aria-description={reduced ? HELP_REDUCED : HELP_ANIMATED}
+        tabIndex={0}
+        onKeyDown={onKeyDown}
+        onBlur={release}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerEnd}
+        onPointerCancel={onPointerEnd}
+        onPointerLeave={onPointerEnd}
+      >
+        {reduced ? (
+          <>
+            <span className={styles.flatA} aria-hidden="true" />
+            <span className={styles.flatB} aria-hidden="true" style={{ opacity: showB ? 1 : 0 }} />
+          </>
+        ) : (
+          <div className={styles.strips} aria-hidden="true">
+            {Array.from({ length: stripCount }, (_, i) => (
+              <div
+                key={i}
+                className={styles.strip}
+                style={{ '--i': i } as CSSProperties}
+                ref={(el) => {
+                  stripEls.current[i] = el;
+                }}
+              >
+                <span className={styles.faceA} />
+                <span className={styles.faceB} />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <figcaption className={styles.caption}>
+        <span className={styles.numerals} aria-hidden="true">
+          <span className={styles.numA}>01</span>
+          <span className={styles.numB}>02</span>
         </span>
-        <div
-          ref={openingRef}
-          className={styles.opening}
-          style={openingStyle}
-          role="img"
-          aria-label={ariaLabel}
-          aria-description={reduced ? HELP_REDUCED : HELP_ANIMATED}
-          tabIndex={0}
-          onKeyDown={onKeyDown}
-          onBlur={release}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerEnd}
-          onPointerCancel={onPointerEnd}
-          onPointerLeave={onPointerEnd}
-        >
-          <span className={styles.backing} aria-hidden="true" />
-          {reduced ? (
-            <>
-              <span className={styles.flatA} aria-hidden="true" />
-              <span className={styles.flatB} aria-hidden="true" style={{ opacity: showB ? 1 : 0 }} />
-            </>
-          ) : (
-            <div className={styles.strips} aria-hidden="true">
-              {Array.from({ length: stripCount }, (_, i) => (
-                <div
-                  key={i}
-                  className={styles.strip}
-                  style={{ '--i': i } as CSSProperties}
-                  ref={(el) => {
-                    stripEls.current[i] = el;
-                  }}
-                >
-                  <span className={styles.faceA} />
-                  <span className={styles.faceB} />
-                </div>
-              ))}
-            </div>
-          )}
-          <span className={styles.ribs} aria-hidden="true" />
-          <span className={styles.glare} aria-hidden="true" />
-        </div>
+        <span className={styles.hintText} aria-hidden="true">
+          {reduced ? 'Tap to switch' : 'Move across to turn'}
+        </span>
         {hintOn && !reduced && (
           <button
             type="button"
@@ -310,124 +316,58 @@ export default function LenticularSwitch({
             </svg>
           </button>
         )}
-      </div>
-      <span className={styles.grain} aria-hidden="true" />
-    </div>
+      </figcaption>
+    </figure>
   );
 }
 ```
 
 ```css
+@font-face {
+  font-family: 'Jost';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300;
+  src: url('./fonts/jost-latin-300-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Hanken Grotesk';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('./fonts/hanken-grotesk-latin-400-normal.woff2') format('woff2');
+}
+
 .root {
-  --ls-bg: #edecea;
-  --ls-bg-deep: #e2dfd9;
-  --ls-mat: #fffefa;
-  --ls-backing: #f4f2ec;
-  --ls-ink: #1a2027;
-  --ls-cyan: #00a5e0;
-  --ls-magenta: #e5007d;
-  --ls-yellow: #ffcf3f;
-  --ls-black: #23292f;
-  --ls-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --ls-paper: #f5f4f1;
+  --ls-ink: #151515;
+  --ls-muted: #6b6a66;
+  --ls-font-display: 'Jost', 'Futura', 'Helvetica Neue', system-ui, sans-serif;
+  --ls-font-ui: 'Hanken Grotesk', 'Helvetica Neue', system-ui, sans-serif;
   --ls-img-a: none;
   --ls-img-b: none;
-  --ls-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --ls-gx: 0;
 
-  position: relative;
-  isolation: isolate;
   box-sizing: border-box;
   inline-size: 100%;
-  display: grid;
-  justify-items: center;
-  padding: clamp(20px, 6cqi, 72px) clamp(12px, 4cqi, 48px);
-  background:
-    radial-gradient(120% 90% at 50% 0%, #f7f6f3 0%, transparent 62%),
-    linear-gradient(180deg, var(--ls-bg) 0%, var(--ls-bg-deep) 100%);
+  margin: 0;
+  padding: clamp(12px, 3cqi, 32px);
+  background: var(--ls-paper);
   color: var(--ls-ink);
   font-family: var(--ls-font-ui);
   container-type: inline-size;
 }
 
-.halo {
-  position: absolute;
-  inset-block-start: 4%;
-  inline-size: 74%;
-  aspect-ratio: 2 / 1;
-  z-index: -1;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.75), transparent);
-  filter: blur(30px);
-  pointer-events: none;
-}
-
-.grain {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-image: var(--ls-noise);
-  opacity: 0.16;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-}
-
-.mat {
-  position: relative;
-  inline-size: min(100%, 960px);
-  box-sizing: border-box;
-  padding: clamp(20px, 6cqi, 56px) clamp(16px, 5cqi, 46px);
-  border-radius: 3px;
-  background: linear-gradient(180deg, #fffefc 0%, var(--ls-mat) 100%);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 1px 2px rgba(26, 32, 39, 0.06),
-    0 28px 56px -24px rgba(26, 32, 39, 0.24),
-    0 8px 18px -10px rgba(26, 32, 39, 0.14);
-}
-
-.registration {
-  position: absolute;
-  inset-block-start: clamp(8px, 2cqi, 14px);
-  inset-inline-end: clamp(10px, 2.5cqi, 16px);
-  display: flex;
-  gap: 4px;
-  opacity: 0.85;
-}
-
-.registration span {
-  inline-size: clamp(5px, 1.3cqi, 8px);
-  aspect-ratio: 1;
-  border-radius: 1.5px;
-}
-
-.chipC {
-  background: var(--ls-cyan);
-}
-
-.chipM {
-  background: var(--ls-magenta);
-}
-
-.chipY {
-  background: var(--ls-yellow);
-}
-
-.chipK {
-  background: var(--ls-black);
-}
-
 .opening {
   --ls-n: 24;
-  --ls-rot: 0deg;
-  --ls-gx: 0.08;
 
   position: relative;
   aspect-ratio: 16 / 10;
-  border-radius: 2px;
   overflow: hidden;
   container-type: inline-size;
-  perspective: 1100px;
-  background: var(--ls-backing);
-  box-shadow: inset 0 0 0 1px rgba(26, 32, 39, 0.1);
+  perspective: 1400px;
+  background: var(--ls-paper);
   cursor: ew-resize;
   touch-action: pan-y;
   -webkit-tap-highlight-color: transparent;
@@ -435,35 +375,24 @@ export default function LenticularSwitch({
 }
 
 .opening:focus-visible {
-  box-shadow:
-    inset 0 0 0 1px rgba(26, 32, 39, 0.1),
-    0 0 0 2px var(--ls-mat),
-    0 0 0 4px var(--ls-ink);
-}
-
-.backing {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background: var(--ls-backing);
-  box-shadow: inset 0 2px 10px rgba(26, 32, 39, 0.07);
+  outline: 2px solid var(--ls-ink);
+  outline-offset: 4px;
 }
 
 .strips {
   position: absolute;
   inset: 0;
-  z-index: 1;
   display: flex;
-  transform: rotateY(var(--ls-rot));
   transform-style: preserve-3d;
 }
 
 .strip {
+  --s: 0;
+
   position: relative;
   flex: 1 1 0;
   min-inline-size: 0;
   block-size: 100%;
-  transform: rotateY(0deg);
   transform-style: preserve-3d;
   will-change: transform;
 }
@@ -472,13 +401,13 @@ export default function LenticularSwitch({
 .faceB {
   position: absolute;
   inset-block: 0;
-  inset-inline: 0 1px;
-  overflow: hidden;
+  inset-inline: -0.5px;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   background-repeat: no-repeat;
   background-size: 100cqw 100%;
-  background-position: calc(var(--i) * -100cqw / var(--ls-n)) center;
+  background-position: calc(var(--i) * -100cqw / var(--ls-n) + 0.5px) center;
+  background-color: var(--ls-paper);
 }
 
 .faceA::after,
@@ -486,105 +415,94 @@ export default function LenticularSwitch({
   content: '';
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(90deg, rgba(0, 165, 224, 0.22), transparent 9%),
-    linear-gradient(270deg, rgba(229, 0, 125, 0.18), transparent 9%),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.3), transparent 22%, transparent 78%, rgba(255, 255, 255, 0.16));
-  mix-blend-mode: screen;
-  pointer-events: none;
+  background: #000;
+  opacity: calc(var(--s) * 0.3);
 }
 
 .faceA {
-  background-image: linear-gradient(155deg, rgba(0, 165, 224, 0.14), rgba(229, 0, 125, 0.08)), var(--ls-img-a);
+  background-image: var(--ls-img-a);
 }
 
 .faceB {
   transform: rotateY(180deg);
-  background-image: linear-gradient(205deg, rgba(229, 0, 125, 0.14), rgba(0, 165, 224, 0.08)), var(--ls-img-b);
+  background-image: var(--ls-img-b);
 }
 
 .flatA,
 .flatB {
   position: absolute;
   inset: 0;
-  background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
+  background-color: var(--ls-paper);
+  transition: opacity 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .flatA {
-  z-index: 1;
-  background-image: linear-gradient(155deg, rgba(0, 165, 224, 0.14), rgba(229, 0, 125, 0.08)), var(--ls-img-a);
+  background-image: var(--ls-img-a);
 }
 
 .flatB {
-  z-index: 2;
-  background-image: linear-gradient(205deg, rgba(229, 0, 125, 0.14), rgba(0, 165, 224, 0.08)), var(--ls-img-b);
+  background-image: var(--ls-img-b);
 }
 
-.ribs {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    90deg,
-    transparent 0 5px,
-    rgba(255, 255, 255, 0.1) 5px 5.5px,
-    rgba(255, 255, 255, 0.03) 5.5px 8px,
-    rgba(20, 26, 32, 0.05) 8px 8.5px,
-    transparent 8.5px 12px
-  );
-  mix-blend-mode: overlay;
-  opacity: 0.5;
+.caption {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: end;
+  gap: clamp(12px, 3cqi, 28px);
+  padding-block-start: clamp(10px, 2cqi, 20px);
 }
 
-.glare {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: calc(var(--ls-gx) * 100%);
-  inline-size: 38%;
-  z-index: 4;
-  transform: translateX(-50%);
-  pointer-events: none;
-  background:
-    linear-gradient(
-      100deg,
-      transparent 30%,
-      rgba(255, 255, 255, 0.06) 44%,
-      rgba(255, 255, 255, 0.3) 50%,
-      rgba(255, 255, 255, 0.06) 56%,
-      transparent 70%
-    ),
-    linear-gradient(100deg, transparent 49.3%, rgba(255, 255, 255, 0.55) 50%, transparent 50.7%);
-  background-size: 100% 100%, 100% 100%;
-  mix-blend-mode: soft-light;
-  opacity: 0.8;
+.numerals {
+  display: grid;
+  font-family: var(--ls-font-display);
+  font-weight: 300;
+  font-size: clamp(56px, 16cqi, 168px);
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.numA,
+.numB {
+  grid-area: 1 / 1;
+}
+
+.numA {
+  opacity: calc(1 - var(--ls-gx) * 1.6);
+}
+
+.numB {
+  opacity: calc(var(--ls-gx) * 1.6 - 0.6);
+}
+
+.hintText {
+  padding-block-end: 0.2em;
+  color: var(--ls-muted);
+  font-size: 13px;
+  letter-spacing: 0.02em;
 }
 
 .pauseButton {
-  position: absolute;
-  inset-block-end: clamp(8px, 2cqi, 14px);
-  inset-inline-end: clamp(10px, 2.5cqi, 16px);
   display: grid;
   place-items: center;
-  inline-size: 32px;
-  block-size: 32px;
+  inline-size: 36px;
+  block-size: 36px;
+  margin-block-end: -4px;
   padding: 0;
-  border: 1px solid color-mix(in srgb, var(--ls-ink) 14%, transparent);
+  border: 0;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--ls-mat) 80%, transparent);
+  background: transparent;
   color: var(--ls-ink);
   cursor: pointer;
   transition:
     background-color 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    border-color 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
     transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .pauseButton:hover {
-  background: var(--ls-mat);
-  border-color: color-mix(in srgb, var(--ls-ink) 30%, transparent);
+  background: rgba(21, 21, 21, 0.08);
 }
 
 .pauseButton:active {
@@ -600,5 +518,11 @@ export default function LenticularSwitch({
   inline-size: 12px;
   block-size: 12px;
   fill: currentColor;
+}
+
+@container (max-width: 420px) {
+  .hintText {
+    display: none;
+  }
 }
 ```
