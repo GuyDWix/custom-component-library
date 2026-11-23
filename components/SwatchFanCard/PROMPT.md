@@ -70,8 +70,8 @@ function luminance([r, g, b]: [number, number, number]) {
   return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
 }
 
-const PAPER_L = luminance([247, 242, 229]);
-const INK_L = luminance([33, 29, 21]);
+const PAPER_L = luminance([251, 250, 247]);
+const INK_L = luminance([29, 28, 26]);
 
 /* true = print in paper, false = print in ink */
 function printLight(color: string): boolean {
@@ -425,53 +425,6 @@ export default function SwatchFanCard({
     };
   });
 
-  /* The twine: through every eyelet, slack while the fan is still folded, tight once open. */
-  const slack = 1 + 1.4 * (1 - clamp(avgOpen, 0, 1));
-  let twine = '';
-  let tails = '';
-  let knots: Array<{ X: number; Y: number }> = [];
-  if (items.length) {
-    twine = `M${items[0].X.toFixed(1)} ${items[0].Y.toFixed(1)}`;
-    for (let i = 1; i < items.length; i++) {
-      const a = items[i - 1];
-      const b = items[i];
-      const dist = Math.hypot(b.X - a.X, b.Y - a.Y);
-      const sag = Math.min(46, dist * 0.085 * slack + 2.5);
-      twine += ` Q${((a.X + b.X) / 2).toFixed(1)} ${((a.Y + b.Y) / 2 + sag).toFixed(1)} ${b.X.toFixed(1)} ${b.Y.toFixed(1)}`;
-    }
-    const ends: Array<[number, number]> = [
-      [0, items.length > 1 ? 1 : 0],
-      [items.length - 1, items.length > 1 ? items.length - 2 : items.length - 1],
-    ];
-    ends.forEach(([ei, ni], k) => {
-      const e = items[ei];
-      const nb = items[ni];
-      let ux = e.X - nb.X;
-      let uy = e.Y - nb.Y;
-      const len = Math.hypot(ux, uy);
-      if (items.length === 1 || len < 1) {
-        ux = k === 0 ? -0.6 : 0.6;
-        uy = -0.8;
-      } else {
-        ux /= len;
-        uy /= len;
-      }
-      uy -= 0.35;
-      const ul = Math.hypot(ux, uy) || 1;
-      ux /= ul;
-      uy /= ul;
-      [-0.5, 0.42].forEach((rot, j) => {
-        const cr = Math.cos(rot);
-        const sr = Math.sin(rot);
-        const dx = ux * cr - uy * sr;
-        const dy = ux * sr + uy * cr;
-        const L = j === 0 ? 20 : 15;
-        tails += `M${e.X.toFixed(1)} ${e.Y.toFixed(1)} Q${(e.X + dx * L * 0.55 + dy * 4).toFixed(1)} ${(e.Y + dy * L * 0.55 - dx * 4).toFixed(1)} ${(e.X + dx * L).toFixed(1)} ${(e.Y + dy * L).toFixed(1)}`;
-      });
-    });
-    knots = [items[0], items[items.length - 1]];
-  }
-
   const onGroupKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (!n) return;
     let next: number | null = null;
@@ -528,22 +481,17 @@ export default function SwatchFanCard({
       aria-label={productName ? undefined : 'Product'}
     >
       <span className={styles.sheet} aria-hidden="true" />
-      <span className={styles.stockUnder} aria-hidden="true" />
-      <span className={styles.stockUnderDeep} aria-hidden="true" />
 
       <div className={styles.table}>
         <span className={[styles.pool, reduced && styles.tintStatic].filter(Boolean).join(' ')} aria-hidden="true" />
 
         <div className={styles.frame} style={frameStyle}>
-          <span className={[styles.tape, styles.tapeL].join(' ')} aria-hidden="true" />
-          <span className={[styles.tape, styles.tapeR].join(' ')} aria-hidden="true" />
           <div className={styles.stage}>
             {image ? (
               <img className={styles.photo} src={image} alt={imageAlt} draggable={false} decoding="async" />
             ) : (
               <div className={styles.wall} aria-hidden="true">
                 <span className={[styles.swath, reduced && styles.tintStatic].filter(Boolean).join(' ')} />
-                <span className={styles.swathLap} />
                 {swatches.slice(0, DABS.length).map((sw, i) => {
                   const d = DABS[i];
                   return (
@@ -597,7 +545,7 @@ export default function SwatchFanCard({
               const side = it.d < 0 ? styles.sideL : styles.sideR;
               const style = {
                 '--pig': it.sw.color,
-                '--on': light ? '#f7f2e5' : '#211d15',
+                '--on': light ? '#fbfaf7' : '#1d1c1a',
                 '--ex': it.lxv.toFixed(3),
                 '--ey': it.lyv.toFixed(3),
                 '--k': it.k.toFixed(2),
@@ -642,26 +590,6 @@ export default function SwatchFanCard({
                 </button>
               );
             })}
-
-            <svg
-              className={styles.twine}
-              width={width}
-              height={geo.t}
-              viewBox={`0 0 ${width} ${geo.t}`}
-              aria-hidden="true"
-              focusable="false"
-            >
-              <path className={styles.twineShadow} d={`${twine} ${tails}`} />
-              <path className={styles.twineBody} d={twine} />
-              <path className={styles.twineSpin} d={twine} />
-              <path className={styles.twineBody} d={tails} />
-              {knots.map((k, i) => (
-                <g key={i} transform={`translate(${k.X.toFixed(1)} ${k.Y.toFixed(1)})`}>
-                  <circle className={styles.knot} r="5.4" />
-                  <circle className={styles.knotHi} r="1.7" cx="-1.6" cy="-1.7" />
-                </g>
-              ))}
-            </svg>
           </div>
         )}
       </div>
@@ -694,7 +622,6 @@ export default function SwatchFanCard({
         )}
       </div>
 
-      <span className={styles.grain} aria-hidden="true" />
       <span className={styles.cardEdge} aria-hidden="true" />
     </article>
   );
@@ -711,20 +638,15 @@ export default function SwatchFanCard({
 }
 
 .root {
-  --sf-counter: #ece4d0;
-  --sf-counter-deep: #ddd3bb;
-  --sf-paper: #f7f2e5;
-  --sf-paper-shade: #eee6d2;
-  --sf-edge-1: #e6decb;
-  --sf-edge-2: #d4cab0;
-  --sf-edge-3: #bfb496;
-  --sf-ink: #211d15;
-  --sf-muted: #5c5445;
-  --sf-hairline: rgba(33, 29, 21, 0.16);
-  --sf-twine: #2b251b;
-  --sf-font-display: 'SwatchFanInterTight', 'Inter Tight', 'Inter', 'Helvetica Neue', system-ui, sans-serif;
-  --sf-font-ui: 'SwatchFanInterTight', 'Inter', 'Helvetica Neue', system-ui, sans-serif;
-  --sf-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.38  0 0 0 0 0.3  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --sf-counter: #eceae5;
+  --sf-counter-deep: #e2dfd8;
+  --sf-paper: #fbfaf7;
+  --sf-paper-shade: #f4f2ed;
+  --sf-ink: #1d1c1a;
+  --sf-muted: #5b5852;
+  --sf-hairline: rgba(29, 28, 26, 0.12);
+  --sf-font-display: 'SwatchFanInterTight', 'Helvetica Neue', system-ui, sans-serif;
+  --sf-font-ui: 'SwatchFanInterTight', 'Helvetica Neue', system-ui, sans-serif;
   --tint: #7d8b6f;
   --cw: 167px;
   --ch: 326px;
@@ -756,7 +678,7 @@ export default function SwatchFanCard({
   color: var(--sf-ink);
   color-scheme: light;
   font-family: var(--sf-font-ui);
-  box-shadow: 0 44px 70px -40px rgba(60, 46, 26, 0.65);
+  box-shadow: 0 1px 2px rgba(29, 28, 26, 0.08), 0 28px 48px -28px rgba(29, 28, 26, 0.38);
 }
 
 .root ::selection {
@@ -764,33 +686,15 @@ export default function SwatchFanCard({
   color: var(--sf-ink);
 }
 
-.sheet,
-.stockUnder,
-.stockUnderDeep {
+.sheet {
   position: absolute;
   inset: 0;
+  z-index: -2;
   border-radius: inherit;
   pointer-events: none;
-}
-
-/* The counter top the frame and chips lie on. */
-.sheet {
-  z-index: -2;
   background:
-    radial-gradient(80% 45% at 30% 0%, rgba(255, 255, 255, 0.6), transparent 70%),
+    radial-gradient(80% 45% at 30% 0%, rgba(255, 255, 255, 0.7), transparent 70%),
     linear-gradient(180deg, var(--sf-counter) 0%, var(--sf-counter-deep) 100%);
-}
-
-.stockUnder {
-  z-index: -3;
-  background: #d3c8ad;
-  transform: translateY(5px);
-}
-
-.stockUnderDeep {
-  z-index: -4;
-  background: #b4a684;
-  transform: translateY(10px);
 }
 
 /* ---------- the table: framed photo, then the fan on top of it ---------- */
@@ -819,7 +723,7 @@ export default function SwatchFanCard({
   animation: breathe 6s ease-in-out infinite alternate;
 }
 
-/* The photo is a framed print taped to the counter, not a top image block. */
+/* The photo sits on a clean mat. */
 .frame {
   position: absolute;
   z-index: 1;
@@ -829,14 +733,12 @@ export default function SwatchFanCard({
   block-size: var(--fh);
   box-sizing: border-box;
   padding: var(--mat);
-  border-radius: 5px;
-  background: linear-gradient(160deg, #fdfaf1 0%, #f1e9d6 100%);
+  border-radius: 6px;
+  background: linear-gradient(160deg, #ffffff 0%, #f6f4ef 100%);
   box-shadow:
-    0 0 0 1px rgba(70, 56, 32, 0.14),
-    1px 2px 0 #e0d6bd,
-    0 3px 4px rgba(46, 36, 18, 0.18),
-    0 20px 30px -12px rgba(46, 36, 18, 0.46),
-    0 46px 56px -32px rgba(46, 36, 18, 0.42);
+    0 0 0 1px rgba(29, 28, 26, 0.08),
+    0 2px 4px rgba(29, 28, 26, 0.08),
+    0 22px 36px -18px rgba(29, 28, 26, 0.36);
   transform-origin: 50% 80%;
 }
 
@@ -856,35 +758,9 @@ export default function SwatchFanCard({
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  box-shadow:
-    inset 0 0 0 1px rgba(33, 29, 21, 0.18),
-    inset 0 3px 9px -2px rgba(33, 29, 21, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(29, 28, 26, 0.12);
   pointer-events: none;
   z-index: 3;
-}
-
-.tape {
-  position: absolute;
-  z-index: 2;
-  inline-size: 68px;
-  block-size: 24px;
-  background:
-    linear-gradient(180deg, rgba(246, 237, 200, 0.86), rgba(228, 214, 168, 0.8)),
-    var(--sf-noise);
-  clip-path: polygon(0 0, 100% 0, 97% 25%, 100% 50%, 97% 75%, 100% 100%, 0 100%, 3% 75%, 0 50%, 3% 25%);
-  opacity: 0.94;
-}
-
-.tapeL {
-  inset-block-start: -8px;
-  inset-inline-start: -20px;
-  transform: rotate(-38deg);
-}
-
-.tapeR {
-  inset-block-start: -8px;
-  inset-inline-end: -20px;
-  transform: rotate(37deg);
 }
 
 .photo {
@@ -893,7 +769,7 @@ export default function SwatchFanCard({
   block-size: 100%;
   object-fit: cover;
   user-select: none;
-  filter: saturate(1.5) contrast(1.16) brightness(0.93);
+  filter: saturate(1.3) contrast(1.08) brightness(0.96);
 }
 
 .tintDepth,
@@ -924,7 +800,7 @@ export default function SwatchFanCard({
 
 .vignette {
   background:
-    radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(30, 24, 14, 0.28) 100%),
+    radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(30, 24, 14, 0.18) 100%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, transparent 28%);
 }
 
@@ -932,25 +808,13 @@ export default function SwatchFanCard({
   transition: none;
 }
 
-/* ---------- no-image fallback: a painted wall with dabs and a roller stroke ---------- */
+/* ---------- no-image fallback: a calm wall with one soft swatch and a few dots ---------- */
 
 .wall {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background:
-    radial-gradient(70% 60% at 20% 10%, rgba(255, 255, 255, 0.5), transparent 70%),
-    linear-gradient(165deg, #eee7d6 0%, #ddd2ba 100%);
-}
-
-.wall::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: var(--sf-noise);
-  opacity: 0.2;
-  mix-blend-mode: multiply;
-  pointer-events: none;
+  background: linear-gradient(165deg, #f1efea 0%, #e3e0d8 100%);
 }
 
 .swath {
@@ -959,34 +823,11 @@ export default function SwatchFanCard({
   inset-block-start: 12%;
   inline-size: 62%;
   block-size: 46%;
-  border-radius: 10px 34px 8px 30px / 22px 12px 26px 10px;
+  border-radius: 6px;
   background-color: var(--tint);
-  background-image:
-    repeating-linear-gradient(1deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 7px),
-    repeating-linear-gradient(-1deg, rgba(0, 0, 0, 0.05) 0 2px, transparent 2px 11px),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 3px, transparent 3px 17px),
-    radial-gradient(90% 120% at 18% 0%, rgba(255, 255, 255, 0.22), transparent 60%),
-    linear-gradient(180deg, transparent 60%, rgba(0, 0, 0, 0.14));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    0 10px 14px -10px rgba(40, 30, 14, 0.55);
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 2.5%, #000 95%, rgba(0, 0, 0, 0.35) 100%);
-  mask-image: linear-gradient(90deg, transparent 0, #000 2.5%, #000 95%, rgba(0, 0, 0, 0.35) 100%);
-  transform: rotate(-3deg);
+  background-image: linear-gradient(155deg, rgba(255, 255, 255, 0.16), transparent 55%);
+  box-shadow: 0 1px 2px rgba(29, 28, 26, 0.12), 0 14px 22px -14px rgba(29, 28, 26, 0.4);
   transition: background-color 460ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* The lap line where the roller stroke overlaps itself. */
-.swathLap {
-  position: absolute;
-  inset-inline-start: 14%;
-  inset-block-start: 24%;
-  inline-size: 48%;
-  block-size: 3px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.16);
-  filter: blur(1px);
-  transform: rotate(-3deg);
 }
 
 .dab {
@@ -994,21 +835,16 @@ export default function SwatchFanCard({
   inset-inline-start: var(--dx);
   inset-block-start: var(--dy);
   inline-size: var(--ds);
-  aspect-ratio: 1.1;
-  border-radius: 58% 42% 47% 53% / 46% 55% 45% 54%;
-  background:
-    radial-gradient(58% 52% at 34% 28%, color-mix(in srgb, var(--pig) 62%, #fff) 0%, transparent 70%),
-    radial-gradient(90% 90% at 50% 50%, var(--pig) 55%, color-mix(in srgb, var(--pig) 78%, #000) 100%);
-  box-shadow:
-    inset 3px 3px 6px rgba(255, 255, 255, 0.28),
-    inset -4px -5px 8px rgba(0, 0, 0, 0.2),
-    0 8px 12px -5px rgba(40, 30, 14, 0.5);
-  transform: rotate(var(--dr)) scale(0.94);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--pig);
+  box-shadow: 0 0 0 2px #fff, 0 6px 10px -4px rgba(29, 28, 26, 0.4);
+  transform: scale(0.94);
   transition: transform 520ms var(--spring);
 }
 
 .dabOn {
-  transform: rotate(var(--dr)) scale(1.2);
+  transform: scale(1.2);
 }
 
 /* ---------- the fan: the hero ---------- */
@@ -1030,7 +866,7 @@ export default function SwatchFanCard({
   block-size: var(--ch);
   padding: 0;
   border: 0;
-  border-radius: 8px;
+  border-radius: 6px;
   background: none;
   font: inherit;
   color: inherit;
@@ -1048,19 +884,16 @@ export default function SwatchFanCard({
   outline-offset: 3px;
 }
 
-/* Paper stock with real edge thickness; the extrusion and shadow follow the light, not the chip's rotation. */
+/* Paper-card chip: one soft shadow system cast from the upper left. */
 .card {
   position: absolute;
   inset: 0;
-  border-radius: 7px;
+  border-radius: 6px;
   background: linear-gradient(180deg, var(--sf-paper) 0%, var(--sf-paper-shade) 100%);
   box-shadow:
-    calc(var(--ex) * 1px) calc(var(--ey) * 1px) 0 var(--sf-edge-1),
-    calc(var(--ex) * 2px) calc(var(--ey) * 2px) 0 var(--sf-edge-2),
-    calc(var(--ex) * 3px) calc(var(--ey) * 3px) 0 var(--sf-edge-3),
-    0 0 0 1px rgba(70, 56, 32, 0.18),
-    calc(var(--ex) * var(--k) * 6px) calc(var(--ey) * var(--k) * 6px) calc(var(--k) * 9px) -3px rgba(46, 36, 18, 0.5),
-    calc(var(--ex) * var(--k) * 16px) calc(var(--ey) * var(--k) * 16px) calc(var(--k) * 24px) -9px rgba(46, 36, 18, 0.48);
+    0 0 0 1px rgba(29, 28, 26, 0.1),
+    calc(var(--ex) * var(--k) * 1px) calc(var(--ey) * var(--k) * 2px) calc(var(--k) * 3px) rgba(29, 28, 26, 0.14),
+    calc(var(--ex) * var(--k) * 8px) calc(var(--ey) * var(--k) * 10px) calc(var(--k) * 18px) -6px rgba(29, 28, 26, 0.32);
 }
 
 /* Chips further from the picked one sit a little deeper in the pile. */
@@ -1069,35 +902,22 @@ export default function SwatchFanCard({
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: rgba(36, 28, 14, var(--shade));
+  background: rgba(29, 28, 26, var(--shade));
   pointer-events: none;
 }
 
-/* Matte paint face: pigment, paper tooth, a little roller sheen, nothing glossy. */
+/* Flat pigment face with a quiet top light. */
 .face {
   position: absolute;
   inset-block-start: var(--mt);
   inset-block-end: 0;
   inset-inline: var(--ms);
   overflow: hidden;
-  border-radius: 3px 3px 0 0;
+  border-radius: 2px 2px 0 0;
   background:
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 2px, transparent 2px 9px, rgba(0, 0, 0, 0.03) 9px 11px, transparent 11px 19px),
-    linear-gradient(155deg, rgba(255, 255, 255, 0.13) 0%, transparent 40%, rgba(0, 0, 0, 0.13) 100%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.12) 0%, transparent 45%, rgba(0, 0, 0, 0.08) 100%),
     var(--pig);
-  box-shadow:
-    inset 0 0 0 1px rgba(0, 0, 0, 0.1),
-    inset 0 0 0 4px color-mix(in srgb, var(--pig) 88%, #fff);
-}
-
-.face::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: var(--sf-noise);
-  opacity: 0.34;
-  mix-blend-mode: overlay;
-  pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 
 /* The picked chip carries its name as display type. */
@@ -1112,9 +932,9 @@ export default function SwatchFanCard({
   overflow: hidden;
   font-family: var(--sf-font-display);
   font-size: var(--big);
-  font-weight: 800;
-  line-height: 0.96;
-  letter-spacing: -0.04em;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.035em;
   color: var(--on);
   overflow-wrap: anywhere;
   hyphens: auto;
@@ -1154,64 +974,16 @@ export default function SwatchFanCard({
   color: var(--on);
 }
 
-/* The punched hole with a flat metal eyelet the twine runs through. */
+/* Fine hairline pivot ring. */
 .eyelet {
   position: absolute;
-  inset-block-start: calc(var(--hy) - 6.5px);
-  inset-inline-start: calc(50% + var(--hx) - 6.5px);
-  inline-size: 13px;
+  inset-block-start: calc(var(--hy) - 4px);
+  inset-inline-start: calc(50% + var(--hx) - 4px);
+  inline-size: 8px;
   aspect-ratio: 1;
   border-radius: 50%;
-  background:
-    radial-gradient(circle at 50% 50%, #2b251b 0 31%, transparent 34%),
-    linear-gradient(145deg, #d8cdab, #a89c7b);
-  box-shadow:
-    inset 0 0 0 1px rgba(60, 48, 26, 0.3),
-    0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-/* ---------- the twine linking every chip ---------- */
-
-.twine {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline-start: 0;
-  z-index: 300;
-  overflow: visible;
-  pointer-events: none;
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.twineShadow {
-  stroke: rgba(30, 22, 10, 0.4);
-  stroke-width: 4.6;
-  transform: translate(2px, 6px);
-  filter: blur(2.6px);
-}
-
-.twineBody {
-  stroke: var(--sf-twine);
-  stroke-width: 3.8;
-}
-
-/* Cord twist: short bright dashes across the strand. */
-.twineSpin {
-  stroke: rgba(255, 244, 214, 0.36);
-  stroke-width: 3.8;
-  stroke-dasharray: 1.6 3.4;
-  stroke-linecap: butt;
-}
-
-.knot {
-  fill: var(--sf-twine);
-  stroke: none;
-}
-
-.knotHi {
-  fill: rgba(255, 244, 214, 0.5);
-  stroke: none;
+  background: radial-gradient(circle, rgba(29, 28, 26, 0.55) 0 1.5px, transparent 2px);
+  box-shadow: 0 0 0 0.5px rgba(29, 28, 26, 0.45), inset 0 0 0 0.5px rgba(255, 255, 255, 0.7);
 }
 
 /* ---------- the counter lip: label and price ---------- */
@@ -1224,10 +996,10 @@ export default function SwatchFanCard({
   padding: clamp(22px, 4.4cqi, 30px) clamp(20px, 4.8cqi, 32px) clamp(24px, 4.6cqi, 32px);
   border-end-start-radius: var(--rad);
   border-end-end-radius: var(--rad);
-  background: linear-gradient(180deg, #fbf8ee 0%, var(--sf-paper) 100%);
+  background: linear-gradient(180deg, #ffffff 0%, var(--sf-paper) 100%);
   box-shadow:
     0 -1px 0 rgba(255, 255, 255, 0.9),
-    0 -16px 24px -12px rgba(46, 36, 18, 0.4);
+    0 -10px 20px -12px rgba(29, 28, 26, 0.3);
 }
 
 .body::before {
@@ -1236,7 +1008,7 @@ export default function SwatchFanCard({
   inset-inline: 0;
   inset-block-start: 0;
   block-size: 1px;
-  background: rgba(70, 56, 32, 0.16);
+  background: rgba(29, 28, 26, 0.1);
   pointer-events: none;
 }
 
@@ -1268,9 +1040,9 @@ export default function SwatchFanCard({
   margin: 0;
   font-family: var(--sf-font-display);
   font-size: clamp(26px, 5.8cqi, 40px);
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.035em;
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
   overflow-wrap: anywhere;
   text-wrap: balance;
 }
@@ -1291,7 +1063,7 @@ export default function SwatchFanCard({
   margin: 0;
   font-family: var(--sf-font-display);
   font-size: clamp(22px, 4.4cqi, 28px);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -1310,18 +1082,16 @@ export default function SwatchFanCard({
 .dot {
   flex: none;
   inline-size: 18px;
-  aspect-ratio: 1.1;
-  border-radius: 58% 42% 47% 53% / 46% 55% 45% 54%;
+  aspect-ratio: 1;
+  border-radius: 50%;
   background: var(--tint);
-  box-shadow:
-    inset 0 0 0 1px rgba(0, 0, 0, 0.14),
-    0 2px 4px -1px rgba(40, 30, 14, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.14), 0 0 0 2px #fff, 0 0 0 3px rgba(29, 28, 26, 0.12);
   transition: background-color 460ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .colorName {
   font-size: 17px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.01em;
   overflow-wrap: anywhere;
   animation: rise 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -1337,17 +1107,6 @@ export default function SwatchFanCard({
   font-weight: 600;
   color: var(--sf-muted);
   font-variant-numeric: tabular-nums;
-}
-
-.grain {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background-image: var(--sf-noise);
-  opacity: 0.08;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-  z-index: 8;
 }
 
 .cardEdge {

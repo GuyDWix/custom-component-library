@@ -65,8 +65,8 @@ function luminance([r, g, b]: [number, number, number]) {
   return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
 }
 
-const PAPER_L = luminance([247, 242, 229]);
-const INK_L = luminance([33, 29, 21]);
+const PAPER_L = luminance([251, 250, 247]);
+const INK_L = luminance([29, 28, 26]);
 
 /* true = print in paper, false = print in ink */
 function printLight(color: string): boolean {
@@ -420,53 +420,6 @@ export default function SwatchFanCard({
     };
   });
 
-  /* The twine: through every eyelet, slack while the fan is still folded, tight once open. */
-  const slack = 1 + 1.4 * (1 - clamp(avgOpen, 0, 1));
-  let twine = '';
-  let tails = '';
-  let knots: Array<{ X: number; Y: number }> = [];
-  if (items.length) {
-    twine = `M${items[0].X.toFixed(1)} ${items[0].Y.toFixed(1)}`;
-    for (let i = 1; i < items.length; i++) {
-      const a = items[i - 1];
-      const b = items[i];
-      const dist = Math.hypot(b.X - a.X, b.Y - a.Y);
-      const sag = Math.min(46, dist * 0.085 * slack + 2.5);
-      twine += ` Q${((a.X + b.X) / 2).toFixed(1)} ${((a.Y + b.Y) / 2 + sag).toFixed(1)} ${b.X.toFixed(1)} ${b.Y.toFixed(1)}`;
-    }
-    const ends: Array<[number, number]> = [
-      [0, items.length > 1 ? 1 : 0],
-      [items.length - 1, items.length > 1 ? items.length - 2 : items.length - 1],
-    ];
-    ends.forEach(([ei, ni], k) => {
-      const e = items[ei];
-      const nb = items[ni];
-      let ux = e.X - nb.X;
-      let uy = e.Y - nb.Y;
-      const len = Math.hypot(ux, uy);
-      if (items.length === 1 || len < 1) {
-        ux = k === 0 ? -0.6 : 0.6;
-        uy = -0.8;
-      } else {
-        ux /= len;
-        uy /= len;
-      }
-      uy -= 0.35;
-      const ul = Math.hypot(ux, uy) || 1;
-      ux /= ul;
-      uy /= ul;
-      [-0.5, 0.42].forEach((rot, j) => {
-        const cr = Math.cos(rot);
-        const sr = Math.sin(rot);
-        const dx = ux * cr - uy * sr;
-        const dy = ux * sr + uy * cr;
-        const L = j === 0 ? 20 : 15;
-        tails += `M${e.X.toFixed(1)} ${e.Y.toFixed(1)} Q${(e.X + dx * L * 0.55 + dy * 4).toFixed(1)} ${(e.Y + dy * L * 0.55 - dx * 4).toFixed(1)} ${(e.X + dx * L).toFixed(1)} ${(e.Y + dy * L).toFixed(1)}`;
-      });
-    });
-    knots = [items[0], items[items.length - 1]];
-  }
-
   const onGroupKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (!n) return;
     let next: number | null = null;
@@ -523,22 +476,17 @@ export default function SwatchFanCard({
       aria-label={productName ? undefined : 'Product'}
     >
       <span className={styles.sheet} aria-hidden="true" />
-      <span className={styles.stockUnder} aria-hidden="true" />
-      <span className={styles.stockUnderDeep} aria-hidden="true" />
 
       <div className={styles.table}>
         <span className={[styles.pool, reduced && styles.tintStatic].filter(Boolean).join(' ')} aria-hidden="true" />
 
         <div className={styles.frame} style={frameStyle}>
-          <span className={[styles.tape, styles.tapeL].join(' ')} aria-hidden="true" />
-          <span className={[styles.tape, styles.tapeR].join(' ')} aria-hidden="true" />
           <div className={styles.stage}>
             {image ? (
               <img className={styles.photo} src={image} alt={imageAlt} draggable={false} decoding="async" />
             ) : (
               <div className={styles.wall} aria-hidden="true">
                 <span className={[styles.swath, reduced && styles.tintStatic].filter(Boolean).join(' ')} />
-                <span className={styles.swathLap} />
                 {swatches.slice(0, DABS.length).map((sw, i) => {
                   const d = DABS[i];
                   return (
@@ -592,7 +540,7 @@ export default function SwatchFanCard({
               const side = it.d < 0 ? styles.sideL : styles.sideR;
               const style = {
                 '--pig': it.sw.color,
-                '--on': light ? '#f7f2e5' : '#211d15',
+                '--on': light ? '#fbfaf7' : '#1d1c1a',
                 '--ex': it.lxv.toFixed(3),
                 '--ey': it.lyv.toFixed(3),
                 '--k': it.k.toFixed(2),
@@ -637,26 +585,6 @@ export default function SwatchFanCard({
                 </button>
               );
             })}
-
-            <svg
-              className={styles.twine}
-              width={width}
-              height={geo.t}
-              viewBox={`0 0 ${width} ${geo.t}`}
-              aria-hidden="true"
-              focusable="false"
-            >
-              <path className={styles.twineShadow} d={`${twine} ${tails}`} />
-              <path className={styles.twineBody} d={twine} />
-              <path className={styles.twineSpin} d={twine} />
-              <path className={styles.twineBody} d={tails} />
-              {knots.map((k, i) => (
-                <g key={i} transform={`translate(${k.X.toFixed(1)} ${k.Y.toFixed(1)})`}>
-                  <circle className={styles.knot} r="5.4" />
-                  <circle className={styles.knotHi} r="1.7" cx="-1.6" cy="-1.7" />
-                </g>
-              ))}
-            </svg>
           </div>
         )}
       </div>
@@ -689,7 +617,6 @@ export default function SwatchFanCard({
         )}
       </div>
 
-      <span className={styles.grain} aria-hidden="true" />
       <span className={styles.cardEdge} aria-hidden="true" />
     </article>
   );
