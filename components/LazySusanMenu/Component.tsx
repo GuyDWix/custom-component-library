@@ -52,9 +52,9 @@ const FRICTION = 1.1;
 const SNAP_VEL = 100;
 const MAX_VEL = 960;
 const TAP_DEG = 2.5;
-const LIGHT_X = -0.64; /* candle position from the table centre, in table widths (x right, y down) */
+const LIGHT_X = -0.64; /* light position from the table centre, in table widths (x right, y down) */
 const LIGHT_Y = -0.42;
-const LIGHT_LOBE = ((Math.atan2(LIGHT_X, -LIGHT_Y) * 180) / Math.PI + 360) % 360; /* bearing of the candle, deg clockwise from 12 o'clock */
+const LIGHT_LOBE = ((Math.atan2(LIGHT_X, -LIGHT_Y) * 180) / Math.PI + 360) % 360; /* bearing of the light, deg clockwise from 12 o'clock */
 const FRONT_DIR = 180; /* the front of the table is 6 o'clock */
 const ORBIT = 29.5; /* plate orbit as % of table width */
 
@@ -68,7 +68,7 @@ const dAng = (from: number, to: number) => {
 };
 
 /* Lighting for a plate sitting at bearing `w` (deg from 12 o'clock): irradiance falls off with
-   distance to the candle, and the cast shadow points straight away from it. */
+   distance to the light, and the cast shadow points straight away from it. */
 const plateLight = (w: number) => {
   const rad = (w * Math.PI) / 180;
   const dx = LIGHT_X - (ORBIT / 100) * Math.sin(rad);
@@ -124,7 +124,7 @@ export default function LazySusanMenu({
   items = defaultItems,
   plateSize = 26,
   spinSpeed = 1,
-  tableTone = '#583821',
+  tableTone = '#22272b',
   className,
 }: LazySusanMenuProps) {
   const count = items.length;
@@ -370,7 +370,6 @@ export default function LazySusanMenu({
     '--ls-lx': String(LIGHT_X),
     '--ls-ly': String(LIGHT_Y),
     '--ls-lobe': `${LIGHT_LOBE.toFixed(1)}deg`,
-    '--ls-play': inView ? 'running' : 'paused',
   } as CSSProperties;
 
   const slotVars = useMemo(
@@ -393,20 +392,6 @@ export default function LazySusanMenu({
       className={[styles.root, className].filter(Boolean).join(' ')}
       style={rootStyle}
     >
-      <span className={styles.candleGlow} aria-hidden="true" />
-
-      <span className={styles.candle} aria-hidden="true">
-        <span className={styles.candleHolder} />
-        <span className={styles.candleWax} />
-        <span className={styles.candleFlame} />
-      </span>
-
-      <span className={styles.tumbler} aria-hidden="true">
-        <span className={styles.tumblerShadow} />
-        <span className={styles.tumblerCaustic} />
-        <span className={styles.tumblerGlass} />
-      </span>
-
       <div
         className={styles.tableScene}
         role="group"
@@ -422,11 +407,8 @@ export default function LazySusanMenu({
         <span className={styles.tableShadow} aria-hidden="true" />
 
         <div ref={tableRef} className={styles.table}>
-          <span className={styles.wood} aria-hidden="true" />
-          <span className={styles.turned} aria-hidden="true" />
-          <span className={styles.lobes} aria-hidden="true">
-            <span className={styles.crest} />
-          </span>
+          <span className={styles.stone} aria-hidden="true" />
+          <span className={styles.ticks} aria-hidden="true" />
           <span className={styles.sheen} aria-hidden="true" />
 
           {items.map((it, i) => {
@@ -463,22 +445,17 @@ export default function LazySusanMenu({
                         </span>
                       )
                     )}
-                    <span className={styles.platePool} aria-hidden="true" />
                   </span>
-                  <span className={styles.plateGloss} aria-hidden="true" />
                   <span className={styles.plateShade} aria-hidden="true" />
                 </button>
               </div>
             );
           })}
 
-          <span className={styles.rimShade} aria-hidden="true" />
+          <span className={styles.falloff} aria-hidden="true" />
           <span className={styles.rim} aria-hidden="true" />
-          <span className={styles.spindle} aria-hidden="true" />
-          <span className={styles.knurl} aria-hidden="true" />
-          <span className={styles.spindleSpec} aria-hidden="true" />
-          <span className={styles.vignette} aria-hidden="true" />
-          <span className={styles.pool} aria-hidden="true" />
+          <span className={styles.hub} aria-hidden="true" />
+          <span className={styles.hubRing} aria-hidden="true" />
         </div>
       </div>
 

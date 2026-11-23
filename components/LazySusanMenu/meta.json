@@ -18,7 +18,7 @@
     "events"
   ],
   "mobile": "smaller table, swipe to spin, label under the plate",
-  "motion": "inertial spin with eased snap to nearest item; wood grain turns under a fixed candle so ring crests flash as they cross the light lobe; plates counter-rotate to stay upright while their shadows, glaze highlights and warm pool follow the candle; candle flame and pool flicker (paused off-screen); reduced-motion: step change with no spin or flicker",
+  "motion": "inertial spin with eased snap to nearest item; the stone's fine grain and hairline graduation ring turn under a fixed soft light; plates counter-rotate to stay upright while their shadows follow the light; reduced-motion: step change with no spin",
   "scores": {
     "concept": 3,
     "usefulness": 3,
@@ -32,5 +32,5 @@
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Candlelit banquet table photographed from above: turned walnut turntable with eccentric growth rings, anisotropic grain sheen and a machined brass rim and spindle, ceramic plates with rim highlights and shadows cast away from a single candle, on dark linen; ivory place card across the table edge in DM Serif Display"
+  "art_direction": "Top-down dark stone turntable with a thin edge highlight, hairline graduation ring and quiet matte hub on a deep neutral ground; clean ivory plates with soft shadows cast from one light; frosted dark caption card in DM Serif Display with champagne price"
 }
