@@ -68,7 +68,10 @@ const shuffleKey = (name: string) => [...name].reduce((h, c) => Math.imul(h ^ c.
 // Pinned showpieces land at fixed slots (0-based) inside the top 5; everything else keeps the stable shuffle
 const PINNED = ['SundialShadowHeadline', 'FoilTiltCard'];
 const PIN_SLOTS = [1, 3];
-const shuffled = [...new Set([...previewPaths.map(folderOf), ...Object.keys(metaByName)])].sort((a, b) => shuffleKey(a) - shuffleKey(b));
+const isPublic = (n: string) => parseStatus(str(metaByName[n]?.status)) === 'built' || !metaByName[n];
+const shuffled = [...new Set([...previewPaths.map(folderOf), ...Object.keys(metaByName)])]
+  .filter((n) => SHOW_REVIEW || isPublic(n))
+  .sort((a, b) => shuffleKey(a) - shuffleKey(b));
 const names = shuffled.filter((n) => !PINNED.includes(n));
 PINNED.forEach((n, i) => shuffled.includes(n) && names.splice(PIN_SLOTS[i], 0, n));
 // Pushed down the page on purpose
