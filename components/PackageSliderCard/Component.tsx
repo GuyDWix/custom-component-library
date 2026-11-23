@@ -14,6 +14,7 @@ export interface PackageSliderCardProps {
   accentColor?: string;
   currencySymbol?: string;
   priceNote?: string;
+  digitSize?: 'S' | 'M' | 'L';
   className?: string;
 }
 
@@ -96,6 +97,7 @@ export default function PackageSliderCard({
   accentColor = '#e2411c',
   currencySymbol = '$',
   priceNote = 'per garment',
+  digitSize = 'L',
   className,
 }: PackageSliderCardProps) {
   const count = stops.length;
@@ -358,12 +360,13 @@ export default function PackageSliderCard({
         <article id={`${uid}-card`} className={styles.card}>
           <p
             className={styles.priceRow}
-            style={{ '--len': fitLength, '--cur': currencySymbol.length } as CSSProperties}
+            data-size={digitSize}
+            style={{ '--len': fitLength, '--cur': currencySymbol.trim().length } as CSSProperties}
           >
-            <span className={styles.well}>
+            <span className={styles.lockup}>
               {target !== null && (
                 <span className={styles.currency} aria-hidden="true">
-                  {currencySymbol}
+                  {currencySymbol.trim()}
                 </span>
               )}
               {target === null ? (
@@ -377,7 +380,11 @@ export default function PackageSliderCard({
               )}
             </span>
             {target !== null && <span className={styles.srOnly}>{`${currencySymbol}${priceText}`}</span>}
-            {target !== null && priceNote && <span className={styles.priceNote}>{priceNote}</span>}
+            {target !== null && priceNote && (
+              <span className={styles.noteWrap}>
+                <span className={styles.priceNote}>{priceNote}</span>
+              </span>
+            )}
           </p>
 
           <div className={styles.cols}>

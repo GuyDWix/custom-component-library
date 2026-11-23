@@ -10,7 +10,8 @@
     "Packages (name, price, short tagline, included items one per line)",
     "Accent color",
     "Currency symbol",
-    "Price note (e.g. per garment)"
+    "Price note (e.g. per garment)",
+    "Digit size (S/M/L)"
   ],
   "site_types": [
     "services",
@@ -33,5 +34,5 @@
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Swiss paper #f2f1ed and ink #111110 with vermilion #e2411c accents, Inter Tight only. One big move: the price is a real 3D odometer, ten-face CSS drums in a recessed dark soft-UI well; each digit drum rolls to the new value, units fastest. Hairline slider with square stops and ruled rows around it."
+  "art_direction": "Swiss paper #f2f1ed and ink #111110 with vermilion #e2411c accents, Inter Tight only. One big move: ticker lockup, ten-face 3D drums set straight on the paper (no well), 0.52em pitch, raised superscript currency flush to the first drum, price note on the digit baseline; depth shown by top/bottom edge fade only. Hairline slider with square stops and ruled rows."
 }
