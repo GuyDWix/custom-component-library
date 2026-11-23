@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent } from 'react';
 import styles from './Component.module.css';
 
@@ -219,7 +219,6 @@ export default function BentoShuffleGallery({
   const [assign, setAssign] = useState<number[]>(() => openingAssign(photos.length, photos.length > 1 && shuffleSeconds > 0));
   const [reduced, setReduced] = useState(false);
   const [playOn, setPlayOn] = useState(true);
-  const [panelOpen, setPanelOpen] = useState(false);
   const [focusWithin, setFocusWithin] = useState(false);
   const [inView, setInView] = useState(true);
 
@@ -239,7 +238,6 @@ export default function BentoShuffleGallery({
   const hold = useRef(false);
   const raf = useRef(0);
   const elapsed = useRef(0);
-  const panelId = useId();
 
   reducedRef.current = reduced;
   autoRef.current = autoOn;
@@ -516,7 +514,6 @@ export default function BentoShuffleGallery({
       });
       assignRef.current = next;
       setAssign(next);
-      setPanelOpen(false);
       elapsed.current = 0;
       if (reducedRef.current) {
         settle();
@@ -602,7 +599,7 @@ export default function BentoShuffleGallery({
 
   useEffect(() => () => cancelAnimationFrame(raf.current), []);
 
-  const playing = autoOn && playOn && !reduced && inView && !focusWithin && !panelOpen;
+  const playing = autoOn && playOn && !reduced && inView && !focusWithin;
 
   useEffect(() => {
     if (!playing) return;
@@ -627,20 +624,11 @@ export default function BentoShuffleGallery({
   const hasDetail = (p?: BentoPhoto) => !!p && (!!p.description || !!p.meta?.length);
 
   const onTileActivate = (photo: number) => {
-    if (photo === assignRef.current[0]) {
-      if (hasDetail(photos[photo])) setPanelOpen((v) => !v);
-      return;
-    }
     promote(photo);
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const n = count;
-    if (e.key === 'Escape' && panelOpen) {
-      e.stopPropagation();
-      setPanelOpen(false);
-      return;
-    }
     if (n < 2) return;
     const feature = assignRef.current[0];
     const moves: Record<string, number> = {
@@ -685,7 +673,7 @@ export default function BentoShuffleGallery({
               ref={stageRef}
               className={styles.stage}
               tabIndex={0}
-              aria-description="Use the arrow keys to choose the featured photo; Enter on a photo makes it the feature; Enter on the feature shows or hides its details; Escape closes the details."
+              aria-description="Use the arrow keys to choose the featured photo; Enter on a photo makes it the feature."
               onKeyDown={onKeyDown}
             >
               {photos.map((photo, p) => {
@@ -703,9 +691,7 @@ export default function BentoShuffleGallery({
                     }}
                     className={styles.tile}
                     aria-label={`${photo.caption || photo.alt || 'Photo'}${isFeature ? ' — featured' : ''}`}
-                    aria-expanded={detail ? panelOpen : undefined}
-                    aria-controls={detail && panelOpen ? panelId : undefined}
-                    data-open={detail && panelOpen ? '1' : undefined}
+                    data-detail={detail ? '1' : undefined}
                     onClick={() => onTileActivate(p)}
                   >
                     {photo.image ? (
@@ -719,19 +705,13 @@ export default function BentoShuffleGallery({
                       <span key={isFeature ? 'feature' : 'quiet'} className={isFeature ? styles.chipFeature : styles.chipQuiet}>
                         {isFeature && <i className={styles.chipDot} aria-hidden="true" />}
                         {label}
-                        {detail && <i className={styles.chipPlus} aria-hidden="true" />}
                       </span>
                     )}
                   </button>
                 );
               })}
-              {panelOpen && hasDetail(featured) && (
-                <div id={panelId} className={styles.panel} role="region" aria-label={`${featuredName} details`}>
-                  <button type="button" className={styles.panelClose} aria-label="Close details" onClick={() => setPanelOpen(false)}>
-                    <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
-                      <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" fill="none" />
-                    </svg>
-                  </button>
+              {hasDetail(featured) && (
+                <div key={assign[0]} className={styles.panel}>
                   <h3 className={styles.panelTitle}>{featuredName}</h3>
                   {featured.description && <p className={styles.panelText}>{featured.description}</p>}
                   {!!featured.meta?.length && (

@@ -4,8 +4,8 @@
   "display_name": "Bento Shuffle Gallery",
   "category": "media",
   "tier": "everyday",
-  "job": "Show photos in an uneven tile layout where tiles trade sizes in turn so each photo gets a moment as the feature",
-  "visitor_action": "tap a tile to make it the feature; tap the feature to open or close its glass detail panel; otherwise the gallery rotates the feature by itself; arrow keys choose the feature, Escape closes the panel",
+  "job": "Show photos in an uneven tile layout where tiles trade places on click or on a timer, each photo getting its moment as the big feature with its details shown",
+  "visitor_action": "tap a tile to make it the feature; the feature always shows its glass detail panel; otherwise the gallery rotates the feature by itself; arrow keys choose the feature",
   "owner_settings": [
     "Photos (image, caption, description, meta)",
     "Shuffle speed",
@@ -19,8 +19,8 @@
     "store",
     "events"
   ],
-  "mobile": "2-column grid, tap enlarges one tile, tap the feature for details",
-  "motion": "feature trade: outgoing tile lifts, winds up and sweeps on a bowed spring arc (tilt, deeper shadow) into the slot of the photo that grows into the 2x2 feature from the opposite bow; neighbours ripple away in its wake (reduced-motion: no auto shuffle, instant swap on tap)",
+  "mobile": "2-column grid, tap enlarges one tile, feature shows details",
+  "motion": "feature trade: outgoing tile lifts, winds up and sweeps on a bowed spring arc (tilt, deeper shadow) into the slot of the photo that grows into the 2x2 feature from the opposite bow; neighbours ripple away in its wake ; the detail panel fades in after each trade; hover only fades the caption and eases the photo (no layout change) (reduced-motion: no auto shuffle, instant swap on tap)",
   "scores": {
     "concept": 2,
     "usefulness": 3,
@@ -34,5 +34,5 @@
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Soft-UI bento: photo tiles raised from a cool grey-blue surface #e7eaf0 by paired light/dark shadows (no tray), dark-tinted glass caption chip (backdrop blur) with a periwinkle dot, ink #232634, accent indigo #4a55c9, Bricolage Grotesque; pause control is a soft-UI button that inverts to inset when paused"
+  "art_direction": "Soft-UI bento: photo tiles raised from a cool grey-blue surface #e7eaf0 by paired light/dark shadows (no tray), dark-tinted glass caption chip (backdrop blur) with a periwinkle dot on quiet tiles (hover/focus only), and a larger dark glass detail panel (title, description, up to 3 meta pills) permanently on the feature tile, ink #232634, accent indigo #4a55c9, Bricolage Grotesque; pause control is a soft-UI button that inverts to inset when paused"
 }
