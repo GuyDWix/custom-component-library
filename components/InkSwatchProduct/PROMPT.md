@@ -23,6 +23,7 @@ export interface InkSwatchProductProps {
 }
 
 import powderShoeImg from './images/powder-shoe.jpg';
+import onyxShoeImg from './images/onyx-shoe.png';
 
 export const defaultVariants: InkSwatchVariant[] = [
   {
@@ -34,6 +35,7 @@ export const defaultVariants: InkSwatchVariant[] = [
   {
     name: 'Onyx',
     color: '#1b1d26',
+    image: onyxShoeImg,
     alt: 'Court Runner sneaker in onyx black',
   },
   {
@@ -1210,6 +1212,11 @@ export default function InkSwatchProduct({
   .haloShape,
   .frame {
     clip-path: var(--edge-wide);
+  }
+
+  .frame {
+    border-start-end-radius: 20px;
+    border-end-end-radius: 20px;
   }
 
   .meta {
