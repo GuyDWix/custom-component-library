@@ -8,6 +8,8 @@ export interface FrameStyleOption {
   finish?: 'wood' | 'matte' | 'metal';
 }
 
+export type FrameOrientation = 'portrait' | 'landscape';
+
 export interface FrameSizeOption {
   label: string;
   widthCm: number;
@@ -19,10 +21,15 @@ export interface FramePreviewPickerProps {
   imageAlt?: string;
   frameStyles?: FrameStyleOption[];
   sizes?: FrameSizeOption[];
+  /** Starting orientation of the print; the visitor can switch it with the Orientation control. */
+  orientation?: FrameOrientation;
   wallColor?: string;
   matColor?: string;
   frameGroupLabel?: string;
   sizeGroupLabel?: string;
+  orientationGroupLabel?: string;
+  portraitLabel?: string;
+  landscapeLabel?: string;
   className?: string;
 }
 
@@ -41,10 +48,11 @@ export const defaultSizes: FrameSizeOption[] = [
 // Scene geometry, all in centimetres. The wall block maps SCENE_CM vertically.
 const SCENE_CM = 225;
 const SOFA_TOP_CM = 75; // sofa backrest height
-const GAP_CM = 16; // air between frame bottom and sofa back
+const GAP_CM = 16; // least air between frame bottom and sofa back
+const MAX_GAP_CM = 28; // most air: a small print hangs lower rather than floating above the sofa
 const TOP_MARGIN_CM = 11;
 const HANG_EYE_CM = 145; // gallery hanging height (centre, from floor)
-const MOULDING_CM = 2.7;
+const MOULDING_CM = 3.4;
 const MAT_CM = 5.4;
 const OUTER_CM = 2 * (MOULDING_CM + MAT_CM);
 const MAX_HALF_CM = (SCENE_CM - TOP_MARGIN_CM - (SOFA_TOP_CM + GAP_CM)) / 2;
@@ -58,10 +66,14 @@ export default function FramePreviewPicker({
   imageAlt = 'Abstract print with broad brush strokes in ochre and sage',
   frameStyles,
   sizes,
+  orientation = 'portrait',
   wallColor = '#c3cbb2',
   matColor = '#f5f2e9',
   frameGroupLabel = 'Frame',
   sizeGroupLabel = 'Size',
+  orientationGroupLabel = 'Orientation',
+  portraitLabel = 'Portrait',
+  landscapeLabel = 'Landscape',
   className,
 }: FramePreviewPickerProps) {
   const styleList = frameStyles?.length ? frameStyles : defaultFrameStyles;
@@ -69,8 +81,10 @@ export default function FramePreviewPicker({
 
   const [styleIdx, setStyleIdx] = useState(0);
   const [sizeIdx, setSizeIdx] = useState(() => Math.min(1, sizeList.length - 1));
+  const [orient, setOrient] = useState<FrameOrientation>(orientation === 'landscape' ? 'landscape' : 'portrait');
   const [fadeFrom, setFadeFrom] = useState<number | null>(null);
   const [scale, setScale] = useState(2.49); // px per cm; measured after mount
+  const [sceneW, setSceneW] = useState(1200); // wall width in px; measured after mount
   const [reduced, setReduced] = useState(false);
   const [inView, setInView] = useState(true);
 
@@ -88,16 +102,30 @@ export default function FramePreviewPicker({
   const size = sizeList[Math.min(sizeIdx, sizeList.length - 1)];
   const currentStyle = styleList[Math.min(styleIdx, styleList.length - 1)];
 
-  // Display size: true-to-scale unless the print is taller than the scene allows,
+  // The print's own long and short side; orientation decides which one is the width.
+  const longCm = Math.max(size.widthCm, size.heightCm);
+  const shortCm = Math.min(size.widthCm, size.heightCm);
+  const artWcm = orient === 'landscape' ? longCm : shortCm;
+  const artHcm = orient === 'landscape' ? shortCm : longCm;
+
+  // Display size: true-to-scale unless the print is taller or wider than the scene allows,
   // then the silhouette is clamped (labels keep the real measurements).
-  const halfCm = (size.heightCm + OUTER_CM) / 2;
-  const fit = Math.min(1, MAX_HALF_CM / halfCm);
-  const dispW = (size.widthCm + OUTER_CM) * fit;
-  const dispH = (size.heightCm + OUTER_CM) * fit;
+  const sceneWcm = sceneW / scale;
+  const maxHalfW = Math.min(0.54 * sceneWcm - 58 / scale, 0.46 * sceneWcm - 86 / scale);
+  const fit = Math.min(
+    1,
+    MAX_HALF_CM / ((artHcm + OUTER_CM) / 2),
+    Math.max(8, maxHalfW) / ((artWcm + OUTER_CM) / 2),
+  );
+  const dispW = (artWcm + OUTER_CM) * fit;
+  const dispH = (artHcm + OUTER_CM) * fit;
+  // Hang at eye height, but never leave more than MAX_GAP_CM of air above the sofa,
+  // and never less than GAP_CM or closer to the ceiling than the top margin.
   const hangCm = Math.max(
     SOFA_TOP_CM + GAP_CM + dispH / 2,
-    Math.min(HANG_EYE_CM, SCENE_CM - TOP_MARGIN_CM - dispH / 2),
+    Math.min(HANG_EYE_CM, SOFA_TOP_CM + MAX_GAP_CM + dispH / 2, SCENE_CM - TOP_MARGIN_CM - dispH / 2),
   );
+  const gapCm = hangCm - dispH / 2 - SOFA_TOP_CM;
   const topPct = ((SCENE_CM - hangCm) / SCENE_CM) * 100;
 
   const applySize = useCallback((w: number, h: number) => {
@@ -160,9 +188,13 @@ export default function FramePreviewPicker({
     if (!root || !wall) return;
     const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { threshold: 0.12 });
     io.observe(root);
-    const ro = new ResizeObserver(() => setScale((wall.clientHeight || 562) / SCENE_CM));
+    const measure = () => {
+      setScale((wall.clientHeight || 562) / SCENE_CM);
+      setSceneW(wall.clientWidth || 1200);
+    };
+    const ro = new ResizeObserver(measure);
     ro.observe(wall);
-    setScale((wall.clientHeight || 562) / SCENE_CM);
+    measure();
     return () => {
       io.disconnect();
       ro.disconnect();
@@ -186,6 +218,10 @@ export default function FramePreviewPicker({
 
   useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
 
+  useEffect(() => {
+    setOrient(orientation === 'landscape' ? 'landscape' : 'portrait');
+  }, [orientation]);
+
   const onStylePick = (i: number) => {
     if (i === styleIdx) return;
     if (!reducedRef.current) setFadeFrom(styleIdx);
@@ -203,13 +239,31 @@ export default function FramePreviewPicker({
     finishClass[styleList[Math.min(i, styleList.length - 1)].finish ?? 'matte'] ?? finishClass.matte;
 
   const rootStyle = { '--fpp-wall': wallColor, '--fpp-mat': matColor } as CSSProperties;
-  const frameStyle = { fontSize: `${scale.toFixed(3)}px`, top: `${topPct.toFixed(3)}%` } as CSSProperties;
-  const sceneLabel = `${imageAlt || 'Artwork print'} in a ${currentStyle.name} frame, ${size.label}, hanging above a sofa for scale.`;
+  const frameStyle = {
+    fontSize: `${scale.toFixed(3)}px`,
+    top: `${topPct.toFixed(3)}%`,
+    '--gap': gapCm.toFixed(2),
+    '--fcur': currentStyle.color,
+  } as CSSProperties;
+  const orientLabel = orient === 'landscape' ? landscapeLabel : portraitLabel;
+  const sceneLabel = `${imageAlt || 'Artwork print'} in a ${currentStyle.name} frame, ${size.label}, ${orientLabel.toLowerCase()}, hanging ${Math.round(gapCm)} cm above a sofa for scale.`;
+  const orientOptions: { value: FrameOrientation; label: string }[] = [
+    { value: 'portrait', label: portraitLabel },
+    { value: 'landscape', label: landscapeLabel },
+  ];
+  const rails = (
+    <>
+      <i className={[styles.rail, styles.railT].join(' ')} />
+      <i className={[styles.rail, styles.railR].join(' ')} />
+      <i className={[styles.rail, styles.railB].join(' ')} />
+      <i className={[styles.rail, styles.railL].join(' ')} />
+    </>
+  );
 
   return (
     <section
       ref={rootRef}
-      className={[styles.root, reduced && styles.still, !inView && styles.paused, className]
+      className={[styles.root, orient === 'landscape' && styles.landscape, reduced && styles.still, !inView && styles.paused, className]
         .filter(Boolean)
         .join(' ')}
       style={rootStyle}
@@ -236,7 +290,7 @@ export default function FramePreviewPicker({
                  M14 28 h16 a8 8 0 0 1 8 8 v18 a8 8 0 0 1 -8 8 h-16 a8 8 0 0 1 -8 -8 v-18 a8 8 0 0 1 8 -8 z
                  M150 28 h16 a8 8 0 0 1 8 8 v18 a8 8 0 0 1 -8 8 h-16 a8 8 0 0 1 -8 -8 v-18 a8 8 0 0 1 8 -8 z
                  M34 40 h112 a4 4 0 0 1 4 4 v10 a4 4 0 0 1 -4 4 h-112 a4 4 0 0 1 -4 -4 v-10 a4 4 0 0 1 4 -4 z
-                 M34 58 l-7 22 M146 58 l7 22"
+                 M34 58 l-7 26 M146 58 l7 26"
             />
             <path className={styles.sofaSeam} vectorEffect="non-scaling-stroke" d="M90 15 v19" />
           </svg>
@@ -248,7 +302,9 @@ export default function FramePreviewPicker({
             className={[styles.skin, styles.skinIn, finishFor(styleIdx)].join(' ')}
             style={skinFor(styleIdx)}
             aria-hidden="true"
-          />
+          >
+            {rails}
+          </span>
           {fadeFrom !== null && (
             <span
               key={`f${fadeFrom}`}
@@ -256,7 +312,9 @@ export default function FramePreviewPicker({
               style={skinFor(fadeFrom)}
               aria-hidden="true"
               onAnimationEnd={() => setFadeFrom((f) => (f === fadeFrom ? null : f))}
-            />
+            >
+              {rails}
+            </span>
           )}
           <span className={styles.matWrap} aria-hidden="true">
             <span className={styles.artBox}>
@@ -269,10 +327,25 @@ export default function FramePreviewPicker({
             </span>
           </span>
           <span className={styles.dimW} aria-hidden="true">
-            <span className={styles.dimLabel}>{`${Math.round(size.widthCm)} cm`}</span>
+            <span className={styles.dimRow}>
+              <span className={[styles.tick, styles.tickStart].join(' ')} />
+              <span className={styles.dimLine} />
+              <span className={styles.dimLabel}>{`${Math.round(artWcm)} cm`}</span>
+              <span className={styles.dimLine} />
+              <span className={[styles.tick, styles.tickEnd].join(' ')} />
+            </span>
           </span>
           <span className={styles.dimH} aria-hidden="true">
-            <span className={styles.dimLabelH}>{`${Math.round(size.heightCm)} cm`}</span>
+            <span className={styles.dimCol}>
+              <span className={[styles.tick, styles.tickTop].join(' ')} />
+              <span className={[styles.tick, styles.tickBottom].join(' ')} />
+              <span className={styles.dimLabelH}>{`${Math.round(artHcm)} cm`}</span>
+            </span>
+          </span>
+          <span className={styles.gapDim} aria-hidden="true">
+            <span className={[styles.tick, styles.tickTop].join(' ')} />
+            <span className={[styles.tick, styles.tickBottom].join(' ')} />
+            <span className={styles.gapLabel}>{`${Math.round(gapCm)} cm`}</span>
           </span>
         </div>
       </div>
@@ -295,6 +368,39 @@ export default function FramePreviewPicker({
                 />
                 <span className={[styles.dot, finishFor(i)].join(' ')} style={skinFor(i)} aria-hidden="true" />
                 <span className={styles.chipName}>{s.name}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset className={styles.group} role="radiogroup">
+          <legend className={styles.legend}>{orientationGroupLabel}</legend>
+          <div
+            className={styles.seg}
+            style={{ '--i': orient === 'landscape' ? 1 : 0 } as CSSProperties}
+          >
+            <span className={styles.segThumb} aria-hidden="true" />
+            {orientOptions.map((o) => (
+              <label
+                key={o.value}
+                className={[styles.segOpt, o.value === orient && styles.segOn].filter(Boolean).join(' ')}
+              >
+                <input
+                  className={styles.input}
+                  type="radio"
+                  name={`fpp-orient-${uid}`}
+                  value={o.value}
+                  checked={o.value === orient}
+                  onChange={() => setOrient(o.value)}
+                />
+                <svg className={styles.segIcon} viewBox="0 0 14 14" aria-hidden="true">
+                  {o.value === 'portrait' ? (
+                    <rect x="3.6" y="1.6" width="6.8" height="10.8" rx="1.2" />
+                  ) : (
+                    <rect x="1.6" y="3.6" width="10.8" height="6.8" rx="1.2" />
+                  )}
+                </svg>
+                <span>{o.label}</span>
               </label>
             ))}
           </div>
