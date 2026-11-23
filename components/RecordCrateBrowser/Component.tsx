@@ -62,7 +62,9 @@ const SLOTS = [
 const HIDDEN_SLOT = { lean: 82, shift: 0, lift: 36 } as const;
 
 const HELP =
-  'Scroll, swipe or use the arrow keys to flick through the crate. Press Enter or Space to open the front sleeve, Escape to put it back.';
+  'Use the previous and next buttons, arrow keys, scroll or swipe to flick through the crate. Press Enter or Space to open the front sleeve, Escape to put it back.';
+
+const pad = (v: number) => String(v).padStart(2, '0');
 
 const cx = (...parts: Array<string | false | undefined>) => parts.filter(Boolean).join(' ');
 
@@ -78,10 +80,13 @@ export default function RecordCrateBrowser({
   const [inView, setInView] = useState(true);
   const [dragging, setDragging] = useState(false);
   const [nudge, setNudge] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
   const crateRef = useRef<HTMLDivElement>(null);
+  const jumpRef = useRef<HTMLDivElement>(null);
+  const jumpBtnRef = useRef<HTMLButtonElement>(null);
   const drag = useRef({ y: 0, active: false, moved: false });
 
   const n = items.length;
@@ -99,6 +104,28 @@ export default function RecordCrateBrowser({
     },
     [n],
   );
+
+  const goTo = useCallback(
+    (target: number) => {
+      if (target === index) return;
+      setOpen(false);
+      setIndex(target);
+      setNudge((k) => k + 1);
+    },
+    [index],
+  );
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    jumpRef.current?.querySelector<HTMLButtonElement>('[aria-current="true"]')?.focus();
+    const onDown = (e: globalThis.PointerEvent) => {
+      if (!jumpRef.current?.contains(e.target as Node) && !jumpBtnRef.current?.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [menuOpen]);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -125,7 +152,7 @@ export default function RecordCrateBrowser({
       e.preventDefault();
       const now = performance.now();
       if (now < lock) return;
-      acc += e.deltaY;
+      acc += Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
       if (Math.abs(acc) > 55) {
         advance(acc > 0 ? 1 : -1);
         acc = 0;
@@ -181,11 +208,26 @@ export default function RecordCrateBrowser({
     setOpen((o) => !o);
   };
 
-  const onFrontKey = (e: KeyboardEvent<HTMLButtonElement>) => {
-    if (e.key === 'Escape') {
-      setOpen(false);
+  const onNeighbourClick = (target: number) => {
+    if (drag.current.moved) {
+      drag.current.moved = false;
       return;
     }
+    goTo(target);
+  };
+
+  const closeMenu = (restoreFocus: boolean) => {
+    setMenuOpen(false);
+    if (restoreFocus) jumpBtnRef.current?.focus();
+  };
+
+  const onRootKey = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Escape') {
+      setOpen(false);
+      if (menuOpen) closeMenu(true);
+      return;
+    }
+    if (menuOpen || e.altKey || e.ctrlKey || e.metaKey) return;
     const fwd = e.key === 'ArrowUp' || e.key === 'ArrowRight';
     const back = e.key === 'ArrowDown' || e.key === 'ArrowLeft';
     if (!fwd && !back) return;
@@ -220,6 +262,7 @@ export default function RecordCrateBrowser({
       ref={rootRef}
       className={cx(styles.root, !inView && styles.rootPaused, reduced && styles.rootReduced, className)}
       style={rootStyle}
+      onKeyDown={onRootKey}
     >
       <span className={styles.bulb} aria-hidden="true" />
 
@@ -272,7 +315,6 @@ export default function RecordCrateBrowser({
                   aria-label={`${current.title} — record ${index + 1} of ${n}`}
                   aria-description={HELP}
                   onClick={onFrontClick}
-                  onKeyDown={onFrontKey}
                 >
                   {renderFace(item, visible)}
                 </button>
@@ -280,7 +322,13 @@ export default function RecordCrateBrowser({
             }
 
             return (
-              <div key={`${item.title}-${i}`} className={styles.sleeve} style={style} aria-hidden="true">
+              <div
+                key={`${item.title}-${i}`}
+                className={cx(styles.sleeve, visible && styles.neighbour)}
+                style={style}
+                aria-hidden="true"
+                onClick={visible ? () => onNeighbourClick(i) : undefined}
+              >
                 {renderFace(item, visible)}
               </div>
             );
@@ -290,29 +338,75 @@ export default function RecordCrateBrowser({
         <span className={styles.floorShadow} aria-hidden="true" />
 
         <div ref={crateRef} className={styles.crate} aria-hidden="true">
-          <span className={styles.crateTop} />
           <span className={styles.crateFace} />
-          <span className={styles.crateSideL} />
-          <span className={styles.crateSideR} />
-          <span className={styles.screw} style={{ insetInlineStart: '3%', insetBlockStart: '18%' }} />
-          <span className={styles.screw} style={{ insetInlineEnd: '3%', insetBlockStart: '18%' }} />
-          <span className={styles.screw} style={{ insetInlineStart: '3%', insetBlockEnd: '10%' }} />
-          <span className={styles.screw} style={{ insetInlineEnd: '3%', insetBlockEnd: '10%' }} />
+          <span className={styles.crateLip} />
         </div>
+      </div>
 
-        {current && (
-          <div className={styles.binCard}>
-            <span className={styles.tape} aria-hidden="true" />
-            <span className={styles.tape2} aria-hidden="true" />
-            <span className={styles.binTitle} aria-live="polite">
+      {current && (
+        <div className={styles.nav}>
+          <button
+            type="button"
+            className={styles.navBtn}
+            aria-label="Previous record"
+            disabled={n < 2}
+            onClick={() => advance(-1)}
+          >
+            <svg viewBox="0 0 24 24" className={styles.navIcon} aria-hidden="true">
+              <path d="M15 5l-7 7 7 7" />
+            </svg>
+          </button>
+
+          <div className={styles.navMeta}>
+            <span className={styles.navTitle} aria-live="polite">
               {current.title}
             </span>
-            <span className={styles.binCount}>
-              {String(index + 1).padStart(2, '0')} / {String(n).padStart(2, '0')}
-            </span>
+            <button
+              ref={jumpBtnRef}
+              type="button"
+              className={styles.navCount}
+              aria-haspopup="true"
+              aria-expanded={menuOpen}
+              aria-label={`Record ${index + 1} of ${n}. Choose a record`}
+              disabled={n < 2}
+              onClick={() => setMenuOpen((m) => !m)}
+            >
+              {pad(index + 1)} / {pad(n)}
+            </button>
+            {menuOpen && (
+              <div ref={jumpRef} className={styles.jump} role="group" aria-label="Choose a record">
+                {items.map((item, i) => (
+                  <button
+                    key={`${item.title}-${i}`}
+                    type="button"
+                    className={styles.jumpItem}
+                    aria-current={i === index}
+                    onClick={() => {
+                      goTo(i);
+                      closeMenu(true);
+                    }}
+                  >
+                    <span className={styles.jumpNum}>{pad(i + 1)}</span>
+                    <span className={styles.jumpTitle}>{item.title}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+
+          <button
+            type="button"
+            className={styles.navBtn}
+            aria-label="Next record"
+            disabled={n < 2}
+            onClick={() => advance(1)}
+          >
+            <svg viewBox="0 0 24 24" className={styles.navIcon} aria-hidden="true">
+              <path d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       <span className={styles.grain} aria-hidden="true" />
     </div>

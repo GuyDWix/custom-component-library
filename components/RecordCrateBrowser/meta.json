@@ -5,7 +5,7 @@
   "category": "media",
   "tier": "everyday",
   "job": "Browse items like flicking through a record crate: sleeves tip forward one by one so the front one is readable",
-  "visitor_action": "scroll wheel/swipe over the crate or press arrows to flick; click the front sleeve to open",
+  "visitor_action": "prev/next buttons, arrow keys, wheel or swipe, click a neighbouring sleeve or the 02 / 06 counter to jump; click the front sleeve to open",
   "owner_settings": [
     "Items (image, title, subtitle)",
     "Crate colour",
@@ -32,5 +32,5 @@
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Record shop: raw birch crate, slightly worn card sleeves, mustard and teal accents, small price stickers"
+  "art_direction": "Record shop: matte graphite crate with a hairline edge light, card sleeves, mustard and teal accents, small flat price labels"
 }

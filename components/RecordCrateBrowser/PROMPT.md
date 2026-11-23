@@ -67,7 +67,9 @@ const SLOTS = [
 const HIDDEN_SLOT = { lean: 82, shift: 0, lift: 36 } as const;
 
 const HELP =
-  'Scroll, swipe or use the arrow keys to flick through the crate. Press Enter or Space to open the front sleeve, Escape to put it back.';
+  'Use the previous and next buttons, arrow keys, scroll or swipe to flick through the crate. Press Enter or Space to open the front sleeve, Escape to put it back.';
+
+const pad = (v: number) => String(v).padStart(2, '0');
 
 const cx = (...parts: Array<string | false | undefined>) => parts.filter(Boolean).join(' ');
 
@@ -83,10 +85,13 @@ export default function RecordCrateBrowser({
   const [inView, setInView] = useState(true);
   const [dragging, setDragging] = useState(false);
   const [nudge, setNudge] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
   const crateRef = useRef<HTMLDivElement>(null);
+  const jumpRef = useRef<HTMLDivElement>(null);
+  const jumpBtnRef = useRef<HTMLButtonElement>(null);
   const drag = useRef({ y: 0, active: false, moved: false });
 
   const n = items.length;
@@ -104,6 +109,28 @@ export default function RecordCrateBrowser({
     },
     [n],
   );
+
+  const goTo = useCallback(
+    (target: number) => {
+      if (target === index) return;
+      setOpen(false);
+      setIndex(target);
+      setNudge((k) => k + 1);
+    },
+    [index],
+  );
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    jumpRef.current?.querySelector<HTMLButtonElement>('[aria-current="true"]')?.focus();
+    const onDown = (e: globalThis.PointerEvent) => {
+      if (!jumpRef.current?.contains(e.target as Node) && !jumpBtnRef.current?.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [menuOpen]);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -130,7 +157,7 @@ export default function RecordCrateBrowser({
       e.preventDefault();
       const now = performance.now();
       if (now < lock) return;
-      acc += e.deltaY;
+      acc += Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
       if (Math.abs(acc) > 55) {
         advance(acc > 0 ? 1 : -1);
         acc = 0;
@@ -186,11 +213,26 @@ export default function RecordCrateBrowser({
     setOpen((o) => !o);
   };
 
-  const onFrontKey = (e: KeyboardEvent<HTMLButtonElement>) => {
-    if (e.key === 'Escape') {
-      setOpen(false);
+  const onNeighbourClick = (target: number) => {
+    if (drag.current.moved) {
+      drag.current.moved = false;
       return;
     }
+    goTo(target);
+  };
+
+  const closeMenu = (restoreFocus: boolean) => {
+    setMenuOpen(false);
+    if (restoreFocus) jumpBtnRef.current?.focus();
+  };
+
+  const onRootKey = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Escape') {
+      setOpen(false);
+      if (menuOpen) closeMenu(true);
+      return;
+    }
+    if (menuOpen || e.altKey || e.ctrlKey || e.metaKey) return;
     const fwd = e.key === 'ArrowUp' || e.key === 'ArrowRight';
     const back = e.key === 'ArrowDown' || e.key === 'ArrowLeft';
     if (!fwd && !back) return;
@@ -225,6 +267,7 @@ export default function RecordCrateBrowser({
       ref={rootRef}
       className={cx(styles.root, !inView && styles.rootPaused, reduced && styles.rootReduced, className)}
       style={rootStyle}
+      onKeyDown={onRootKey}
     >
       <span className={styles.bulb} aria-hidden="true" />
 
@@ -277,7 +320,6 @@ export default function RecordCrateBrowser({
                   aria-label={`${current.title} — record ${index + 1} of ${n}`}
                   aria-description={HELP}
                   onClick={onFrontClick}
-                  onKeyDown={onFrontKey}
                 >
                   {renderFace(item, visible)}
                 </button>
@@ -285,7 +327,13 @@ export default function RecordCrateBrowser({
             }
 
             return (
-              <div key={`${item.title}-${i}`} className={styles.sleeve} style={style} aria-hidden="true">
+              <div
+                key={`${item.title}-${i}`}
+                className={cx(styles.sleeve, visible && styles.neighbour)}
+                style={style}
+                aria-hidden="true"
+                onClick={visible ? () => onNeighbourClick(i) : undefined}
+              >
                 {renderFace(item, visible)}
               </div>
             );
@@ -295,29 +343,75 @@ export default function RecordCrateBrowser({
         <span className={styles.floorShadow} aria-hidden="true" />
 
         <div ref={crateRef} className={styles.crate} aria-hidden="true">
-          <span className={styles.crateTop} />
           <span className={styles.crateFace} />
-          <span className={styles.crateSideL} />
-          <span className={styles.crateSideR} />
-          <span className={styles.screw} style={{ insetInlineStart: '3%', insetBlockStart: '18%' }} />
-          <span className={styles.screw} style={{ insetInlineEnd: '3%', insetBlockStart: '18%' }} />
-          <span className={styles.screw} style={{ insetInlineStart: '3%', insetBlockEnd: '10%' }} />
-          <span className={styles.screw} style={{ insetInlineEnd: '3%', insetBlockEnd: '10%' }} />
+          <span className={styles.crateLip} />
         </div>
+      </div>
 
-        {current && (
-          <div className={styles.binCard}>
-            <span className={styles.tape} aria-hidden="true" />
-            <span className={styles.tape2} aria-hidden="true" />
-            <span className={styles.binTitle} aria-live="polite">
+      {current && (
+        <div className={styles.nav}>
+          <button
+            type="button"
+            className={styles.navBtn}
+            aria-label="Previous record"
+            disabled={n < 2}
+            onClick={() => advance(-1)}
+          >
+            <svg viewBox="0 0 24 24" className={styles.navIcon} aria-hidden="true">
+              <path d="M15 5l-7 7 7 7" />
+            </svg>
+          </button>
+
+          <div className={styles.navMeta}>
+            <span className={styles.navTitle} aria-live="polite">
               {current.title}
             </span>
-            <span className={styles.binCount}>
-              {String(index + 1).padStart(2, '0')} / {String(n).padStart(2, '0')}
-            </span>
+            <button
+              ref={jumpBtnRef}
+              type="button"
+              className={styles.navCount}
+              aria-haspopup="true"
+              aria-expanded={menuOpen}
+              aria-label={`Record ${index + 1} of ${n}. Choose a record`}
+              disabled={n < 2}
+              onClick={() => setMenuOpen((m) => !m)}
+            >
+              {pad(index + 1)} / {pad(n)}
+            </button>
+            {menuOpen && (
+              <div ref={jumpRef} className={styles.jump} role="group" aria-label="Choose a record">
+                {items.map((item, i) => (
+                  <button
+                    key={`${item.title}-${i}`}
+                    type="button"
+                    className={styles.jumpItem}
+                    aria-current={i === index}
+                    onClick={() => {
+                      goTo(i);
+                      closeMenu(true);
+                    }}
+                  >
+                    <span className={styles.jumpNum}>{pad(i + 1)}</span>
+                    <span className={styles.jumpTitle}>{item.title}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+
+          <button
+            type="button"
+            className={styles.navBtn}
+            aria-label="Next record"
+            disabled={n < 2}
+            onClick={() => advance(1)}
+          >
+            <svg viewBox="0 0 24 24" className={styles.navIcon} aria-hidden="true">
+              <path d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       <span className={styles.grain} aria-hidden="true" />
     </div>
@@ -327,7 +421,7 @@ export default function RecordCrateBrowser({
 
 ```css
 .root {
-  --rc-crate: #d6c69e;
+  --rc-crate: #3a3631;
   --rc-mustard: #e0a32e;
   --rc-teal: #3aa08c;
   --rc-stage: #241f1a;
@@ -336,7 +430,6 @@ export default function RecordCrateBrowser({
   --rc-ink: #241c10;
   --rc-font-display: 'Futura', 'Avenir Next', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --rc-font-ui: 'Avenir Next', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --rc-font-hand: 'Segoe Print', 'Bradley Hand', 'Chalkboard SE', var(--rc-font-ui);
   --sleeve: clamp(170px, 34cqi, 300px);
   --rc-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
@@ -371,7 +464,7 @@ export default function RecordCrateBrowser({
   inset: 0;
   z-index: 60;
   background-image: var(--rc-noise);
-  opacity: 0.12;
+  opacity: 0.06;
   mix-blend-mode: overlay;
   pointer-events: none;
 }
@@ -546,52 +639,46 @@ export default function RecordCrateBrowser({
 
 .sticker {
   position: absolute;
-  inset-block-start: 7%;
+  inset-block-start: 6%;
   inset-inline-end: 6%;
   max-inline-size: 62%;
-  padding: 6px 10px 7px;
+  padding: 5px 9px 6px;
   border-radius: 3px;
-  background:
-    linear-gradient(
-      160deg,
-      color-mix(in srgb, var(--rc-mustard) 92%, #fff) 0%,
-      var(--rc-mustard) 55%,
-      color-mix(in srgb, var(--rc-mustard) 86%, #7a4d0e) 100%
-    );
+  background: var(--rc-mustard);
   color: #231703;
-  box-shadow:
-    0 3px 8px -2px rgba(20, 12, 2, 0.55),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.25),
-    inset 0 0 12px rgba(122, 77, 14, 0.18);
-  transform: rotate(-5deg);
+  box-shadow: 0 2px 6px -2px rgba(20, 12, 2, 0.5);
   pointer-events: none;
 }
 
 .isFront .sticker {
-  animation: stickerSettle 620ms cubic-bezier(0.34, 1.56, 0.64, 1) 180ms both;
+  animation: stickerIn 420ms cubic-bezier(0.2, 0.8, 0.2, 1) 160ms both;
 }
 
-@keyframes stickerSettle {
+@keyframes stickerIn {
   from {
-    transform: rotate(-9deg) translateY(-6px);
+    opacity: 0;
+    transform: translateY(-4px);
   }
 
   to {
-    transform: rotate(-5deg) translateY(0);
+    opacity: 1;
+    transform: none;
   }
 }
 
 .stickerText {
   display: block;
-  font-family: var(--rc-font-hand);
-  font-size: clamp(12px, 1.9cqi, 15px);
+  font-family: var(--rc-font-ui);
+  font-size: clamp(12px, 1.9cqi, 14px);
+  font-weight: 600;
+  letter-spacing: 0.01em;
   line-height: 1.25;
   overflow-wrap: anywhere;
 }
 
 .stickerText::selection {
-  background: color-mix(in srgb, var(--rc-mustard) 55%, #fff);
-  color: #231703;
+  background: #231703;
+  color: var(--rc-mustard);
 }
 
 .disc {
@@ -681,133 +768,197 @@ export default function RecordCrateBrowser({
   }
 }
 
-.crateTop {
-  position: absolute;
-  inset-inline: -4px;
-  inset-block-start: 0;
-  block-size: 11px;
-  border-radius: 3px;
-  background: repeating-linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--rc-crate) 92%, #fff) 0 2px,
-    color-mix(in srgb, var(--rc-crate) 70%, #3a2c14) 2px 3px
-  );
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-}
-
 .crateFace {
   position: absolute;
-  inset-inline: 0;
-  inset-block-start: 10px;
-  inset-block-end: 0;
-  border-radius: 12px;
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--rc-crate) 88%, #fff) 0%,
-      var(--rc-crate) 22%,
-      color-mix(in srgb, var(--rc-crate) 84%, #3a2c14) 100%
-    ),
-    repeating-linear-gradient(93deg, transparent 0 9px, rgba(90, 70, 38, 0.07) 9px 10px, transparent 10px 23px, rgba(90, 70, 38, 0.05) 23px 24px);
+  inset: 0;
+  border-radius: 14px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--rc-crate) 90%, #fff) 0%,
+    var(--rc-crate) 30%,
+    color-mix(in srgb, var(--rc-crate) 82%, #000) 100%
+  );
   box-shadow:
-    inset 0 0 0 1px rgba(58, 42, 18, 0.28),
-    inset 0 -22px 30px -18px rgba(46, 32, 12, 0.5),
-    inset 0 14px 18px -14px rgba(255, 255, 255, 0.5);
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 22px 34px -16px rgba(0, 0, 0, 0.7);
 }
 
-.crateSideL,
-.crateSideR {
+.crateLip {
   position: absolute;
-  inset-block: 10px 0;
-  inline-size: 10px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--rc-crate) 74%, #2e2010), color-mix(in srgb, var(--rc-crate) 60%, #241a08));
-  box-shadow: inset 0 0 0 1px rgba(40, 28, 10, 0.4);
+  inset-inline: 14px;
+  inset-block-start: 0;
+  block-size: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4) 30%, rgba(255, 255, 255, 0.4) 70%, transparent);
+  pointer-events: none;
 }
 
-.crateSideL {
-  inset-inline-start: 0;
-  border-start-start-radius: 10px;
-  border-end-start-radius: 12px;
+.neighbour {
+  cursor: pointer;
+  pointer-events: auto;
 }
 
-.crateSideR {
-  inset-inline-end: 0;
-  border-start-end-radius: 10px;
-  border-end-end-radius: 12px;
+.neighbour:hover .sleeveFace {
+  filter: brightness(1.1);
 }
 
-.screw {
-  position: absolute;
-  inline-size: 7px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #fff 0 25%, color-mix(in srgb, var(--rc-crate) 40%, #241a08) 62%);
-  box-shadow:
-    0 1px 1px rgba(255, 255, 255, 0.4),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.6);
+.nav {
+  position: relative;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 3cqi, 28px);
+  inline-size: min(100%, 560px);
+  margin: clamp(10px, 2cqi, 20px) auto 0;
 }
 
-.binCard {
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: calc(2% + var(--sleeve) * 0.1);
-  z-index: 50;
-  inline-size: min(52%, 340px);
-  margin-inline: auto;
+.navBtn {
   display: grid;
-  gap: 3px;
-  padding: 10px 14px 9px;
-  border-radius: 4px;
-  background: linear-gradient(175deg, #faf3e2 0%, var(--rc-cream) 55%, #e7dabd 100%);
-  transform: rotate(-1.2deg);
-  box-shadow:
-    0 10px 22px -10px rgba(0, 0, 0, 0.55),
-    inset 0 0 0 1px rgba(122, 96, 46, 0.18);
+  place-items: center;
+  flex: none;
+  inline-size: 44px;
+  block-size: 44px;
+  padding: 0;
+  border: 1px solid rgba(242, 232, 212, 0.2);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--rc-cream);
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.navBtn:hover:not(:disabled) {
+  background: rgba(242, 232, 212, 0.08);
+  border-color: rgba(242, 232, 212, 0.4);
+}
+
+.navBtn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.navBtn:disabled,
+.navCount:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.navBtn:focus-visible,
+.navCount:focus-visible,
+.jumpItem:focus-visible {
+  outline: 2px solid var(--rc-teal);
+  outline-offset: 3px;
+}
+
+.navIcon {
+  inline-size: 20px;
+  block-size: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.navMeta {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-inline-size: 0;
+  flex: 1;
   text-align: center;
 }
 
-.binTitle {
+.navTitle {
+  max-inline-size: 100%;
   font-family: var(--rc-font-display);
-  font-size: clamp(15px, 3cqi, 21px);
+  font-size: clamp(16px, 3cqi, 21px);
   font-weight: 700;
   letter-spacing: -0.015em;
-  line-height: 1.15;
-  color: var(--rc-ink);
+  line-height: 1.2;
+  color: var(--rc-cream);
   overflow-wrap: anywhere;
   text-wrap: balance;
 }
 
-.binTitle::selection {
-  background: var(--rc-mustard);
-  color: var(--rc-ink);
-}
-
-.binCount {
-  font-family: var(--rc-font-ui);
-  font-size: 12.5px;
-  letter-spacing: 0.22em;
-  color: color-mix(in srgb, var(--rc-ink) 62%, transparent);
+.navCount {
+  min-block-size: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: color-mix(in srgb, var(--rc-cream) 72%, transparent);
+  font: inherit;
+  font-size: 13px;
+  letter-spacing: 0.2em;
   font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: color 160ms ease;
 }
 
-.tape,
-.tape2 {
+.navCount:hover:not(:disabled),
+.navCount[aria-expanded='true'] {
+  color: var(--rc-cream);
+}
+
+.jump {
   position: absolute;
-  inset-block-start: -7px;
-  inline-size: 34px;
-  block-size: 16px;
-  background: rgba(255, 255, 255, 0.35);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  inset-block-end: 100%;
+  inset-inline: 50%;
+  inline-size: min(300px, 80cqi);
+  max-block-size: 240px;
+  margin-block-end: 4px;
+  margin-inline-start: calc(min(300px, 80cqi) / -2);
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid rgba(242, 232, 212, 0.14);
+  border-radius: 12px;
+  background: #1f1b17;
+  box-shadow: 0 18px 36px -12px rgba(0, 0, 0, 0.8);
+  text-align: start;
 }
 
-.tape {
-  inset-inline-start: 16%;
-  transform: rotate(-3deg);
+.jumpItem {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  inline-size: 100%;
+  min-block-size: 40px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: color-mix(in srgb, var(--rc-cream) 78%, transparent);
+  font: inherit;
+  font-size: 14px;
+  text-align: start;
+  cursor: pointer;
 }
 
-.tape2 {
-  inset-inline-end: 16%;
-  transform: rotate(2deg);
+.jumpItem:hover {
+  background: rgba(242, 232, 212, 0.07);
+  color: var(--rc-cream);
+}
+
+.jumpItem[aria-current='true'] {
+  background: rgba(242, 232, 212, 0.1);
+  color: var(--rc-cream);
+}
+
+.jumpNum {
+  flex: none;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+  color: var(--rc-mustard);
+}
+
+.jumpTitle {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
 }
 
 .sceneOpen .isFront {
@@ -835,7 +986,8 @@ export default function RecordCrateBrowser({
   }
 
   .sleeve,
-  .disc {
+  .disc,
+  .navBtn {
     transition-duration: 1ms;
     transition-delay: 0ms;
   }
