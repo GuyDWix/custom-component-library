@@ -304,7 +304,6 @@ export default function ConcertinaFAQ({
         </div>
         <span className={k % 2 === 0 ? styles.shadeLit : styles.shadeDark} aria-hidden="true" />
         <span className={styles.crease} aria-hidden="true" />
-        {k + 1 === pleats ? <span className={styles.curl} aria-hidden="true" /> : null}
       </div>
       {k + 1 < pleats ? renderFacet(i, k + 1, text) : null}
     </div>

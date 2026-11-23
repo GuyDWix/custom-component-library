@@ -17,105 +17,52 @@
 .root {
   --cf-paper: #c8a06a;
   --cf-accent: #0a4249;
-  --cf-paper-hi: color-mix(in srgb, var(--cf-paper) 84%, #ffffff);
-  --cf-paper-lo: color-mix(in srgb, var(--cf-paper) 86%, #3a1d00);
-  --cf-fold: color-mix(in srgb, var(--cf-paper) 52%, #2a1300);
+  --cf-paper-hi: color-mix(in srgb, var(--cf-paper) 88%, #ffffff);
+  --cf-paper-lo: color-mix(in srgb, var(--cf-paper) 90%, #3a1d00);
+  --cf-fold: color-mix(in srgb, var(--cf-paper) 50%, #2a1300);
   --cf-cream: color-mix(in srgb, var(--cf-paper) 8%, #fffbf0);
   --cf-ink: color-mix(in srgb, var(--cf-accent) 30%, #1b1108);
-  --cf-shadow: color-mix(in srgb, var(--cf-paper) 30%, #2a1400);
+  --cf-shadow: color-mix(in srgb, var(--cf-accent) 60%, #000000);
+  --cf-surface-hi: color-mix(in srgb, var(--cf-accent) 82%, #ffffff);
+  --cf-surface-lo: color-mix(in srgb, var(--cf-accent) 62%, #000000);
   --cf-font: 'Concertina Bricolage', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --cf-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='640' height='240'><filter id='g' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.014 0.85' numOctaves='3' seed='11' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.26 0 0 0 0 0.14 0 0 0 0 0.04 -2.6 0 0 0 1.3'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>");
-  --cf-leaf: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='l' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' seed='5' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.36 0 0 0 0 0.24 0 0 0 0 0.1 0 0 0 -0.7 0.37'/></filter><rect width='100%25' height='100%25' filter='url(%23l)'/></svg>");
-  --cf-edge: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='6'><filter id='e' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.5 1.3' numOctaves='2' seed='9' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 0.985 0 0 0 0 0.93 -2.6 0 0 0 1.9'/></filter><rect width='100%25' height='100%25' filter='url(%23e)'/></svg>");
-  --cf-sap: linear-gradient(
-    90deg,
-    transparent 2%,
-    color-mix(in srgb, var(--cf-fold) 34%, transparent) 20%,
-    color-mix(in srgb, var(--cf-fold) 18%, transparent) 64%,
-    transparent 96%
-  );
   position: relative;
   isolation: isolate;
   overflow: clip;
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  border-radius: 22px;
-  background: var(--cf-paper);
+  border-radius: 20px;
+  background: linear-gradient(155deg, var(--cf-surface-hi) 0%, var(--cf-accent) 48%, var(--cf-surface-lo) 100%);
   color: var(--cf-accent);
   font-family: var(--cf-font);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.35) inset,
-    0 30px 44px -32px color-mix(in srgb, var(--cf-shadow) 74%, transparent),
-    0 3px 8px -3px color-mix(in srgb, var(--cf-shadow) 46%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--cf-shadow) 70%, transparent),
+    0 1px 0 rgba(255, 255, 255, 0.14) inset,
+    0 28px 40px -30px color-mix(in srgb, var(--cf-shadow) 70%, transparent);
 }
 
-/* The board is lit from the upper left: a soft falloff across the card, darker toward the edges. */
+/* One soft light from the upper left across the surface. */
 .root::before {
   content: '';
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 0;
   pointer-events: none;
-  border-radius: inherit;
-  background: linear-gradient(
-    114deg,
-    rgba(255, 246, 226, 0.34) 0%,
-    rgba(255, 246, 226, 0.08) 34%,
-    transparent 54%,
-    color-mix(in srgb, var(--cf-shadow) 30%, transparent) 100%
-  );
-  box-shadow:
-    inset 0 0 64px -14px color-mix(in srgb, var(--cf-shadow) 62%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.38);
-}
-
-/* Grain: long dark fibres running with the board. */
-.root::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background-image: var(--cf-grain);
-  background-size: 640px 240px;
-  mix-blend-mode: multiply;
-  opacity: 0.5;
-}
-
-/* Sheen: light catches the same fibres, in two soft bands across the grain. */
-.frame::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: linear-gradient(
-    102deg,
-    transparent 10%,
-    rgba(255, 238, 202, 0.95) 26%,
-    rgba(255, 238, 202, 0.2) 37%,
-    transparent 48%,
-    rgba(255, 238, 202, 0.55) 70%,
-    transparent 84%
-  );
-  -webkit-mask-image: var(--cf-grain);
-  mask-image: var(--cf-grain);
-  -webkit-mask-size: 640px 240px;
-  mask-size: 640px 240px;
-  mix-blend-mode: screen;
-  opacity: 0.5;
+  background: radial-gradient(120% 90% at 8% 0%, rgba(255, 255, 255, 0.16) 0%, transparent 60%);
 }
 
 .frame {
-  --cf-pad: clamp(1.25rem, 6.5cqi, 5.25rem);
-  --cf-gap: clamp(1rem, 9cqi, 8rem);
+  --cf-pad: clamp(1.1rem, 5.5cqi, 3.5rem);
+  position: relative;
+  z-index: 1;
   display: block;
+  padding: clamp(0.75rem, 3.4cqi, 2.5rem);
 }
 
 .list {
   margin: 0;
-  padding: 0 0 clamp(0.75rem, 2.4cqi, 1.75rem);
+  padding: 0;
   list-style: none;
 }
 
@@ -137,12 +84,11 @@
   font: inherit;
 }
 
-/* ---- Question bands: kraft pleats, light and shade alternating fold to fold ---- */
+/* ---- Question bands: paper pleats, light and shade alternating fold to fold ---- */
 
 .band {
   --hv: 0;
   --pr: 0;
-  --sap: 33%;
   position: relative;
   display: flex;
   align-items: center;
@@ -151,8 +97,8 @@
   box-sizing: border-box;
   inline-size: 100%;
   margin: 0;
-  padding-block: clamp(1.15rem, 3.6cqi, 2.2rem);
-  padding-inline: var(--cf-pad) clamp(1rem, 4cqi, 3.25rem);
+  padding-block: clamp(1rem, 2.8cqi, 1.75rem);
+  padding-inline: var(--cf-pad) clamp(1rem, 3.5cqi, 2.5rem);
   border: 0;
   border-radius: 0;
   color: var(--cf-accent);
@@ -161,30 +107,28 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   box-shadow:
-    inset 0 -1px 0 var(--cf-fold),
-    inset 0 1px 0 rgba(255, 255, 255, 0.34),
-    inset 0 -12px 14px -12px color-mix(in srgb, var(--cf-shadow) 46%, transparent),
-    inset 0 10px 12px -12px color-mix(in srgb, var(--cf-shadow) 26%, transparent);
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 color-mix(in srgb, var(--cf-fold) 70%, transparent);
 }
 
 .bandEven {
-  background:
-    var(--cf-sap) 0 var(--sap) / 100% 2px no-repeat,
-    linear-gradient(180deg, var(--cf-paper-hi) 0%, var(--cf-paper) 46%, var(--cf-paper-lo) 100%);
+  background: linear-gradient(180deg, var(--cf-paper-hi) 0%, var(--cf-paper) 100%);
 }
 
 .bandOdd {
-  --sap: 69%;
-  background:
-    var(--cf-sap) 0 var(--sap) / 100% 2px no-repeat,
-    linear-gradient(180deg, var(--cf-paper-lo) 0%, var(--cf-paper) 54%, var(--cf-paper-hi) 100%);
+  background: linear-gradient(180deg, var(--cf-paper-lo) 0%, var(--cf-paper) 100%);
+}
+
+.item:first-child .band {
+  border-start-start-radius: 8px;
+  border-start-end-radius: 8px;
 }
 
 .band::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(255, 250, 235, 0.2);
+  background: rgba(255, 250, 235, 0.18);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.22s ease-out;
@@ -204,7 +148,7 @@
 
 .band:focus-visible {
   outline: 3px solid var(--cf-accent);
-  outline-offset: -8px;
+  outline-offset: -6px;
 }
 
 .qText {
@@ -212,15 +156,14 @@
   z-index: 2;
   display: block;
   min-inline-size: 0;
-  max-inline-size: 24em;
+  max-inline-size: 30em;
   font-weight: 600;
-  font-size: clamp(1.25rem, 0.95rem + 2.2cqi, 2.3rem);
-  line-height: 1.1;
-  letter-spacing: -0.028em;
+  font-size: clamp(1.125rem, 0.95rem + 1.3cqi, 1.65rem);
+  line-height: 1.22;
+  letter-spacing: -0.02em;
   text-wrap: balance;
   overflow-wrap: break-word;
   hyphens: manual;
-  text-shadow: 0 1px 0 rgba(255, 236, 202, 0.4);
   transform: translateY(calc(var(--pr) * 1px));
   transition: transform 0.12s ease-out;
 }
@@ -228,33 +171,23 @@
 .qText::selection {
   background: var(--cf-accent);
   color: var(--cf-cream);
-  text-shadow: none;
 }
 
-/* The mark is a machined toggle: a thin ring and a chevron that turns with the fold. */
 .mark {
   position: relative;
   z-index: 2;
   flex: none;
   display: grid;
   place-items: center;
-  inline-size: 2.5rem;
-  block-size: 2.5rem;
-  border: 1.25px solid color-mix(in srgb, var(--cf-accent) 88%, transparent);
-  border-radius: 50%;
+  inline-size: 2rem;
+  block-size: 2rem;
   color: var(--cf-accent);
-  background: linear-gradient(180deg, rgba(255, 244, 220, 0.3) 0%, rgba(255, 244, 220, 0) 60%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 248, 230, 0.5),
-    0 1px 0 rgba(255, 238, 205, 0.5);
-  transform: scale(calc(1 + var(--hv) * 0.06));
-  transition:
-    transform 0.22s cubic-bezier(0.3, 1.5, 0.5, 1),
-    background-color 0.25s ease-out;
+  opacity: calc(0.72 + var(--hv) * 0.28);
+  transition: opacity 0.2s ease-out;
 }
 
 .markOpen {
-  background-color: color-mix(in srgb, var(--cf-accent) 9%, transparent);
+  opacity: 1;
 }
 
 .chev {
@@ -269,12 +202,12 @@
 .chevLine {
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.9;
+  stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-/* ---- The answer: a cream leaf cut into pleats that fold flat ---- */
+/* ---- The answer: a clean sheet cut into pleats that fold flat ---- */
 
 .answer {
   position: relative;
@@ -302,16 +235,15 @@
     visibility 0s;
 }
 
-/* The leaf presses into the board: a hairline contact, a close shade, a long soft fall. */
 .cast {
   position: absolute;
   inset: 0;
   pointer-events: none;
   opacity: var(--sd, 1);
   box-shadow:
-    0 1px 0 color-mix(in srgb, var(--cf-shadow) 72%, transparent),
-    0 0.35rem 0.7rem -0.2rem color-mix(in srgb, var(--cf-shadow) 66%, transparent),
-    0 1.9rem 2.4rem -1.2rem color-mix(in srgb, var(--cf-shadow) 80%, transparent);
+    0 1px 0 color-mix(in srgb, var(--cf-shadow) 50%, transparent),
+    0 0.3rem 0.8rem -0.3rem color-mix(in srgb, var(--cf-shadow) 45%, transparent),
+    0 1.5rem 2rem -1.2rem color-mix(in srgb, var(--cf-shadow) 55%, transparent);
 }
 
 .facet {
@@ -328,72 +260,30 @@
 }
 
 .slice {
-  --cs: calc(clamp(1.2rem, 2.8cqi, 1.75rem) * var(--cv));
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: var(--cf-leaf), var(--cf-cream);
-  background-size: 220px 220px, auto;
-  box-shadow:
-    inset 1.1rem 0 1.4rem -1.3rem color-mix(in srgb, var(--cf-shadow) 34%, transparent),
-    inset -1.1rem 0 1.4rem -1.3rem color-mix(in srgb, var(--cf-shadow) 34%, transparent);
+  background: linear-gradient(180deg, #fffefa 0%, var(--cf-cream) 100%);
 }
 
-/* Where the leaf slides out from under the band: fibre edge, then the band's shade. */
+.sliceLast {
+  border-end-start-radius: 8px;
+  border-end-end-radius: 8px;
+}
+
+/* Soft shade where the sheet slides out from under the band. */
 .facetFirst > .slice::before {
   content: '';
   position: absolute;
   inset-inline: 0;
   inset-block-start: 0;
-  block-size: 0.7rem;
+  block-size: 0.9rem;
   z-index: 1;
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--cf-shadow) 46%, transparent) 0%,
-    color-mix(in srgb, var(--cf-shadow) 16%, transparent) 45%,
+    color-mix(in srgb, var(--cf-shadow) 26%, transparent) 0%,
     transparent 100%
-  );
-}
-
-.facetFirst > .slice::after {
-  content: '';
-  position: absolute;
-  inset-inline: 0;
-  inset-block-start: 0;
-  block-size: 4px;
-  z-index: 1;
-  pointer-events: none;
-  background: var(--cf-edge);
-  background-size: 180px 6px;
-  opacity: 0.8;
-}
-
-/* The free end: the paper has thickness, and its last corner lifts clear of the board. */
-.sliceLast {
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cs)), calc(100% - var(--cs)) 100%, 0 100%);
-}
-
-.curl {
-  position: absolute;
-  inset-inline-end: 0;
-  inset-block-end: 0;
-  inline-size: var(--cs);
-  block-size: var(--cs);
-  pointer-events: none;
-  filter: drop-shadow(-1px -1px 2.5px color-mix(in srgb, var(--cf-shadow) 52%, transparent));
-}
-
-.curl::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  clip-path: polygon(0 0, 100% 0, 0 100%);
-  background: linear-gradient(
-    135deg,
-    #fffdf6 0%,
-    var(--cf-cream) 38%,
-    color-mix(in srgb, var(--cf-cream) 74%, var(--cf-shadow)) 100%
   );
 }
 
@@ -402,7 +292,7 @@
   inset-inline: 0;
   inset-block-start: calc(var(--k) * var(--h) * -1);
   box-sizing: border-box;
-  padding-block: clamp(1.25rem, 3.4cqi, 2.2rem) clamp(1.75rem, 4cqi, 2.9rem);
+  padding-block: clamp(1.25rem, 3cqi, 2rem) clamp(1.5rem, 3.6cqi, 2.4rem);
   padding-inline: var(--cf-pad) clamp(1rem, 4cqi, 3rem);
   color: var(--cf-ink);
   opacity: var(--tx, 1);
@@ -415,11 +305,11 @@
 
 .answerText {
   margin: 0;
-  max-inline-size: 60ch;
+  max-inline-size: 62ch;
   font-weight: 400;
-  font-size: clamp(1.0625rem, 0.98rem + 0.5cqi, 1.25rem);
-  line-height: 1.68;
-  letter-spacing: -0.005em;
+  font-size: clamp(1rem, 0.94rem + 0.32cqi, 1.1875rem);
+  line-height: 1.65;
+  letter-spacing: -0.003em;
   color: var(--cf-ink);
   text-wrap: pretty;
   overflow-wrap: break-word;
@@ -445,9 +335,9 @@
   inset-block: 0;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.45) 0%,
-    rgba(255, 255, 255, 0) 38%,
-    color-mix(in srgb, var(--cf-shadow) 34%, transparent) 100%
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0) 40%,
+    color-mix(in srgb, var(--cf-shadow) 22%, transparent) 100%
   );
 }
 
@@ -455,14 +345,14 @@
   inset-block: 0;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--cf-shadow) 62%, transparent) 0%,
-    color-mix(in srgb, var(--cf-shadow) 26%, transparent) 55%,
-    rgba(255, 255, 255, 0.18) 100%
+    color-mix(in srgb, var(--cf-shadow) 42%, transparent) 0%,
+    color-mix(in srgb, var(--cf-shadow) 16%, transparent) 55%,
+    rgba(255, 255, 255, 0.12) 100%
   );
 }
 
 .crease {
   inset-block-start: 0;
   block-size: 1px;
-  background: color-mix(in srgb, var(--cf-shadow) 55%, transparent);
+  background: color-mix(in srgb, var(--cf-shadow) 35%, transparent);
 }
