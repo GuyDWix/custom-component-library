@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent } from 'react';
 import styles from './Component.module.css';
 
@@ -25,15 +25,11 @@ const LEAN_K = 42;
 const LEAN_C = 3.2;
 const CORD_K = 13;
 const CORD_C = 1.5;
-const TAG_K = 30;
-const TAG_C = 1.3;
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
 const SHADE_HELP =
   'Drag the cord down, or use the down and up arrow keys, to lower and raise the shade.';
-
-const NOTCHES = [0, 60, 120, 180, 240, 300];
 
 export default function PullCordReveal({
   coverImage = 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1600&auto=format&fit=crop',
@@ -46,7 +42,6 @@ export default function PullCordReveal({
   shadeColor = '#e7dcc4',
   className,
 }: PullCordRevealProps) {
-  const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const [reduced, setReduced] = useState(false);
   const [inView, setInView] = useState(true);
 
@@ -54,13 +49,12 @@ export default function PullCordReveal({
   const paneRef = useRef<HTMLDivElement>(null);
   const cordRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<HTMLDivElement>(null);
-  const dropRef = useRef<HTMLDivElement>(null);
   const reducedRef = useRef(false);
 
   const motion = useRef({ t: 0, v: 0 });
   const stop = useRef(0);
   const drag = useRef({ on: false, y0: 0, x0: 0, t0: 0, moved: 0, lastAt: 0 });
-  // Secondary motion: ring spring, shade lean, cord pendulum, tag pendulum.
+  // Secondary motion: pull spring, shade lean, cord pendulum.
   const phys = useRef({
     r: 0,
     rv: 0,
@@ -68,8 +62,6 @@ export default function PullCordReveal({
     lw: 0,
     c: 0,
     cw: 0,
-    g: 0,
-    gw: 0,
     pv: 0,
     dx: 0,
     mountedAt: 0,
@@ -81,7 +73,7 @@ export default function PullCordReveal({
     const cord = cordRef.current;
     if (!pane || !cord) return;
     const cordH = cord.offsetHeight;
-    const tail = (handleRef.current?.offsetHeight ?? 0) + (dropRef.current?.offsetHeight ?? 0) + 10;
+    const tail = (handleRef.current?.offsetHeight ?? 0) + 10;
     sizes.current.dip = clamp(pane.offsetHeight * 0.34, 70, Math.max(70, cordH * 0.84 - tail));
     sizes.current.w = pane.offsetWidth;
   }, []);
@@ -90,12 +82,10 @@ export default function PullCordReveal({
     const pane = paneRef.current;
     const cord = cordRef.current;
     const handle = handleRef.current;
-    const drop = dropRef.current;
     if (!pane || !cord || !handle) return;
     const ro = new ResizeObserver(measure);
     ro.observe(pane);
     ro.observe(cord);
-    if (drop) ro.observe(drop);
     measure();
     return () => ro.disconnect();
   }, [measure]);
@@ -136,8 +126,6 @@ export default function PullCordReveal({
     set('--t', tt.toFixed(4));
     set('--u', (1 - clamp(t, 0, 1)).toFixed(4));
     set('--v', Math.min(1, Math.abs(v) * 0.35).toFixed(3));
-    set('--roll', `${(tt * 220).toFixed(1)}px`);
-    set('--spin', `${(tt * 640).toFixed(1)}deg`);
     set('--ring', `${(clamp(p.r, -0.06, 1.12) * sizes.current.dip).toFixed(1)}px`);
     let idle = 0;
     let idleLean = 0;
@@ -147,7 +135,6 @@ export default function PullCordReveal({
       idleLean = 0.1 * Math.sin(now / 1700) * ramp;
     }
     set('--sway', `${(clamp(p.c, -22, 22) + idle).toFixed(2)}deg`);
-    set('--tag', `${clamp(p.g, -26, 26).toFixed(2)}deg`);
     const lean = clamp(p.l, -1.4, 1.4) + idleLean;
     set('--lean', `${lean.toFixed(3)}deg`);
     set('--leanpx', `${((Math.tan((lean * Math.PI) / 180) * sizes.current.w) / 2).toFixed(2)}px`);
@@ -185,7 +172,7 @@ export default function PullCordReveal({
           m.v += (STIFFNESS * (stop.current - m.t) - DAMPING * m.v) * h;
           m.t += m.v * h;
         }
-        // Ring hangs on the cord: stiff while held, springy once let go.
+        // Pull hangs on the cord: stiff while held, springy once let go.
         const kR = dragging ? 900 : RING_K;
         const cR = dragging ? 52 : RING_C;
         p.rv += (kR * (m.t - p.r) - cR * p.rv) * h;
@@ -199,10 +186,6 @@ export default function PullCordReveal({
           : -CORD_K * p.c - CORD_C * p.cw;
         p.cw += ca * h;
         p.c += p.cw * h;
-        // Tag hangs from the cord end and lags behind it.
-        const ga = -TAG_K * p.g - TAG_C * p.gw - 0.85 * ca;
-        p.gw += ga * h;
-        p.g += p.gw * h;
       }
       paint();
       raf = requestAnimationFrame(loop);
@@ -214,7 +197,6 @@ export default function PullCordReveal({
   const kick = (dir: number) => {
     const p = phys.current;
     p.cw += dir * 26;
-    p.gw -= dir * 20;
   };
 
   const goTo = useCallback(
@@ -231,7 +213,6 @@ export default function PullCordReveal({
         const p = phys.current;
         const dir = target > m.t ? 1 : -1;
         p.cw += dir * 26;
-        p.gw -= dir * 20;
       }
       stop.current = target;
     },
@@ -308,7 +289,6 @@ export default function PullCordReveal({
   };
 
   const rootStyle = { '--pc-shade': shadeColor || '#e7dcc4' } as CSSProperties;
-  const ref = (name: string) => `url(#${uid}${name})`;
 
   return (
     <div
@@ -317,25 +297,6 @@ export default function PullCordReveal({
       style={rootStyle}
     >
       <span className={styles.plaster} aria-hidden="true" />
-
-      <svg className={styles.defs} width="0" height="0" aria-hidden="true" focusable="false">
-        <defs>
-          <linearGradient id={`${uid}b`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#9a7940" />
-            <stop offset="0.45" stopColor="#c4a263" />
-            <stop offset="1" stopColor="#8a6a34" />
-          </linearGradient>
-          <linearGradient id={`${uid}d`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#d9bb7e" />
-            <stop offset="1" stopColor="#94733a" />
-          </linearGradient>
-          <linearGradient id={`${uid}w`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#6e4a26" />
-            <stop offset="0.45" stopColor="#a47339" />
-            <stop offset="1" stopColor="#5c3d1f" />
-          </linearGradient>
-        </defs>
-      </svg>
 
       <div className={styles.stage}>
         <div className={styles.window}>
@@ -355,9 +316,6 @@ export default function PullCordReveal({
                   )}
                   <span className={styles.viewDusk} aria-hidden="true" />
                   <span className={styles.viewSheen} aria-hidden="true" />
-                  <span className={styles.barV1} aria-hidden="true" />
-                  <span className={styles.barV2} aria-hidden="true" />
-                  <span className={styles.barH} aria-hidden="true" />
                   <span className={styles.viewEdge} aria-hidden="true" />
                 </div>
               </div>
@@ -393,40 +351,13 @@ export default function PullCordReveal({
                   )}
                 </div>
                 <span className={styles.shadeWeave} aria-hidden="true" />
-                          <span className={styles.shadeGlow} aria-hidden="true" />
-                          <span className={styles.shadeTop} aria-hidden="true" />
+                <span className={styles.shadeGlow} aria-hidden="true" />
+                <span className={styles.shadeTop} aria-hidden="true" />
                 <span className={styles.shadeEdge} aria-hidden="true" />
               </div>
 
               <span className={styles.hem} aria-hidden="true" />
               <span className={styles.roll} aria-hidden="true" />
-
-              {[styles.bracketL, styles.bracketR].map((side) => (
-                <svg
-                  key={side}
-                  className={`${styles.bracket} ${side}`}
-                  viewBox="0 0 36 52"
-                  aria-hidden="true"
-                  focusable="false"
-                >
-                  <path d="M3 0H33V37.5Q33 48 18 48Q3 48 3 37.5Z" fill={ref('b')} />
-                  <circle cx="18" cy="22" r="7.6" fill="rgba(40,24,6,0.55)" />
-                  <circle cx="18" cy="22" r="6" fill={ref('b')} />
-                  <circle cx="18" cy="22" r="2.6" fill="#3a2a12" />
-                </svg>
-              ))}
-
-              <svg className={styles.arm} viewBox="0 0 30 66" aria-hidden="true" focusable="false">
-                <rect x="6" y="0" width="18" height="8" rx="1.6" fill={ref('b')} />
-                <rect x="12.2" y="8" width="5.6" height="28" fill={ref('b')} />
-                <g className={styles.wheel}>
-                  <circle cx="15" cy="46" r="11.4" fill={ref('b')} />
-                  <circle cx="15" cy="46" r="8" fill="#2a1a08" />
-                  <path d="M15 38.4V41.4" stroke="rgba(214,180,120,0.8)" strokeWidth="1.2" />
-                  <circle cx="15" cy="46" r="2.6" fill={ref('b')} />
-                </g>
-                <path d="M6.8 46A8.2 8.2 0 0 0 23.2 46" fill="none" stroke="#cdb88c" strokeWidth="2" />
-              </svg>
 
               <div
                 ref={cordRef}
@@ -443,7 +374,7 @@ export default function PullCordReveal({
                   className={styles.cordHandle}
                   role="slider"
                   tabIndex={0}
-                  aria-label="Window shade"
+                  aria-label={cordLabel ? `Window shade: ${cordLabel}` : 'Window shade'}
                   aria-orientation="vertical"
                   aria-description={SHADE_HELP}
                   aria-valuemin={0}
@@ -451,31 +382,12 @@ export default function PullCordReveal({
                   aria-valuenow={0}
                   onKeyDown={onKeyDown}
                 >
-                  <svg viewBox="0 0 64 64" className={styles.ringSvg} aria-hidden="true" focusable="false">
-                    <circle cx="32" cy="32" r="25" fill="none" stroke={ref('d')} strokeWidth="6" />
-                  </svg>
-                </div>
-                <div ref={dropRef} className={styles.drop}>
-                  <svg viewBox="0 0 24 54" className={styles.acorn} aria-hidden="true" focusable="false">
-                    <ellipse cx="12" cy="3" rx="3.4" ry="3" fill="none" stroke={ref('b')} strokeWidth="1.5" />
-                    <path d="M7 6H17L18.6 12H5.4Z" fill={ref('b')} />
-                    <path
-                      d="M9.4 15.2C4 18.4 2 27.2 5 34C7 38.6 10 41 10.8 44L10 47C10 49.6 11 52 12 52C13 52 14 49.6 14 47L13.2 44C14 41 17 38.6 19 34C22 27.2 20 18.4 14.6 15.2Z"
-                      fill={ref('w')}
-                    />
-                  </svg>
-                  {cordLabel && (
-                    <div className={styles.tagSwing}>
-                      <span className={styles.thread} aria-hidden="true" />
-                      <span className={styles.tag}>{cordLabel}</span>
-                    </div>
-                  )}
+                  <span className={styles.pull} aria-hidden="true" />
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <span className={styles.sill} aria-hidden="true" />
       </div>
     </div>
   );
