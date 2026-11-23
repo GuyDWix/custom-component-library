@@ -330,10 +330,7 @@ export default function SplitFlapStats({
       aria-description={BOARD_HELP}
     >
       <div className={styles.hall}>
-        <span className={cx(styles.rod, styles.rodStart)} aria-hidden="true" />
-        <span className={cx(styles.rod, styles.rodEnd)} aria-hidden="true" />
         <div className={styles.frame}>
-          <span className={cx(styles.fixture, armed && styles.lightOff)} aria-hidden="true" />
           <ul className={styles.board} style={boardStyle}>
             {rows.map((row, i) => {
               const hero = i === 0;
@@ -377,7 +374,6 @@ export default function SplitFlapStats({
             })}
           </ul>
           <span className={cx(styles.light, armed && styles.lightOff)} aria-hidden="true" />
-          <span className={styles.grain} aria-hidden="true" />
         </div>
       </div>
     </section>
