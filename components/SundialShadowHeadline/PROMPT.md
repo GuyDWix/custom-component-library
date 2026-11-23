@@ -1,10 +1,10 @@
 Create a custom element called "Sundial Shadow Headline". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: headline text, text color, shadow color, light direction (follows the pointer or sweeps automatically), show the sun disc. Add other settings if they help.
+The site owner must be able to change: headline text, text color, shadow color, sky color, ground color, sun color, ruler tick color, light direction (follows the pointer or sweeps automatically), show the sun disc. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import type { KeyboardEvent, PointerEvent } from 'react';
+import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import styles from './Component.module.css';
 
 export type SundialLightMode = 'pointer' | 'auto';
@@ -13,6 +13,10 @@ export interface SundialShadowHeadlineProps {
   text?: string;
   textColor?: string;
   shadowColor?: string;
+  skyColor?: string;
+  groundColor?: string;
+  sunColor?: string;
+  tickColor?: string;
   lightMode?: SundialLightMode;
   showSun?: boolean;
   className?: string;
@@ -117,6 +121,10 @@ export default function SundialShadowHeadline({
   text = DEFAULT_TEXT,
   textColor = DEFAULT_TEXT_COLOR,
   shadowColor = DEFAULT_SHADOW_COLOR,
+  skyColor,
+  groundColor,
+  sunColor,
+  tickColor,
   lightMode = 'pointer',
   showSun = true,
   className,
@@ -518,9 +526,18 @@ export default function SundialShadowHeadline({
     }
   };
 
+  const themeVars = {
+    '--sd-ink': shadowColor,
+    ...(skyColor && { '--sd-sky': skyColor }),
+    ...(groundColor && { '--sd-ground': groundColor }),
+    ...(sunColor && { '--sd-sun': sunColor }),
+    ...(tickColor && { '--sd-tick': tickColor }),
+  } as CSSProperties;
+
   return (
     <div
       ref={rootRef}
+      style={themeVars}
       className={[styles.root, className].filter(Boolean).join(' ')}
       tabIndex={0}
       aria-labelledby={titleId}
@@ -574,9 +591,10 @@ export default function SundialShadowHeadline({
 .root {
   --sd-sky: #f7e9cb;
   --sd-ground: #ecc978;
-  --sd-horizon: #d9ad5e;
+  --sd-horizon: color-mix(in oklch, var(--sd-ground) 90%, #000);
   --sd-sun: #f0a13a;
-  --sd-sun-ring: #cf4f24;
+  --sd-sun-ring: color-mix(in oklch, var(--sd-sun) 70%, #c01800);
+  --sd-glow: color-mix(in oklch, var(--sd-sky) 40%, #fff);
   --sd-tick: #c49149;
   --sd-ink: #5d2e42;
   --sd-sun-size: clamp(34px, 9cqw, 74px);
@@ -644,7 +662,7 @@ export default function SundialShadowHeadline({
   inline-size: 64cqw;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(255, 244, 214, 0.6), rgba(255, 244, 214, 0) 70%);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--sd-glow) 60%, transparent), transparent 70%);
   transform: translate(-50%, -50%);
 }
 

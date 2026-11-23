@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import type { KeyboardEvent, PointerEvent } from 'react';
+import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import styles from './Component.module.css';
 
 export type SundialLightMode = 'pointer' | 'auto';
@@ -8,6 +8,10 @@ export interface SundialShadowHeadlineProps {
   text?: string;
   textColor?: string;
   shadowColor?: string;
+  skyColor?: string;
+  groundColor?: string;
+  sunColor?: string;
+  tickColor?: string;
   lightMode?: SundialLightMode;
   showSun?: boolean;
   className?: string;
@@ -112,6 +116,10 @@ export default function SundialShadowHeadline({
   text = DEFAULT_TEXT,
   textColor = DEFAULT_TEXT_COLOR,
   shadowColor = DEFAULT_SHADOW_COLOR,
+  skyColor,
+  groundColor,
+  sunColor,
+  tickColor,
   lightMode = 'pointer',
   showSun = true,
   className,
@@ -513,9 +521,18 @@ export default function SundialShadowHeadline({
     }
   };
 
+  const themeVars = {
+    '--sd-ink': shadowColor,
+    ...(skyColor && { '--sd-sky': skyColor }),
+    ...(groundColor && { '--sd-ground': groundColor }),
+    ...(sunColor && { '--sd-sun': sunColor }),
+    ...(tickColor && { '--sd-tick': tickColor }),
+  } as CSSProperties;
+
   return (
     <div
       ref={rootRef}
+      style={themeVars}
       className={[styles.root, className].filter(Boolean).join(' ')}
       tabIndex={0}
       aria-labelledby={titleId}

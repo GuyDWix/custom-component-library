@@ -10,6 +10,10 @@
     "Headline text",
     "Text color",
     "Shadow color",
+    "Sky color",
+    "Ground color",
+    "Sun color",
+    "Ruler tick color",
     "Light direction (follows the pointer or sweeps automatically)",
     "Show the sun disc"
   ],
