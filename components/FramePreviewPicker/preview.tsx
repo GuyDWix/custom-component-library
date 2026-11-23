@@ -36,11 +36,12 @@ const stage = {
 export default function Preview() {
   const params = useMemo(() => new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search), []);
   const isWorst = params.get('worst') === '1';
+  const orientation = params.get('orientation') === 'landscape' ? 'landscape' : 'portrait';
 
   return (
     <div style={stage}>
       <div style={{ width: '100%', maxWidth: 1200 }}>
-        <FramePreviewPicker {...(isWorst ? worst : {})} />
+        <FramePreviewPicker {...(isWorst ? worst : {})} orientation={orientation} />
       </div>
     </div>
   );
