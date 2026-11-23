@@ -16,17 +16,18 @@ const stage = {
   display: 'grid',
   placeItems: 'center',
   padding: 'clamp(16px, 4vw, 56px)',
-  background: 'linear-gradient(180deg, #f0ebe2 0%, #e5ddcd 100%)',
+  background: 'linear-gradient(180deg, #eef1f3 0%, #dde4e9 100%)',
 };
 
 export default function Preview() {
   const params = useMemo(() => new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search), []);
+  const color = params.get('color') ? `#${params.get('color')}` : undefined;
   const isWorst = params.get('worst') === '1';
 
   return (
     <div style={stage}>
       <div style={{ width: '100%', maxWidth: 1200 }}>
-        <GoalJarFill {...(isWorst ? worst : {})} />
+        <GoalJarFill {...(isWorst ? worst : {})} {...(color ? { liquidColor: color } : {})} />
       </div>
     </div>
   );

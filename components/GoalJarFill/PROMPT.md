@@ -22,7 +22,16 @@ const SPRING = 0.04;
 const DAMP = 0.03;
 const SPREAD = 0.25;
 const MAX_DISP = 6;
-const BASELINE = 10;
+const BASELINE = 14;
+const SURFACE_H = 24;
+const BUBBLES = [
+  { x: 14, size: 7, dur: 11, delay: 0 },
+  { x: 31, size: 4, dur: 8, delay: 3 },
+  { x: 48, size: 9, dur: 13, delay: 6 },
+  { x: 63, size: 5, dur: 9, delay: 1.5 },
+  { x: 78, size: 8, dur: 12, delay: 4.5 },
+  { x: 90, size: 4, dur: 10, delay: 8 },
+];
 const HELP = 'Hover, tap or press Enter to stir the liquid.';
 
 const clamp = (v: number, min = 0, max = 1) => Math.min(max, Math.max(min, v));
@@ -31,13 +40,20 @@ const money = (symbol: string, n: number) => {
   return symbol.length > 1 ? `${symbol} ${digits}` : `${symbol}${digits}`;
 };
 
-const surfacePath = (disp: Float32Array, now: number, phase: number, idle: number) => {
-  let d = 'M0,18';
+const surfaceYs = (disp: Float32Array, now: number, phase: number, idle: number) => {
+  const ys = new Float32Array(COLUMNS);
   for (let i = 0; i < COLUMNS; i++) {
-    const y = BASELINE - disp[i] - Math.sin(now / 900 + i * 0.45 + phase) * idle;
-    d += `L${((i / (COLUMNS - 1)) * 100).toFixed(2)},${y.toFixed(2)}`;
+    const swell = Math.sin(now / 900 + i * 0.45 + phase) + Math.sin(now / 1500 - i * 0.8 + phase * 1.7) * 0.5;
+    ys[i] = BASELINE - disp[i] - swell * idle;
   }
-  return `${d}L100,18Z`;
+  return ys;
+};
+const colX = (i: number) => ((i / (COLUMNS - 1)) * 100).toFixed(2);
+const linePath = (ys: Float32Array) => ys.reduce((d, y, i) => `${d}${i ? 'L' : 'M'}${colX(i)},${y.toFixed(2)}`, '');
+const fillPath = (ys: Float32Array) => `${linePath(ys).replace('M', `M0,${SURFACE_H}L`)}L100,${SURFACE_H}Z`;
+const clipPolygon = (ys: Float32Array) => {
+  const pts = Array.from(ys, (y, i) => `${colX(i)}% calc((1 - var(--gj-fill)) * 100% + ${(y - SURFACE_H).toFixed(2)}px)`);
+  return `polygon(${pts.join(',')},100% 100%,0% 100%)`;
 };
 
 export default function GoalJarFill({
@@ -45,7 +61,7 @@ export default function GoalJarFill({
   goal = 20000,
   label = 'Orchard replanting fund',
   currencySymbol = '$',
-  liquidColor = '#c9780f',
+  liquidColor = '#1a86a8',
   reachedText = 'Goal reached',
   className,
 }: GoalJarFillProps) {
@@ -61,6 +77,9 @@ export default function GoalJarFill({
   const wellRef = useRef<HTMLDivElement>(null);
   const frontRef = useRef<SVGPathElement>(null);
   const backRef = useRef<SVGPathElement>(null);
+  const edgeRef = useRef<SVGPathElement>(null);
+  const creamRef = useRef<HTMLDivElement>(null);
+  const prevRatio = useRef(ratio);
   const target = useRef({ ratio, amount });
   target.current = { ratio, amount };
   const wave = useRef({ h: new Float32Array(COLUMNS), v: new Float32Array(COLUMNS), lastX: -1 });
@@ -88,7 +107,9 @@ export default function GoalJarFill({
     const root = rootRef.current;
     const front = frontRef.current;
     const back = backRef.current;
-    if (!root || !front || !back) return;
+    const edge = edgeRef.current;
+    const cream = creamRef.current;
+    if (!root || !front || !back || !edge || !cream) return;
     const { h, v } = wave.current;
     let cur = reduced ? target.current.ratio : 0;
     let curAmount = reduced ? target.current.amount : 0;
@@ -96,9 +117,12 @@ export default function GoalJarFill({
     let raf = 0;
 
     const draw = (now: number) => {
-      const idle = reduced ? 0 : Math.min(1, cur * 4);
-      front.setAttribute('d', surfacePath(h, now, 0, idle * 0.9));
-      back.setAttribute('d', surfacePath(h, now, 2.2, idle * 1.3));
+      const idle = reduced ? 0.9 : 1.6 * Math.min(1, cur * 4);
+      const ys = surfaceYs(h, now, 0, idle);
+      front.setAttribute('d', fillPath(ys));
+      edge.setAttribute('d', linePath(ys));
+      back.setAttribute('d', fillPath(surfaceYs(h, now, 2.2, idle * 1.35)));
+      cream.style.clipPath = clipPolygon(ys);
     };
 
     const tick = (now: number) => {
@@ -134,9 +158,18 @@ export default function GoalJarFill({
       if (reduced) setShown({ percent: Math.round(target.current.ratio * 100), amount: Math.round(target.current.amount) });
       return;
     }
+    v.forEach((_, n) => (v[n] += Math.sin((n / (COLUMNS - 1)) * Math.PI * 2) * 2.5));
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [inView, reduced]);
+
+  useEffect(() => {
+    const change = ratio - prevRatio.current;
+    prevRatio.current = ratio;
+    if (reduced || !change) return;
+    const kick = clamp(Math.abs(change) * 14, 1, 4);
+    wave.current.v.forEach((_, n) => (wave.current.v[n] += Math.sin((n / (COLUMNS - 1)) * Math.PI * 2) * kick));
+  }, [ratio, reduced]);
 
   const nudge = (index: number, impulse: number) => {
     const { v } = wave.current;
@@ -192,13 +225,23 @@ export default function GoalJarFill({
           {numeral}
         </div>
         <div className={styles.liquid} aria-hidden="true">
-          <svg className={styles.surface} viewBox="0 0 100 18" preserveAspectRatio="none">
+          <svg className={styles.surface} viewBox={`0 0 100 ${SURFACE_H}`} preserveAspectRatio="none">
             <path ref={backRef} className={styles.surfaceBack} />
             <path ref={frontRef} className={styles.surfaceFront} />
+            <path ref={edgeRef} className={styles.surfaceEdge} />
           </svg>
           <div className={styles.body}>
-            <div className={`${styles.layer} ${styles.layerIn}`}>{numeral}</div>
+            {BUBBLES.map((b, i) => (
+              <span
+                key={i}
+                className={styles.bubble}
+                style={{ '--x': `${b.x}%`, '--s': `${b.size}px`, '--dur': `${b.dur}s`, '--delay': `-${b.delay}s` } as CSSProperties}
+              />
+            ))}
           </div>
+        </div>
+        <div ref={creamRef} className={`${styles.layer} ${styles.layerIn}`} aria-hidden="true">
+          {numeral}
         </div>
         <span className={styles.gloss} aria-hidden="true" />
         {reached && (
@@ -236,17 +279,18 @@ export default function GoalJarFill({
   font-display: swap;
 }
 
-/* Soft-UI liquid tablet: pressed clay well, amber liquid, numeral inverts at the waterline. */
+/* Soft-UI liquid tablet: pressed well, tinted liquid with two wave layers, numeral inverts along the wave. */
 .root {
-  --gj-liquid: #c9780f;
-  --gj-ground: #e9e4da;
-  --gj-ink: #2f1d0e;
-  --gj-ink-soft: #5a4a3a;
-  --gj-cream: #fff6e2;
-  --gj-hi: rgba(255, 255, 255, 0.85);
-  --gj-lo: rgba(110, 92, 66, 0.34);
-  --gj-top: color-mix(in srgb, var(--gj-liquid) 72%, #2a1608);
-  --gj-bottom: color-mix(in srgb, var(--gj-liquid) 55%, #2a1608);
+  --gj-liquid: #1a86a8;
+  --gj-ground: #e6ebee;
+  --gj-ink: #1c2a33;
+  --gj-ink-soft: #4a5a64;
+  --gj-cream: #f6fbfd;
+  --gj-hi: rgba(255, 255, 255, 0.9);
+  --gj-lo: rgba(70, 92, 110, 0.3);
+  --gj-deep: #061822;
+  --gj-top: color-mix(in srgb, var(--gj-liquid) 82%, var(--gj-deep));
+  --gj-bottom: color-mix(in srgb, var(--gj-liquid) 52%, var(--gj-deep));
   --gj-font: 'Schibsted Grotesk', 'Avenir Next', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --gj-fill: 0;
   --gj-len: 2;
@@ -337,7 +381,7 @@ export default function GoalJarFill({
   inset-inline: 0;
   inset-block-end: calc(100% - 1px);
   inline-size: 100%;
-  block-size: 18px;
+  block-size: 24px;
   display: block;
 }
 
@@ -346,8 +390,16 @@ export default function GoalJarFill({
 }
 
 .surfaceBack {
-  fill: color-mix(in srgb, var(--gj-top) 70%, #fff);
-  opacity: 0.55;
+  fill: color-mix(in srgb, var(--gj-liquid) 60%, #fff);
+  opacity: 0.6;
+}
+
+.surfaceEdge {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.55);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
 }
 
 .body {
@@ -355,10 +407,39 @@ export default function GoalJarFill({
   inset: 0;
   overflow: hidden;
   background:
-    radial-gradient(120% 70% at 18% 0%, rgba(255, 214, 140, 0.34), transparent 60%),
-    radial-gradient(90% 60% at 90% 110%, rgba(20, 8, 0, 0.35), transparent 70%),
+    radial-gradient(120% 60% at 20% 0%, color-mix(in srgb, var(--gj-liquid) 60%, #fff 40%) 0%, transparent 60%),
+    radial-gradient(90% 60% at 90% 110%, rgba(0, 10, 18, 0.4), transparent 70%),
     linear-gradient(180deg, var(--gj-top), var(--gj-bottom));
-  box-shadow: inset 0 3px 0 rgba(255, 236, 190, 0.45), inset 0 -16px 28px rgba(20, 8, 0, 0.25);
+  box-shadow: inset 0 -16px 28px rgba(0, 10, 18, 0.25);
+}
+
+.bubble {
+  position: absolute;
+  inset-inline-start: var(--x);
+  inset-block-end: -10%;
+  inline-size: var(--s);
+  block-size: var(--s);
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.12) 65%);
+  opacity: 0;
+  animation: gj-rise var(--dur) linear var(--delay) infinite;
+}
+
+@keyframes gj-rise {
+  0% {
+    inset-block-end: -10%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.8;
+  }
+  85% {
+    opacity: 0.6;
+  }
+  100% {
+    inset-block-end: 96%;
+    opacity: 0;
+  }
 }
 
 .gloss {
@@ -455,6 +536,10 @@ export default function GoalJarFill({
 @media (prefers-reduced-motion: reduce) {
   .reached {
     animation: none;
+  }
+
+  .bubble {
+    display: none;
   }
 }
 ```

@@ -17,7 +17,16 @@ const SPRING = 0.04;
 const DAMP = 0.03;
 const SPREAD = 0.25;
 const MAX_DISP = 6;
-const BASELINE = 10;
+const BASELINE = 14;
+const SURFACE_H = 24;
+const BUBBLES = [
+  { x: 14, size: 7, dur: 11, delay: 0 },
+  { x: 31, size: 4, dur: 8, delay: 3 },
+  { x: 48, size: 9, dur: 13, delay: 6 },
+  { x: 63, size: 5, dur: 9, delay: 1.5 },
+  { x: 78, size: 8, dur: 12, delay: 4.5 },
+  { x: 90, size: 4, dur: 10, delay: 8 },
+];
 const HELP = 'Hover, tap or press Enter to stir the liquid.';
 
 const clamp = (v: number, min = 0, max = 1) => Math.min(max, Math.max(min, v));
@@ -26,13 +35,20 @@ const money = (symbol: string, n: number) => {
   return symbol.length > 1 ? `${symbol} ${digits}` : `${symbol}${digits}`;
 };
 
-const surfacePath = (disp: Float32Array, now: number, phase: number, idle: number) => {
-  let d = 'M0,18';
+const surfaceYs = (disp: Float32Array, now: number, phase: number, idle: number) => {
+  const ys = new Float32Array(COLUMNS);
   for (let i = 0; i < COLUMNS; i++) {
-    const y = BASELINE - disp[i] - Math.sin(now / 900 + i * 0.45 + phase) * idle;
-    d += `L${((i / (COLUMNS - 1)) * 100).toFixed(2)},${y.toFixed(2)}`;
+    const swell = Math.sin(now / 900 + i * 0.45 + phase) + Math.sin(now / 1500 - i * 0.8 + phase * 1.7) * 0.5;
+    ys[i] = BASELINE - disp[i] - swell * idle;
   }
-  return `${d}L100,18Z`;
+  return ys;
+};
+const colX = (i: number) => ((i / (COLUMNS - 1)) * 100).toFixed(2);
+const linePath = (ys: Float32Array) => ys.reduce((d, y, i) => `${d}${i ? 'L' : 'M'}${colX(i)},${y.toFixed(2)}`, '');
+const fillPath = (ys: Float32Array) => `${linePath(ys).replace('M', `M0,${SURFACE_H}L`)}L100,${SURFACE_H}Z`;
+const clipPolygon = (ys: Float32Array) => {
+  const pts = Array.from(ys, (y, i) => `${colX(i)}% calc((1 - var(--gj-fill)) * 100% + ${(y - SURFACE_H).toFixed(2)}px)`);
+  return `polygon(${pts.join(',')},100% 100%,0% 100%)`;
 };
 
 export default function GoalJarFill({
@@ -40,7 +56,7 @@ export default function GoalJarFill({
   goal = 20000,
   label = 'Orchard replanting fund',
   currencySymbol = '$',
-  liquidColor = '#c9780f',
+  liquidColor = '#1a86a8',
   reachedText = 'Goal reached',
   className,
 }: GoalJarFillProps) {
@@ -56,6 +72,9 @@ export default function GoalJarFill({
   const wellRef = useRef<HTMLDivElement>(null);
   const frontRef = useRef<SVGPathElement>(null);
   const backRef = useRef<SVGPathElement>(null);
+  const edgeRef = useRef<SVGPathElement>(null);
+  const creamRef = useRef<HTMLDivElement>(null);
+  const prevRatio = useRef(ratio);
   const target = useRef({ ratio, amount });
   target.current = { ratio, amount };
   const wave = useRef({ h: new Float32Array(COLUMNS), v: new Float32Array(COLUMNS), lastX: -1 });
@@ -83,7 +102,9 @@ export default function GoalJarFill({
     const root = rootRef.current;
     const front = frontRef.current;
     const back = backRef.current;
-    if (!root || !front || !back) return;
+    const edge = edgeRef.current;
+    const cream = creamRef.current;
+    if (!root || !front || !back || !edge || !cream) return;
     const { h, v } = wave.current;
     let cur = reduced ? target.current.ratio : 0;
     let curAmount = reduced ? target.current.amount : 0;
@@ -91,9 +112,12 @@ export default function GoalJarFill({
     let raf = 0;
 
     const draw = (now: number) => {
-      const idle = reduced ? 0 : Math.min(1, cur * 4);
-      front.setAttribute('d', surfacePath(h, now, 0, idle * 0.9));
-      back.setAttribute('d', surfacePath(h, now, 2.2, idle * 1.3));
+      const idle = reduced ? 0.9 : 1.6 * Math.min(1, cur * 4);
+      const ys = surfaceYs(h, now, 0, idle);
+      front.setAttribute('d', fillPath(ys));
+      edge.setAttribute('d', linePath(ys));
+      back.setAttribute('d', fillPath(surfaceYs(h, now, 2.2, idle * 1.35)));
+      cream.style.clipPath = clipPolygon(ys);
     };
 
     const tick = (now: number) => {
@@ -129,9 +153,18 @@ export default function GoalJarFill({
       if (reduced) setShown({ percent: Math.round(target.current.ratio * 100), amount: Math.round(target.current.amount) });
       return;
     }
+    v.forEach((_, n) => (v[n] += Math.sin((n / (COLUMNS - 1)) * Math.PI * 2) * 2.5));
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [inView, reduced]);
+
+  useEffect(() => {
+    const change = ratio - prevRatio.current;
+    prevRatio.current = ratio;
+    if (reduced || !change) return;
+    const kick = clamp(Math.abs(change) * 14, 1, 4);
+    wave.current.v.forEach((_, n) => (wave.current.v[n] += Math.sin((n / (COLUMNS - 1)) * Math.PI * 2) * kick));
+  }, [ratio, reduced]);
 
   const nudge = (index: number, impulse: number) => {
     const { v } = wave.current;
@@ -187,13 +220,23 @@ export default function GoalJarFill({
           {numeral}
         </div>
         <div className={styles.liquid} aria-hidden="true">
-          <svg className={styles.surface} viewBox="0 0 100 18" preserveAspectRatio="none">
+          <svg className={styles.surface} viewBox={`0 0 100 ${SURFACE_H}`} preserveAspectRatio="none">
             <path ref={backRef} className={styles.surfaceBack} />
             <path ref={frontRef} className={styles.surfaceFront} />
+            <path ref={edgeRef} className={styles.surfaceEdge} />
           </svg>
           <div className={styles.body}>
-            <div className={`${styles.layer} ${styles.layerIn}`}>{numeral}</div>
+            {BUBBLES.map((b, i) => (
+              <span
+                key={i}
+                className={styles.bubble}
+                style={{ '--x': `${b.x}%`, '--s': `${b.size}px`, '--dur': `${b.dur}s`, '--delay': `-${b.delay}s` } as CSSProperties}
+              />
+            ))}
           </div>
+        </div>
+        <div ref={creamRef} className={`${styles.layer} ${styles.layerIn}`} aria-hidden="true">
+          {numeral}
         </div>
         <span className={styles.gloss} aria-hidden="true" />
         {reached && (
