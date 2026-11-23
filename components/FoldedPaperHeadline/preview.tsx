@@ -7,24 +7,14 @@ const worst: FoldedPaperHeadlineProps = {
   foldCount: 9,
 };
 
-// The component is a full-bleed band on its own cream ground; the stage just centers it.
+// The component is just the strip; the stage only supplies a cream page behind it.
 const stage = {
   minHeight: '100vh',
+  padding: 'clamp(16px, 4vw, 56px)',
   boxSizing: 'border-box' as const,
   display: 'grid',
-  gridTemplateColumns: 'minmax(0, 1fr)',
-  alignContent: 'space-around',
+  placeItems: 'center',
   background: '#f0e5cf',
-};
-
-const hint = {
-  margin: 0,
-  padding: '8vh 16px',
-  textAlign: 'center' as const,
-  font: '600 14px/1.4 system-ui, sans-serif',
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase' as const,
-  color: '#16120f',
 };
 
 export default function Preview() {
@@ -33,9 +23,9 @@ export default function Preview() {
 
   return (
     <div style={stage}>
-      <p style={hint}>Click the strip to unfold</p>
-      <FoldedPaperHeadline {...(isWorst ? worst : {})} />
-      <p style={hint}>Click again to refold</p>
+      <div style={{ width: '100%', maxWidth: 1100 }}>
+        <FoldedPaperHeadline {...(isWorst ? worst : {})} />
+      </div>
     </div>
   );
 }

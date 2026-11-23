@@ -288,7 +288,6 @@ export default function FoldedPaperHeadline({
 .root {
   --fph-paper: #b32914;
   --fph-ink: #f0e5cf;
-  --fph-ground: #f0e5cf;
   --fph-black: #16120f;
   --fph-font: 'Anton', 'Impact', 'Helvetica Neue', sans-serif;
   --fph-size: clamp(36px, 22cqi, 320px);
@@ -302,20 +301,8 @@ export default function FoldedPaperHeadline({
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding-block: calc(var(--fph-size) * 0.3) calc(var(--fph-size) * 0.46);
-  background: var(--fph-ground);
+  padding-block: calc(var(--fph-size) * 0.14) calc(var(--fph-size) * 0.2);
   color: var(--fph-ink);
-}
-
-/* poster baseline: one heavy black bar, flush to the foot */
-.root::after {
-  content: '';
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: 0;
-  block-size: calc(var(--fph-size) * 0.1);
-  background: var(--fph-black);
-  z-index: 3;
 }
 
 .heading {
@@ -338,14 +325,15 @@ export default function FoldedPaperHeadline({
   perspective-origin: 50% 40%;
 }
 
-/* flat cast shadow: a hard-edged slab offset down and right of the strip, travelling with the last facet */
+/* soft contact shadow under the strip, travelling with its width */
 .castShadow {
   position: absolute;
-  inset-inline: 0;
-  inset-block: calc(var(--fph-size) * 0.1) calc(var(--fph-size) * -0.1);
-  background: color-mix(in srgb, var(--fph-black) 16%, var(--fph-ground));
-  transform-origin: 50% 50%;
-  transform: translateX(calc(var(--fph-size) * (0.1 - var(--shadow-t, 0) * 0.04))) scaleX(var(--shadow-scale, 0.85));
+  inset-inline: 8%;
+  inset-block-end: calc(var(--fph-size) * -0.12);
+  block-size: calc(var(--fph-size) * 0.22);
+  background: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--fph-black) 34%, transparent), transparent 70%);
+  filter: blur(6px);
+  transform: scaleX(var(--shadow-scale, 0.85));
   opacity: var(--shadow-o, 0.9);
   pointer-events: none;
 }
