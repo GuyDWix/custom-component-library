@@ -7,20 +7,14 @@ const worst: FoldedPaperHeadlineProps = {
   foldCount: 9,
 };
 
-// The component is a full-bleed band. The stage is the studio around it: the band sits centered with a little room above
-// and below, and its edges feather into the same dark ground so it reads as one lit scene, not a box on a void.
+// The component is a full-bleed band on its own cream ground; the stage just centers it.
 const stage = {
   minHeight: '100vh',
   boxSizing: 'border-box' as const,
   display: 'grid',
   gridTemplateColumns: 'minmax(0, 1fr)',
   alignContent: 'center',
-  background: 'radial-gradient(90% 70% at 50% 50%, #1b120c 0%, #0e0805 100%)',
-};
-
-const feather = {
-  WebkitMaskImage: 'linear-gradient(180deg, transparent 0, #000 9%, #000 91%, transparent 100%)',
-  maskImage: 'linear-gradient(180deg, transparent 0, #000 9%, #000 91%, transparent 100%)',
+  background: '#f0e5cf',
 };
 
 export default function Preview() {
@@ -29,9 +23,7 @@ export default function Preview() {
 
   return (
     <div style={stage}>
-      <div style={feather}>
-        <FoldedPaperHeadline {...(isWorst ? worst : {})} />
-      </div>
+      <FoldedPaperHeadline {...(isWorst ? worst : {})} />
     </div>
   );
 }

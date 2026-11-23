@@ -58,8 +58,8 @@ const choreoEnd = (k: number) => facetStart(k - 1, k) + 1.9;
 
 export default function FoldedPaperHeadline({
   headline = 'Folded Light',
-  paperColor = '#e2502c',
-  textColor = '#f6edda',
+  paperColor = '#e8432a',
+  textColor = '#f0e5cf',
   foldCount = 5,
   className,
 }: FoldedPaperHeadlineProps) {
@@ -114,9 +114,9 @@ export default function FoldedPaperHeadline({
         const avail = w * 0.92;
         // the strip is the hero: wide frames set the headline big on one line; narrow frames stack it on two lines at a big size
         const narrowFrame = w < 520;
-        const desired = narrowFrame ? Math.max(40, w * 0.29) : Math.min(210, Math.max(36, w * 0.145));
+        const desired = narrowFrame ? Math.max(40, w * 0.4) : Math.min(320, Math.max(36, w * 0.22));
         // one line when it fits at a decent size, otherwise 2 or 3 balanced lines (the strip grows to match) before shrinking further
-        const sizeFor = (lines: number) => Math.min(desired, (100 * avail * lines) / (pw * (1 + 0.06 * lines)));
+        const sizeFor = (lines: number) => Math.min(desired, (100 * avail * lines) / (pw * (1 + 0.04 * lines)));
         const size = [1, 2, 3].map(sizeFor).find((v, i) => v >= desired * (i === 0 ? (narrowFrame ? 0.75 : 0.55) : 0.5)) ?? sizeFor(3);
         setFit(Math.max(MIN_FONT, size));
       }
@@ -282,14 +282,11 @@ export default function FoldedPaperHeadline({
       <span className={styles.slice} style={{ '--i': i } as CSSProperties}>
         <span className={styles.sliceText}>{headline}</span>
       </span>
-      <span className={styles.facetSheen} aria-hidden="true" />
+      <span className={styles.index} aria-hidden="true">
+        {String(i + 1).padStart(2, '0')}
+      </span>
       <span className={styles.facetLit} aria-hidden="true" />
       <span className={styles.facetShade} aria-hidden="true" />
-      <span className={styles.facetGrain} aria-hidden="true" />
-      {i > 0 && <span className={i % 2 === 1 ? `${styles.creaseLine} ${styles.valley}` : `${styles.creaseLine} ${styles.mountain}`} aria-hidden="true" />}
-      {i > 0 && <span className={styles.edgeFace} aria-hidden="true" />}
-      {i === 0 && <span className={styles.cutStart} aria-hidden="true" />}
-      {i === facetCount - 1 && <span className={styles.cutEnd} aria-hidden="true" />}
     </div>
   );
 
@@ -314,7 +311,6 @@ export default function FoldedPaperHeadline({
         {headline}
       </h2>
       <div className={styles.scene} ref={sceneRef} aria-hidden="true">
-        <span className={styles.floor} aria-hidden="true" />
         <span className={styles.castShadow} aria-hidden="true" />
         <div className={styles.strip} ref={stripRef}>
           <div className={styles.rig}>

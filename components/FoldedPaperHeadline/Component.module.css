@@ -1,12 +1,18 @@
+@font-face {
+  font-family: 'Anton';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('./fonts/anton-latin-400-normal.woff2') format('woff2');
+}
+
 .root {
-  --fph-paper: #e2502c;
-  --fph-ink: #f6edda;
-  --fph-ground: #1d130d;
-  --fph-ground-deep: #0e0805;
-  --fph-shadow-ink: rgba(6, 3, 1, 0.78);
-  --fph-font: 'Futura', 'Avenir Next', 'Century Gothic', 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
-  --fph-size: clamp(36px, 14.5cqi, 210px);
-  --fph-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --fph-paper: #e8432a;
+  --fph-ink: #f0e5cf;
+  --fph-ground: #f0e5cf;
+  --fph-black: #16120f;
+  --fph-font: 'Anton', 'Impact', 'Helvetica Neue', sans-serif;
+  --fph-size: clamp(36px, 22cqi, 320px);
 
   position: relative;
   isolation: isolate;
@@ -14,17 +20,23 @@
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  /* the strip is the whole composition: wall above it, a floor line below it, nothing else */
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding-block: calc(var(--fph-size) * 0.34) calc(var(--fph-size) * 0.52);
-  padding-inline: 0;
-  /* one raking light from the upper left: it washes the wall and the floor, and rakes across the creases */
-  background:
-    radial-gradient(70% 62% at 6% 46%, rgba(255, 196, 140, 0.22) 0%, rgba(255, 196, 140, 0.07) 50%, transparent 100%),
-    linear-gradient(180deg, var(--fph-ground-deep) 0%, var(--fph-ground) 100%);
+  padding-block: calc(var(--fph-size) * 0.3) calc(var(--fph-size) * 0.46);
+  background: var(--fph-ground);
   color: var(--fph-ink);
+}
+
+/* poster baseline: one heavy black bar, flush to the foot */
+.root::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: calc(var(--fph-size) * 0.1);
+  background: var(--fph-black);
+  z-index: 3;
 }
 
 .heading {
@@ -47,30 +59,14 @@
   perspective-origin: 50% 40%;
 }
 
-/* floor: a lit ground plane starting a little below the strip, with one crisp edge catching the light */
-.floor {
-  position: absolute;
-  inset-inline: 0;
-  inset-block-start: 100%;
-  block-size: 200vh;
-  background:
-    radial-gradient(60% 60% at 10% 0%, rgba(255, 190, 130, 0.2) 0%, transparent 100%),
-    linear-gradient(180deg, rgba(255, 214, 170, 0.1) 0%, rgba(255, 214, 170, 0.03) 22%, rgba(0, 0, 0, 0.3) 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 228, 196, 0.3);
-  pointer-events: none;
-}
-
-/* soft cast shadow, thrown right and down by the raking light, lying on the floor */
+/* flat cast shadow: a hard-edged slab offset down and right of the strip, travelling with the last facet */
 .castShadow {
   position: absolute;
-  inset-inline: 2%;
-  inset-block-end: calc(var(--fph-size) * -0.3);
-  block-size: calc(var(--fph-size) * 0.36);
-  border-radius: 50%;
-  background: radial-gradient(closest-side, var(--fph-shadow-ink), transparent 82%);
-  filter: blur(calc(var(--fph-size) * 0.07));
-  /* travels with the last facet: it starts tucked under the folded stack and slides out to its resting throw as the strip lands */
-  transform: translateX(calc(var(--fph-size) * (0.16 - var(--shadow-t, 0) * 0.12))) scale(var(--shadow-scale, 0.85), var(--shadow-sy, 1));
+  inset-inline: 0;
+  inset-block: calc(var(--fph-size) * 0.1) calc(var(--fph-size) * -0.1);
+  background: color-mix(in srgb, var(--fph-black) 16%, var(--fph-ground));
+  transform-origin: 0 50%;
+  transform: translateX(calc(var(--fph-size) * (0.1 - var(--shadow-t, 0) * 0.1))) scaleX(var(--shadow-scale, 0.85));
   opacity: var(--shadow-o, 0.9);
   pointer-events: none;
 }
@@ -111,20 +107,13 @@
   transform-origin: 0 50%;
   transform: rotateX(var(--fx, 0deg));
   pointer-events: none;
-  background:
-    radial-gradient(150% 130% at 14% 6%, rgba(255, 255, 255, 0.16) 0%, transparent 42%),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--fph-paper) 96%, #fff) 0%,
-      var(--fph-paper) 46%,
-      color-mix(in srgb, var(--fph-paper) 90%, #000) 100%
-    );
+  background: var(--fph-paper);
 }
 
 .lead {
   position: relative;
   box-sizing: border-box;
-  padding-block: calc(var(--fph-size) * 0.58);
+  padding-block: calc(var(--fph-size) * 0.2);
 }
 
 .slice {
@@ -142,17 +131,16 @@
 .sliceText {
   font-family: var(--fph-font);
   font-size: var(--fph-size);
-  font-weight: 700;
-  line-height: 1.04;
-  letter-spacing: -0.015em;
+  font-weight: 400;
+  line-height: 0.94;
+  letter-spacing: 0.005em;
   text-transform: uppercase;
   text-align: center;
   box-sizing: border-box;
-  padding-inline: 4cqi;
+  padding-inline: 3cqi;
   color: var(--fph-ink);
   overflow-wrap: anywhere;
   text-wrap: balance;
-  text-shadow: 0 0.02em 0 rgba(46, 14, 6, 0.34);
   pointer-events: none;
 }
 
@@ -163,92 +151,33 @@
   visibility: hidden;
 }
 
-.facetSheen {
+/* flat tones for the folds: a cream plane on lit facets, a black plane on shaded ones */
+.facetLit,
+.facetShade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(104deg, rgba(255, 243, 222, 0.42) 0%, rgba(255, 243, 222, 0.1) 24%, rgba(255, 243, 222, 0) 38%);
-  mix-blend-mode: soft-light;
   pointer-events: none;
 }
 
 .facetLit {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(96deg, rgba(255, 245, 226, 0.95) 0%, rgba(255, 245, 226, 0.3) 30%, rgba(255, 245, 226, 0) 52%);
-  mix-blend-mode: soft-light;
-  opacity: var(--lit, 0.28);
-  pointer-events: none;
+  background: #fff;
+  opacity: calc(var(--lit, 0.28) * 0.3);
 }
 
 .facetShade {
+  background: var(--fph-black);
+  opacity: calc(var(--shd, 0) * 0.5);
+}
+
+.index {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(92deg, rgba(41, 13, 6, 0) 42%, rgba(41, 13, 6, 0.42) 72%, rgba(41, 13, 6, 0.8) 100%);
-  mix-blend-mode: multiply;
-  opacity: var(--shd, 0);
-  pointer-events: none;
-}
-
-.facetGrain {
-  position: absolute;
-  inset: 0;
-  background-image: var(--fph-noise);
-  opacity: 0.24;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-}
-
-/* crease memory: a dark hairline with a light hairline beside it; valley and mountain folds flip which side is lit */
-.creaseLine {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  inline-size: 2px;
-  pointer-events: none;
-}
-
-.valley {
-  background: linear-gradient(90deg, rgba(30, 9, 4, 0.8) 0 1px, rgba(255, 238, 212, 0.5) 1px 2px);
-  opacity: calc(0.75 + (1 - var(--e, 0)) * 0.25);
-}
-
-.mountain {
-  background: linear-gradient(90deg, rgba(255, 238, 212, 0.55) 0 1px, rgba(30, 9, 4, 0.7) 1px 2px);
-  opacity: calc(0.75 + (1 - var(--e, 0)) * 0.25);
-}
-
-/* paper thickness caught edge-on while the fold is open */
-.edgeFace {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  inline-size: calc(var(--fph-size) * 0.06);
-  background: linear-gradient(
-    90deg,
-    rgba(24, 8, 4, 0.85) 0 34%,
-    rgba(255, 236, 208, 0.6) 48% 58%,
-    rgba(24, 8, 4, 0.3) 70%,
-    rgba(24, 8, 4, 0) 100%
-  );
-  opacity: calc((1 - var(--e, 0)) * 0.95);
-  pointer-events: none;
-}
-
-.cutStart {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  inline-size: 3px;
-  background: linear-gradient(90deg, rgba(30, 10, 5, 0.5), rgba(255, 240, 214, 0.28) 70%, rgba(30, 10, 5, 0.05) 100%);
-  pointer-events: none;
-}
-
-.cutEnd {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-end: 0;
-  inline-size: 3px;
-  background: linear-gradient(270deg, rgba(30, 10, 5, 0.5), rgba(255, 240, 214, 0.28) 70%, rgba(30, 10, 5, 0.05) 100%);
+  inset-block-start: calc(var(--fph-size) * 0.08);
+  inset-inline-start: calc(var(--fph-size) * 0.1);
+  font-family: var(--fph-font);
+  font-size: calc(var(--fph-size) * 0.13);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--fph-black);
   pointer-events: none;
 }
 
@@ -261,8 +190,8 @@
   pointer-events: none;
   font-family: var(--fph-font);
   font-size: 100px;
-  font-weight: 700;
-  letter-spacing: -0.015em;
+  font-weight: 400;
+  letter-spacing: 0.005em;
   line-height: 1;
   text-transform: uppercase;
 }
