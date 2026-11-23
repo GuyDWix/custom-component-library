@@ -89,7 +89,6 @@ export default function ImageFilledBestsellers({
   }, []);
 
   const current = Math.min(active, ranked.length - 1);
-  const chosen = ranked[current];
 
   const onKeyDown = (e: KeyboardEvent<HTMLOListElement>) => {
     const last = ranked.length - 1;
@@ -125,20 +124,6 @@ export default function ImageFilledBestsellers({
             <h2 className={styles.heading}>{heading}</h2>
           </div>
 
-          {chosen && (
-            <div className={styles.readout} aria-live="polite" aria-atomic="true">
-              <div key={current} className={cx(styles.readoutCard, phase !== 'static' && styles.readoutSwing)}>
-                <span className={styles.readoutRank}>
-                  {rankLabel} {current + 1}
-                </span>
-                <span className={styles.readoutName}>{chosen.name}</span>
-                <span className={styles.readoutCount}>
-                  <span className={styles.readoutNumber}>{numberFormat.format(chosen.units)}</span>
-                  <span className={styles.readoutUnit}>{unitLabel}</span>
-                </span>
-              </div>
-            </div>
-          )}
         </header>
 
         <ol className={styles.list} aria-description={LIST_HELP} onKeyDown={onKeyDown}>
