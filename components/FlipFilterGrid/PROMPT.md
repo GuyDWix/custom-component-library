@@ -57,10 +57,12 @@ type Slot = { col: number; row: number; cs: number; rs: number };
 type Pose = { x: number; y: number; w: number; h: number; s: number; o: number };
 type Body = Pose & { vx: number; vy: number; vw: number; vh: number; vs: number; vo: number; delay: number; t: Pose };
 
-const KP = 210;
-const DP = 22;
+const KP = 170;
+const DP = 13;
 const KS = 300;
 const DS = 28;
+
+const TILE_PAD = 10;
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
@@ -155,7 +157,7 @@ export default function FlipFilterGrid({
     bodies.current.forEach((b, i) => {
       const el = cardEls.current[i];
       if (!el) return;
-      const rot = clamp(b.vx * 0.0022, -3.5, 3.5);
+      const rot = clamp(b.vx * 0.006, -9, 9);
       const gone = b.t.o === 0 && b.o < 0.02;
       el.style.width = `${Math.max(b.w, 0).toFixed(1)}px`;
       el.style.height = `${Math.max(b.h, 0).toFixed(1)}px`;
@@ -239,10 +241,10 @@ export default function FlipFilterGrid({
       vis.forEach((i) => {
         const p = probeEls.current[i];
         if (!p) return;
-        p.style.width = `${Math.max(cellW - 2, 0)}px`;
+        p.style.width = `${Math.max(cellW - 2 * TILE_PAD, 0)}px`;
         cap = Math.max(cap, p.offsetHeight);
       });
-      const rowH = Math.max(112, cellW * 0.64) + 10 + cap;
+      const rowH = Math.max(112, cellW * 0.64) + 2 * TILE_PAD + cap;
       const slots = place(n, c);
       const rows = rowsOf(slots);
       const boardTarget = rows ? rows * (rowH + gap) - gap : 0;
@@ -261,12 +263,11 @@ export default function FlipFilterGrid({
           const s = slots[rank];
           t = { x: s.col * (cellW + gap), y: s.row * (rowH + gap), w: s.cs * (cellW + gap) - gap, h: s.rs * (rowH + gap) - gap, s: 1, o: 1 };
         } else {
-          const base = prev ? prev.t : { x: 0, y: 0, w: cellW, h: rowH, s: 1, o: 1 };
-          t = { ...base, s: 0.6, o: 0 };
+          t = { x: (W - cellW) / 2, y: (boardTarget - rowH) / 2, w: cellW, h: rowH, s: 0.3, o: 0 };
         }
         if (!prev) {
           const b = makeBody(t);
-          if (rank < 0) Object.assign(b, { s: 0.6, o: 0 });
+          if (rank < 0) Object.assign(b, { s: 0.3, o: 0 });
           next[i] = b;
         } else {
           next[i] = prev;
@@ -281,8 +282,8 @@ export default function FlipFilterGrid({
           return;
         }
         if (rank >= 0 && !wasShown) {
-          Object.assign(b, { x: t.x, y: t.y, w: t.w, h: t.h, s: 0.62, o: 0, vx: 0, vy: 0, vw: 0, vh: 0, vs: 0, vo: 0 });
-          b.delay = 150 + enterRank * 34;
+          Object.assign(b, { x: (W - cellW) / 2, y: (boardTarget - rowH) / 2, w: cellW, h: rowH, s: 0.3, o: 0, vx: 0, vy: 0, vw: 0, vh: 0, vs: 0, vo: 0 });
+          b.delay = 120 + enterRank * 40;
           enterRank += 1;
         } else if (rank >= 0) {
           const moved = Math.abs(t.x - b.x) + Math.abs(t.y - b.y) + Math.abs(t.w - b.w) + Math.abs(t.h - b.h) > 0.5;
@@ -511,15 +512,19 @@ export default function FlipFilterGrid({
   font-display: swap;
 }
 
-/* Editorial index: paper, ink, one accent (chipColor). */
+/* Soft-UI tray: clay ground, raised tiles, pressed chips, one accent (chipColor). */
 .root {
-  --ffg-ground: #f4f0e7;
+  --ffg-ground: #e7e4dc;
+  --ffg-tile: #efece6;
   --ffg-chip: #c2381b;
   --ffg-chip-ink: #ffffff;
   --ffg-ink: #16140f;
-  --ffg-ink-soft: #5e5a50;
-  --ffg-line: rgba(22, 20, 15, 0.22);
-  --ffg-plate: #e4dece;
+  --ffg-ink-soft: #55514a;
+  --ffg-lit: rgba(255, 255, 255, 0.9);
+  --ffg-shade: rgba(88, 80, 62, 0.28);
+  --ffg-raise: 8px 10px 22px var(--ffg-shade), -7px -7px 18px var(--ffg-lit);
+  --ffg-press: inset 4px 5px 10px var(--ffg-shade), inset -4px -4px 9px var(--ffg-lit);
+  --ffg-plate: #dcd6c6;
   --ffg-font-display: 'FFG Fraunces', 'Iowan Old Style', 'Georgia', 'Times New Roman', serif;
   --ffg-font-mono: 'FFG Mono', ui-monospace, 'SF Mono', 'Menlo', 'Consolas', monospace;
   --ffg-cols: 4;
@@ -545,20 +550,19 @@ export default function FlipFilterGrid({
 }
 
 .stall {
-  --ffg-pad: clamp(16px, 3.4cqw, 40px);
+  --ffg-pad: clamp(18px, 3.4cqw, 40px);
   box-sizing: border-box;
-  padding: clamp(18px, 3cqw, 36px) var(--ffg-pad) clamp(24px, 3.4cqw, 44px);
+  padding: clamp(20px, 3cqw, 36px) var(--ffg-pad) clamp(28px, 3.6cqw, 48px);
 }
 
-/* ---------- index (chips) ---------- */
+/* ---------- chips ---------- */
 
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 clamp(16px, 2.4cqw, 32px);
-  margin: 0 0 clamp(20px, 2.6cqw, 32px);
+  gap: 14px;
+  margin: 0 0 clamp(18px, 2.4cqw, 28px);
   padding: 0;
-  border-block-end: 1px solid var(--ffg-ink);
 }
 
 @container ffg (max-width: 719px) {
@@ -568,7 +572,7 @@ export default function FlipFilterGrid({
     overscroll-behavior-x: contain;
     scrollbar-width: none;
     margin-inline: calc(var(--ffg-pad) * -1);
-    padding-inline: var(--ffg-pad);
+    padding: 8px var(--ffg-pad) 14px;
   }
 
   .chips::-webkit-scrollbar {
@@ -580,15 +584,16 @@ export default function FlipFilterGrid({
   position: relative;
   flex: none;
   display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
   min-block-size: 44px;
   box-sizing: border-box;
   margin: 0;
-  padding: 14px 0 12px;
+  padding: 0 20px;
   border: 0;
-  border-radius: 0;
-  background: none;
+  border-radius: 999px;
+  background: var(--ffg-tile);
+  box-shadow: var(--ffg-raise);
   color: var(--ffg-ink-soft);
   font: 500 12px/1 var(--ffg-font-mono);
   letter-spacing: 0.08em;
@@ -597,36 +602,46 @@ export default function FlipFilterGrid({
   cursor: pointer;
   -webkit-appearance: none;
   appearance: none;
-  transition: color 200ms var(--ffg-ease);
+  transition:
+    box-shadow 260ms var(--ffg-ease),
+    color 200ms var(--ffg-ease),
+    transform 260ms var(--ffg-ease);
 }
 
-.chip::after {
+.chip::before {
   content: '';
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: -1px;
-  block-size: 3px;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
   background: var(--ffg-chip);
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-  transition: transform 320ms var(--ffg-ease);
+  scale: 0;
+  margin-inline-end: -8px;
+  transition:
+    scale 320ms cubic-bezier(0.3, 1.6, 0.5, 1),
+    margin 320ms var(--ffg-ease);
 }
 
 .chip:hover {
   color: var(--ffg-ink);
 }
 
+.chip:active {
+  transform: scale(0.97);
+}
+
 .chip:focus-visible {
   outline: 2px solid var(--ffg-ink);
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
 .chipOn {
   color: var(--ffg-ink);
+  box-shadow: var(--ffg-press);
 }
 
-.chipOn::after {
-  transform: scaleX(1);
+.chipOn::before {
+  scale: 1;
+  margin-inline-end: 0;
 }
 
 .chipLabel {
@@ -634,16 +649,16 @@ export default function FlipFilterGrid({
 }
 
 .chipCount {
-  color: var(--ffg-chip);
-  font-size: 10px;
+  color: var(--ffg-ink-soft);
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
-  transform: translateY(-4px);
 }
 
 .tally {
   display: block;
   margin: 0 0 clamp(14px, 2cqw, 22px);
+  padding-inline-start: 4px;
   color: var(--ffg-ink-soft);
   font: 400 11px/1 var(--ffg-font-mono);
   letter-spacing: 0.1em;
@@ -692,6 +707,10 @@ export default function FlipFilterGrid({
   flex-direction: column;
   box-sizing: border-box;
   block-size: 100%;
+  padding: 10px;
+  border-radius: 22px;
+  background: var(--ffg-tile);
+  box-shadow: var(--ffg-raise);
   overflow: hidden;
 }
 
@@ -701,6 +720,7 @@ export default function FlipFilterGrid({
   min-block-size: 0;
   margin-block-end: 10px;
   overflow: hidden;
+  border-radius: 14px;
   background: var(--ffg-plate);
 }
 
@@ -737,7 +757,7 @@ export default function FlipFilterGrid({
   flex-direction: column;
   gap: 5px;
   box-sizing: border-box;
-  padding: 0;
+  padding: 0 6px 2px;
 }
 
 .captionFeatured {
@@ -827,7 +847,7 @@ export default function FlipFilterGrid({
 
 @media (prefers-reduced-motion: reduce) {
   .chip,
-  .chip::after,
+  .chip::before,
   .image {
     transition: none;
   }

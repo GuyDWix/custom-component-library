@@ -14,15 +14,19 @@
   font-display: swap;
 }
 
-/* Editorial index: paper, ink, one accent (chipColor). */
+/* Soft-UI tray: clay ground, raised tiles, pressed chips, one accent (chipColor). */
 .root {
-  --ffg-ground: #f4f0e7;
+  --ffg-ground: #e7e4dc;
+  --ffg-tile: #efece6;
   --ffg-chip: #c2381b;
   --ffg-chip-ink: #ffffff;
   --ffg-ink: #16140f;
-  --ffg-ink-soft: #5e5a50;
-  --ffg-line: rgba(22, 20, 15, 0.22);
-  --ffg-plate: #e4dece;
+  --ffg-ink-soft: #55514a;
+  --ffg-lit: rgba(255, 255, 255, 0.9);
+  --ffg-shade: rgba(88, 80, 62, 0.28);
+  --ffg-raise: 8px 10px 22px var(--ffg-shade), -7px -7px 18px var(--ffg-lit);
+  --ffg-press: inset 4px 5px 10px var(--ffg-shade), inset -4px -4px 9px var(--ffg-lit);
+  --ffg-plate: #dcd6c6;
   --ffg-font-display: 'FFG Fraunces', 'Iowan Old Style', 'Georgia', 'Times New Roman', serif;
   --ffg-font-mono: 'FFG Mono', ui-monospace, 'SF Mono', 'Menlo', 'Consolas', monospace;
   --ffg-cols: 4;
@@ -48,20 +52,19 @@
 }
 
 .stall {
-  --ffg-pad: clamp(16px, 3.4cqw, 40px);
+  --ffg-pad: clamp(18px, 3.4cqw, 40px);
   box-sizing: border-box;
-  padding: clamp(18px, 3cqw, 36px) var(--ffg-pad) clamp(24px, 3.4cqw, 44px);
+  padding: clamp(20px, 3cqw, 36px) var(--ffg-pad) clamp(28px, 3.6cqw, 48px);
 }
 
-/* ---------- index (chips) ---------- */
+/* ---------- chips ---------- */
 
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 clamp(16px, 2.4cqw, 32px);
-  margin: 0 0 clamp(20px, 2.6cqw, 32px);
+  gap: 14px;
+  margin: 0 0 clamp(18px, 2.4cqw, 28px);
   padding: 0;
-  border-block-end: 1px solid var(--ffg-ink);
 }
 
 @container ffg (max-width: 719px) {
@@ -71,7 +74,7 @@
     overscroll-behavior-x: contain;
     scrollbar-width: none;
     margin-inline: calc(var(--ffg-pad) * -1);
-    padding-inline: var(--ffg-pad);
+    padding: 8px var(--ffg-pad) 14px;
   }
 
   .chips::-webkit-scrollbar {
@@ -83,15 +86,16 @@
   position: relative;
   flex: none;
   display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
   min-block-size: 44px;
   box-sizing: border-box;
   margin: 0;
-  padding: 14px 0 12px;
+  padding: 0 20px;
   border: 0;
-  border-radius: 0;
-  background: none;
+  border-radius: 999px;
+  background: var(--ffg-tile);
+  box-shadow: var(--ffg-raise);
   color: var(--ffg-ink-soft);
   font: 500 12px/1 var(--ffg-font-mono);
   letter-spacing: 0.08em;
@@ -100,36 +104,46 @@
   cursor: pointer;
   -webkit-appearance: none;
   appearance: none;
-  transition: color 200ms var(--ffg-ease);
+  transition:
+    box-shadow 260ms var(--ffg-ease),
+    color 200ms var(--ffg-ease),
+    transform 260ms var(--ffg-ease);
 }
 
-.chip::after {
+.chip::before {
   content: '';
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: -1px;
-  block-size: 3px;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
   background: var(--ffg-chip);
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-  transition: transform 320ms var(--ffg-ease);
+  scale: 0;
+  margin-inline-end: -8px;
+  transition:
+    scale 320ms cubic-bezier(0.3, 1.6, 0.5, 1),
+    margin 320ms var(--ffg-ease);
 }
 
 .chip:hover {
   color: var(--ffg-ink);
 }
 
+.chip:active {
+  transform: scale(0.97);
+}
+
 .chip:focus-visible {
   outline: 2px solid var(--ffg-ink);
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
 .chipOn {
   color: var(--ffg-ink);
+  box-shadow: var(--ffg-press);
 }
 
-.chipOn::after {
-  transform: scaleX(1);
+.chipOn::before {
+  scale: 1;
+  margin-inline-end: 0;
 }
 
 .chipLabel {
@@ -137,16 +151,16 @@
 }
 
 .chipCount {
-  color: var(--ffg-chip);
-  font-size: 10px;
+  color: var(--ffg-ink-soft);
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
-  transform: translateY(-4px);
 }
 
 .tally {
   display: block;
   margin: 0 0 clamp(14px, 2cqw, 22px);
+  padding-inline-start: 4px;
   color: var(--ffg-ink-soft);
   font: 400 11px/1 var(--ffg-font-mono);
   letter-spacing: 0.1em;
@@ -195,6 +209,10 @@
   flex-direction: column;
   box-sizing: border-box;
   block-size: 100%;
+  padding: 10px;
+  border-radius: 22px;
+  background: var(--ffg-tile);
+  box-shadow: var(--ffg-raise);
   overflow: hidden;
 }
 
@@ -204,6 +222,7 @@
   min-block-size: 0;
   margin-block-end: 10px;
   overflow: hidden;
+  border-radius: 14px;
   background: var(--ffg-plate);
 }
 
@@ -240,7 +259,7 @@
   flex-direction: column;
   gap: 5px;
   box-sizing: border-box;
-  padding: 0;
+  padding: 0 6px 2px;
 }
 
 .captionFeatured {
@@ -330,7 +349,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .chip,
-  .chip::after,
+  .chip::before,
   .image {
     transition: none;
   }

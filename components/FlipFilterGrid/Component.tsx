@@ -52,10 +52,12 @@ type Slot = { col: number; row: number; cs: number; rs: number };
 type Pose = { x: number; y: number; w: number; h: number; s: number; o: number };
 type Body = Pose & { vx: number; vy: number; vw: number; vh: number; vs: number; vo: number; delay: number; t: Pose };
 
-const KP = 210;
-const DP = 22;
+const KP = 170;
+const DP = 13;
 const KS = 300;
 const DS = 28;
+
+const TILE_PAD = 10;
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
@@ -150,7 +152,7 @@ export default function FlipFilterGrid({
     bodies.current.forEach((b, i) => {
       const el = cardEls.current[i];
       if (!el) return;
-      const rot = clamp(b.vx * 0.0022, -3.5, 3.5);
+      const rot = clamp(b.vx * 0.006, -9, 9);
       const gone = b.t.o === 0 && b.o < 0.02;
       el.style.width = `${Math.max(b.w, 0).toFixed(1)}px`;
       el.style.height = `${Math.max(b.h, 0).toFixed(1)}px`;
@@ -234,10 +236,10 @@ export default function FlipFilterGrid({
       vis.forEach((i) => {
         const p = probeEls.current[i];
         if (!p) return;
-        p.style.width = `${Math.max(cellW - 2, 0)}px`;
+        p.style.width = `${Math.max(cellW - 2 * TILE_PAD, 0)}px`;
         cap = Math.max(cap, p.offsetHeight);
       });
-      const rowH = Math.max(112, cellW * 0.64) + 10 + cap;
+      const rowH = Math.max(112, cellW * 0.64) + 2 * TILE_PAD + cap;
       const slots = place(n, c);
       const rows = rowsOf(slots);
       const boardTarget = rows ? rows * (rowH + gap) - gap : 0;
@@ -256,12 +258,11 @@ export default function FlipFilterGrid({
           const s = slots[rank];
           t = { x: s.col * (cellW + gap), y: s.row * (rowH + gap), w: s.cs * (cellW + gap) - gap, h: s.rs * (rowH + gap) - gap, s: 1, o: 1 };
         } else {
-          const base = prev ? prev.t : { x: 0, y: 0, w: cellW, h: rowH, s: 1, o: 1 };
-          t = { ...base, s: 0.6, o: 0 };
+          t = { x: (W - cellW) / 2, y: (boardTarget - rowH) / 2, w: cellW, h: rowH, s: 0.3, o: 0 };
         }
         if (!prev) {
           const b = makeBody(t);
-          if (rank < 0) Object.assign(b, { s: 0.6, o: 0 });
+          if (rank < 0) Object.assign(b, { s: 0.3, o: 0 });
           next[i] = b;
         } else {
           next[i] = prev;
@@ -276,8 +277,8 @@ export default function FlipFilterGrid({
           return;
         }
         if (rank >= 0 && !wasShown) {
-          Object.assign(b, { x: t.x, y: t.y, w: t.w, h: t.h, s: 0.62, o: 0, vx: 0, vy: 0, vw: 0, vh: 0, vs: 0, vo: 0 });
-          b.delay = 150 + enterRank * 34;
+          Object.assign(b, { x: (W - cellW) / 2, y: (boardTarget - rowH) / 2, w: cellW, h: rowH, s: 0.3, o: 0, vx: 0, vy: 0, vw: 0, vh: 0, vs: 0, vo: 0 });
+          b.delay = 120 + enterRank * 40;
           enterRank += 1;
         } else if (rank >= 0) {
           const moved = Math.abs(t.x - b.x) + Math.abs(t.y - b.y) + Math.abs(t.w - b.w) + Math.abs(t.h - b.h) > 0.5;

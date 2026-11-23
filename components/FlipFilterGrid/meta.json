@@ -4,7 +4,7 @@
   "display_name": "Flip Filter Grid",
   "category": "controls",
   "tier": "everyday",
-  "job": "Filter chips that sort a set of cards by category while the cards glide to their new places instead of jumping",
+  "job": "Pill chips that filter a set of raised tiles by category while the tiles morph to their new places with a big springy FLIP",
   "visitor_action": "click/tap one or more chips; Esc clears",
   "owner_settings": [
     "Items (title, image, category, optional detail)",
@@ -20,7 +20,7 @@
     "blog"
   ],
   "mobile": "chips scroll sideways, two-column grid",
-  "motion": "cards translate to new positions with spring, hidden ones shrink and fade (reduced-motion: instant filter)",
+  "motion": "tiles spring to new slots with overshoot and velocity tilt, new ones burst out from the board centre, hidden ones shrink into it (reduced-motion: instant filter)",
   "scores": {
     "concept": 2,
     "usefulness": 3,
@@ -34,5 +34,5 @@
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Editorial magazine index: paper #F4F0E7, ink #16140F, one vermilion accent #C2381B; Fraunces serif titles (featured item in large light italic) + JetBrains Mono meta; text-only index chips with accent underline, borderless photos, no cards or ground decoration"
+  "art_direction": "Soft-UI tray: clay #e7e4dc, raised tiles #efece6 with paired light/dark shadows, pill chips that press in when active (accent #C2381B dot); Fraunces titles + JetBrains Mono meta. One big move: an underdamped FLIP morph where entering tiles burst out from the board centre, leavers collapse into it, and movers overshoot and tilt with their velocity."
 }
