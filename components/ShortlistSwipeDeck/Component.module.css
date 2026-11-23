@@ -82,15 +82,13 @@
 
 .layout {
   display: grid;
-  gap: 22px;
-  justify-items: center;
+  grid-template-columns: minmax(0, 340px);
+  justify-content: center;
+  gap: 16px;
 }
 
 .deckCol {
-  display: grid;
-  justify-items: center;
-  gap: 16px;
-  inline-size: min(100%, 340px);
+  display: contents;
 }
 
 .top {
@@ -417,9 +415,9 @@
 
 .keep {
   border: 1px solid transparent;
-  background: var(--sd-accent);
-  color: var(--sd-on-accent);
-  box-shadow: 0 6px 16px -10px color-mix(in srgb, var(--sd-accent) 70%, transparent);
+  background: var(--sd-ink);
+  color: var(--sd-paper);
+  box-shadow: 0 8px 18px -12px color-mix(in srgb, var(--sd-ink) 80%, transparent);
   transform: scale(calc(1 + var(--keep-lean) * 0.07));
 }
 
@@ -428,7 +426,7 @@
 }
 
 .keep:hover {
-  background: color-mix(in srgb, var(--sd-accent) 90%, #000);
+  background: color-mix(in srgb, var(--sd-ink) 86%, var(--sd-clay));
 }
 
 .skip:active,
@@ -460,27 +458,25 @@
 }
 
 .tray {
+  position: relative;
+  z-index: 70;
   box-sizing: border-box;
   display: grid;
-  gap: 12px;
-  inline-size: min(100%, 340px);
+  gap: 10px;
   padding: 10px;
-  border-radius: 24px;
-  background: color-mix(in srgb, var(--sd-paper) 72%, transparent);
-  backdrop-filter: blur(14px) saturate(1.2);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--sd-ink) 8%, transparent),
-    0 16px 32px -26px rgba(122, 52, 34, 0.4);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--sd-paper) 58%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sd-ink) 10%, transparent);
 }
 
 .trayHead {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-block-size: 48px;
-  padding: 4px 8px 4px 4px;
+  min-block-size: 44px;
+  padding: 0 4px;
   border: 0;
-  border-radius: 16px;
+  border-radius: 12px;
   background: transparent;
   color: var(--sd-ink);
   font: inherit;
@@ -577,8 +573,9 @@
 }
 
 .trayBody {
+  position: relative;
   display: grid;
-  padding-inline: 4px;
+  min-block-size: 0;
 }
 
 .trayBodyClosed {
@@ -587,7 +584,7 @@
 
 .trayEmpty {
   margin: 0;
-  padding: 6px 4px 2px;
+  padding: 2px 4px 4px;
   font-size: 14px;
   line-height: 1.45;
   color: var(--sd-muted);
@@ -600,8 +597,30 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  max-block-size: 260px;
+  max-block-size: 220px;
   overflow-y: auto;
+}
+
+.slots {
+  display: none;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slot {
+  block-size: 56px;
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--sd-clay-deep) 45%, transparent);
+  opacity: 0.7;
+}
+
+.railBox {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-block-size: 0;
 }
 
 .row {
@@ -674,19 +693,35 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  min-block-size: 52px;
-  padding: 10px 20px;
-  border-radius: 16px;
-  background: var(--sd-accent);
+  gap: 12px;
+  min-block-size: 60px;
+  padding: 12px 24px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sd-accent) 88%, #fff), var(--sd-accent));
   color: var(--sd-on-accent);
-  font: 600 15px/1.2 var(--sd-font-ui);
+  font: 700 16px/1.2 var(--sd-font-ui);
   letter-spacing: -0.01em;
   text-decoration: none;
-  transition: background-color 180ms ease;
+  box-shadow:
+    0 14px 30px -12px color-mix(in srgb, var(--sd-accent) 75%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.28);
+  cursor: pointer;
+  transition: background-color 180ms ease, box-shadow 180ms ease, transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.enquire:hover {
+.enquire:disabled {
+  background: none;
+  color: var(--sd-muted);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--sd-ink) 18%, transparent);
+  cursor: not-allowed;
+}
+
+.enquire:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+.enquire:not(:disabled):hover {
   background: color-mix(in srgb, var(--sd-accent) 90%, #000);
 }
 
@@ -720,36 +755,137 @@
   }
 
   .layout {
-    grid-template-columns: minmax(0, 360px) minmax(0, 300px);
-    justify-content: center;
-    align-items: center;
-    gap: 56px;
+    grid-template-columns: minmax(0, 360px) minmax(0, 240px);
+    grid-template-rows: auto auto auto;
+    column-gap: 40px;
   }
 
-  .deckCol {
-    inline-size: 100%;
+  .top {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .stage {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .actions {
+    grid-column: 1;
+    grid-row: 3;
   }
 
   .tray {
-    inline-size: 100%;
-    align-self: center;
+    grid-column: 2;
+    grid-row: 1 / 4;
+    grid-template-rows: subgrid;
+    gap: 16px;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
   }
 
   .trayHead {
+    align-self: baseline;
+    min-block-size: 0;
+    padding: 0;
     cursor: default;
     pointer-events: none;
+    font-family: var(--sd-font-mono);
   }
 
+  .thumbs,
   .chevron {
     display: none;
   }
 
+  .trayTitle {
+    font: inherit;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--sd-muted);
+  }
+
+  .badge {
+    min-inline-size: 0;
+    block-size: auto;
+    padding: 0;
+    background: none;
+    color: var(--sd-ink);
+    font: inherit;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+  }
+
+  .trayBody,
   .trayBodyClosed {
-    display: grid;
+    display: block;
+    position: relative;
+    min-block-size: 0;
+  }
+
+  .railBox {
+    position: absolute;
+    inset-block: 0 34px;
+    inset-inline: 0;
+    padding: 0;
+    gap: 14px;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  .list {
+    max-block-size: none;
+    min-block-size: 0;
+    gap: 0;
+    overscroll-behavior: contain;
+    border-block-start: 1px solid color-mix(in srgb, var(--sd-ink) 14%, transparent);
+  }
+
+  .row {
+    padding: 10px 0;
+    border-radius: 0;
+    background: none;
+    border-block-end: 1px solid color-mix(in srgb, var(--sd-ink) 14%, transparent);
+  }
+
+  .trayEmpty {
+    padding: 14px 0 0;
+    border-block-start: 1px solid color-mix(in srgb, var(--sd-ink) 14%, transparent);
+    font-family: var(--sd-font-display);
+    font-size: 20px;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    max-inline-size: 22ch;
+  }
+
+  .slots {
+    display: none;
   }
 
   .title {
     font-size: 28px;
+  }
+}
+
+@container (min-width: 1000px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 360px minmax(0, 1fr);
+    column-gap: 56px;
+  }
+
+  .top,
+  .stage,
+  .actions {
+    grid-column: 2;
+  }
+
+  .tray {
+    grid-column: 3;
+    justify-self: start;
+    inline-size: min(100%, 240px);
   }
 }
 

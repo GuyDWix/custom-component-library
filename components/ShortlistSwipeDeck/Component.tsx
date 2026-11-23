@@ -145,6 +145,7 @@ export default function ShortlistSwipeDeck({
       const stamp = dir ?? (slot === 0 ? lean : 0);
       el.style.transform = `translate3d(${b.x.toFixed(2)}px, ${b.y.toFixed(2)}px, 0) rotate(${b.r.toFixed(2)}deg) scale(${b.s.toFixed(4)})`;
       el.style.zIndex = String(dir !== undefined ? 60 : 40 - slot);
+      el.style.pointerEvents = slot === 0 && dir === undefined ? 'auto' : 'none';
       el.style.opacity = dir !== undefined || (slot >= 0 && slot <= STACK && !gone.current.has(i)) ? '1' : '0';
       el.style.setProperty('--keep', Math.max(0, stamp).toFixed(3));
       el.style.setProperty('--skip', Math.max(0, -stamp).toFixed(3));
@@ -452,40 +453,54 @@ export default function ShortlistSwipeDeck({
           </button>
 
           <div id={listId} className={cls(styles.trayBody, !trayOpen && styles.trayBodyClosed)}>
-            {keptItems.length === 0 ? (
-              <p className={styles.trayEmpty}>{emptyTrayText}</p>
-            ) : (
-              <ul className={styles.list}>
-                {kept.map((i) => {
-                  const it = items[i];
-                  if (!it) return null;
-                  return (
-                    <li key={i} className={styles.row}>
-                      <span className={styles.rowThumb} aria-hidden="true">
-                        {it.image ? <img className={styles.thumbImg} src={it.image} alt="" /> : it.title.charAt(0)}
-                      </span>
-                      <span className={styles.rowTitle}>{it.title}</span>
-                      <button
-                        type="button"
-                        className={styles.remove}
-                        onClick={() => setKept((k) => k.filter((x) => x !== i))}
-                        aria-label={`Remove ${it.title}`}
-                      >
-                        <SkipIcon />
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+            <div className={styles.railBox}>
+              {keptItems.length === 0 ? (
+                <>
+                  <p className={styles.trayEmpty}>{emptyTrayText}</p>
+                  <ul className={styles.slots} aria-hidden="true">
+                    {[0, 1, 2].map((n) => (
+                      <li key={n} className={styles.slot} />
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <ul className={styles.list}>
+                  {kept.map((i) => {
+                    const it = items[i];
+                    if (!it) return null;
+                    return (
+                      <li key={i} className={styles.row}>
+                        <span className={styles.rowThumb} aria-hidden="true">
+                          {it.image ? <img className={styles.thumbImg} src={it.image} alt="" /> : it.title.charAt(0)}
+                        </span>
+                        <span className={styles.rowTitle}>{it.title}</span>
+                        <button
+                          type="button"
+                          className={styles.remove}
+                          onClick={() => setKept((k) => k.filter((x) => x !== i))}
+                          aria-label={`Remove ${it.title}`}
+                        >
+                          <SkipIcon />
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
           </div>
 
-          <a className={styles.enquire} href={enquireHref(enquireLink, keptItems.map((it) => it.title))}>
-            <span className={styles.enquireLabel}>{enquireLabel}</span>
-            <svg className={styles.icon} viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </a>
+          {keptItems.length ? (
+            <a className={styles.enquire} href={enquireHref(enquireLink, keptItems.map((it) => it.title))}>
+              <span className={styles.enquireLabel}>{enquireLabel}</span>
+              <Arrow />
+            </a>
+          ) : (
+            <button type="button" className={styles.enquire} disabled>
+              <span className={styles.enquireLabel}>{enquireLabel}</span>
+              <Arrow />
+            </button>
+          )}
         </aside>
       </div>
 
@@ -493,5 +508,13 @@ export default function ShortlistSwipeDeck({
         {announcement}
       </p>
     </section>
+  );
+}
+
+function Arrow() {
+  return (
+    <svg className={styles.icon} viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }

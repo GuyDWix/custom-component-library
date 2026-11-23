@@ -150,6 +150,7 @@ export default function ShortlistSwipeDeck({
       const stamp = dir ?? (slot === 0 ? lean : 0);
       el.style.transform = `translate3d(${b.x.toFixed(2)}px, ${b.y.toFixed(2)}px, 0) rotate(${b.r.toFixed(2)}deg) scale(${b.s.toFixed(4)})`;
       el.style.zIndex = String(dir !== undefined ? 60 : 40 - slot);
+      el.style.pointerEvents = slot === 0 && dir === undefined ? 'auto' : 'none';
       el.style.opacity = dir !== undefined || (slot >= 0 && slot <= STACK && !gone.current.has(i)) ? '1' : '0';
       el.style.setProperty('--keep', Math.max(0, stamp).toFixed(3));
       el.style.setProperty('--skip', Math.max(0, -stamp).toFixed(3));
@@ -457,32 +458,41 @@ export default function ShortlistSwipeDeck({
           </button>
 
           <div id={listId} className={cls(styles.trayBody, !trayOpen && styles.trayBodyClosed)}>
-            {keptItems.length === 0 ? (
-              <p className={styles.trayEmpty}>{emptyTrayText}</p>
-            ) : (
-              <ul className={styles.list}>
-                {kept.map((i) => {
-                  const it = items[i];
-                  if (!it) return null;
-                  return (
-                    <li key={i} className={styles.row}>
-                      <span className={styles.rowThumb} aria-hidden="true">
-                        {it.image ? <img className={styles.thumbImg} src={it.image} alt="" /> : it.title.charAt(0)}
-                      </span>
-                      <span className={styles.rowTitle}>{it.title}</span>
-                      <button
-                        type="button"
-                        className={styles.remove}
-                        onClick={() => setKept((k) => k.filter((x) => x !== i))}
-                        aria-label={`Remove ${it.title}`}
-                      >
-                        <SkipIcon />
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+            <div className={styles.railBox}>
+              {keptItems.length === 0 ? (
+                <>
+                  <p className={styles.trayEmpty}>{emptyTrayText}</p>
+                  <ul className={styles.slots} aria-hidden="true">
+                    {[0, 1, 2].map((n) => (
+                      <li key={n} className={styles.slot} />
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <ul className={styles.list}>
+                  {kept.map((i) => {
+                    const it = items[i];
+                    if (!it) return null;
+                    return (
+                      <li key={i} className={styles.row}>
+                        <span className={styles.rowThumb} aria-hidden="true">
+                          {it.image ? <img className={styles.thumbImg} src={it.image} alt="" /> : it.title.charAt(0)}
+                        </span>
+                        <span className={styles.rowTitle}>{it.title}</span>
+                        <button
+                          type="button"
+                          className={styles.remove}
+                          onClick={() => setKept((k) => k.filter((x) => x !== i))}
+                          aria-label={`Remove ${it.title}`}
+                        >
+                          <SkipIcon />
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
           </div>
 
           <a className={styles.enquire} href={enquireHref(enquireLink, keptItems.map((it) => it.title))}>
@@ -587,15 +597,13 @@ export default function ShortlistSwipeDeck({
 
 .layout {
   display: grid;
-  gap: 22px;
-  justify-items: center;
+  grid-template-columns: minmax(0, 340px);
+  justify-content: center;
+  gap: 16px;
 }
 
 .deckCol {
-  display: grid;
-  justify-items: center;
-  gap: 16px;
-  inline-size: min(100%, 340px);
+  display: contents;
 }
 
 .top {
@@ -965,27 +973,25 @@ export default function ShortlistSwipeDeck({
 }
 
 .tray {
+  position: relative;
+  z-index: 70;
   box-sizing: border-box;
   display: grid;
-  gap: 12px;
-  inline-size: min(100%, 340px);
+  gap: 10px;
   padding: 10px;
-  border-radius: 24px;
-  background: color-mix(in srgb, var(--sd-paper) 72%, transparent);
-  backdrop-filter: blur(14px) saturate(1.2);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--sd-ink) 8%, transparent),
-    0 16px 32px -26px rgba(122, 52, 34, 0.4);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--sd-paper) 58%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sd-ink) 10%, transparent);
 }
 
 .trayHead {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-block-size: 48px;
-  padding: 4px 8px 4px 4px;
+  min-block-size: 44px;
+  padding: 0 4px;
   border: 0;
-  border-radius: 16px;
+  border-radius: 12px;
   background: transparent;
   color: var(--sd-ink);
   font: inherit;
@@ -1082,8 +1088,9 @@ export default function ShortlistSwipeDeck({
 }
 
 .trayBody {
+  position: relative;
   display: grid;
-  padding-inline: 4px;
+  min-block-size: 0;
 }
 
 .trayBodyClosed {
@@ -1092,7 +1099,7 @@ export default function ShortlistSwipeDeck({
 
 .trayEmpty {
   margin: 0;
-  padding: 6px 4px 2px;
+  padding: 2px 4px 4px;
   font-size: 14px;
   line-height: 1.45;
   color: var(--sd-muted);
@@ -1105,8 +1112,30 @@ export default function ShortlistSwipeDeck({
   margin: 0;
   padding: 0;
   list-style: none;
-  max-block-size: 260px;
+  max-block-size: 220px;
   overflow-y: auto;
+}
+
+.slots {
+  display: none;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slot {
+  block-size: 56px;
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--sd-clay-deep) 45%, transparent);
+  opacity: 0.7;
+}
+
+.railBox {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-block-size: 0;
 }
 
 .row {
@@ -1225,32 +1254,102 @@ export default function ShortlistSwipeDeck({
   }
 
   .layout {
-    grid-template-columns: minmax(0, 360px) minmax(0, 300px);
-    justify-content: center;
-    align-items: center;
-    gap: 56px;
+    grid-template-columns: minmax(0, 360px) minmax(0, 320px);
+    grid-template-rows: auto auto auto;
+    column-gap: 40px;
   }
 
-  .deckCol {
-    inline-size: 100%;
+  .top {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .stage {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .actions {
+    grid-column: 1;
+    grid-row: 3;
   }
 
   .tray {
-    inline-size: 100%;
-    align-self: center;
+    grid-column: 2;
+    grid-row: 1 / 4;
+    grid-template-rows: subgrid;
+    gap: 16px;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
   }
 
   .trayHead {
+    align-self: baseline;
+    min-block-size: 0;
+    padding: 0;
     cursor: default;
     pointer-events: none;
+    font-family: var(--sd-font-mono);
   }
 
+  .thumbs,
   .chevron {
     display: none;
   }
 
+  .trayTitle {
+    font: inherit;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--sd-muted);
+  }
+
+  .badge {
+    min-inline-size: 0;
+    block-size: auto;
+    padding: 0;
+    background: none;
+    color: var(--sd-ink);
+    font: inherit;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+  }
+
+  .trayBody,
   .trayBodyClosed {
+    display: block;
+    position: relative;
+    min-block-size: 0;
+  }
+
+  .railBox {
+    position: absolute;
+    inset-block: 0 34px;
+    inset-inline: 0;
+    padding: 10px;
+    border-radius: 26px;
+    background: color-mix(in srgb, var(--sd-paper) 62%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sd-clay-deep) 38%, transparent);
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  .list {
+    max-block-size: none;
+    min-block-size: 0;
+    overscroll-behavior: contain;
+  }
+
+  .slots {
     display: grid;
+  }
+
+  .enquire {
+    min-block-size: 54px;
+    padding-block: 8px;
   }
 
   .title {
