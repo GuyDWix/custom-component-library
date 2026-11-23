@@ -178,7 +178,6 @@ export default function RadialContactFan({
     >
       <div className={styles.frame}>
         <span className={styles.light} aria-hidden="true" />
-        <span className={styles.grain} aria-hidden="true" />
 
         {(heading || note) && (
           <div className={styles.copy} data-v={fromTop ? 'top' : 'bottom'} data-h={fromLeft ? 'left' : 'right'}>
@@ -233,7 +232,7 @@ export default function RadialContactFan({
                   <span className={styles.disc} aria-hidden="true">
                     <span className={styles.discBody} />
                     <span className={styles.discGloss} />
-                    <svg className={styles.glyph} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <svg className={styles.glyph} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                       <Glyph name={a.icon} />
                     </svg>
                   </span>
