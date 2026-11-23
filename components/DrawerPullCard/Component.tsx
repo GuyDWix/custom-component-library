@@ -181,99 +181,69 @@ export default function DrawerPullCard({
       data-title={tier}
       onKeyDown={onKeyDown}
     >
-      <article className={styles.cabinet} aria-labelledby={titleId}>
-        <span className={styles.cornice} aria-hidden="true" />
-
-        <div className={styles.upper}>
-          <div className={`${styles.door} ${styles.doorTitle}`}>
-            <div className={styles.panel}>
-              <h3 id={titleId} className={styles.title}>
-                {title}
-              </h3>
-              {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
-            </div>
-          </div>
-
-          <div className={`${styles.door} ${styles.doorGlass}`}>
-            <div className={styles.window}>
-              <span className={styles.scene} aria-hidden="true" />
-              {image && imgStatus !== 'failed' && (
-                <img
-                  ref={photoRef}
-                  className={styles.photo}
-                  data-ready={imgStatus === 'ready'}
-                  src={image}
-                  alt={imageAlt}
-                  draggable={false}
-                  decoding="async"
-                  onLoad={() => setImgStatus('ready')}
-                  onError={() => setImgStatus('failed')}
-                />
-              )}
-              <span className={styles.glare} aria-hidden="true" />
-              <span className={styles.glareEdge} aria-hidden="true" />
-            </div>
+      <article className={styles.card} aria-labelledby={titleId}>
+        <div className={styles.top}>
+          <figure className={styles.figure}>
+            {image && imgStatus !== 'failed' && (
+              <img
+                ref={photoRef}
+                className={styles.photo}
+                data-ready={imgStatus === 'ready'}
+                src={image}
+                alt={imageAlt}
+                draggable={false}
+                decoding="async"
+                onLoad={() => setImgStatus('ready')}
+                onError={() => setImgStatus('failed')}
+              />
+            )}
+          </figure>
+          <div className={styles.info}>
+            {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
+            <h3 id={titleId} className={styles.title}>
+              {title}
+            </h3>
           </div>
         </div>
 
-        <div className={styles.band}>
-          <span className={styles.slot} aria-hidden="true" />
-
-          <div ref={trayRef} id={drawerId} className={styles.tray}>
-            <div ref={interiorRef} className={styles.interior}>
-              <span className={`${styles.wall} ${styles.wallStart}`} aria-hidden="true" />
-              <span className={`${styles.wall} ${styles.wallEnd}`} aria-hidden="true" />
-              {rows.length > 0 && (
-                <div
-                  ref={rowsRef}
-                  className={styles.rowsScroll}
-                  tabIndex={scrollable ? 0 : undefined}
-                  role={scrollable ? 'region' : undefined}
-                  aria-label={scrollable ? `${handleLabel} (scrollable)` : undefined}
-                >
-                  <dl className={styles.rows}>
-                    {rows.map((row, i) => (
-                      <div key={i} className={styles.row} style={{ '--dp-i': String(i) } as CSSProperties}>
-                        <dt className={styles.rowLabel}>{row.label}</dt>
-                        <dd className={styles.rowValue}>{row.value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <button
-            ref={frontRef}
-            type="button"
-            className={styles.front}
-            aria-expanded={open}
-            aria-controls={drawerId}
-            aria-description={DRAWER_HELP}
-            onClick={onToggle}
-          >
-            <span className={styles.frontField} aria-hidden="true" />
-            <span className={styles.holder}>
-              <span className={styles.holderCard}>{handleLabel}</span>
-            </span>
-            <span className={styles.pull} aria-hidden="true">
-              <span className={styles.pullBar} />
-            </span>
-          </button>
-        </div>
-
-        <div className={styles.lower}>
-          <span className={`${styles.lowerDoor} ${styles.lowerDoorA}`} aria-hidden="true">
-            <span className={styles.lowerPanel} />
+        <button
+          ref={frontRef}
+          type="button"
+          className={styles.front}
+          aria-expanded={open}
+          aria-controls={drawerId}
+          aria-description={DRAWER_HELP}
+          onClick={onToggle}
+        >
+          <span className={styles.handleLabel}>{handleLabel}</span>
+          <span className={styles.pull} aria-hidden="true">
+            <span className={styles.pullH} />
+            <span className={styles.pullV} />
           </span>
-          <span className={`${styles.lowerDoor} ${styles.lowerDoorB}`} aria-hidden="true">
-            <span className={styles.lowerPanel} />
-          </span>
-          <span className={styles.lowerShade} aria-hidden="true" />
-        </div>
+        </button>
 
-        <span className={styles.plinth} aria-hidden="true" />
+        <div ref={trayRef} id={drawerId} className={styles.tray}>
+          <div ref={interiorRef} className={styles.interior}>
+            {rows.length > 0 && (
+              <div
+                ref={rowsRef}
+                className={styles.rowsScroll}
+                tabIndex={scrollable ? 0 : undefined}
+                role={scrollable ? 'region' : undefined}
+                aria-label={scrollable ? `${handleLabel} (scrollable)` : undefined}
+              >
+                <dl className={styles.rows}>
+                  {rows.map((row, i) => (
+                    <div key={i} className={styles.row} style={{ '--dp-i': String(i) } as CSSProperties}>
+                      <dt className={styles.rowLabel}>{row.label}</dt>
+                      <dd className={styles.rowValue}>{row.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            )}
+          </div>
+        </div>
       </article>
     </div>
   );

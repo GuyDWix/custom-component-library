@@ -25,8 +25,8 @@ const stage = {
   boxSizing: 'border-box' as const,
   display: 'grid',
   placeItems: 'center',
-  padding: 0,
-  background: '#0f0a06',
+  padding: 'clamp(12px, 3vw, 32px)',
+  background: '#f3f2ee',
 };
 
 export default function Preview() {
@@ -35,7 +35,7 @@ export default function Preview() {
 
   return (
     <div style={stage}>
-      <div style={{ width: '100%' }}>
+      <div style={{ width: '100%', maxWidth: 960 }}>
         <DrawerPullCard {...(isWorst ? worst : {})} />
       </div>
     </div>
