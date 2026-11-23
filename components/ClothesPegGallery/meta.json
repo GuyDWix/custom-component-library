@@ -4,7 +4,7 @@
   "display_name": "Clothes Peg Gallery",
   "category": "media",
   "tier": "everyday",
-  "job": "Hang photos from a sagging string with clothes pegs; they sway in the breeze and a tapped photo unclips and floats to a large view",
+  "job": "Hang photos from a sagging string; they sway in the breeze and a tapped photo unclips and floats to a large view",
   "visitor_action": "tap a photo to unclip it; tap away or Esc to re-hang it",
   "owner_settings": [
     "Photos (image, caption)",
@@ -18,7 +18,7 @@
     "restaurant"
   ],
   "mobile": "short lines of two or three prints, tap opens full width",
-  "motion": "Verlet cord sags under each print's weight and travelling gust pulses ripple along it; prints swing as pendulums from the cord points with phase-lagged paper curl and hard noon shadows; on tap the spring-steel peg snaps open, the cord rebounds, and the print floats up backlit to a lightbox (reduced-motion: settled line, prints still hung, instant open)",
+  "motion": "Verlet cord sags under each print's weight and travelling gust pulses ripple along it; prints swing as pendulums from the cord points with phase-lagged paper curl and hard noon shadows; pointer/touch drags the cord and prints sway; on tap the cord rebounds, and the print floats up backlit to a lightbox (reduced-motion: settled line, prints still hung, instant open)",
   "scores": {
     "concept": 3,
     "usefulness": 3,
@@ -32,5 +32,5 @@
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Scandinavian calm: no stage, fine warm-grey cord, small flat birch pegs (#d8cdb8/#c4b79e), bare unframed prints, wall-label captions beneath in Jost; lightbox shows the photo large with an Instrument Serif caption on #fbfaf8. One ink (#1f1e1c)."
+  "art_direction": "Scandinavian calm: no stage, fine warm-grey cord, no pegs: bare unframed prints hang straight from the cord, wall-label captions beneath in Jost; lightbox shows the photo large with an Instrument Serif caption on #fbfaf8. One ink (#1f1e1c)."
 }

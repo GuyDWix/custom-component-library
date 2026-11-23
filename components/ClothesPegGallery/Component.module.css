@@ -1,4 +1,4 @@
-/* Scandinavian line: bare prints, fine cord, small flat pegs, wall-label captions */
+/* Scandinavian line: bare prints on a fine cord, wall-label captions */
 
 @font-face {
   font-family: 'Jost';
@@ -29,8 +29,6 @@
   --cpg-bg: #fbfaf8;
   --cpg-ink: #1f1e1c;
   --cpg-muted: #6b6860;
-  --cpg-peg-a: #d8cdb8;
-  --cpg-peg-b: #c4b79e;
   --cpg-font-ui: 'Jost', 'Helvetica Neue', system-ui, sans-serif;
   --cpg-font-display: 'Instrument Serif', 'Times New Roman', serif;
 
@@ -38,6 +36,8 @@
   isolation: isolate;
   container-type: inline-size;
   overflow: clip;
+  background: var(--cpg-bg);
+  touch-action: pan-y;
   box-sizing: border-box;
   inline-size: 100%;
   color: var(--cpg-ink);
@@ -69,7 +69,7 @@
 .string {
   fill: none;
   stroke: var(--cpg-string);
-  stroke-width: 1px;
+  stroke-width: 1.25px;
   stroke-linecap: round;
 }
 
@@ -90,7 +90,7 @@
 .label {
   position: absolute;
   inset-inline-start: calc(var(--cpg-pw) / -2);
-  inset-block-start: calc(var(--cpg-ph) + 14px + 22px);
+  inset-block-start: calc(var(--cpg-ph) + 4px + 22px);
   inline-size: var(--cpg-pw);
   overflow: hidden;
   font-size: 13px;
@@ -110,7 +110,7 @@
 
 .print {
   position: absolute;
-  inset-block-start: 14px;
+  inset-block-start: 4px;
   inset-inline-start: calc(var(--cpg-pw) / -2);
   box-sizing: border-box;
   display: block;
@@ -166,46 +166,6 @@
   font-family: var(--cpg-font-display);
   font-size: 40px;
   color: var(--cpg-muted);
-}
-
-/* small flat peg */
-
-.peg {
-  position: absolute;
-  inset-block-start: -6px;
-  inset-inline-start: -7px;
-  inline-size: 14px;
-  block-size: 40px;
-  overflow: visible;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.pegJawL,
-.pegJawR {
-  transform-box: view-box;
-  transform-origin: 6px 10px;
-  transition: transform 300ms cubic-bezier(0.3, 1.9, 0.45, 0.85);
-}
-
-.pegJawL {
-  fill: var(--cpg-peg-a);
-}
-
-.pegJawR {
-  fill: var(--cpg-peg-b);
-}
-
-.pegPin {
-  fill: var(--cpg-ink);
-}
-
-.peg[data-open] .pegJawL {
-  transform: rotate(-12deg);
-}
-
-.peg[data-open] .pegJawR {
-  transform: rotate(12deg);
 }
 
 /* controls */
@@ -341,9 +301,3 @@
   stroke-linecap: round;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .pegJawL,
-  .pegJawR {
-    transition: none;
-  }
-}

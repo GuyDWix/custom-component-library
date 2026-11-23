@@ -36,7 +36,7 @@ type Rect = { x: number; y: number; w: number; h: number };
 type Pulse = { x: number; dir: number; amp: number; sigma: number; speed: number };
 
 const PAD_TOP = 64;
-const GRIP = 14;
+const GRIP = 4;
 const CAP_SPACE = 44;
 const CAP_GAP = 22;
 const X_BLEED = 48;
@@ -45,6 +45,7 @@ const SWING_K = 30;
 const SWING_C = 2.4;
 const CURL_K = 46;
 const CURL_C = 7;
+const TOUCH_RADIUS = 110;
 const FLIGHT_K = 150;
 const FLIGHT_C = 19;
 const SIZE_CYCLE = [1.14, 0.85, 1.03, 0.92, 1.1, 0.88];
@@ -184,7 +185,7 @@ function openRect(width: number, height: number, ph: number): Rect & { capH: num
 
 export default function ClothesPegGallery({
   photos = defaultPhotos,
-  breezeStrength = 4,
+  breezeStrength = 3,
   stringColor = '#a8a39a',
   className,
 }: ClothesPegGalleryProps) {
@@ -207,6 +208,9 @@ export default function ClothesPegGallery({
   const flight = useRef({ p: 0, v: 0, target: 0 });
   const breeze = useRef(breezeStrength);
   const sims = useRef<RowSim[] | null>(null);
+  const running = useRef(false);
+  const lastPtr = useRef<{ x: number; y: number; t: number } | null>(null);
+  const [tick, setTick] = useState(0);
 
   breeze.current = clamp(breezeStrength, 0, 10);
   const L = useMemo(() => layoutFor(width, photos.length), [width, photos.length]);
@@ -275,13 +279,14 @@ export default function ClothesPegGallery({
     if (reduced) paintFlight(active);
   }, [active, reduced, paintFlight, width]);
 
-  /* the noon breeze: Verlet cord + swing + curl, gusts ripple along the line */
+  /* Verlet cord: breeze, gusts and pointer/touch drag move it; prints swing from it */
   useEffect(() => {
     if (reduced || !inView) return;
     const live = sims.current;
     if (!live) return;
     let last = performance.now();
     let raf = 0;
+    running.current = true;
     let nextGust = 0.7 + Math.random() * 2.6;
     const pulses: Pulse[] = [];
     const blowing = () => playing && breeze.current > 0;
@@ -418,12 +423,15 @@ export default function ClothesPegGallery({
           setActive(null);
         }
       }
-      if (!playing && energy < 0.05 && active === null) return;
+      if (!playing && energy < 0.05 && active === null) {
+        running.current = false;
+        return;
+      }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [reduced, inView, playing, active, paintFlight, L, width]);
+  }, [reduced, inView, playing, active, paintFlight, L, width, tick]);
 
   useEffect(() => {
     if (open) closeRef.current?.focus({ preventScroll: true });
@@ -470,6 +478,33 @@ export default function ClothesPegGallery({
     if (anchor) anchor.px -= clamp(e.movementX, -10, 10) * 0.35;
   };
 
+  const touchCord = (e: PointerEvent<HTMLDivElement>) => {
+    const live = sims.current;
+    const root = rootRef.current;
+    if (reduced || !live || !root || active !== null) return;
+    const box = root.getBoundingClientRect();
+    const x = e.clientX - box.left;
+    const y = e.clientY - box.top;
+    const prev = lastPtr.current;
+    lastPtr.current = { x, y, t: e.timeStamp };
+    if (!prev || e.timeStamp - prev.t > 120) return;
+    const vx = clamp(x - prev.x, -40, 40);
+    const vy = clamp(y - prev.y, -40, 40);
+    let hit = false;
+    for (const sim of live) {
+      for (let k = 1; k < sim.pts.length - 1; k++) {
+        const p = sim.pts[k];
+        const d = Math.hypot(p.x - x, p.y - y);
+        if (d > TOUCH_RADIUS) continue;
+        const w = (1 - d / TOUCH_RADIUS) ** 2 / p.m ** 0.5;
+        p.px -= vx * w * 0.9;
+        p.py -= vy * w * 0.9;
+        hit = true;
+      }
+    }
+    if (hit && !running.current) setTick((n) => n + 1);
+  };
+
   const onDialogKey = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Escape') {
       e.stopPropagation();
@@ -494,6 +529,10 @@ export default function ClothesPegGallery({
       className={[styles.root, className].filter(Boolean).join(' ')}
       style={rootStyle}
       data-still={reduced || !playing || !inView ? '' : undefined}
+      onPointerMove={touchCord}
+      onPointerLeave={() => {
+        lastPtr.current = null;
+      }}
     >
       <ul className={styles.line} aria-label="Photo gallery" aria-description={HELP} aria-hidden={open || undefined}>
         {L.sims.map((sim, r) => (
@@ -573,17 +612,6 @@ export default function ClothesPegGallery({
                     )}
                   </span>
                 </button>
-                <svg
-                  className={styles.peg}
-                  viewBox="0 0 12 34"
-                  data-open={away ? '' : undefined}
-                  aria-hidden="true"
-                  focusable="false"
-                >
-                  <rect className={styles.pegJawL} x="1" y="2" width="5" height="30" rx="1" />
-                  <rect className={styles.pegJawR} x="6" y="2" width="5" height="30" rx="1" />
-                  <rect className={styles.pegPin} x="4.5" y="9" width="3" height="3" rx="1.5" />
-                </svg>
               </div>
             </li>
           );
