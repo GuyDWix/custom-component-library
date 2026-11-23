@@ -43,8 +43,7 @@
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  background:
-    var(--csg-room);
+  background: transparent;
   color: var(--csg-ink);
   font-family: var(--csg-font-display);
   border-radius: 6px;
@@ -62,47 +61,6 @@
   background-image: var(--csg-noise);
   mix-blend-mode: overlay;
   opacity: 0.07;
-}
-
-.defs {
-  position: absolute;
-  inline-size: 0;
-  block-size: 0;
-  overflow: hidden;
-}
-
-/* ---------- dark margin ---------- */
-
-.header {
-  position: relative;
-  z-index: 2;
-  padding-inline: clamp(18px, 4.5cqi, 56px);
-  padding-block: clamp(24px, 4.2cqi, 44px) clamp(18px, 3cqi, 28px);
-}
-
-.title {
-  margin: 0;
-  font-family: var(--csg-font-display);
-  font-weight: 500;
-  font-size: clamp(26px, 4.6cqi, 46px);
-  line-height: 1.08;
-  letter-spacing: -0.025em;
-  max-inline-size: 20ch;
-  color: var(--csg-ink);
-  text-wrap: balance;
-  overflow-wrap: anywhere;
-}
-
-.roll {
-  margin: clamp(10px, 1.6cqi, 16px) 0 0;
-  font-family: var(--csg-font-mono);
-  font-size: 12px;
-  line-height: 1.5;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--csg-muted);
-  max-inline-size: 100%;
-  overflow-wrap: anywhere;
 }
 
 /* ---------- the glowing light table ---------- */
@@ -725,9 +683,6 @@
 }
 
 @container (min-width: 900px) {
-  .header {
-    padding-block-end: clamp(22px, 4cqi, 36px);
-  }
 
   .frames {
     gap: 10px;

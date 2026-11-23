@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import styles from './Component.module.css';
 
@@ -10,7 +10,6 @@ export interface ContactSheetPhoto {
 
 export interface ContactSheetGalleryProps {
   photos?: ContactSheetPhoto[];
-  title?: string;
   rollLabel?: string;
   showFrameNumbers?: boolean;
   markerColor?: string;
@@ -53,9 +52,7 @@ const L_DAMP = 16;
 const CAPTION_H = 52;
 const OPEN_DELAY = 340;
 const SWIPE = 56;
-const ZOOM = 2.15;
-const BULGE = 0.42;
-const BULGE_SCALE = 30;
+const ZOOM = 1;
 const SHEET_HELP =
   'Move over the sheet to inspect frames with the loupe. Pick a frame to see it large. Arrow keys move between frames; Escape closes.';
 const TILT = [-0.5, 0.4, -0.3, 0.55, -0.42];
@@ -65,11 +62,9 @@ const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayout
 const pad2 = (n: number) => String(n).padStart(2, '0');
 const pickedSet = (photos: ContactSheetPhoto[]) => new Set(photos.flatMap((p, i) => (p.picked ? [i] : [])));
 const rest = (): Motion => ({ x: 0, y: 0, s: 1, vx: 0, vy: 0, vs: 0 });
-const clampChan = (v: number) => Math.max(0, Math.min(255, Math.round(v * 255)));
 
 export default function ContactSheetGallery({
   photos = defaultPhotos,
-  title = 'A long weekend by the sea',
   rollLabel = 'Roll 07 · 400 · Proof',
   showFrameNumbers = true,
   markerColor = '#E8502E',
@@ -90,7 +85,6 @@ export default function ContactSheetGallery({
   const [inView, setInView] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [swap, setSwap] = useState({ key: 0, dir: 0 });
-  const [bulge, setBulge] = useState<{ url: string; size: number } | null>(null);
 
   const rootRef = useRef<HTMLElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -114,7 +108,6 @@ export default function ContactSheetGallery({
   const restPt = useRef<Pt>({ x: 220, y: 140 });
   const loupeD = useRef(160);
   const lensD = useRef(140);
-  const bulgeD = useRef(0);
   const idle = useRef(true);
   const entered = useRef(false);
   const phaseRef = useRef(phase);
@@ -129,8 +122,6 @@ export default function ContactSheetGallery({
   const firstPicked = photos.findIndex((p) => p.picked);
   restIdx.current = firstPicked >= 0 ? firstPicked : 0;
 
-  const uid = useId().replace(/:/g, '');
-  const bulgeFilterId = `csg-lens-${uid}`;
 
   useEffect(() => {
     setMarked(pickedSet(photos));
@@ -271,32 +262,6 @@ export default function ContactSheetGallery({
     raf.current = requestAnimationFrame((t) => step(t, start - 16));
   }, [step]);
 
-  const bulgeFor = useCallback((d: number) => {
-    const n = Math.max(64, Math.round(d));
-    const cv = document.createElement('canvas');
-    cv.width = n;
-    cv.height = n;
-    const ctx = cv.getContext('2d');
-    if (!ctx) return;
-    const img = ctx.createImageData(n, n);
-    const half = n / 2;
-    for (let py = 0; py < n; py++) {
-      for (let px = 0; px < n; px++) {
-        const x = (px + 0.5) / half - 1;
-        const y = (py + 0.5) / half - 1;
-        const r = Math.min(1, Math.hypot(x, y));
-        const u = (BULGE * (1 - r * r)) / (1 + BULGE * (1 - r * r));
-        const o = (py * n + px) * 4;
-        img.data[o] = clampChan(0.5 - (u * x * half) / BULGE_SCALE);
-        img.data[o + 1] = clampChan(0.5 - (u * y * half) / BULGE_SCALE);
-        img.data[o + 2] = 128;
-        img.data[o + 3] = 255;
-      }
-    }
-    ctx.putImageData(img, 0, 0);
-    setBulge({ url: cv.toDataURL(), size: n });
-  }, []);
-
   const measure = useCallback(() => {
     const table = tableRef.current;
     const lp = loupeRef.current;
@@ -315,12 +280,8 @@ export default function ContactSheetGallery({
         paintLoupe();
       }
     }
-    if (bulgeD.current !== lensD.current) {
-      bulgeD.current = lensD.current;
-      bulgeFor(lensD.current);
-    }
     kick();
-  }, [bulgeFor, paintLoupe, kick]);
+  }, [paintLoupe, kick]);
 
   const mark = (i: number) =>
     setMarked((prev) => {
@@ -652,20 +613,6 @@ export default function ContactSheetGallery({
   return (
     <section ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle} aria-label={ariaLabel}>
       <span className={styles.grain} aria-hidden="true" />
-      <svg className={styles.defs} aria-hidden="true" focusable="false">
-        {bulge && (
-          <filter id={bulgeFilterId} x="-8%" y="-8%" width="116%" height="116%">
-            <feImage href={bulge.url} x="0" y="0" width={bulge.size} height={bulge.size} result="map" preserveAspectRatio="none" />
-            <feDisplacementMap in="SourceGraphic" in2="map" scale={BULGE_SCALE} xChannelSelector="R" yChannelSelector="G" />
-          </filter>
-        )}
-      </svg>
-
-      <header className={styles.header}>
-        {title && <h2 className={styles.title}>{title}</h2>}
-        {rollLabel && <p className={styles.roll}>{rollLabel}</p>}
-      </header>
-
       <div
         ref={tableRef}
         className={`${styles.panel} ${styles.table}`}
@@ -688,7 +635,7 @@ export default function ContactSheetGallery({
             <span className={styles.loupeHalo} />
             <span className={styles.loupeShadow} />
             <div className={styles.loupeBarrel}>
-              <div ref={lensRef} className={styles.lens} style={bulge ? { filter: `url(#${bulgeFilterId})` } : undefined}>
+              <div ref={lensRef} className={styles.lens}>
                 <div ref={cloneRef} className={`${styles.panel} ${styles.lensClone}`}>
                   <div className={styles.sheet}>{strips.map((cells, s) => stripNode(cells, s, true))}</div>
                 </div>

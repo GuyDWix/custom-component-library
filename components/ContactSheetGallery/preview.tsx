@@ -19,7 +19,7 @@ const stage = {
   display: 'grid',
   placeItems: 'center',
   padding: 'clamp(16px, 4vw, 56px)',
-  background: 'linear-gradient(180deg, #17130d 0%, #0a0806 100%)',
+  background: '#f4f4f2',
 };
 
 export default function Preview() {
@@ -33,7 +33,6 @@ export default function Preview() {
           {...(worst
             ? {
                 photos: worstPhotos,
-                title: 'Proofs from the Montgomery-Vanderhoeven Castellanos anniversary weekend, second roll',
                 rollLabel: 'Roll 0000000000000000000000000017 · Daylight 400 · Proof sheet, do not crop',
               }
             : {})}
