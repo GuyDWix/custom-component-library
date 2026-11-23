@@ -4,14 +4,14 @@
   "display_name": "Diff Compare Card",
   "category": "cards",
   "tier": "everyday",
-  "job": "Compare two options side by side where only the rows that differ are highlighted and matching rows fade back",
-  "visitor_action": "toggle \"differences only\" to fade matching rows away; hover or focus a row to read it",
+  "job": "Compare two options on a physical balance: each differing row is a weight on the side that wins it, and the beam tilts toward the overall winner for the priorities the visitor picks",
+  "visitor_action": "toggle 'What matters to you' chips (counts, counts double, off) and watch the beam re-tilt and the verdict update; tap 'Same in both' to expand matching rows",
   "owner_settings": [
     "First option name",
     "Second option name",
-    "Rows (label, first value, second value)",
-    "Highlight color",
-    "Differences-only toggle label"
+    "Rows (label, first value, second value, optional numbers, unit, and better: higher or lower)",
+    "Accent colour",
+    "Collapsed-stack label"
   ],
   "site_types": [
     "store",
@@ -19,8 +19,8 @@
     "business",
     "events"
   ],
-  "mobile": "each row label sits above its two values; option names stay in two columns on top",
-  "motion": "rows rise in with a light stagger; toggling differences-only fades and collapses the matching rows (reduced-motion: instant)",
+  "mobile": "chips wrap above the verdict and beam; the two pans stay side by side and stack their weights; long text wraps, no horizontal scroll",
+  "motion": "beam swings on a spring (slight overshoot) toward the weighted winner; digits roll like an odometer on arrival; weights collapse in and out as chips toggle (reduced-motion: beam snaps, digits and weights swap instantly)",
   "scores": {
     "concept": 2,
     "usefulness": 3,
@@ -34,5 +34,5 @@
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Restrained editorial comparison: white sheet, one blue accent, IBM Plex Sans, hairline rules; differing rows get a faint accent tint and heavier values, matching rows recede to muted grey"
+  "art_direction": "Balance: white sheet, ink beam with pivot and soft shadow, cobalt-tinted pan for option A vs ink-topped pan for B, IBM Plex Sans, odometer digits"
 }

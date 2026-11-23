@@ -1,9 +1,9 @@
 Create a custom element called "Diff Compare Card". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: first option name, second option name, rows (label, first value, second value), highlight color, differences-only toggle label. Add other settings if they help.
+The site owner must be able to change: first option name, second option name, rows (label, first value, second value, optional numbers, unit, and better: higher or lower), accent colour, collapsed-stack label. Add other settings if they help.
 
 ```tsx
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import styles from './Component.module.css';
 
@@ -11,21 +11,28 @@ export interface DiffCompareRow {
   label: string;
   valueA: string;
   valueB: string;
+  /** Optional numbers used to pick the winner; otherwise parsed from the text. */
+  numberA?: number;
+  numberB?: number;
+  /** Optional unit appended to bare-number values, e.g. "hours". */
+  unit?: string;
+  /** Which side of the scale wins: 'higher' (default) or 'lower' (price, wait time). */
+  better?: 'higher' | 'lower';
 }
 
 export interface DiffCompareCardProps {
   optionAName?: string;
   optionBName?: string;
   rows?: DiffCompareRow[];
-  highlightColor?: string;
-  diffOnlyLabel?: string;
+  accentColor?: string;
+  collapseLabel?: string;
   className?: string;
 }
 
 export const defaultRows: DiffCompareRow[] = [
   { label: 'Coverage', valueA: '8 hours', valueB: '4 hours' },
-  { label: 'Investment', valueA: '$2,450', valueB: '$1,280' },
-  { label: 'Photographers on site', valueA: 'Two', valueB: 'One' },
+  { label: 'Investment', valueA: '$2,450', valueB: '$1,280', better: 'lower' },
+  { label: 'Photographers on site', valueA: 'Two', valueB: 'One', numberA: 2, numberB: 1 },
   { label: 'Finished gallery', valueA: '320 images', valueB: '140 images' },
   { label: 'Delivery time', valueA: '3 weeks', valueB: '3 weeks' },
   { label: 'Online gallery', valueA: '12 months', valueB: '12 months' },
@@ -33,118 +40,297 @@ export const defaultRows: DiffCompareRow[] = [
   { label: 'Planning call', valueA: 'Included', valueB: 'Included' },
 ];
 
-const PLACEHOLDER = '\u2014';
-const LONG_VALUE = 26;
+const PLACEHOLDER = '—';
+const NUM = /-?\d[\d,]*(?:\.\d+)?/;
 
-const text = (value: string) => {
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : PLACEHOLDER;
+const text = (v: string) => v.trim() || PLACEHOLDER;
+const differs = (r: DiffCompareRow) => r.valueA.trim() !== r.valueB.trim();
+const parse = (v: string) => {
+  const m = v.match(NUM);
+  return m ? parseFloat(m[0].replace(/,/g, '')) : null;
 };
+const shown = (v: string, unit?: string) =>
+  unit && v.trim() && !/[^\d.,\s-]/.test(v) ? `${v.trim()} ${unit}` : text(v);
 
-const differs = (row: DiffCompareRow) => row.valueA.trim() !== row.valueB.trim();
+/** 'A' / 'B' for a decided row, null when text-only, missing or equal. */
+function winner(r: DiffCompareRow): 'A' | 'B' | null {
+  const a = r.numberA ?? parse(r.valueA);
+  const b = r.numberB ?? parse(r.valueB);
+  if (a == null || b == null || a === b) return null;
+  return (a > b) === (r.better !== 'lower') ? 'A' : 'B';
+}
+
+/** Text with digits that roll like an odometer. */
+function Roll({ value, run }: { value: string; run: boolean }) {
+  return (
+    <span className={styles.roll}>
+      <span className={styles.sr}>{value}</span>
+      <span aria-hidden="true">
+        {[...value].map((ch, i) =>
+          /\d/.test(ch) ? (
+            <span key={i} className={styles.digit} style={{ '--d': run ? +ch : 0, '--i': i } as CSSProperties}>
+              <span className={styles.reel}>
+                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
+                  <span key={n}>{n}</span>
+                ))}
+              </span>
+            </span>
+          ) : (
+            <span key={i}>{ch}</span>
+          )
+        )}
+      </span>
+    </span>
+  );
+}
 
 export default function DiffCompareCard({
   optionAName = 'Signature Full-Day',
   optionBName = 'Classic Half-Day',
   rows = defaultRows,
-  highlightColor,
-  diffOnlyLabel = 'Differences only',
+  accentColor,
+  collapseLabel = 'Same in both',
   className,
 }: DiffCompareCardProps) {
-  const [diffOnly, setDiffOnly] = useState(false);
   const uid = useId();
-  const nameAId = `${uid}-a`;
-  const nameBId = `${uid}-b`;
   const rootRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const spring = useRef({ x: 0, v: 0, t: 0, raf: 0, last: 0 });
+  const [run, setRun] = useState(false);
+  const [reduced, setReduced] = useState(false);
+  const [sameOpen, setSameOpen] = useState(false);
+  // per-row priority: 0 off, 1 counts, 2 counts double (default 1)
+  const [prio, setPrio] = useState<Record<number, number>>({});
 
-  const diffCount = rows.filter(differs).length;
-  const noneDiffer = diffCount === 0;
+  const nameA = text(optionAName);
+  const nameB = text(optionBName);
 
-  // A card mounted below the fold keeps its finished look and plays the opening on arrival.
-  const [pending, setPending] = useState(false);
+  const { decided, neutral, same } = useMemo(() => {
+    const d: { row: DiffCompareRow; i: number; win: 'A' | 'B' }[] = [];
+    const n: DiffCompareRow[] = [];
+    const s: DiffCompareRow[] = [];
+    rows.forEach((row, i) => {
+      if (!differs(row)) return void s.push(row);
+      const win = winner(row);
+      if (win) d.push({ row, i, win });
+      else n.push(row);
+    });
+    return { decided: d, neutral: n, same: s };
+  }, [rows]);
+
+  const weight = (i: number) => prio[i] ?? 1;
+  const counted = decided.filter(({ i }) => weight(i) > 0);
+  const pts = { A: 0, B: 0 };
+  const wins = { A: 0, B: 0 };
+  counted.forEach(({ i, win }) => {
+    pts[win] += weight(i);
+    wins[win] += 1;
+  });
+  const total = pts.A + pts.B;
+  const s = total ? (pts.A - pts.B) / total : 0;
+  const lead = pts.A === pts.B ? null : pts.A > pts.B ? 'A' : 'B';
+
+  // reduced motion + arrival
   useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const sync = () => setReduced(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
     const el = rootRef.current;
-    if (!el || typeof IntersectionObserver === 'undefined') return;
-    const rect = el.getBoundingClientRect();
-    if (rect.top < window.innerHeight && rect.bottom > 0) return;
-    setPending(true);
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setPending(false);
-          io.disconnect();
-        }
-      },
-      { threshold: 0.12 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
+    let io: IntersectionObserver | undefined;
+    let raf = 0;
+    if (!el || typeof IntersectionObserver === 'undefined') setRun(true);
+    else {
+      const r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight && r.bottom > 0) raf = requestAnimationFrame(() => setRun(true));
+      else {
+        io = new IntersectionObserver(([e]) => {
+          if (e.isIntersecting) {
+            setRun(true);
+            io?.disconnect();
+          }
+        }, { threshold: 0.2 });
+        io.observe(el);
+      }
+    }
+    return () => {
+      mq.removeEventListener('change', sync);
+      io?.disconnect();
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
-  const rootStyle = (highlightColor ? { '--dc-accent': highlightColor } : undefined) as CSSProperties | undefined;
-  const rootClass = [styles.root, diffOnly ? styles.diffOn : '', pending ? styles.pending : '', className]
-    .filter(Boolean)
-    .join(' ');
+  // beam spring toward the weighted result
+  useEffect(() => {
+    const sp = spring.current;
+    const paint = () => sceneRef.current?.style.setProperty('--s', sp.x.toFixed(4));
+    sp.t = run ? s : 0;
+    cancelAnimationFrame(sp.raf);
+    if (reduced) {
+      sp.x = sp.t;
+      sp.v = 0;
+      paint();
+      return;
+    }
+    sp.last = performance.now();
+    const tick = (now: number) => {
+      const dt = Math.min(0.032, (now - sp.last) / 1000);
+      sp.last = now;
+      sp.v += (-130 * (sp.x - sp.t) - 11 * sp.v) * dt;
+      sp.x += sp.v * dt;
+      paint();
+      if (Math.abs(sp.x - sp.t) > 0.0008 || Math.abs(sp.v) > 0.0008) sp.raf = requestAnimationFrame(tick);
+      else {
+        sp.x = sp.t;
+        paint();
+      }
+    };
+    sp.raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(sp.raf);
+  }, [s, run, reduced]);
+
+  // counts (1) -> double (2) -> off (0) -> counts
+  const next = (w: number) => (w === 1 ? 2 : w === 2 ? 0 : 1);
+  const press = (i: number) => setPrio((p) => ({ ...p, [i]: next(p[i] ?? 1) }));
+
+  let verdict: string;
+  if (!decided.length) verdict = 'These two differ only in wording, so there is no clear winner.';
+  else if (!counted.length) verdict = 'Pick at least one priority to see which fits you.';
+  else if (!lead) verdict = 'Evenly matched on what you picked.';
+  else {
+    const name = lead === 'A' ? nameA : nameB;
+    verdict = `${name} fits you best: wins ${wins[lead]} of your ${counted.length} ${counted.length === 1 ? 'priority' : 'priorities'}.`;
+  }
+
+  const rootStyle = (accentColor ? { '--dc-accent': accentColor } : undefined) as CSSProperties | undefined;
+  const rootClass = [styles.root, className].filter(Boolean).join(' ');
+
+  const pan = (side: 'A' | 'B') => {
+    const name = side === 'A' ? nameA : nameB;
+    return (
+      <div className={`${styles.pan} ${side === 'A' ? styles.panA : styles.panB}`} data-lead={lead === side}>
+        <span className={styles.string} aria-hidden="true" />
+        <div className={styles.panBody}>
+          <div className={styles.panHead}>
+            <h3 className={styles.name}>{name}</h3>
+            <span className={styles.tally}>
+              <Roll value={String(pts[side])} run={run} />
+              <span className={styles.tallyUnit}>{pts[side] === 1 ? 'point' : 'points'}</span>
+            </span>
+          </div>
+          <ul className={styles.plates}>
+            {decided
+              .filter(({ win }) => win === side)
+              .map(({ row, i }) => {
+                const w = weight(i);
+                const mine = side === 'A' ? row.valueA : row.valueB;
+                const other = side === 'A' ? row.valueB : row.valueA;
+                return (
+                  <li key={i} className={styles.plate} data-on={w > 0} data-double={w === 2}>
+                    <div className={styles.plateClip}>
+                      <div className={styles.plateIn}>
+                        <span className={styles.plateLabel}>
+                          {text(row.label)}
+                          {w === 2 && <span className={styles.x2}>×2</span>}
+                        </span>
+                        <span className={styles.plateValue}>
+                          <Roll value={shown(mine, row.unit)} run={run} />
+                        </span>
+                        <span className={styles.plateOther}>vs {shown(other, row.unit)}</span>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+          </ul>
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div ref={rootRef} className={rootClass} style={rootStyle} role="group" aria-labelledby={`${nameAId} ${nameBId}`}>
-      <div className={styles.toolbar}>
-        <span className={styles.tally} role="img" aria-label={`${diffCount} of ${rows.length} entries differ`}>
-          <span className={styles.tallyNum}>{diffCount}</span> of {rows.length} differ
-        </span>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={diffOnly}
-          aria-disabled={noneDiffer ? true : undefined}
-          className={[styles.switch, diffOnly ? styles.switchOn : ''].filter(Boolean).join(' ')}
-          onClick={() => {
-            if (!noneDiffer) setDiffOnly((v) => !v);
-          }}
-        >
-          <span className={styles.switchLabel}>{diffOnlyLabel}</span>
-          <span className={styles.track} aria-hidden="true">
-            <span className={styles.thumb} />
-          </span>
-        </button>
+    <div ref={rootRef} className={rootClass} style={rootStyle} role="group" aria-label={`${nameA} compared with ${nameB}`}>
+      {decided.length > 0 && (
+        <section className={styles.matters} aria-labelledby={`${uid}-m`}>
+          <h4 id={`${uid}-m`} className={styles.mattersTitle}>
+            What matters to you
+          </h4>
+          <div className={styles.chips}>
+            {decided.map(({ row, i }) => {
+              const w = weight(i);
+              const hint = w === 1 ? 'counts; press to count double' : w === 2 ? 'counts double; press to turn off' : 'off; press to count';
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  className={styles.chip}
+                  data-w={w}
+                  aria-pressed={w > 0}
+                  aria-label={`${text(row.label)}: ${hint}`}
+                  onClick={() => press(i)}
+                >
+                  <span className={styles.pip} aria-hidden="true" />
+                  <span className={styles.chipLabel}>{text(row.label)}</span>
+                  {w === 2 && <span className={styles.x2}>×2</span>}
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      <p className={styles.verdict} aria-live="polite" aria-atomic="true">
+        {verdict}
+      </p>
+
+      <div ref={sceneRef} className={styles.scene}>
+        <div className={styles.beamWrap} aria-hidden="true">
+          <div className={styles.beam} />
+          <span className={styles.post} />
+          <span className={styles.pivot} />
+        </div>
+        {pan('A')}
+        {pan('B')}
       </div>
 
-      <header className={styles.head}>
-        <h3 id={nameAId} className={styles.name}>
-          {text(optionAName)}
-        </h3>
-        <h3 id={nameBId} className={styles.name}>
-          {text(optionBName)}
-        </h3>
-      </header>
+      {neutral.length > 0 && (
+        <ul className={styles.neutral} aria-label="Differences with no clear winner">
+          {neutral.map((row, i) => (
+            <li key={i} className={styles.neutralRow}>
+              <span className={styles.neutralLabel}>{text(row.label)}</span>
+              <span className={styles.neutralVal}>{shown(row.valueA, row.unit)}</span>
+              <span className={styles.neutralVal}>{shown(row.valueB, row.unit)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
 
-      <div className={styles.list} role="list">
-        {rows.map((row, i) => {
-          const diff = differs(row);
-          const a = text(row.valueA);
-          const b = text(row.valueB);
-          const long = a.length > LONG_VALUE || b.length > LONG_VALUE;
-          return (
-            <div
-              key={i}
-              className={[styles.rowWrap, diff ? styles.rowDiff : styles.rowMatch].join(' ')}
-              style={{ '--i': i, '--r': rows.length - 1 - i } as CSSProperties}
-              aria-hidden={diffOnly && !diff ? true : undefined}
-            >
-              <div
-                className={[styles.row, long ? styles.rowLong : ''].filter(Boolean).join(' ')}
-                role="listitem"
-                tabIndex={0}
-                aria-label={`${text(row.label)}: ${a} versus ${b}, ${diff ? 'differs' : 'identical'}`}
-              >
-                <span className={styles.label}>{text(row.label)}</span>
-                <span className={`${styles.value} ${row.valueA.trim() === '' ? styles.empty : ''}`}>{a}</span>
-                <span className={`${styles.value} ${row.valueB.trim() === '' ? styles.empty : ''}`}>{b}</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {same.length > 0 && (
+        <div className={styles.same}>
+          <button
+            type="button"
+            className={styles.sameBtn}
+            aria-expanded={sameOpen}
+            aria-controls={`${uid}-same`}
+            onClick={() => setSameOpen((v) => !v)}
+          >
+            <span>
+              {collapseLabel}: <span className={styles.sameCount}>{same.length}</span>
+            </span>
+            <span className={styles.chev} aria-hidden="true" />
+          </button>
+          <div id={`${uid}-same`} className={styles.sameList} data-open={sameOpen} aria-hidden={!sameOpen}>
+            <ul className={styles.sameInner}>
+              {same.map((row, i) => (
+                <li key={i} className={styles.sameItem}>
+                  <span className={styles.sameName}>{text(row.label)}</span>
+                  <span className={styles.sameVal}>{shown(row.valueA, row.unit)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -167,17 +353,17 @@ export default function DiffCompareCard({
   --dc-line: #e4e6ea;
   --dc-accent: #2f56d6;
   --dc-accent-ink: color-mix(in srgb, var(--dc-accent) 70%, #000);
-  --dc-tint: color-mix(in srgb, var(--dc-accent) 6%, var(--dc-paper));
+  --dc-tint: color-mix(in srgb, var(--dc-accent) 7%, var(--dc-paper));
   --dc-font: 'IBM Plex Sans', system-ui, sans-serif;
   --dc-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --dc-cols: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
+  --dc-gap: clamp(14px, 3.2cqi, 32px);
 
   position: relative;
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
   overflow: clip;
-  padding: clamp(20px, 4cqi, 40px);
+  padding: clamp(20px, 4.5cqi, 48px);
   border: 1px solid var(--dc-line);
   border-radius: 16px;
   background: var(--dc-paper);
@@ -191,280 +377,480 @@ export default function DiffCompareCard({
   background: color-mix(in srgb, var(--dc-accent) 22%, #fff);
 }
 
-.pending .row,
-.pending .head {
-  animation: none;
+.sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-/* ───────── toolbar ───────── */
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-block-end: clamp(20px, 3.5cqi, 32px);
+/* priorities */
+.matters {
+  margin-block-end: 18px;
 }
 
-.tally {
-  font-size: 14px;
-  color: var(--dc-muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.tallyNum {
+.mattersTitle {
+  margin: 0 0 10px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--dc-ink);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dc-muted);
 }
 
-.switch {
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  min-block-size: 44px;
-  padding: 0;
+  gap: 8px;
+  min-block-size: 40px;
+  max-inline-size: 100%;
+  padding: 0 14px 0 12px;
   appearance: none;
-  border: 0;
-  background: none;
+  border: 1px solid var(--dc-ink);
+  border-radius: 999px;
+  background: var(--dc-ink);
+  color: #fff;
   font: inherit;
-  color: inherit;
-  cursor: pointer;
-}
-
-.switch:focus-visible {
-  outline: 2px solid var(--dc-accent-ink);
-  outline-offset: 4px;
-  border-radius: 8px;
-}
-
-.switchLabel {
   font-size: 14px;
   font-weight: 500;
-  color: var(--dc-muted);
-  transition: color 200ms ease;
+  cursor: pointer;
+  transition: background-color 200ms var(--dc-ease), color 200ms var(--dc-ease), border-color 200ms var(--dc-ease), transform 160ms var(--dc-ease);
 }
 
-.switchOn .switchLabel {
-  color: var(--dc-ink);
-}
-
-.track {
-  position: relative;
-  flex: none;
-  inline-size: 36px;
-  block-size: 20px;
-  border-radius: 999px;
-  background: #b9bec7;
-  transition: background-color 240ms var(--dc-ease);
-}
-
-.thumb {
-  position: absolute;
-  inset-block-start: 2px;
-  inset-inline-start: 2px;
-  inline-size: 16px;
-  block-size: 16px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(23, 25, 31, 0.25);
-  transition: translate 280ms var(--dc-ease);
-}
-
-.switchOn .track {
+.chip[data-w='2'] {
   background: var(--dc-accent);
+  border-color: var(--dc-accent);
 }
 
-.switchOn .thumb {
-  translate: 16px 0;
+.chip[data-w='0'] {
+  background: transparent;
+  border-color: var(--dc-line);
+  color: var(--dc-muted);
 }
 
-.switch[aria-disabled='true'] {
-  opacity: 0.5;
-  cursor: default;
+.chip:active {
+  transform: scale(0.96);
 }
 
-/* ───────── option names ───────── */
-
-.head {
-  display: grid;
-  grid-template-columns: var(--dc-cols);
-  column-gap: clamp(12px, 3cqi, 28px);
-  padding-block-end: 16px;
-  border-block-end: 1px solid var(--dc-ink);
-  animation: dcRise 600ms var(--dc-ease) backwards;
+.chip:focus-visible,
+.sameBtn:focus-visible {
+  outline: 2px solid var(--dc-accent-ink);
+  outline-offset: 2px;
 }
 
-.head::before {
-  content: '';
-}
-
-.name {
-  grid-column: auto;
-  margin: 0;
+.chipLabel {
   min-inline-size: 0;
+  overflow-wrap: anywhere;
+  text-align: start;
+  line-height: 1.2;
+  padding-block: 4px;
+}
+
+.chip[data-w='0'] .chipLabel {
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, currentColor 50%, transparent);
+}
+
+.pip {
+  flex: none;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  transition: box-shadow 200ms var(--dc-ease), background-color 200ms var(--dc-ease);
+}
+
+.chip[data-w='2'] .pip {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
+}
+
+.chip[data-w='0'] .pip {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px currentColor;
+}
+
+.x2 {
+  margin-inline-start: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  opacity: 0.85;
+}
+
+.chip .x2 {
+  margin: 0;
+}
+
+.verdict {
+  margin: 0 0 22px;
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--dc-ink);
   font-size: clamp(18px, 3.4cqi, 26px);
   font-weight: 600;
-  line-height: 1.15;
+  line-height: 1.25;
   letter-spacing: -0.015em;
-  text-wrap: balance;
   overflow-wrap: anywhere;
-  unicode-bidi: plaintext;
+  text-wrap: balance;
 }
 
-/* ───────── rows ───────── */
-
-.rowWrap {
-  display: grid;
-  grid-template-rows: 1fr;
-  transition:
-    grid-template-rows 420ms var(--dc-ease) calc(120ms + min(var(--r), 10) * 20ms),
-    opacity 240ms ease calc(min(var(--r), 10) * 20ms),
-    visibility 0s;
-}
-
-.diffOn .rowMatch {
-  grid-template-rows: 0fr;
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    grid-template-rows 420ms var(--dc-ease) calc(160ms + min(var(--r), 10) * 20ms),
-    opacity 220ms ease calc(min(var(--r), 10) * 20ms),
-    visibility 0s calc(160ms + min(var(--r), 10) * 20ms + 420ms);
-}
-
-.row {
+/* the balance: --s runs -1 (B heavier) .. 1 (A heavier), driven by the spring */
+.scene {
+  --s: 0;
+  --dc-tilt: 7deg;
+  --dc-lift: 3.05cqi; /* 25cqi * sin(7deg) */
+  --dc-gap2: clamp(12px, 3cqi, 28px);
   position: relative;
   display: grid;
-  grid-template-columns: var(--dc-cols);
-  column-gap: clamp(12px, 3cqi, 28px);
-  align-items: baseline;
-  min-block-size: 0;
-  overflow: hidden;
-  background: linear-gradient(var(--dc-line), var(--dc-line)) bottom / 100% 1px no-repeat;
-  outline-offset: -2px;
-  animation: dcRise 560ms var(--dc-ease) calc(80ms + var(--i) * 45ms) backwards;
+  grid-template-columns: 1fr 1fr;
+  column-gap: var(--dc-gap2);
+  align-items: start;
+  padding-block-start: 14px;
 }
 
-.rowDiff .row {
-  margin-inline: calc(clamp(12px, 2.4cqi, 20px) * -1);
-  padding-inline: clamp(12px, 2.4cqi, 20px);
-  border-radius: 8px;
+.beamWrap {
+  position: absolute;
+  inset-block-start: 14px;
+  inset-inline: 0;
+  block-size: 0;
+  pointer-events: none;
+}
+
+.beam {
+  position: absolute;
+  inset-inline: 19%;
+  inset-block-start: -4px;
+  block-size: 8px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #2b2f38, var(--dc-ink));
+  box-shadow: 0 6px 10px -4px rgba(23, 25, 31, 0.35);
+  rotate: calc(var(--s) * -1 * var(--dc-tilt));
+}
+
+.post {
+  position: absolute;
+  inset-inline-start: calc(50% - 1px);
+  inset-block-start: 0;
+  inline-size: 2px;
+  block-size: 30px;
+  background: var(--dc-ink);
+  opacity: 0.55;
+}
+
+.pivot {
+  position: absolute;
+  inset-inline-start: calc(50% - 7px);
+  inset-block-start: -7px;
+  inline-size: 14px;
+  block-size: 14px;
+  border-radius: 50%;
+  background: var(--dc-paper);
+  border: 3px solid var(--dc-ink);
+  box-sizing: border-box;
+}
+
+.pan {
+  position: relative;
+  min-inline-size: 0;
+  padding-block-start: 22px;
+  translate: 0 calc(var(--s) * var(--dc-lift));
+}
+
+.panB {
+  translate: 0 calc(var(--s) * var(--dc-lift) * -1);
+}
+
+.string {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: calc(50% - 0.5px);
+  inline-size: 1px;
+  block-size: 22px;
+  background: var(--dc-ink);
+  opacity: 0.6;
+}
+
+.panBody {
+  box-sizing: border-box;
+  padding: 14px clamp(10px, 2.4cqi, 18px) 6px;
+  border: 1px solid var(--dc-line);
+  border-block-start: 3px solid var(--dc-ink);
+  border-radius: 4px 4px 12px 12px;
+  background: var(--dc-paper);
+  box-shadow: 0 14px 20px -16px rgba(23, 25, 31, 0.35);
+  transition: border-color 300ms var(--dc-ease);
+}
+
+.panA .panBody {
+  border-block-start-color: var(--dc-accent);
   background: var(--dc-tint);
 }
 
-.row:focus-visible {
-  outline: 2px solid var(--dc-accent-ink);
-  border-radius: 8px;
+.pan[data-lead='true'] .panBody {
+  border-color: color-mix(in srgb, var(--dc-ink) 30%, var(--dc-line));
 }
 
-.label,
-.value {
-  padding-block: 18px;
+.panHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 10px;
+  padding-block-end: 10px;
 }
 
-.label {
+.name {
+  margin: 0;
   min-inline-size: 0;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.4;
-  color: var(--dc-muted);
-  overflow-wrap: anywhere;
-  unicode-bidi: plaintext;
-}
-
-.value {
-  min-inline-size: 0;
-  font-size: clamp(16px, 2.6cqi, 19px);
-  line-height: 1.35;
-  letter-spacing: -0.005em;
-  color: var(--dc-muted);
-  font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
-  unicode-bidi: plaintext;
-}
-
-.rowDiff .value {
+  font-size: clamp(15px, 2.6cqi, 20px);
   font-weight: 600;
-  color: var(--dc-ink);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+  unicode-bidi: plaintext;
 }
 
-.rowDiff .label {
+.tally {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.tallyUnit {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--dc-muted);
+}
+
+.plates {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plate {
+  display: grid;
+  grid-template-rows: 1fr;
+  opacity: 1;
+  translate: 0 0;
+  transition: grid-template-rows 420ms var(--dc-ease), opacity 260ms var(--dc-ease), translate 420ms var(--dc-ease);
+}
+
+.plate[data-on='false'] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  translate: 0 -10px;
+}
+
+.plateClip {
+  min-block-size: 0;
+  overflow: hidden;
+}
+
+.plateIn {
+  display: grid;
+  gap: 2px;
+  padding: 10px 0;
+  border-block-start: 1px solid var(--dc-line);
+}
+
+.plateLabel {
+  font-size: 12px;
+  color: var(--dc-muted);
+  overflow-wrap: anywhere;
+}
+
+.plateValue {
+  font-size: clamp(16px, 2.8cqi, 21px);
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.plate[data-double='true'] .plateValue {
   color: var(--dc-accent-ink);
 }
 
-.rowDiff .empty {
-  font-weight: 400;
+.plateOther {
+  font-size: 12px;
+  color: var(--dc-muted);
+  overflow-wrap: anywhere;
+}
+
+/* odometer digits */
+.roll {
+  font-variant-numeric: tabular-nums;
+}
+
+.digit {
+  display: inline-block;
+  block-size: 1.2em;
+  line-height: 1.2;
+  overflow: hidden;
+  vertical-align: top;
+}
+
+.reel {
+  display: flex;
+  flex-direction: column;
+  translate: 0 calc(var(--d) * -1.2em);
+  transition: translate 900ms cubic-bezier(0.2, 0.9, 0.25, 1) calc(var(--i) * 60ms);
+}
+
+.neutral {
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.neutralRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px var(--dc-gap2);
+  padding: 10px 4px;
+  border-block-start: 1px solid var(--dc-line);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.neutralLabel {
   color: var(--dc-muted);
 }
 
-.rowLong .value {
-  font-size: 15px;
-  line-height: 1.55;
+.neutralVal {
+  font-weight: 500;
 }
 
-.rowLong .label {
-  align-self: start;
+.neutralLabel,
+.neutralVal {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
 }
 
-/* ───────── narrow containers: label above its two values ───────── */
-
-@container (width < 560px) {
-  .root {
-    --dc-cols: minmax(0, 1fr) minmax(0, 1fr);
+@container (width < 520px) {
+  .neutralRow {
+    grid-template-columns: 1fr 1fr;
   }
 
-  .head::before {
-    display: none;
-  }
-
-  .row {
-    grid-template-areas:
-      'label label'
-      'a b';
-  }
-
-  .label {
-    padding-block: 16px 0;
-  }
-
-  .value {
-    padding-block: 6px 16px;
-  }
-
-  .label {
-    grid-area: label;
-    font-size: 13px;
-  }
-
-  .name {
-    font-size: clamp(17px, 5.4cqi, 22px);
-  }
-}
-
-@keyframes dcRise {
-  from {
-    opacity: 0;
-    translate: 0 10px;
-  }
-  to {
-    opacity: 1;
-    translate: 0 0;
+  .neutralLabel {
+    grid-column: 1 / -1;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .head,
-  .row,
-  .track,
-  .thumb,
-  .switchLabel {
-    animation: none;
-    transition: none;
-  }
-
-  .rowWrap,
-  .diffOn .rowMatch {
+  .chip,
+  .pip,
+  .panBody,
+  .plate,
+  .reel,
+  .sameList,
+  .chev {
     transition: none;
   }
 }
+
+/* matching rows collapse into one stack */
+.same {
+  margin-block-start: 8px;
+}
+
+.sameBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  inline-size: 100%;
+  min-block-size: 52px;
+  padding: 0 4px;
+  appearance: none;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--dc-muted);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.sameBtn:hover {
+  color: var(--dc-accent-ink);
+}
+
+.sameBtn:focus-visible {
+  outline: 2px solid var(--dc-accent-ink);
+  outline-offset: -2px;
+  border-radius: 6px;
+}
+
+.sameCount {
+  font-weight: 600;
+  color: var(--dc-ink);
+}
+
+.chev {
+  inline-size: 8px;
+  block-size: 8px;
+  margin-inline-end: 6px;
+  border-inline-end: 2px solid currentColor;
+  border-block-end: 2px solid currentColor;
+  rotate: 45deg;
+  translate: 0 -2px;
+  transition: rotate 280ms var(--dc-ease);
+}
+
+.sameBtn[aria-expanded='true'] .chev {
+  rotate: 225deg;
+  translate: 0 2px;
+}
+
+.sameList {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 360ms var(--dc-ease);
+}
+
+.sameList[data-open='true'] {
+  grid-template-rows: 1fr;
+}
+
+.sameInner {
+  min-block-size: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden;
+}
+
+.sameItem {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 4px;
+  border-block-start: 1px solid var(--dc-line);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.sameName {
+  color: var(--dc-muted);
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.sameVal {
+  font-weight: 500;
+  text-align: end;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
 ```

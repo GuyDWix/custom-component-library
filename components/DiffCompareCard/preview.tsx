@@ -15,7 +15,8 @@ const worstRows: DiffCompareRow[] = [
       'This value goes on for quite a while on purpose, because real owners paste whole paragraphs into comparison cells and the layout has to keep looking deliberate instead of falling apart.',
     valueB: 'Short value.',
   },
-  { label: 'Price', valueA: '', valueB: '$1,280,000' },
+  { label: 'Price', valueA: '', valueB: '$1,280,000', better: 'lower' },
+  { label: 'Price per image', valueA: '$7.65', valueB: '$9.14', better: 'lower' },
   { label: 'Hours', valueA: '8 hours', valueB: '4 hours' },
   { label: 'Photographers', valueA: 'Two', valueB: 'One' },
   { label: 'Finished gallery', valueA: '320 images', valueB: '140 images' },
@@ -25,6 +26,7 @@ const worstRows: DiffCompareRow[] = [
   { label: 'Planning call', valueA: 'Included', valueB: 'Included' },
   { label: 'Engagement shoot', valueA: 'Included', valueB: 'Not included' },
   { label: 'Album credit', valueA: '$150', valueB: '$0' },
+  { label: 'Travel radius', valueA: '120 km', valueB: '30 km' },
   { label: 'Second shooter', valueA: 'Available on request', valueB: 'Available on request' },
   { label: 'Same-day sneak peeks', valueA: '', valueB: 'Included' },
 ];
