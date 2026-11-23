@@ -8,13 +8,21 @@
   "visitor_action": "none (stitches itself when scrolled into view); hovering or tapping a letter sews it again",
   "owner_settings": [
     "Text",
-    "Thread color",
+    "Thread color (fill)",
+    "Outline thread color",
     "Fabric color",
-    "Stitch style (satin or running)"
+    "Stitch style (filled or outline)",
+    "Re-sew a letter on hover (on/off, default off)"
   ],
-  "site_types": ["store", "portfolio", "events", "business", "restaurant"],
+  "site_types": [
+    "store",
+    "portfolio",
+    "events",
+    "business",
+    "restaurant"
+  ],
   "mobile": "same, wraps to more lines with larger stitches; tap a letter to re-sew it",
-  "motion": "a needle travels letter by letter while satin stitches appear thread by thread, the trailing thread tightens with a springy tug after each letter, needle lifts away at the end (reduced-motion: finished embroidery with frayed thread ends, no needle)",
+  "motion": "A steel needle swings in from the spool and pierces the denim; each pierce dimples the fabric, pulls a loop that springs tight, and a Verlet-rope thread trails from the eye to the spool; the stitch rate accelerates across the word, then the thread is snipped (recoil, flying fibres, frayed tail) and the needle lifts away, about 4.8s in all. Hovering or tapping a letter re-sews it; Enter re-sews the word; the sheen follows the pointer. Reduced motion shows the finished embroidery.",
   "scores": {
     "concept": 3,
     "usefulness": 2,
@@ -30,6 +38,6 @@
   "status": "built",
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
-  "art_direction": "Linen sampler: oatmeal woven linen, madder-red satin thread with sheen, tiny frayed ends and soft stitch shadows",
-  "notes": "Satin stitches run at one fixed angle (not per stroke), so up close it reads slightly as a striped fill and a touch rosy; hover re-thread not verified in a browser (shared preview tab was busy)."
+  "art_direction": "Denim chainstitch: indigo 3/1 twill drawn thread by thread, a yoke seam with marigold twin topstitching, and lettering built as real geometry (distance-field contour rows of individual chain links: marigold outline row, cream fill rows) with twisted-strand shading, cast shadows, fabric pucker, stray fibres and a pointer-following thread sheen.",
+  "notes": "Satin stitches run at one fixed angle (not per stroke), so up close it reads slightly as a striped fill and a touch rosy; hover re-thread not verified in a browser (shared preview tab was busy). 2026-11-23: redesigned (batch A) to denim chainstitch (real stitch geometry, canvas 2D; props: stitchStyle now filled|outline, new outlineColor)."
 }

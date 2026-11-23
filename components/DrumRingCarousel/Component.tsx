@@ -58,7 +58,7 @@ function panelStyle(offset: number, g: Geo): CSSProperties {
     transform: `translateZ(${g.r.toFixed(1)}px) rotateY(${(-offset * g.step).toFixed(4)}rad) translateZ(${(-g.r).toFixed(1)}px)`,
     opacity: fade.toFixed(3),
     visibility: fade > 0 ? 'visible' : 'hidden',
-    filter: `brightness(${(1 - Math.min(d, 2.4) * 0.13).toFixed(3)}) blur(${(Math.min(d, 2.4) * 1.5).toFixed(2)}px) saturate(${(1 - Math.min(d, 2) * 0.12).toFixed(3)})`,
+    filter: `brightness(${(1.05 - Math.min(d, 2.4) * 0.27).toFixed(3)}) blur(${(Math.min(d, 2.4) * 1.7).toFixed(2)}px) saturate(${(1.05 - Math.min(d, 2) * 0.26).toFixed(3)})`,
     zIndex: 10 - Math.round(d),
   } as CSSProperties;
 }
@@ -84,7 +84,7 @@ export default function DrumRingCarousel({
   photos = defaultPhotos,
   drumRadius = 860,
   spinSpeed = 4,
-  backgroundTone = '#ebe5dc',
+  backgroundTone = '#0a0e1a',
   className,
 }: DrumRingCarouselProps) {
   const n = photos.length;
@@ -321,7 +321,7 @@ export default function DrumRingCarousel({
     '--dr-tone': backgroundTone,
     '--dr-panel-w': `${panelW}px`,
     '--dr-panel-h': `${panelH}px`,
-    '--dr-perspective': `${Math.round(geo.r * 1.6)}px`,
+    '--dr-perspective': `${Math.round(geo.r * 1.35)}px`,
   } as CSSProperties;
 
   return (
@@ -335,9 +335,10 @@ export default function DrumRingCarousel({
       onBlur={onBlur}
       onKeyDown={onRootKeyDown}
     >
+      <span className={styles.stars} aria-hidden="true" />
       <span className={styles.wall} aria-hidden="true" />
-      <span className={styles.floor} aria-hidden="true" />
       <span className={styles.lamp} aria-hidden="true" />
+      <span className={styles.floor} aria-hidden="true" />
       <span className={styles.plaster} aria-hidden="true" />
 
       {reduced ? (
@@ -405,6 +406,7 @@ export default function DrumRingCarousel({
                 <span className={styles.reflect}>
                   <Mount item={p} />
                 </span>
+                <span className={styles.pool} aria-hidden="true" />
               </div>
             ))}
           </div>

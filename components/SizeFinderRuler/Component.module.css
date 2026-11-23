@@ -1,0 +1,611 @@
+/* Drafting desk: graphite-green cutting mat, a pale maple ruler with black engraved ticks, a citrus needle,
+   and a paper-white drafting sheet for the readout. Sans type only. */
+
+@font-face {
+  font-family: 'SFR Barlow Condensed';
+  src: url('./fonts/barlow-condensed-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SFR Plex Sans';
+  src: url('./fonts/ibm-plex-sans-var.woff2') format('woff2');
+  font-weight: 100 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+.root {
+  --sfr-font-display: 'SFR Barlow Condensed', 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
+  --sfr-font-text: 'SFR Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  --sfr-ground: #141c19;
+  --sfr-grid: rgba(236, 244, 238, 0.05);
+  --sfr-paper: #f7f5ee;
+  --sfr-paper-soft: rgba(247, 245, 238, 0.72);
+  --sfr-sheet: #fbfaf4;
+  --sfr-sheet-ink: #1b1a15;
+  --sfr-sheet-muted: #57544a;
+  --sfr-sheet-line: rgba(52, 84, 104, 0.09);
+  --sfr-ink: #1a160f;
+  --sfr-maple-hi: #f4e1b3;
+  --sfr-maple: #e9cb92;
+  --sfr-maple-lo: #d8b076;
+  --sfr-accent: #f5e02d;
+  --sfr-spring: cubic-bezier(0.34, 1.45, 0.5, 1);
+  --sfr-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  container: sfr / inline-size;
+  display: block;
+  box-sizing: border-box;
+  inline-size: 100%;
+  font-family: var(--sfr-font-text);
+  color: var(--sfr-paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+.root::selection {
+  background: var(--sfr-accent);
+  color: var(--sfr-ink);
+}
+
+.card {
+  --needle: 38cqw;
+  --ruler-h: 184px;
+  --avail: calc(100cqw - var(--needle) - 92px);
+  --glyph-max: min(21cqw, 260px);
+  --num-avail: calc(var(--needle) - 66px);
+  --num-max: min(26cqw, 300px);
+
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--needle) minmax(0, 1fr);
+  grid-template-rows: minmax(clamp(300px, 33cqw, 420px), auto) var(--ruler-h);
+  box-sizing: border-box;
+  padding-block-end: 24px;
+  border-radius: 28px;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(120% 80% at 78% 0%, rgba(214, 240, 226, 0.07), transparent 62%),
+    linear-gradient(var(--sfr-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(90deg, var(--sfr-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+    var(--sfr-ground);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+}
+
+/* ───────── Paper readout (left of the needle) ───────── */
+
+.slab {
+  grid-column: 1;
+  grid-row: 1;
+  position: relative;
+  box-sizing: border-box;
+  inline-size: calc(var(--needle) - 2px);
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 32px 32px 30px 36px;
+  color: var(--sfr-sheet-ink);
+  background-color: var(--sfr-sheet);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.25 0 0 0 0 0.24 0 0 0 0 0.2 0.55 0 0 0 -0.22'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    linear-gradient(var(--sfr-sheet-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--sfr-sheet-line) 1px, transparent 1px);
+  background-size: 220px 220px, 24px 24px, 24px 24px;
+  background-position: 0 0, 0 0, 0 0;
+}
+
+.measure {
+  margin: 0;
+  max-inline-size: 24ch;
+  font: 500 16px/1.4 var(--sfr-font-text);
+  color: var(--sfr-sheet-muted);
+  text-wrap: balance;
+}
+
+.readout {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  font-family: var(--sfr-font-display);
+  font-weight: 600;
+  font-size: min(var(--num-max), calc(var(--num-avail) / var(--ems)));
+  line-height: 0.8;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  color: var(--sfr-sheet-ink);
+}
+
+.value {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+.unit {
+  margin-inline-start: 0.12em;
+  font-size: 0.3em;
+  letter-spacing: 0.01em;
+  color: var(--sfr-sheet-muted);
+}
+
+/* ───────── Size result (right of the needle) ───────── */
+
+.info {
+  grid-column: 2;
+  grid-row: 1;
+  min-inline-size: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 32px 46px 30px 48px;
+  color: var(--sfr-paper);
+}
+
+.infoTop {
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.infoLabel {
+  margin: 0;
+  font: 500 16px/1.3 var(--sfr-font-text);
+  color: var(--sfr-paper-soft);
+  text-wrap: balance;
+}
+
+.fit {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  min-inline-size: 0;
+}
+
+.glyph {
+  display: block;
+  max-inline-size: 100%;
+  font-family: var(--sfr-font-display);
+  font-weight: 600;
+  font-size: min(var(--glyph-max), calc(var(--avail) / var(--chars) * 1.85));
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: var(--sfr-paper);
+  text-wrap: balance;
+  overflow-wrap: normal;
+  word-break: normal;
+  transform-origin: 0 100%;
+  animation: sfrPop 480ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.bar {
+  display: block;
+  inline-size: 72px;
+  block-size: 4px;
+  border-radius: 2px;
+  background: var(--sfr-accent);
+  transform-origin: 0 50%;
+  animation: sfrBar 520ms var(--sfr-ease) 80ms both;
+}
+
+.detail {
+  display: grid;
+  gap: 10px;
+  max-inline-size: 46ch;
+  min-inline-size: 0;
+}
+
+.range {
+  margin: 0;
+  font: 600 16px/1.3 var(--sfr-font-text);
+  font-variant-numeric: tabular-nums;
+  color: var(--sfr-accent);
+  animation: sfrRise 380ms var(--sfr-ease) 40ms both;
+}
+
+.note {
+  margin: 0;
+  font: 400 18px/1.5 var(--sfr-font-text);
+  color: rgba(247, 245, 238, 0.92);
+  text-wrap: pretty;
+  animation: sfrRise 420ms var(--sfr-ease) 110ms both;
+}
+
+/* ───────── The maple ruler ───────── */
+
+.ruler {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  block-size: var(--ruler-h);
+  overflow: hidden;
+  direction: ltr;
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  outline: none;
+  background: linear-gradient(180deg, var(--sfr-maple-hi) 0%, var(--sfr-maple) 34%, var(--sfr-maple-lo) 100%);
+  box-shadow:
+    0 -18px 34px -14px rgba(0, 0, 0, 0.45),
+    0 26px 38px -8px rgba(0, 0, 0, 0.55);
+}
+
+.ruler:active {
+  cursor: grabbing;
+}
+
+.ruler::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -3px 0 rgba(112, 72, 26, 0.42),
+    inset 0 -12px 16px -10px rgba(112, 72, 26, 0.4);
+}
+
+.ruler:focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border: 3px solid var(--sfr-ink);
+  box-shadow: inset 0 0 0 3px var(--sfr-accent);
+}
+
+.track {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: calc(var(--span) * var(--ppu) + 200cqw);
+  transform: translate3d(calc(var(--needle) - 100cqw - var(--off) * var(--ppu)), 0, 0);
+  will-change: transform;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='184'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006 0.26' numOctaves='3' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.42 0 0 0 0 0.25 0 0 0 0 0.08 1.5 0 0 0 -0.62'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='347' height='184'%3E%3Cfilter id='h' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9 0.9' numOctaves='1' seed='9' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.5 0 0 0 -0.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23h)'/%3E%3C/svg%3E");
+  background-size: 520px 184px, 347px 184px;
+}
+
+.scale {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 100cqw;
+  inline-size: calc(var(--span) * var(--ppu));
+}
+
+.wash {
+  position: absolute;
+  inset-block-start: 0;
+  block-size: 124px;
+  inset-inline-start: calc(var(--at) * var(--ppu));
+  inline-size: calc(var(--w) * var(--ppu));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--sfr-accent) 62%, transparent),
+    color-mix(in srgb, var(--sfr-accent) 16%, transparent)
+  );
+  transition:
+    inset-inline-start 420ms var(--sfr-spring),
+    inline-size 420ms var(--sfr-spring);
+}
+
+.ticks {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: -2px;
+  inline-size: calc(var(--span) * var(--ppu) + 4px);
+  block-size: 64px;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.42));
+}
+
+.tickMinor,
+.tickMid,
+.tickMajor {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+}
+
+.tickMinor {
+  block-size: 26px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0 1px,
+    rgba(26, 22, 15, 0.86) 1px 3px,
+    transparent 3px calc(var(--ppu) / 10)
+  );
+}
+
+.tickMid {
+  block-size: 42px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0 1px,
+    var(--sfr-ink) 1px 3px,
+    transparent 3px calc(var(--ppu) / 2)
+  );
+}
+
+.tickMajor {
+  block-size: 62px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--sfr-ink) 0 4px,
+    transparent 4px var(--ppu)
+  );
+}
+
+.numeral {
+  position: absolute;
+  inset-block-start: 72px;
+  inset-inline-start: calc(var(--at) * var(--ppu));
+  transform: translateX(-50%);
+  font-family: var(--sfr-font-display);
+  font-weight: 600;
+  font-size: 30px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--sfr-ink);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.42);
+}
+
+.rail {
+  position: absolute;
+  inset-block-start: 124px;
+  block-size: 40px;
+  inset-inline: -2px;
+  box-sizing: border-box;
+  border-block: 1.5px solid rgba(26, 22, 15, 0.5);
+  background: rgba(120, 78, 28, 0.08);
+}
+
+.chip,
+.chipOn {
+  position: absolute;
+  inset-block-start: 124px;
+  block-size: 40px;
+  inset-inline-start: calc(var(--at) * var(--ppu));
+  inline-size: calc(var(--w) * var(--ppu));
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  border-inline-start: 1.5px solid rgba(26, 22, 15, 0.5);
+  font-family: var(--sfr-font-display);
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: rgba(26, 22, 15, 0.8);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.chipOn {
+  z-index: 1;
+  color: var(--sfr-ink);
+  text-shadow: none;
+  background: var(--sfr-accent);
+  box-shadow:
+    0 0 0 1.5px var(--sfr-ink),
+    0 6px 12px -4px rgba(26, 22, 15, 0.45);
+  transform: translateY(-2px);
+  animation: sfrChip 460ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+/* ───────── The citrus needle ───────── */
+
+.needleLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  direction: ltr;
+  pointer-events: none;
+}
+
+.needle {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(var(--needle) - 2px);
+  inline-size: 4px;
+  background: var(--sfr-accent);
+  box-shadow:
+    0 0 0 1.5px rgba(14, 12, 8, 0.9),
+    0 0 22px 2px color-mix(in srgb, var(--sfr-accent) 30%, transparent);
+  transform-origin: 50% 0;
+}
+
+/* ───────── Intro choreography states ───────── */
+
+.hidden {
+  opacity: 0;
+}
+
+.needleHidden {
+  transform: scaleY(0);
+}
+
+.needleDrop {
+  animation: sfrDrop 680ms var(--sfr-ease) both;
+}
+
+.rulerIn {
+  animation: sfrRuler 780ms var(--sfr-ease) 80ms both;
+}
+
+.slabIn {
+  animation: sfrRise 720ms var(--sfr-ease) 260ms both;
+}
+
+.riseA {
+  animation: sfrRise 620ms var(--sfr-ease) 420ms both;
+}
+
+.riseB {
+  animation: sfrRise 640ms var(--sfr-ease) 500ms both;
+}
+
+.riseC {
+  animation: sfrRise 640ms var(--sfr-ease) 600ms both;
+}
+
+@keyframes sfrDrop {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes sfrRuler {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sfrRise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sfrPop {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.8);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes sfrBar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes sfrChip {
+  0% {
+    transform: translateY(2px) scale(0.88);
+  }
+  60% {
+    transform: translateY(-4px) scale(1.1);
+  }
+  100% {
+    transform: translateY(-2px) scale(1);
+  }
+}
+
+/* ───────── Narrow containers: one column, needle only through the ruler ───────── */
+
+@container sfr (max-width: 639px) {
+  .card {
+    --needle: 50cqw;
+    --ruler-h: 176px;
+    --avail: calc(100cqw - 52px);
+    --glyph-max: 30cqw;
+    --num-avail: calc(100cqw - 52px);
+    --num-max: 34cqw;
+
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto var(--ruler-h);
+    border-radius: 24px;
+  }
+
+  .slab {
+    grid-column: 1;
+    grid-row: 1;
+    inline-size: auto;
+    gap: 14px;
+    padding: 26px 26px 24px;
+  }
+
+  .measure {
+    max-inline-size: 34ch;
+    font-size: 15px;
+  }
+
+  .readout {
+    justify-content: flex-start;
+  }
+
+  .info {
+    grid-column: 1;
+    grid-row: 2;
+    gap: 18px;
+    padding: 26px 26px 44px;
+  }
+
+  .note {
+    font-size: 16px;
+  }
+
+  .ruler {
+    grid-row: 3;
+  }
+
+  .needleLayer {
+    inset-block-start: auto;
+    block-size: calc(var(--ruler-h) + 24px + 22px);
+  }
+
+  .needle {
+    border-start-start-radius: 3px;
+    border-start-end-radius: 3px;
+  }
+}
+
+/* ───────── Reduced motion: no momentum (handled in script), no choreography, instant swaps ───────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .glyph,
+  .bar,
+  .range,
+  .note,
+  .chipOn,
+  .needleDrop,
+  .rulerIn,
+  .slabIn,
+  .riseA,
+  .riseB,
+  .riseC {
+    animation: none;
+  }
+
+  .wash {
+    transition: none;
+  }
+}

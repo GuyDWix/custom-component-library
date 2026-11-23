@@ -1,0 +1,41 @@
+{
+  "id": "c092",
+  "name": "ConcertinaFAQ",
+  "display_name": "Concertina FAQ",
+  "category": "controls",
+  "tier": "showpiece",
+  "job": "A question list built as concertina-folded paper where opening an answer unfolds its pleats in 3D and closes the others",
+  "visitor_action": "click/tap or Enter on a question; arrows move between questions",
+  "owner_settings": [
+    "Questions (question, answer)",
+    "Paper color",
+    "Accent color",
+    "Allow multiple open"
+  ],
+  "site_types": [
+    "business",
+    "services",
+    "store",
+    "restaurant",
+    "events"
+  ],
+  "mobile": "fewer pleats, answer fades in after the fold",
+  "motion": "pleats rotate open with spring and shadow shift, neighbours fold shut (reduced-motion: plain height change)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 2,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "deferred-to-QA",
+    "craft": "deferred-to-QA"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Stationery fold: warm kraft-brown paper, bright cream answer panels, deep teal question type, crisp pleat shading",
+  "notes": "Built blind (no screenshots by builder, QA sweep judges). Unverified: kraft fibre texture strength and 3D pleat depth at 1280; answer text sits left on a wide cream leaf. Self-hosted Bricolage Grotesque (latin subset, base64) adds ~35KB to the prompt."
+}

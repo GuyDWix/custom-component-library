@@ -1,0 +1,40 @@
+{
+  "id": "c057",
+  "name": "SwatchFanCard",
+  "display_name": "Swatch Fan Card",
+  "category": "cards",
+  "tier": "everyday",
+  "job": "A product card whose colour or material options fan out like paint swatches, with the product image tinting to match the hovered swatch",
+  "visitor_action": "hover or focus a swatch to preview it, tap to pick on touch, arrow keys move between swatches",
+  "owner_settings": [
+    "Product image",
+    "Product image description",
+    "Product name",
+    "Swatches (name and colour)",
+    "Price"
+  ],
+  "site_types": [
+    "store",
+    "business",
+    "services"
+  ],
+  "mobile": "true mini-fan at 375: smaller chips with names printed up the strip, same tap-to-pick and arrow keys",
+  "motion": "chips fan open from a pivot hidden behind the lip with staggered spring overshoot while the twine tightens; picking a chip springs it forward (larger, lifted, name set as display type) and the rest spread apart like an accordion; the photo frame tilts with the pick and its see-through tint crossfades (reduced-motion: fan shown open and static, no springs or crossfade)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "composition round 2: not shot by builder (QA sweep re-judges); eyeballed default + 375 worst in a live tab only",
+    "craft": "composition round 2: not self-scored (QA sweep re-judges)"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Paint counter: a taped, framed photo print on a bone counter top with a big fan of matte paint chips (face, eyelet, paper edge thickness, name as display type on the picked chip) pivoting from behind a paper lip and linked by a twine cord; photo tint is a see-through layer; no-image fallback is a painted wall panel with a roller stroke and paint dabs; Inter Tight self-hosted",
+  "notes": "2026-11-23: composition round 2 (Sonnet 5.5, after QA verdict 'photo over a swatch row, ~2'). Layout rebuilt: framed photo behind, big fan across the whole card pivoting behind a counter lip, picked chip forward with display-type name, edge thickness, eyelets and a twine cord through every chip, spring sim drives chips+twine, height bounded (long titles clamp to 3 lines). Not shot by builder (QA sweep re-judges). Risks: default chair is partly covered by the picked chip; with 8+ swatches at 375 chip names are hidden (full name in the picked chip and footer row); needs interaction check in a real browser."
+}

@@ -14,9 +14,14 @@
     "Seal color",
     "Envelope color"
   ],
-  "site_types": ["events", "restaurant", "business", "store"],
+  "site_types": [
+    "events",
+    "restaurant",
+    "business",
+    "store"
+  ],
   "mobile": "same, scaled to width",
-  "motion": "seal cracks, flap folds back in 3D, card rises with spring (reduced-motion: crossfade to open state)",
+  "motion": "hover lifts the seal and tugs the flap; click: the seal cracks and its shards fall, the flap bends open in 3D to show the liner, the envelope sinks and the card rises out and swings forward to settle; closing reverses and presses a fresh seal (reduced-motion: instant state swap with a crossfade)",
   "scores": {
     "concept": 3,
     "usefulness": 3,
@@ -25,13 +30,13 @@
   },
   "checks": {
     "tsc": "pass",
-    "render": "pass (1 fix: seal shadow box artifact, worst-case date hidden by pocket, fibre texture too streaky)",
+    "render": "pass (polish: seal enlarged to carry the closed still)",
     "craft": "pass (3, after 1 polish pass)"
   },
   "craft_score": 3,
   "status": "built",
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
-  "art_direction": "Letterpress: heavy cotton-paper envelope in sage, oxblood wax with embossed initials and glossy highlight, debossed card type, paper fibre texture",
-  "notes": "Reserves headroom for the opened card, so the closed state sits in a tall, mostly empty block; very long card text makes the component tall."
+  "art_direction": "Midnight post: ink-navy laid-paper envelope with fold thickness and shadows, vermilion poured wax seal with ridged rim, crisp emboss and translucent edge, vermilion lattice liner, cool laid-paper card with grotesk type, dark midnight stage",
+  "notes": "2026-11-23: redesigned (batch A) to Midnight post. Closed block now hugs the envelope; the root grows only when the opened card needs room. Very long headings make the open card tall and it covers most of the envelope. 2026-11-23: review fixes"
 }

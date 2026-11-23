@@ -35,6 +35,6 @@
   "status": "built",
   "provenance": "original, built from a concept description",
   "studio2_tested": "editor bug: canvas \"Something went wrong\", add-panel preview OK (2026-11-23)",
-  "art_direction": "Tailor's yellow: soft butter-yellow tape, ink-navy ticks and numerals, tiny brass centre pin, cream desk",
-  "notes": "Very long time labels (e.g. '11:45 am – 12:30 pm') shrink the numerals to 15px and widen slots, so only ~3 slots show at once. 2026-11-23: removed on-screen hint/replay per contract §2 rule"
+  "art_direction": "Night dial: graphite-black ground, cool grey ticks, tabular sans numerals; selected slot lit mint under a frosted centre lens (the only material)",
+  "notes": "Range labels ('8:00 am – 8:45 am') now split: start time full size, end time on a small second line. 2026-11-23: removed on-screen hint/replay per contract §2 rule. 2026-11-23: restyled to Night dial (restyle pilot)"
 }

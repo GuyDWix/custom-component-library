@@ -10,14 +10,21 @@
     "Event title and photo",
     "Short description",
     "Start and end date and time",
+    "Event time zone",
     "Venue",
     "Details link and its label",
     "Add-to-calendar and confirmation labels",
-    "Leaf color"
+    "Accent color"
   ],
-  "site_types": ["events", "restaurant", "business", "services", "store"],
-  "mobile": "leaf sits top-left over the photo, 112px tap target; card stacks photo over details, side by side from 700px",
-  "motion": "leaf tears and curls away along an eased arc, tick draws in on the page beneath; leaf flutters twice when first seen (reduced-motion: leaf swaps to the tick, no flutter)",
+  "site_types": [
+    "events",
+    "restaurant",
+    "business",
+    "services",
+    "store"
+  ],
+  "mobile": "pad stacks above the details at full width with the duotone photo glowing behind it; from 760px the pad becomes a full-bleed typographic poster field with the info in a band beneath; the leaf curls once when first seen since touch has no hover",
+  "motion": "pad swings in on its binding and settles, duotone photo drifts into place, the leaf corner curls once as a hint; Add to calendar: corner curls up, the leaf rips along the perforation right-to-left leaving a torn stub, then falls carrying a jagged torn top edge, with gravity, spin, flutter and an oscillating corner curl (bend physics) while the pad springs back and the check draws in on the sheet beneath (reduced-motion: no entrance or curl; leaf fades to the 'Added' sheet)",
   "scores": {
     "concept": 3,
     "usefulness": 3,
@@ -26,13 +33,13 @@
   },
   "checks": {
     "tsc": "pass",
-    "render": "pass (1 fix: clamp long add-to-calendar label on the leaf to 2 lines)",
-    "craft": "pass (3)"
+    "render": "pass",
+    "craft": "pending orchestrator review"
   },
   "craft_score": 3,
   "status": "built",
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
-  "art_direction": "Wall calendar: warm white card, tomato-red leaf header, charcoal numerals, kraft backing strip, soft paper shadow",
-  "notes": "Add to calendar downloads an .ics file (floating local time, no time zone); no Google Calendar link. The leaf stays torn until reload."
+  "art_direction": "Poster night: dark ink ground, oversized bone date numerals on a dark tear-off leaf as a typographic poster, one vermilion accent (binding, month, CTA), event photo as an ink-to-vermilion duotone glow, condensed heavy grotesk numerals",
+  "notes": "2026-11-23: redesigned (batch A) to Poster night (oversized date poster on a tear-off pad, physics tear, duotone photo); .ics now writes UTC times from the new time zone setting (empty or invalid = floating local time). 2026-11-23: review fixes — full-bleed poster field from 760px (two-column layout removed, photo reduced to a masked band), falling leaf now carries a real torn top edge and curl-bend oscillation in 3D, display face self-hosted (Oswald variable wght 200-700, OFL, base64 woff2 in the CSS), 2026 year contrast raised to AA."
 }

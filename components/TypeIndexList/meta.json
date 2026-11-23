@@ -1,0 +1,41 @@
+{
+  "id": "c034",
+  "name": "TypeIndexList",
+  "display_name": "Type Index List",
+  "category": "text",
+  "tier": "everyday",
+  "job": "An oversized typographic index of names (projects, services, collections) where the focused row opens a full-bleed slot that prints its image in cobalt ink, while the other names stay as outlines",
+  "visitor_action": "hover, focus (arrow keys) or tap a row to open its slot; click follows its link (on touch the first tap previews, the second opens)",
+  "owner_settings": [
+    "Rows (name, small label, image, link)",
+    "Text color",
+    "Outline strength",
+    "Accent color"
+  ],
+  "site_types": [
+    "portfolio",
+    "store",
+    "events",
+    "business",
+    "blog"
+  ],
+  "mobile": "same slot behind the tapped row; labels drop under the name",
+  "motion": "the cobalt slot squeegees to the focused row (leading edge lands first, trailing edge drags), the name wipes in white, the print crossfades and pans; pointer shears the outline letters in 3D (reduced-motion: instant, no tilt)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped (shot.sh disabled, per Guy 2026-11-23)",
+    "craft": "skipped (no self-scoring on redo)"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Print studio index: cool concrete grey page, Big Shoulders condensed caps, one cobalt ink that bleeds edge to edge through the focused row as a duotone print, hairline dividers",
+  "notes": "Slot crop is a wide strip so the picture reads as texture/tone, not a full photo; animated slot needs @property (older browsers jump instead of squeegee). 2026-11-23: quality redo (Sonnet 5.5): side panel and inline expand removed, slot + 3D shear added; not rendered or screenshotted (shot.sh disabled). | 2026-11-23: QA nit fixes. Row padding gives glyph headroom so the active band's bleed no longer shaves neighbouring cap tops; names wrap only at spaces/hyphens (overflow-wrap normal), an over-wide single word shrinks via --fit (floor 30%, then anywhere as last resort for 50+ letter words). Verified in headless Chrome at 1280/375 and worst."
+}

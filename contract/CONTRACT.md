@@ -1,4 +1,4 @@
-# Build Contract (v0.5, 2026-11-23)
+# Build Contract (v0.6, 2026-11-23)
 
 Every agent in this pipeline follows this file.
 
@@ -97,3 +97,12 @@ Reference level: award-winning homepages and the 21st.dev showpiece tier. A plai
 9. **Self-check.** The builder screenshots its own preview (1280 and 375 px, plus `?worst=1`), checks it against this list and fixes once. No component is handed back unseen.
 
 Build agents also read the codegen skill's `references/VISUAL-QUALITY.md` (synced into `.skill/`).
+
+## 10. Banned defaults and library diversity (v0.6)
+Source: impeccable `craft-floor.md`. A ban holds even if the concept card asks for it.
+- **Bans:** an eyebrow/kicker label above a heading (no "small heading" setting either) · gradient text · glass or blur as decoration · coloured `border-left`/`border-right` over 1px on cards or rows · hard offset shadows (`4px 4px 0`) · emoji or unicode glyphs as icons · monospace as a "technical" costume.
+- **Not the default:** the warm-craft look (cream/oatmeal/kraft ground + serif display + orange-brown/terracotta accent + paper grain). Allowed only when the subject is that object and the card says why.
+- **Material is earned:** a physical-material metaphor (paper, wood, brass, linen) only when the hero *is* that object. Otherwise digital-native: flat or near-flat surfaces, crisp hairlines, light from the use scene. This narrows §9.2–3.
+- **Pick light or dark from the use scene** (who, where, what light), not from the category.
+- **Library mix:** ≥30% dark · serif display in ≤⅓ of components · sans/grotesk is the default voice · no two neighbours share a palette. The registry lives in the project's restyle plan.
+- **Browser surfaces themed:** selection colour, focus ring, scrollbars and numerals (tabular where data) come from the palette.

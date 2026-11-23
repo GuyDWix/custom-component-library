@@ -1,0 +1,41 @@
+{
+  "id": "c026",
+  "name": "FramePreviewPicker",
+  "display_name": "Frame Preview Picker",
+  "category": "media",
+  "tier": "everyday",
+  "job": "Let shoppers preview a print or artwork in different frame styles and sizes on a wall, scaled against a sofa-height guide",
+  "visitor_action": "click frame style and size chips; the frame material crossfades and the size springs while the cast shadow stretches and settles",
+  "owner_settings": [
+    "Artwork image",
+    "Frame styles (name, colour, finish)",
+    "Sizes (label, width and height in cm)",
+    "Wall colour",
+    "Mat colour",
+    "Chip group labels"
+  ],
+  "site_types": [
+    "store",
+    "portfolio",
+    "services"
+  ],
+  "mobile": "chips under the preview, wall fills width",
+  "motion": "frame style swaps with a quick crossfade and size animates with a spring (reduced-motion: instant swap)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped",
+    "craft": "skipped"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Gallery wall: soft sage plaster wall, oak, black and brass frame options, gentle raking light shadow",
+  "notes": "Prints taller than ~116 cm are display-clamped to the wall scene, so the silhouette understates true scale; render and craft gates were skipped this build (shot.sh disabled)"
+}

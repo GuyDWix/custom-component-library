@@ -41,47 +41,175 @@ export const defaultPhotos: HoneycombLensPhoto[] = [
   { image: img('1551218808-94e220e084d2'), caption: 'Prep at first light' },
 ];
 
-type Cell = { x: number; y: number };
-type Grid = { w: number; h: number; width: number; height: number; cells: Cell[] };
-type Lens = { x: number; y: number; p: number; vx: number; vy: number; vp: number };
+type Cell = { x: number; y: number; r: number; photo: number; hero: boolean };
+type Layout = { cells: Cell[]; width: number; height: number; floor: number };
+type LensState = { x: number; y: number; p: number; vx: number; vy: number; vp: number };
+type CellAnim = { e: number; ve: number; delay: number; fade: number; vfade: number };
+type ImageRec = { img: HTMLImageElement | null; ok: boolean };
 
 const SQRT3 = Math.sqrt(3);
 const STIFFNESS = 150;
 const DAMPING = 20;
-const REST_PRESENCE = 0.72;
-const FALLOFF = 1.3;
-const GRID_HELP = 'Move across the honeycomb to magnify photos. Arrow keys move between photos; Enter opens one.';
+const REST_PRESENCE = 0.34;
+const ENTRANCE_STIFF = 120;
+const ENTRANCE_DAMP = 13;
+const FADE_STIFF = 90;
+const FADE_DAMP = 20;
+const GRID_HELP =
+  'A photo collection shown through glass lenses. Move across it to magnify a lens. Arrow keys move between lenses; Enter opens a photo.';
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
-function buildGrid(avail: number, count: number, cellSize: number, margin: number): Grid {
-  const fit = Math.max(3, Math.floor(avail / cellSize - 2 * margin));
-  const cols = Math.max(1, Math.min(fit, count));
-  const w = Math.max(40, Math.min(cellSize, avail / (cols + 2 * margin)));
-  const h = (w * 2) / SQRT3;
-  const cells: Cell[] = [];
-  let row = 0;
-  while (cells.length < count) {
-    const full = row % 2 === 0 ? cols : Math.max(1, cols - 1);
-    const n = Math.min(full, count - cells.length);
-    const start = (cols * w - full * w) / 2 + Math.floor((full - n) / 2) * w;
-    for (let i = 0; i < n; i++) cells.push({ x: start + w / 2 + i * w, y: h / 2 + row * h * 0.75 });
-    row++;
+function hexPolygon(): string {
+  const pts: string[] = [];
+  for (let k = 0; k < 6; k++) {
+    const a = (Math.PI / 3) * k - Math.PI / 2;
+    pts.push(`${(50 + 50 * Math.cos(a)).toFixed(2)}% ${(50 + 50 * Math.sin(a)).toFixed(2)}%`);
   }
-  return { w, h, width: cols * w, height: h + (row - 1) * h * 0.75, cells };
+  return `polygon(${pts.join(', ')})`;
+}
+const HEX_CLIP = hexPolygon();
+
+function computeLayout(avail: number, count: number, cellSize: number): Layout {
+  if (count <= 0) return { cells: [], width: avail, height: 140, floor: 140 };
+  const baseR = clamp(cellSize, 56, 300) / SQRT3;
+  const heroR = baseR * 1.72;
+  const hexW = SQRT3 * baseR;
+  const inset = baseR * 1.15 + 4;
+  const bleed = hexW * 0.55;
+  const cols = Math.max(2, Math.floor((avail - inset + bleed) / hexW) + 1);
+  const latticeCount = count - 1;
+  const topPad = baseR * 0.15 + 4;
+  const rows = Math.ceil((latticeCount + 1) / cols);
+  const latH = topPad + baseR * 2 + baseR * 1.5 * Math.max(0, rows - 1);
+  const focusX = Math.max(heroR + 4, Math.min(avail * 0.3, hexW * 1.6 + inset));
+  const focusY = Math.max(latH * 0.5, heroR + 2);
+
+  const cellAt = (idx: number) => {
+    const row = Math.floor(idx / cols);
+    const col = idx % cols;
+    return {
+      x: inset + col * hexW + (row % 2 ? hexW / 2 : 0),
+      y: topPad + baseR + row * baseR * 1.5,
+    };
+  };
+
+  // the hero takes the lattice slot nearest the focal point; that slot is left as a hole
+  let holeIdx = 0;
+  let heroD = Infinity;
+  for (let i = 0; i <= latticeCount; i++) {
+    const p = cellAt(i);
+    const d = Math.hypot(p.x - focusX, p.y - focusY);
+    if (d < heroD) {
+      heroD = d;
+      holeIdx = i;
+    }
+  }
+
+  const sigma = Math.max(150, avail * 0.34);
+  const lattice: Cell[] = [];
+  let created = 0;
+  for (let pos = 0; pos <= latticeCount && created < latticeCount; pos++) {
+    if (pos === holeIdx) continue;
+    const p = cellAt(pos);
+    const d = Math.hypot(p.x - focusX, p.y - focusY);
+    lattice.push({ x: p.x, y: p.y, r: baseR * (0.9 + 0.2 * Math.exp(-(d * d) / (2 * sigma * sigma))), photo: -1, hero: false });
+    created++;
+  }
+
+  const hero: Cell = { x: focusX, y: focusY, r: heroR, photo: 0, hero: true };
+  const cells = [hero, ...lattice];
+  let p = 1;
+  for (const c of cells) {
+    if (!c.hero) c.photo = p++;
+  }
+
+  const floor = cells.reduce((m, c) => Math.max(m, c.y + c.r), 0);
+  const right = cells.reduce((m, c) => Math.max(m, c.x + c.r), 0);
+  const height = floor + baseR * 0.95 + 10;
+  return { cells, width: Math.max(right, avail), height, floor };
 }
 
-function nearest(cells: Cell[], x: number, y: number) {
-  let best = 0;
+function nearest(cells: Cell[], x: number, y: number, max = Infinity) {
+  let best = -1;
   let bestD = Infinity;
   cells.forEach((c, i) => {
-    const d = (c.x - x) ** 2 + (c.y - y) ** 2;
-    if (d < bestD) {
+    const d = Math.hypot(c.x - x, c.y - y);
+    if (d < bestD && d <= max + c.r) {
       bestD = d;
       best = i;
     }
   });
   return best;
+}
+
+function hexPath(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  ctx.beginPath();
+  for (let k = 0; k < 6; k++) {
+    const a = (Math.PI / 3) * k - Math.PI / 2;
+    const x = cx + r * Math.cos(a);
+    const y = cy + r * Math.sin(a);
+    if (k) ctx.lineTo(x, y);
+    else ctx.moveTo(x, y);
+  }
+  ctx.closePath();
+}
+
+/* photo drawn through a convex lens — strip-based barrel magnification */
+function drawPhoto(ctx: CanvasRenderingContext2D, im: HTMLImageElement, x: number, y: number, r: number, M: number) {
+  const iw = im.naturalWidth;
+  const ih = im.naturalHeight;
+  if (!iw || !ih) return;
+  const faceR = r * 0.96;
+  const drawW = SQRT3 * faceR;
+  const drawH = 2 * faceR;
+  const s = Math.max(drawW / iw, drawH / ih);
+  const sw = drawW / s;
+  const sh = drawH / s;
+  const sx = (iw - sw) / 2;
+  const sy = (ih - sh) / 2;
+  const dx = x - drawW / 2;
+
+  if (M < 1.03) {
+    ctx.drawImage(im, sx, sy, sw, sh, dx, y - faceR, drawW, drawH);
+    return;
+  }
+  const N = 16;
+  const stripH = drawH / N;
+  for (let j = 0; j < N; j++) {
+    const y0 = y - faceR + j * stripH;
+    const y1 = y0 + stripH + 0.7;
+    const v = (y0 + stripH / 2 - y) / faceR;
+    const m = 1 + (M - 1) * Math.max(0, 1 - v * v) - 0.14 * (M - 1) * v * v;
+    const srcYFlat = sy + ((y0 + stripH / 2 - (y - faceR)) / drawH) * sh;
+    const srcY = sy + sh / 2 + (srcYFlat - sy - sh / 2) / m;
+    const srcH = (stripH / drawH) * sh / m;
+    const sw2 = sw / m;
+    const srcX = sx + (sw - sw2) / 2;
+    ctx.drawImage(im, srcX, srcY - srcH / 2, sw2, srcH, dx, y0, drawW, y1 - y0);
+  }
+}
+
+function drawFrosted(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, alpha: number, noise: CanvasPattern | null) {
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.fillStyle = '#161a22';
+  ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  if (noise) {
+    ctx.save();
+    hexPath(ctx, x, y, r);
+    ctx.clip();
+    ctx.globalAlpha *= 0.2;
+    ctx.fillStyle = noise;
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    ctx.restore();
+  }
+  const sheen = ctx.createRadialGradient(x - r * 0.25, y - r * 0.3, 0, x - r * 0.25, y - r * 0.3, r * 0.9);
+  sheen.addColorStop(0, 'rgba(214,226,248,0.12)');
+  sheen.addColorStop(1, 'rgba(214,226,248,0)');
+  ctx.fillStyle = sheen;
+  ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  ctx.restore();
 }
 
 export default function HoneycombLens({
@@ -95,103 +223,54 @@ export default function HoneycombLens({
   const [reduced, setReduced] = useState(false);
   const [inView, setInView] = useState(true);
   const [focusIndex, setFocusIndex] = useState(0);
+  const [focusIn, setFocusIn] = useState(false);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [activeIndex, setActiveIndex] = useState(-1);
 
   const rootRef = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<HTMLUListElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const cellRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const lens = useRef<Lens>({ x: 0, y: 0, p: 0, vx: 0, vy: 0, vp: 0 });
-  const target = useRef({ x: 0, y: 0, p: 0 });
-  const active = useRef(-1);
-  const started = useRef(false);
-  const touched = useRef(false);
-  const frame = useRef(0);
 
   const strength = clamp(lensStrength, 0, 100) / 100;
-  const size = clamp(cellSize, 60, 320);
-  const margin = 0.18 + strength * 0.32;
-  const grid = useMemo(() => buildGrid(avail, photos.length, size, margin), [avail, photos.length, size, margin]);
-  const gridState = useRef({ grid, strength, reduced });
-  gridState.current = { grid, strength, reduced };
-  const swell = Math.round(grid.w * margin);
+  const layout = useMemo(() => computeLayout(avail, photos.length, cellSize), [avail, photos.length, cellSize]);
 
-  const setActive = useCallback((i: number) => {
-    if (active.current === i) return;
-    cellRefs.current[active.current]?.style.setProperty('--hc-on', '0');
-    cellRefs.current[i]?.style.setProperty('--hc-on', '1');
-    active.current = i;
-  }, []);
+  const eng = useRef({
+    layout,
+    strength,
+    reduced,
+    inView,
+    focusIndex,
+    focusIn,
+    photos,
+    started: false,
+    touched: false,
+    frame: 0,
+    needDraw: true,
+    start: 0,
+    sweepStart: 0,
+    sweepT: -1,
+    sweepX: 0,
+    lens: { x: 0, y: 0, p: 0, vx: 0, vy: 0, vp: 0 } as LensState,
+    target: { x: 0, y: 0, p: 0 },
+    cellAnim: [] as CellAnim[],
+    images: [] as ImageRec[],
+    noise: null as CanvasPattern | null,
+    active: -1,
+    lastPoll: 0,
+    srcKey: '',
+    wake: null as (() => void) | null,
+  });
+  const E = eng.current;
+  E.layout = layout;
+  E.strength = strength;
+  E.reduced = reduced;
+  E.inView = inView;
+  E.focusIndex = focusIndex;
+  E.focusIn = focusIn;
+  E.photos = photos;
 
-  const paint = useCallback(() => {
-    const { grid: g, strength: s } = gridState.current;
-    const l = lens.current;
-    g.cells.forEach((c, i) => {
-      const el = cellRefs.current[i];
-      if (!el) return;
-      const dx = c.x - l.x;
-      const dy = c.y - l.y;
-      const dist = Math.hypot(dx, dy) || 1;
-      const q = dist / g.w / FALLOFF;
-      const near = Math.exp(-q * q);
-      const scale = 1 + l.p * s * (1.05 * near - 0.22 * (1 - near));
-      const push = l.p * s * g.w * 0.62 * q * near;
-      el.style.transform = `translate3d(${((dx / dist) * push).toFixed(2)}px, ${((dy / dist) * push).toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
-      el.style.zIndex = String(Math.round(scale * 100));
-      el.style.setProperty('--hc-lift', (l.p * near).toFixed(3));
-      el.style.setProperty('--hc-veil', (l.p * s * (1 - near) * 0.8).toFixed(3));
-    });
-    setActive(l.p > 0.25 ? nearest(g.cells, l.x, l.y) : -1);
-  }, [setActive]);
-
-  const run = useCallback(() => {
-    if (frame.current || gridState.current.reduced) return;
-    let last = performance.now();
-    const loop = (now: number) => {
-      const dt = Math.min((now - last) / 1000, 1 / 30);
-      last = now;
-      const l = lens.current;
-      const t = target.current;
-      const steps = Math.max(1, Math.ceil(dt / (1 / 120)));
-      const h = dt / steps;
-      for (let n = 0; n < steps; n++) {
-        l.vx += (STIFFNESS * (t.x - l.x) - DAMPING * l.vx) * h;
-        l.vy += (STIFFNESS * (t.y - l.y) - DAMPING * l.vy) * h;
-        l.vp += (STIFFNESS * 0.6 * (t.p - l.p) - DAMPING * 0.8 * l.vp) * h;
-        l.x += l.vx * h;
-        l.y += l.vy * h;
-        l.p += l.vp * h;
-      }
-      paint();
-      const moving =
-        Math.abs(l.vx) + Math.abs(l.vy) > 0.5 ||
-        Math.abs(t.x - l.x) + Math.abs(t.y - l.y) > 0.3 ||
-        Math.abs(l.vp) + Math.abs(t.p - l.p) > 0.002;
-      frame.current = moving ? requestAnimationFrame(loop) : 0;
-    };
-    frame.current = requestAnimationFrame(loop);
-  }, [paint]);
-
-  const stop = useCallback(() => {
-    cancelAnimationFrame(frame.current);
-    frame.current = 0;
-  }, []);
-
-  const aimAt = useCallback(
-    (x: number, y: number, p: number) => {
-      touched.current = true;
-      target.current = { x, y, p };
-      if (gridState.current.reduced) setActive(nearest(gridState.current.grid.cells, x, y));
-      else run();
-    },
-    [run, setActive],
-  );
-
-  const settle = useCallback(() => {
-    const { cells } = gridState.current.grid;
-    const c = cells[nearest(cells, target.current.x, target.current.y)];
-    if (c) aimAt(c.x, c.y, REST_PRESENCE);
-  }, [aimAt]);
+  const canvasStyle = { inlineSize: layout.width, blockSize: layout.height } as CSSProperties;
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -204,7 +283,7 @@ export default function HoneycombLens({
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    const ro = new ResizeObserver(([entry]) => setAvail(Math.max(120, entry.contentRect.width)));
+    const ro = new ResizeObserver(([entry]) => setAvail(Math.max(280, entry.contentRect.width)));
     ro.observe(root);
     const io = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: 0.05 });
     io.observe(root);
@@ -215,63 +294,476 @@ export default function HoneycombLens({
   }, []);
 
   useEffect(() => {
-    if (reduced) {
-      stop();
-      cellRefs.current.forEach((el) => el?.removeAttribute('style'));
-      active.current = -1;
-      const rest = grid.cells[nearest(grid.cells, grid.width / 2, grid.height / 2)];
-      if (rest) setActive(nearest(grid.cells, rest.x, rest.y));
-      return;
-    }
-    if (!inView) {
-      stop();
-      return;
-    }
-    if (!started.current && grid.cells.length) {
-      started.current = true;
-      const rest = grid.cells[nearest(grid.cells, grid.width / 2, grid.height / 2)];
-      lens.current = { x: rest.x, y: rest.y, p: 0, vx: 0, vy: 0, vp: 0 };
-      target.current = { x: rest.x, y: rest.y, p: REST_PRESENCE };
-    } else if (!touched.current) {
-      const rest = grid.cells[nearest(grid.cells, grid.width / 2, grid.height / 2)];
-      target.current = { x: rest.x, y: rest.y, p: REST_PRESENCE };
-      lens.current = { ...lens.current, x: rest.x, y: rest.y, vx: 0, vy: 0 };
-    } else {
-      const t = target.current;
-      const c = grid.cells[nearest(grid.cells, t.x, t.y)];
-      if (c) target.current = { x: c.x, y: c.y, p: t.p };
-    }
-    paint();
-    run();
-    return stop;
-  }, [reduced, inView, grid, paint, run, stop, setActive]);
-
-  useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     if (openIndex !== null && !dialog.open) dialog.showModal();
     if (openIndex === null && dialog.open) dialog.close();
   }, [openIndex]);
 
-  const localPoint = (e: PointerEvent<HTMLElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  const drawCell = useCallback((ctx: CanvasRenderingContext2D, c: Cell, idx: number, a: CellAnim, b: number, flare: number) => {
+    const { lens } = eng.current;
+    const dist = Math.hypot(c.x - lens.x, c.y - lens.y) || 1;
+    const push = b * c.r * 0.11;
+    const x = c.x + ((c.x - lens.x) / dist) * push;
+    const y = c.y + ((c.y - lens.y) / dist) * push + (1 - a.e) * c.r * 0.35;
+    const r = c.r * (1 + b * 0.13) * (0.6 + 0.4 * a.e);
+    const alpha = clamp(a.e * 1.7, 0, 1);
+    if (alpha <= 0.01 || r <= 1) return;
+
+    const E2 = eng.current;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+
+    // photo (or frosted glass) through the lens — a lens always refracts a little
+    ctx.save();
+    hexPath(ctx, x, y, r);
+    ctx.clip();
+    const rec = E2.images[c.photo];
+    if (rec?.ok && rec.img) {
+      const M = 1 + 0.62 * b + 0.07;
+      drawPhoto(ctx, rec.img, x, y, r, M);
+      if (a.fade < 0.99) drawFrosted(ctx, x, y, r, 1 - a.fade, E2.noise);
+    } else {
+      drawFrosted(ctx, x, y, r, 1, E2.noise);
+    }
+    // glass tint — thicker and darker at the edges
+    const tint = ctx.createRadialGradient(x - r * 0.18, y - r * 0.22, r * 0.1, x, y, r * 1.05);
+    tint.addColorStop(0, 'rgba(255,255,255,0.03)');
+    tint.addColorStop(0.6, 'rgba(10,13,20,0.07)');
+    tint.addColorStop(1, 'rgba(4,6,10,0.55)');
+    ctx.fillStyle = tint;
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+
+    // chromatic edges — a warm fringe on the lit side, cool opposite, plus a second inner fringe
+    ctx.globalCompositeOperation = 'screen';
+    const lw = Math.max(1.5, r * 0.026);
+    ctx.lineWidth = lw;
+    const rimA = (0.36 + b * 0.55 + flare * 0.3) * alpha;
+    for (let k = 0; k < 6; k++) {
+      const a1 = (Math.PI / 3) * k - Math.PI / 2;
+      const a2 = (Math.PI / 3) * (k + 1) - Math.PI / 2;
+      const x1 = x + r * Math.cos(a1);
+      const y1 = y + r * Math.sin(a1);
+      const x2 = x + r * Math.cos(a2);
+      const y2 = y + r * Math.sin(a2);
+      const lit = Math.max(0, Math.cos((a1 + a2) / 2 + 2.3));
+      const g = ctx.createLinearGradient(x1, y1, x2, y2);
+      const warm = rimA * (0.35 + lit * 0.75);
+      const cool = rimA * (0.35 + (1 - lit) * 0.75);
+      g.addColorStop(0, `rgba(255,108,52,${warm.toFixed(3)})`);
+      g.addColorStop(0.5, `rgba(255,186,104,${(warm * 0.4).toFixed(3)})`);
+      g.addColorStop(1, `rgba(80,124,255,${cool.toFixed(3)})`);
+      ctx.strokeStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      // inner fringe — reversed colours, thinner, the classic lens doublet
+      const ix1 = x + (r - lw * 2.6) * Math.cos(a1);
+      const iy1 = y + (r - lw * 2.6) * Math.sin(a1);
+      const ix2 = x + (r - lw * 2.6) * Math.cos(a2);
+      const iy2 = y + (r - lw * 2.6) * Math.sin(a2);
+      const gi = ctx.createLinearGradient(ix1, iy1, ix2, iy2);
+      gi.addColorStop(0, `rgba(84,128,255,${(cool * 0.6).toFixed(3)})`);
+      gi.addColorStop(1, `rgba(255,118,62,${(warm * 0.55).toFixed(3)})`);
+      ctx.strokeStyle = gi;
+      ctx.lineWidth = Math.max(1, lw * 0.6);
+      ctx.beginPath();
+      ctx.moveTo(ix1, iy1);
+      ctx.lineTo(ix2, iy2);
+      ctx.stroke();
+      ctx.lineWidth = lw;
+    }
+    ctx.restore();
+
+    // specular streak — slides with the pointer, light on glass
+    const px = clamp((lens.x - c.x) / (c.r * 3), -1, 1);
+    const py = clamp((lens.y - c.y) / (c.r * 3), -1, 1);
+    const specA = (0.17 + b * 0.12 + flare * 0.38) * alpha;
+    ctx.save();
+    ctx.translate(x - r * 0.3 - px * r * 0.09, y - r * 0.34 - py * r * 0.07);
+    ctx.rotate(-0.55);
+    const spec = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.45);
+    spec.addColorStop(0, `rgba(255,252,244,${(specA * 1.25).toFixed(3)})`);
+    spec.addColorStop(0.55, `rgba(238,244,255,${(specA * 0.32).toFixed(3)})`);
+    spec.addColorStop(1, 'rgba(238,244,255,0)');
+    ctx.fillStyle = spec;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, r * 0.45, r * 0.17, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // hot-spot glint — the macro light itself
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    const glint = ctx.createRadialGradient(x - r * 0.22 - px * r * 0.06, y - r * 0.26 - py * r * 0.05, 0, x - r * 0.22 - px * r * 0.06, y - r * 0.26 - py * r * 0.05, Math.max(2, r * 0.045));
+    glint.addColorStop(0, `rgba(255,255,250,${((0.5 + b * 0.25 + flare * 0.5) * alpha).toFixed(3)})`);
+    glint.addColorStop(1, 'rgba(255,255,250,0)');
+    ctx.fillStyle = glint;
+    ctx.beginPath();
+    ctx.arc(x - r * 0.22 - px * r * 0.06, y - r * 0.26 - py * r * 0.05, Math.max(2, r * 0.045), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // rim catching the key light
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    const rimG = ctx.createLinearGradient(x - r, y - r, x + r, y + r);
+    rimG.addColorStop(0, `rgba(230,240,255,${(0.18 + b * 0.3 + flare * 0.25).toFixed(3)})`);
+    rimG.addColorStop(0.55, 'rgba(206,224,255,0.04)');
+    rimG.addColorStop(1, 'rgba(206,224,255,0.07)');
+    ctx.strokeStyle = rimG;
+    ctx.lineWidth = 1.4;
+    hexPath(ctx, x, y, r - 0.7);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.restore();
+
+    if (eng.current.focusIn && eng.current.focusIndex === idx && eng.current.focusIndex >= 0) {
+      ctx.save();
+      hexPath(ctx, x, y, r + 3.5);
+      ctx.strokeStyle = 'rgba(127,212,255,0.85)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      hexPath(ctx, x, y, r + 7);
+      ctx.strokeStyle = 'rgba(127,212,255,0.16)';
+      ctx.lineWidth = 5;
+      ctx.stroke();
+      ctx.restore();
+    }
+  }, []);
+
+  const draw = useCallback(
+    (now: number) => {
+      const canvas = canvasRef.current;
+      const lay = eng.current.layout;
+      if (!canvas || !lay.cells.length) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const W = lay.width;
+      const H = lay.height;
+      if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {
+        canvas.width = Math.round(W * dpr);
+        canvas.height = Math.round(H * dpr);
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+
+      // black ground with a soft key-light pool
+      const g = ctx.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, '#0b0d12');
+      g.addColorStop(1, '#07080c');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+      const hero = lay.cells[0];
+      const pool = ctx.createRadialGradient(hero.x, hero.y, 0, hero.x, hero.y, Math.max(W * 0.55, 260));
+      pool.addColorStop(0, 'rgba(228,236,255,0.055)');
+      pool.addColorStop(0.55, 'rgba(228,236,255,0.018)');
+      pool.addColorStop(1, 'rgba(228,236,255,0)');
+      ctx.fillStyle = pool;
+      ctx.fillRect(0, 0, W, H);
+
+      // entrance light sweep
+      const E2 = eng.current;
+      let sweepOn = false;
+      if (E2.sweepT >= 0) {
+        const p = clamp(E2.sweepT / 1350, 0, 1);
+        const eased = p * p * (3 - 2 * p);
+        E2.sweepX = -W * 0.15 + eased * W * 1.3;
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        const band = ctx.createLinearGradient(E2.sweepX - W * 0.13, 0, E2.sweepX + W * 0.13, 0);
+        band.addColorStop(0, 'rgba(190,210,255,0)');
+        band.addColorStop(0.5, 'rgba(190,210,255,0.07)');
+        band.addColorStop(1, 'rgba(190,210,255,0)');
+        ctx.fillStyle = band;
+        ctx.fillRect(0, 0, W, H);
+        ctx.restore();
+        sweepOn = true;
+      }
+
+      const { lens } = E2;
+
+      // shadow layer — one soft pass under everything
+      ctx.save();
+      ctx.filter = 'blur(9px)';
+      for (const c of lay.cells) {
+        const a = E2.cellAnim[c.photo];
+        if (!a || a.e < 0.05) continue;
+        const d = Math.hypot(c.x - lens.x, c.y - lens.y);
+        const q = d / (c.r * 1.35);
+        const b = lens.p * E2.strength * Math.exp(-q * q * 1.1);
+        const rec = E2.images[c.photo];
+        const lift = 1 + b * 0.9;
+        const vis = rec?.ok ? clamp(a.fade, 0, 1) : 1;
+        ctx.globalAlpha = clamp((0.3 + b * 0.35) * a.e * vis, 0, 1);
+        hexPath(ctx, c.x + 3.5 * lift, c.y + (5 + b * 9) * lift, c.r * (0.97 + b * 0.1) * (0.6 + 0.4 * a.e));
+        ctx.fillStyle = '#000';
+        ctx.fill();
+      }
+      ctx.restore();
+      ctx.globalAlpha = 1;
+
+      // lenses — bigger and lifted ones in front
+      const order = lay.cells
+        .map((c, i) => {
+          const d = Math.hypot(c.x - lens.x, c.y - lens.y);
+          const q = d / (c.r * 1.35);
+          const b = lens.p * E2.strength * Math.exp(-q * q * 1.1);
+          const flare = sweepOn ? Math.exp(-(((c.x - E2.sweepX) ** 2) / (2 * (c.r * 1.6) ** 2))) : 0;
+          return { c, i, b, flare };
+        })
+        .sort((m, n2) => m.c.r * (1 + m.b * 0.35) - n2.c.r * (1 + n2.b * 0.35));
+      for (const { c, i, b, flare } of order) {
+        const a = E2.cellAnim[c.photo];
+        if (!a) continue;
+        drawCell(ctx, c, i, a, b, flare);
+      }
+
+      // reflection on the black glass floor
+      const floor = lay.floor + 4;
+      if (floor < H - 6) {
+        const bandH = H - floor;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, floor, W, bandH);
+        ctx.clip();
+        ctx.globalAlpha = 0.19;
+        ctx.translate(0, floor * 2);
+        ctx.scale(1, -1);
+        ctx.filter = 'blur(3px)';
+        const srcY = Math.max(0, floor - bandH * 1.6) * dpr;
+        const srcH = Math.min(canvas.height - srcY, bandH * 1.6 * dpr);
+        ctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, floor - bandH * 1.6, W, bandH * 1.6);
+        ctx.restore();
+        const fadeG = ctx.createLinearGradient(0, floor, 0, H);
+        fadeG.addColorStop(0, 'rgba(7,8,12,0.25)');
+        fadeG.addColorStop(1, 'rgba(7,8,12,1)');
+        ctx.fillStyle = fadeG;
+        ctx.fillRect(0, floor, W, bandH);
+      }
+      void now;
+    },
+    [drawCell],
+  );
+
+  // engine: springs, entrance, sweep, on-demand frames
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const E2 = eng.current;
+    const lay = E2.layout;
+
+    // grain pattern for frosted glass
+    if (!E2.noise) {
+      const nc = document.createElement('canvas');
+      nc.width = 64;
+      nc.height = 64;
+      const nctx = nc.getContext('2d');
+      if (nctx) {
+        const id = nctx.createImageData(64, 64);
+        for (let i = 0; i < id.data.length; i += 4) {
+          const v = 120 + Math.random() * 135;
+          id.data[i] = v;
+          id.data[i + 1] = v + 6;
+          id.data[i + 2] = v + 14;
+          id.data[i + 3] = 255;
+        }
+        nctx.putImageData(id, 0, 0);
+        E2.noise = ctx.createPattern(nc, 'repeat');
+      }
+    }
+
+    // images — reload only when the set changes
+    const srcKey = photos.map((p) => p.image).join('|');
+    if (srcKey !== E2.srcKey) {
+      E2.srcKey = srcKey;
+      E2.images = photos.map((p) => {
+        if (!p.image) return { img: null, ok: false };
+        const im = new Image();
+        const rec: ImageRec = { img: im, ok: false };
+        im.onload = () => {
+          rec.ok = true;
+          E2.wake?.();
+        };
+        im.onerror = () => {
+          E2.wake?.();
+        };
+        im.src = p.image;
+        return rec;
+      });
+    }
+
+    // per-cell anim state follows the current layout
+    if (E2.cellAnim.length !== lay.cells.length) {
+      const first = !E2.started;
+      E2.cellAnim = lay.cells.map((c, i) => ({
+        e: first && !reduced ? 0 : 1,
+        ve: 0,
+        delay: first && !reduced ? (Math.hypot(c.x - lay.cells[0].x, c.y - lay.cells[0].y) / Math.max(lay.width, 1)) * 420 + i * 14 : 0,
+        fade: first ? 0 : 0,
+        vfade: 0,
+      }));
+      if (first) {
+        E2.started = true;
+        E2.start = performance.now();
+        E2.sweepT = reduced ? -1 : 0;
+        E2.sweepStart = E2.start + 700;
+        const hero = lay.cells[0];
+        E2.lens = { x: hero.x, y: hero.y, p: 0, vx: 0, vy: 0, vp: 0 };
+        E2.target = { x: hero.x, y: hero.y, p: REST_PRESENCE };
+      }
+    }
+
+    if (!E2.touched) {
+      const hero = lay.cells[0];
+      if (hero) E2.target = { x: hero.x, y: hero.y, p: REST_PRESENCE };
+    }
+
+    let raf = 0;
+    let last = performance.now();
+    const loop = (now: number) => {
+      const dt = Math.min((now - last) / 1000, 1 / 30);
+      last = now;
+      const l = E2.lens;
+      const t2 = E2.target;
+      const steps = Math.max(1, Math.ceil(dt / (1 / 120)));
+      const h = dt / steps;
+      let moving = E2.needDraw;
+      E2.needDraw = false;
+
+      if (!E2.reduced) {
+        for (let n = 0; n < steps; n++) {
+          l.vx += (STIFFNESS * (t2.x - l.x) - DAMPING * l.vx) * h;
+          l.vy += (STIFFNESS * (t2.y - l.y) - DAMPING * l.vy) * h;
+          l.vp += (STIFFNESS * 0.6 * (t2.p - l.p) - DAMPING * 0.8 * l.vp) * h;
+          l.x += l.vx * h;
+          l.y += l.vy * h;
+          l.p += l.vp * h;
+        }
+        moving =
+          moving ||
+          Math.abs(l.vx) + Math.abs(l.vy) > 0.4 ||
+          Math.abs(t2.x - l.x) + Math.abs(t2.y - l.y) > 0.25 ||
+          Math.abs(l.vp) + Math.abs(t2.p - l.p) > 0.002;
+      } else {
+        l.x = t2.x;
+        l.y = t2.y;
+        l.p = t2.p;
+      }
+
+      E2.layout.cells.forEach((c) => {
+        const a = E2.cellAnim[c.photo];
+        if (!a) return;
+        if (!E2.reduced) {
+          if (now >= E2.start + a.delay && a.e < 1) {
+            for (let n = 0; n < steps; n++) {
+              a.ve += (ENTRANCE_STIFF * (1 - a.e) - ENTRANCE_DAMP * a.ve) * h;
+              a.e += a.ve * h;
+            }
+            moving = true;
+          }
+          const rec = E2.images[c.photo];
+          const want = rec?.ok ? 1 : 0;
+          if (Math.abs(a.fade - want) > 0.003 || Math.abs(a.vfade) > 0.003) {
+            for (let n = 0; n < steps; n++) {
+              a.vfade += (FADE_STIFF * (want - a.fade) - FADE_DAMP * a.vfade) * h;
+              a.fade += a.vfade * h;
+            }
+            moving = true;
+          }
+          if (a.fade > 0.995 && want === 1) {
+            a.fade = 1;
+            a.vfade = 0;
+          }
+          if (a.e > 0.9995 && Math.abs(a.ve) < 0.015) {
+            a.e = 1;
+            a.ve = 0;
+          }
+        } else {
+          a.e = 1;
+          a.fade = E2.images[c.photo]?.ok ? 1 : 0;
+        }
+      });
+
+      if (E2.sweepT >= 0) {
+        E2.sweepT = now - E2.sweepStart;
+        if (E2.sweepT > 1350) E2.sweepT = -1;
+        moving = true;
+      }
+
+      if (now - E2.lastPoll > 140) {
+        E2.lastPoll = now;
+        const i = l.p > 0.18 ? nearest(E2.layout.cells, l.x, l.y, 200) : -1;
+        if (i !== E2.active) {
+          E2.active = i;
+          setActiveIndex(i);
+        }
+      }
+
+      if (moving && E2.inView) {
+        draw(now);
+        raf = requestAnimationFrame(loop);
+      } else {
+        raf = 0;
+      }
+      E2.frame = raf;
+    };
+    E2.wake = () => {
+      E2.needDraw = true;
+      if (!E2.frame) {
+        last = performance.now();
+        E2.frame = requestAnimationFrame(loop);
+      }
+    };
+    E2.wake();
+    return () => {
+      cancelAnimationFrame(E2.frame);
+      E2.frame = 0;
+      E2.wake = null;
+    };
+  }, [layout, reduced, draw, photos]);
+
+  // re-draw when visibility or focus changes while the loop is parked
+  useEffect(() => {
+    eng.current.wake?.();
+  }, [inView, focusIndex]);
+
+  const aimAt = useCallback((x: number, y: number, p: number) => {
+    const E2 = eng.current;
+    E2.touched = true;
+    E2.target = { x, y, p };
+    E2.wake?.();
+  }, []);
+
+  const settle = useCallback(() => {
+    const hero = eng.current.layout.cells[0];
+    if (hero) aimAt(hero.x, hero.y, REST_PRESENCE);
+  }, [aimAt]);
+
+  const localPoint = (ev: PointerEvent<HTMLElement>) => {
+    const rect = ev.currentTarget.getBoundingClientRect();
+    return { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
   };
 
-  const onPointerMove = (e: PointerEvent<HTMLUListElement>) => {
-    if (e.pointerType !== 'mouse' && e.buttons === 0) return;
-    const { x, y } = localPoint(e);
+  const onPointerMove = (ev: PointerEvent<HTMLDivElement>) => {
+    if (ev.pointerType !== 'mouse' && ev.buttons === 0) return;
+    const { x, y } = localPoint(ev);
     aimAt(x, y, 1);
   };
 
-  const onPointerDown = (e: PointerEvent<HTMLUListElement>) => {
-    if (e.pointerType === 'mouse') return;
-    const { x, y } = localPoint(e);
+  const onPointerDown = (ev: PointerEvent<HTMLDivElement>) => {
+    if (ev.pointerType === 'mouse') return;
+    const { x, y } = localPoint(ev);
     aimAt(x, y, 1);
   };
 
-  const onPointerEnd = (e: PointerEvent<HTMLUListElement>) => {
-    if (e.type === 'pointerleave' && e.pointerType !== 'mouse') return;
+  const onPointerEnd = (ev: PointerEvent<HTMLDivElement>) => {
+    if (ev.type === 'pointerleave' && ev.pointerType !== 'mouse') return;
     settle();
   };
 
@@ -282,30 +774,34 @@ export default function HoneycombLens({
 
   const onCellFocus = (i: number) => {
     setFocusIndex(i);
-    const c = grid.cells[i];
+    setFocusIn(true);
+    const c = layout.cells[i];
     if (c) aimAt(c.x, c.y, 1);
   };
 
-  const onGridBlur = (e: FocusEvent<HTMLUListElement>) => {
-    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) settle();
+  const onRootBlur = (ev: FocusEvent<HTMLDivElement>) => {
+    if (!ev.currentTarget.contains(ev.relatedTarget as Node | null)) {
+      setFocusIn(false);
+      settle();
+    }
   };
 
-  const onKeyDown = (e: KeyboardEvent<HTMLUListElement>) => {
-    const cells = grid.cells;
+  const onKeyDown = (ev: KeyboardEvent<HTMLDivElement>) => {
+    const cells = layout.cells;
     const here = cells[focusIndex];
     if (!here) return;
     let next = -1;
-    if (e.key === 'ArrowRight') next = Math.min(cells.length - 1, focusIndex + 1);
-    else if (e.key === 'ArrowLeft') next = Math.max(0, focusIndex - 1);
-    else if (e.key === 'Home') next = 0;
-    else if (e.key === 'End') next = cells.length - 1;
-    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      const rowY = here.y + (e.key === 'ArrowDown' ? 1 : -1) * grid.h * 0.75;
+    if (ev.key === 'ArrowRight') next = Math.min(cells.length - 1, focusIndex + 1);
+    else if (ev.key === 'ArrowLeft') next = Math.max(0, focusIndex - 1);
+    else if (ev.key === 'Home') next = 0;
+    else if (ev.key === 'End') next = cells.length - 1;
+    else if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+      const wantY = here.y + (ev.key === 'ArrowDown' ? 1 : -1) * here.r * 1.55;
       let best = -1;
       let bestD = Infinity;
       cells.forEach((c, i) => {
-        if (Math.abs(c.y - rowY) > 1) return;
-        const d = Math.abs(c.x - here.x);
+        if (i === focusIndex || Math.abs(c.y - wantY) > c.r * 1.1) return;
+        const d = Math.hypot(c.x - here.x, c.y - wantY);
         if (d < bestD) {
           bestD = d;
           best = i;
@@ -314,80 +810,80 @@ export default function HoneycombLens({
       next = best;
     }
     if (next < 0) return;
-    e.preventDefault();
+    ev.preventDefault();
     focusCell(next);
   };
 
   const open = openIndex !== null ? photos[openIndex] : undefined;
-  const rootStyle = { '--hc-swell': `${swell}px`, '--hc-w': `${grid.w.toFixed(1)}px` } as CSSProperties;
-  const gridStyle = { inlineSize: grid.width, blockSize: grid.height } as CSSProperties;
+  const activeCell = activeIndex >= 0 ? layout.cells[activeIndex] : null;
+  const activePhoto = activeCell ? photos[activeCell.photo] : null;
+  const activeCaption = activePhoto ? activePhoto.caption || activePhoto.alt || '' : '';
+  const captionBound = Math.min(layout.width, avail);
+  const captionAbove = activeCell ? activeCell.y + activeCell.r * 1.13 > layout.height - 46 : false;
+  const captionStyle: CSSProperties | undefined = activeCell
+    ? {
+        insetInlineStart: clamp(activeCell.x, 120, captionBound - 120),
+        insetBlockStart: captionAbove ? activeCell.y - activeCell.r * 1.13 - 8 : activeCell.y + activeCell.r * 1.13 + 4,
+      }
+    : undefined;
 
   return (
-    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
-      <span className={styles.comb} aria-hidden="true" />
-      <span className={styles.glow} aria-hidden="true" />
+    <div
+      ref={rootRef}
+      className={[styles.root, className].filter(Boolean).join(' ')}
+      onPointerMove={onPointerMove}
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerEnd}
+      onPointerCancel={onPointerEnd}
+      onPointerLeave={onPointerEnd}
+      onKeyDown={onKeyDown}
+      onBlur={onRootBlur}
+    >
+      <span className={styles.pool} aria-hidden="true" />
+      <span className={styles.vignette} aria-hidden="true" />
       <span className={styles.grain} aria-hidden="true" />
-
-      <ul
-        ref={gridRef}
-        className={styles.grid}
-        style={gridStyle}
-        aria-description={GRID_HELP}
-        onPointerMove={onPointerMove}
-        onPointerDown={onPointerDown}
-        onPointerUp={onPointerEnd}
-        onPointerCancel={onPointerEnd}
-        onPointerLeave={onPointerEnd}
-        onKeyDown={onKeyDown}
-        onBlur={onGridBlur}
-      >
-        {photos.map((photo, i) => {
-          const c = grid.cells[i];
-          if (!c) return null;
-          const label = photo.alt || photo.caption || `Photo ${i + 1}`;
-          const slotStyle = {
-            insetInlineStart: c.x - grid.w / 2,
-            insetBlockStart: c.y - grid.h / 2,
-            inlineSize: grid.w,
-            blockSize: grid.h,
-          } as CSSProperties;
-          return (
-            <li key={i} className={styles.slot} style={slotStyle}>
-              <button
-                ref={(el) => {
-                  cellRefs.current[i] = el;
-                }}
-                type="button"
-                className={styles.cell}
-                tabIndex={i === focusIndex ? 0 : -1}
-                aria-label={label}
-                aria-haspopup="dialog"
-                onFocus={() => onCellFocus(i)}
-                onClick={() => setOpenIndex(i)}
-              >
-                <span className={styles.pop}>
-                  <span className={styles.shadow} aria-hidden="true" />
-                  <span className={styles.edge} aria-hidden="true" />
-                  <span className={styles.face}>
-                    {photo.image ? (
-                      <img className={styles.photo} src={photo.image} alt="" draggable={false} loading="lazy" />
-                    ) : (
-                      <span className={styles.empty} aria-hidden="true" />
-                    )}
-                    <span className={styles.veil} aria-hidden="true" />
-                    <span className={styles.wax} aria-hidden="true" />
-                  </span>
-                  {photo.caption && (
-                    <span className={styles.caption} aria-hidden="true">
-                      <span className={styles.captionText}>{photo.caption}</span>
-                    </span>
-                  )}
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+      <span id={`${uid}-help`} className={styles.srHelp}>
+        {GRID_HELP}
+      </span>
+      <canvas ref={canvasRef} className={styles.canvas} style={canvasStyle} />
+      {layout.cells.map((c, i) => {
+        const photo = photos[c.photo];
+        if (!photo) return null;
+        const label = photo.alt || photo.caption || `Photo ${c.photo + 1}`;
+        const boxStyle = {
+          insetInlineStart: c.x - c.r,
+          insetBlockStart: c.y - c.r,
+          inlineSize: c.r * 2,
+          blockSize: c.r * 2,
+          clipPath: HEX_CLIP,
+        } as CSSProperties;
+        return (
+          <button
+            key={`${i}-${c.photo}`}
+            ref={(el) => {
+              cellRefs.current[i] = el;
+            }}
+            type="button"
+            className={styles.hit}
+            style={boxStyle}
+            tabIndex={i === focusIndex ? 0 : -1}
+            aria-label={label}
+            aria-describedby={`${uid}-help`}
+            aria-haspopup="dialog"
+            onFocus={() => onCellFocus(i)}
+            onClick={() => setOpenIndex(c.photo)}
+          />
+        );
+      })}
+      {activeCaption && captionStyle && (
+        <span
+          className={[styles.caption, captionAbove ? styles.captionAbove : ''].filter(Boolean).join(' ')}
+          style={captionStyle}
+          aria-hidden="true"
+        >
+          {activeCaption}
+        </span>
+      )}
 
       <dialog
         ref={dialogRef}
@@ -397,10 +893,13 @@ export default function HoneycombLens({
         onClose={() => {
           const i = openIndex;
           setOpenIndex(null);
-          if (i !== null) cellRefs.current[i]?.focus();
+          if (i !== null) {
+            const cellI = layout.cells.findIndex((c) => c.photo === i);
+            if (cellI >= 0) cellRefs.current[cellI]?.focus();
+          }
         }}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) setOpenIndex(null);
+        onClick={(ev) => {
+          if (ev.target === ev.currentTarget) setOpenIndex(null);
         }}
       >
         {open && (
@@ -409,7 +908,7 @@ export default function HoneycombLens({
               {open.image ? (
                 <img className={styles.sheetPhoto} src={open.image} alt={open.alt || open.caption || ''} />
               ) : (
-                <span className={styles.empty} aria-hidden="true" />
+                <span className={styles.sheetEmpty} aria-hidden="true" />
               )}
             </span>
             {open.caption && (
@@ -431,18 +930,27 @@ export default function HoneycombLens({
 ```
 
 ```css
+@font-face {
+  font-family: 'Wix Madefor Display';
+  src: url('./fonts/WixMadeforDisplay-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Wix Madefor Display';
+  src: url('./fonts/WixMadeforDisplay-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+
 .root {
-  --hc-ground: #f6ecd3;
-  --hc-ground-deep: #ead6a6;
-  --hc-honey: #e5a53c;
-  --hc-honey-light: #f7d27a;
-  --hc-honey-deep: #a5600f;
-  --hc-bark: #2d1e13;
-  --hc-cream: #fbf5e4;
-  --hc-font-caption: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
-  --hc-hex: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  --hc-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.3  0 0 0 0 0.16  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  --hc-comb: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'><path d='M28 0l28 16v32L28 64 0 48V16zM28 64v33M0 48l-28 16M56 48l28 16' fill='none' stroke='%23b9822f' stroke-width='1'/></svg>");
+  --hl-ground: #0b0d12;
+  --hl-ink: #e6e9ef;
+  --hl-mist: #ccd2de;
+  --hl-focus: #7fd4ff;
+  --hl-font: 'Wix Madefor Display', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
+  --hl-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.72  0 0 0 0 0.76  0 0 0 0 0.84  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -450,208 +958,137 @@ export default function HoneycombLens({
   box-sizing: border-box;
   inline-size: 100%;
   contain: inline-size;
-  padding-block: calc(var(--hc-swell, 40px) + 28px);
-  padding-inline: 16px;
-  border-radius: 28px;
-  background:
-    radial-gradient(70% 60% at 50% 38%, var(--hc-cream) 0%, transparent 72%),
-    linear-gradient(180deg, var(--hc-ground) 0%, var(--hc-ground-deep) 100%);
-  color: var(--hc-bark);
-  font-family: var(--hc-font-caption);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    inset 0 -30px 60px -40px rgba(120, 72, 16, 0.35);
-}
-
-.comb,
-.glow,
-.grain {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1;
-}
-
-.comb {
-  background-image: var(--hc-comb);
-  background-size: 44px 76px;
-  opacity: 0.1;
-  mask-image: radial-gradient(80% 70% at 50% 50%, transparent 30%, #000 100%);
-}
-
-.glow {
-  background: radial-gradient(45% 40% at 50% 45%, color-mix(in srgb, var(--hc-honey-light) 45%, transparent), transparent 70%);
-  filter: blur(20px);
-}
-
-.grain {
-  background-image: var(--hc-noise);
-  opacity: 0.35;
-  mix-blend-mode: multiply;
-  z-index: 3;
-}
-
-.grid {
-  position: relative;
-  margin: 0 auto;
-  padding: 0;
-  list-style: none;
+  border-radius: 26px;
+  background: var(--hl-ground);
+  color: var(--hl-ink);
+  font-family: var(--hl-font);
   touch-action: pan-y;
   -webkit-tap-highlight-color: transparent;
 }
 
-.slot {
-  position: absolute;
-  display: block;
+.root ::selection {
+  background: rgba(127, 212, 255, 0.32);
 }
 
-.cell {
-  --hc-lift: 0;
-  --hc-veil: 0;
-  --hc-on: 0;
-
+.pool,
+.vignette,
+.grain {
   position: absolute;
   inset: 0;
+  pointer-events: none;
+}
+
+.pool {
+  z-index: 0;
+  background: radial-gradient(42% 38% at 26% 34%, rgba(214, 228, 255, 0.05), transparent 70%);
+  animation: poolDrift 26s ease-in-out infinite alternate;
+}
+
+.vignette {
+  z-index: 2;
+  box-shadow: inset 0 0 110px 34px rgba(2, 3, 6, 0.6);
+}
+
+.grain {
+  z-index: 3;
+  background-image: var(--hl-noise);
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+}
+
+@keyframes poolDrift {
+  from {
+    transform: translate3d(-2%, -1.5%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(3%, 2%, 0) scale(1.06);
+  }
+}
+
+.canvas {
+  display: block;
+  position: relative;
+  z-index: 0;
+}
+
+.hit {
+  position: absolute;
+  z-index: 1;
   display: block;
   margin: 0;
   padding: 0;
   border: 0;
   background: none;
-  color: inherit;
-  font: inherit;
   cursor: zoom-in;
-  transform-origin: 50% 50%;
-  will-change: transform;
-  border-radius: 50%;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.cell:focus-visible {
-  outline: 2px solid var(--hc-bark);
-  outline-offset: 3px;
+.hit::-moz-focus-inner {
+  border: 0;
 }
 
-.pop {
-  position: absolute;
-  inset: 3px;
-  display: block;
-}
-
-.shadow,
-.edge,
-.face {
-  position: absolute;
-  clip-path: var(--hc-hex);
-}
-
-.shadow {
-  inset: 6% 2% -4%;
-  background: rgba(70, 38, 8, 0.55);
-  filter: blur(8px);
-  opacity: calc(0.25 + var(--hc-lift) * 0.65);
-  transform: translateY(calc(var(--hc-lift) * 8px));
-}
-
-.edge {
-  inset: 0;
-  background:
-    linear-gradient(160deg, var(--hc-honey-light) 0%, var(--hc-honey) 38%, var(--hc-honey-deep) 100%);
-  filter: brightness(calc(1 + var(--hc-on) * 0.12)) saturate(calc(1 + var(--hc-on) * 0.15));
-  transition: filter 300ms ease-out;
-}
-
-.face {
-  inset-block: 5.5px;
-  inset-inline: 4.75px;
-  display: block;
-  overflow: hidden;
-  background: var(--hc-ground-deep);
-}
-
-.photo {
-  position: absolute;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
-  object-fit: cover;
-  user-select: none;
-}
-
-.empty {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(60% 50% at 40% 35%, var(--hc-honey-light), transparent 70%),
-    linear-gradient(160deg, var(--hc-honey) 0%, var(--hc-honey-deep) 100%);
-}
-
-.veil {
-  position: absolute;
-  inset: 0;
-  background: var(--hc-cream);
-  opacity: var(--hc-veil);
-  mix-blend-mode: soft-light;
-}
-
-.wax {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(70% 45% at 30% 12%, rgba(255, 246, 220, 0.5), transparent 60%),
-    radial-gradient(120% 80% at 50% 120%, rgba(60, 30, 4, 0.45), transparent 60%),
-    var(--hc-noise);
-  background-size: auto, auto, 120px 120px;
-  mix-blend-mode: soft-light;
-  opacity: 0.9;
+.hit:focus-visible {
+  outline: none;
 }
 
 .caption {
   position: absolute;
-  inset-inline: 14%;
-  inset-block-end: 19%;
-  display: flex;
-  justify-content: center;
-  opacity: var(--hc-on);
-  transform: translateY(calc((1 - var(--hc-on)) * 6px));
-  transition:
-    opacity 260ms ease-out,
-    transform 420ms cubic-bezier(0.2, 1.2, 0.4, 1);
-  pointer-events: none;
-}
-
-.captionText {
-  display: -webkit-box;
-  max-inline-size: 100%;
-  padding-block: 0.3em 0.36em;
-  padding-inline: 0.7em;
-  border-radius: 6px;
-  background: var(--hc-bark);
-  box-shadow: 0 2px 6px rgba(30, 16, 4, 0.18);
-  color: var(--hc-cream);
-  font-size: max(9px, calc(var(--hc-w, 150px) * 0.078));
-  font-style: italic;
-  line-height: 1.18;
-  letter-spacing: -0.005em;
+  z-index: 2;
+  max-inline-size: min(260px, 64%);
+  transform: translateX(-50%);
+  padding-block: 2px 6px;
+  color: var(--hl-mist);
+  font-size: 13px;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
   text-align: center;
   text-wrap: balance;
   overflow-wrap: anywhere;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  transition:
+    inset-inline-start 240ms cubic-bezier(0.16, 1, 0.3, 1),
+    inset-block-start 240ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 180ms ease-out;
+}
+
+.captionAbove {
+  transform: translate(-50%, calc(-100% - 10px));
+  padding-block: 0 2px;
+}
+
+.caption::after {
+  content: '';
+  display: block;
+  margin-block-start: 3px;
+  margin-inline: auto;
+  inline-size: 36px;
+  block-size: 1px;
+  background: linear-gradient(90deg, rgba(255, 130, 72, 0.7), rgba(111, 157, 255, 0.7));
+}
+
+.srHelp {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
   overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .dialog {
-  inline-size: min(92vw, 760px);
+  inline-size: min(92vw, 720px);
   max-block-size: 92vh;
   padding: 0;
   border: 0;
   background: transparent;
   overflow: visible;
-  color: var(--hc-bark);
+  color: var(--hl-ink);
 }
 
 .dialog::backdrop {
-  background: rgba(36, 22, 10, 0.72);
-  backdrop-filter: blur(6px);
+  background: rgba(3, 4, 7, 0.8);
+  backdrop-filter: blur(10px);
 }
 
 .sheet {
@@ -659,12 +1096,14 @@ export default function HoneycombLens({
   display: grid;
   gap: 14px;
   margin: 0;
-  padding: 10px 10px 16px;
-  border: 1px solid color-mix(in srgb, var(--hc-honey-deep) 22%, transparent);
+  padding: 12px 12px 18px;
+  border: 1px solid rgba(230, 233, 239, 0.08);
   border-radius: 20px;
-  background: var(--hc-cream);
-  box-shadow: 0 24px 60px -24px rgba(20, 10, 2, 0.45);
-  animation: sheetIn 420ms cubic-bezier(0.2, 1.15, 0.35, 1) both;
+  background: #0d0f15;
+  box-shadow:
+    0 0 0 1px rgba(111, 157, 255, 0.06),
+    0 34px 80px -30px rgba(0, 0, 0, 0.85);
+  animation: sheetIn 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .sheetFrame {
@@ -672,9 +1111,9 @@ export default function HoneycombLens({
   display: block;
   overflow: hidden;
   aspect-ratio: 4 / 3;
-  max-block-size: 72vh;
+  max-block-size: 70vh;
   border-radius: 14px;
-  background: var(--hc-ground-deep);
+  background: #14161d;
 }
 
 .sheetPhoto {
@@ -683,41 +1122,46 @@ export default function HoneycombLens({
   inline-size: 100%;
   block-size: 100%;
   object-fit: cover;
-  }
+}
+
+.sheetEmpty {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(60% 50% at 40% 35%, rgba(214, 228, 248, 0.14), transparent 70%), #14161d;
+}
 
 .sheetCaption {
-  padding-inline: 8px 56px;
-  font-family: var(--hc-font-caption);
-  font-size: 20px;
-  font-style: italic;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
+  padding-inline: 10px 56px;
+  font-size: 17px;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  color: var(--hl-ink);
   overflow-wrap: anywhere;
 }
 
 .close {
   position: absolute;
-  inset-block-end: 10px;
-  inset-inline-end: 10px;
+  inset-block-end: 14px;
+  inset-inline-end: 14px;
   display: grid;
   place-items: center;
-  inline-size: 40px;
-  block-size: 40px;
+  inline-size: 42px;
+  block-size: 42px;
   padding: 0;
-  border: 1px solid color-mix(in srgb, var(--hc-bark) 16%, transparent);
+  border: 1px solid rgba(230, 233, 239, 0.14);
   border-radius: 50%;
   background: transparent;
-  color: var(--hc-bark);
+  color: var(--hl-ink);
   cursor: pointer;
   transition: background-color 180ms ease-out;
 }
 
 .close:hover {
-  background: color-mix(in srgb, var(--hc-bark) 8%, transparent);
+  background: rgba(230, 233, 239, 0.08);
 }
 
 .close:focus-visible {
-  outline: 2px solid var(--hc-honey-deep);
+  outline: 2px solid var(--hl-focus);
   outline-offset: 3px;
 }
 
@@ -726,14 +1170,14 @@ export default function HoneycombLens({
   block-size: 16px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2;
+  stroke-width: 1.8;
   stroke-linecap: round;
 }
 
 @keyframes sheetIn {
   from {
     opacity: 0;
-    transform: scale(0.92) translateY(12px);
+    transform: scale(0.94) translateY(10px);
   }
   to {
     opacity: 1;
@@ -742,17 +1186,16 @@ export default function HoneycombLens({
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .pool {
+    animation: none;
+  }
+
   .sheet {
     animation: none;
   }
 
-  .cell {
-    will-change: auto;
-  }
-
   .caption {
-    transform: none;
-    transition: opacity 160ms linear;
+    transition: opacity 120ms linear;
   }
 }
 ```

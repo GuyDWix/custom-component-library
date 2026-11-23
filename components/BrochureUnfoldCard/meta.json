@@ -1,0 +1,41 @@
+{
+  "id": "c067",
+  "name": "BrochureUnfoldCard",
+  "display_name": "Brochure Unfold Card",
+  "category": "cards",
+  "tier": "showpiece",
+  "job": "A trifold brochure card that opens panel by panel to present a package, itinerary or menu in sequence",
+  "visitor_action": "click/tap to unfold or fold; swipe sideways on touch; arrow keys step through the panels",
+  "owner_settings": [
+    "Three panels (title, text, image)",
+    "Paper color",
+    "Accent color",
+    "Ink color",
+    "Background color"
+  ],
+  "site_types": [
+    "events",
+    "services",
+    "restaurant",
+    "business"
+  ],
+  "mobile": "panels reveal vertically one by one",
+  "art_direction": "Travel leaflet: warm sand paper, deep olive and apricot print blocks, crease shading, fine halftone dot texture",
+  "motion": "panels hinge open with perspective and eased creases (reduced-motion: opened flat)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "deferred-to-QA",
+    "craft": "deferred-to-QA"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "notes": "Not yet seen rendered (QA sweep pending): the duotone photo blend, nested 3D hinge ordering and the intro auto-unfold timing are unverified. Layout assumes ~1.32 panel aspect, so very long text is line-clamped. Self-hosted font: Epilogue variable."
+}

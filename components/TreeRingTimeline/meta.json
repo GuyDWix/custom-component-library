@@ -36,6 +36,6 @@
   "status": "built",
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
-  "art_direction": "Cut oak: pale birch ground, honey and walnut rings with tiny growth-line irregularities, ink-brown serif labels, matte wood grain",
-  "notes": "Rings stay undrawn until the element is seen on screen (draw-in waits for an in-view signal); with 30+ milestones rings get thin, so tapping a specific one on the disc is fiddly and the list below is the reliable path. 2026-11-23: removed on-screen hint/replay per contract §2 rule"
+  "art_direction": "Botanical section: near-white ground, honey and walnut rings with tiny growth-line irregularities as the only material, deep forest-green humanist sans labels, flat hairline list",
+  "notes": "Rings stay undrawn until the element is seen on screen (draw-in waits for an in-view signal); with 30+ milestones rings get thin, so tapping a specific one on the disc is fiddly and the list below is the reliable path. 2026-11-23: removed on-screen hint/replay per contract §2 rule. 2026-11-23: restyled to Botanical section (restyle pilot); eyebrow prop removed per contract §10"
 }

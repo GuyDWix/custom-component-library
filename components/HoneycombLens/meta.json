@@ -17,8 +17,8 @@
     "restaurant",
     "events"
   ],
-  "mobile": "fixed 3-wide grid, drag across to magnify, tap opens",
-  "motion": "cells scale by distance to the pointer with smooth spring (reduced-motion: uniform grid, hover outline only)",
+  "mobile": "lens pile wraps to 2–3 columns with the hero lens always fully in frame; drag to magnify, tap opens",
+  "motion": "lenses spring-drop onto the black glass floor in a stagger, then a light sweep flares across them as photos fade in; the pointer lens carries real spring physics — nearby lenses magnify their photo through refraction, push apart and brighten their chromatic rims; speculars slide with the pointer; caption follows the active lens (reduced-motion: settled static pile, direct state changes, no springs)",
   "scores": {
     "concept": 3,
     "usefulness": 3,
@@ -27,13 +27,13 @@
   },
   "checks": {
     "tsc": "pass",
-    "render": "pass (1 fix: CSS entrance stuck invisible in the 375 iframe, replaced by lens bloom; partial last row broke the hex lattice)",
-    "craft": "pass (3, after 1 polish pass)"
+    "render": "pass (CDP device-emulation shots; 375 fixed: single instance, hero in frame, no top/left clip; no console errors or vite overlay)",
+    "craft": "pass (3, after 1 polish pass: glass edges amplified to read at 2x)"
   },
   "craft_score": 3,
   "status": "built",
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
-  "art_direction": "Apiary: honey-amber cell edges, beeswax cream ground, dark-bark captions, matte wax texture",
-  "notes": "Photos show blank in the 375 headless-iframe shot (lazy images; the shipped ContactSheetGallery does the same), and a partial last row sits left-weighted on the lattice."
+  "art_direction": "Macro lens: black glass ground, hexagonal photo lenses piled with overlap and a 2x hero lens off-centre-left, real refraction (strip-based barrel magnification), warm/cool chromatic edge fringes, sliding speculars and a floor reflection; the comb bleeds off the right edge",
+  "notes": "2026-11-23: redesigned (batch B) to Macro lens (dark); fixed the parked 375 layout flag. Weak point: at desktop defaults the pile is a wide 2-row band, so vertical composition interest rests on the hero lens and reflection alone."
 }

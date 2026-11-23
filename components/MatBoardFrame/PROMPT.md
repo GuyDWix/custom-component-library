@@ -21,6 +21,24 @@ export interface MatBoardFrameProps {
   className?: string;
 }
 
+type Phase = 'static' | 'armed' | 'intro';
+type Mote = { x: number; y: number; vx: number; vy: number; r: number; age: number; life: number };
+type Geo = {
+  w: number;
+  h: number;
+  lx: number;
+  ly: number;
+  ux: number;
+  uy: number;
+  len: number;
+  spread: number;
+  ox: number;
+  oy: number;
+  ow: number;
+  cellX: number;
+  cellY: number;
+};
+
 const finishClass: Record<MatBoardFrameFinish, string> = {
   oak: styles.finishOak,
   walnut: styles.finishWalnut,
@@ -29,9 +47,39 @@ const finishClass: Record<MatBoardFrameFinish, string> = {
 };
 
 const cx = (...names: (string | false | undefined)[]) => names.filter(Boolean).join(' ');
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+const smooth = (t: number) => t * t * (3 - 2 * t);
 
-const STIFFNESS = 90;
-const DAMPING = 16;
+const STIFFNESS = 70;
+const DAMPING = 13;
+const MOTE_COUNT = 140;
+const DUST_DELAY = 1000;
+const DUST_RAMP = 1400;
+const COOL = [222, 232, 255];
+const WARM = [255, 214, 160];
+
+const spawn = (g: Geo, m: Mote, fresh: boolean) => {
+  const along = g.len * (0.1 + Math.random() * 1.05);
+  const off = (Math.random() * 2 - 1) * along * g.spread;
+  m.x = g.lx + g.ux * along - g.uy * off;
+  m.y = g.ly + g.uy * along + g.ux * off;
+  m.vx = (Math.random() - 0.5) * 6;
+  m.vy = (Math.random() - 0.5) * 6;
+  m.r = Math.random() < 0.1 ? 1.7 + Math.random() * 1.1 : 0.7 + Math.random() * 0.9;
+  m.life = 5 + Math.random() * 9;
+  m.age = fresh ? Math.random() * m.life : 0;
+};
+
+const beamLight = (g: Geo, x: number, y: number) => {
+  const dx = x - g.lx;
+  const dy = y - g.ly;
+  const along = dx * g.ux + dy * g.uy;
+  if (along <= 0) return 0;
+  const perp = Math.abs(dx * g.uy - dy * g.ux);
+  const t = 1 - perp / (along * g.spread + 6);
+  if (t <= 0) return 0;
+  return smooth(Math.min(1, t * 1.6)) * (1 - 0.5 * Math.min(1, along / (g.len * 1.2)));
+};
 
 export default function MatBoardFrame({
   image = 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=900&h=1125&fit=crop&q=80',
@@ -39,17 +87,30 @@ export default function MatBoardFrame({
   contentText = 'The table is set at seven.',
   title = 'Still Life with Tulips',
   price = '€1,450',
-  note = 'Archival print on cotton rag, 50 × 62 cm, in a hand-finished oak frame. Signed and numbered, edition of 40. Ships in five working days.',
-  matColor = '#e9e0cf',
+  note = 'Archival print on cotton rag, 50 × 62 cm, floated in an oak shadow box behind museum glass. Signed and numbered, edition of 40. Ships in five working days.',
+  matColor = '#e4e1da',
   frameFinish = 'oak',
   className,
 }: MatBoardFrameProps) {
   const [reduced, setReduced] = useState(false);
+  const [phase, setPhase] = useState<Phase>('static');
   const [hovered, setHovered] = useState(false);
   const [pinned, setPinned] = useState(false);
+  const [paused, setPaused] = useState(false);
   const uid = useId();
   const noteId = `${uid}-note`;
+
   const rootRef = useRef<HTMLDivElement>(null);
+  const cellRef = useRef<HTMLDivElement>(null);
+  const objectRef = useRef<HTMLDivElement>(null);
+  const pivotRef = useRef<HTMLSpanElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const geo = useRef<Geo | null>(null);
+  const live = useRef({ hover: false, paused: false, inView: false, introAt: 0, wake: () => {} });
+  const pointer = useRef({ x: 0, y: 0, vx: 0, vy: 0, active: false, at: 0 });
+
+  live.current.hover = hovered;
+  live.current.paused = paused;
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -61,65 +122,273 @@ export default function MatBoardFrame({
 
   useEffect(() => {
     const root = rootRef.current;
-    if (!root || reduced) {
-      root?.style.removeProperty('--mb-sp');
+    const cell = cellRef.current;
+    const object = objectRef.current;
+    const pivot = pivotRef.current;
+    const canvas = canvasRef.current;
+    if (!root || !cell || !object || !pivot || !canvas) return;
+
+    const measure = () => {
+      const r = root.getBoundingClientRect();
+      const o = object.getBoundingClientRect();
+      const c = cell.getBoundingClientRect();
+      const p = pivot.getBoundingClientRect();
+      const lx = p.left + p.width / 2 - r.left;
+      const ly = p.top + p.height / 2 - r.top;
+      const ox = o.left + o.width / 2 - r.left;
+      const oy = o.top + o.height * 0.46 - r.top;
+      const dx = ox - lx;
+      const dy = oy - ly;
+      const len = Math.hypot(dx, dy) || 1;
+      const spread = (Math.max(o.width, o.height) * 0.4) / len;
+      geo.current = {
+        w: r.width,
+        h: r.height,
+        lx,
+        ly,
+        ux: dx / len,
+        uy: dy / len,
+        len,
+        spread,
+        ox,
+        oy,
+        ow: o.width,
+        cellX: c.left - r.left,
+        cellY: c.top - r.top,
+      };
+      const set = (k: string, v: string) => root.style.setProperty(k, v);
+      set('--mb-beam-x', `${lx}px`);
+      set('--mb-beam-y', `${ly}px`);
+      set('--mb-beam-rot', `${(Math.atan2(-dx, dy) * 180) / Math.PI}deg`);
+      set('--mb-beam-len', `${len * 1.5}px`);
+      set('--mb-beam-w', `${len * 1.5 * spread * 2}px`);
+      set('--mb-pool-x', `${ox}px`);
+      set('--mb-pool-y', `${oy}px`);
+      set('--mb-pool-w', `${o.width * 2}px`);
+      set('--mb-pool-h', `${o.height * 1.55}px`);
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      canvas.width = Math.round(r.width * dpr);
+      canvas.height = Math.round(r.height * dpr);
+      canvas.getContext('2d')?.setTransform(dpr, 0, 0, dpr, 0, 0);
+      live.current.wake();
+    };
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(root);
+    return () => ro.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    if (reduced) {
+      setPhase('static');
       return;
     }
-    let inView = false;
+    let started = false;
+    setPhase('armed');
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        live.current.inView = entry.isIntersecting;
+        if (entry.isIntersecting) live.current.wake();
+        if (!started && entry.intersectionRatio >= 0.3) {
+          started = true;
+          live.current.introAt = performance.now();
+          setPhase('intro');
+        }
+      },
+      { threshold: [0, 0.3] },
+    );
+    io.observe(root);
+    return () => io.disconnect();
+  }, [reduced]);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    const cell = cellRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!root || !cell || !canvas || !ctx) return;
+
+    const motes: Mote[] = Array.from({ length: MOTE_COUNT }, () => ({ x: 0, y: 0, vx: 0, vy: 0, r: 1, age: 0, life: 1 }));
+    let seeded = false;
+    const seed = (g: Geo) => {
+      motes.forEach((m) => spawn(g, m, true));
+      seeded = true;
+    };
+
+    const s = { x: 0, y: 0, vx: 0, vy: 0, heat: 0, vh: 0, ready: false };
+
+    const draw = (g: Geo, level: number) => {
+      ctx.clearRect(0, 0, g.w, g.h);
+      if (level <= 0.001) return;
+      const rgb = COOL.map((c, i) => Math.round(c + (WARM[i] - c) * s.heat)).join(',');
+      for (const m of motes) {
+        const env = Math.sin(Math.PI * clamp(m.age / m.life, 0, 1));
+        const a = beamLight(g, m.x, m.y) * env * level;
+        if (a < 0.01) continue;
+        if (m.r > 1.6) {
+          ctx.fillStyle = `rgba(${rgb},${(a * 0.1).toFixed(3)})`;
+          ctx.beginPath();
+          ctx.arc(m.x, m.y, m.r * 2.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = `rgba(${rgb},${(a * (m.r > 1.6 ? 0.3 : 0.85)).toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    };
+
+    if (reduced) {
+      const g = geo.current;
+      if (g) {
+        seed(g);
+        draw(g, 0.8);
+      }
+      cell.style.removeProperty('--mb-po-x');
+      cell.style.removeProperty('--mb-po-y');
+      live.current.wake = () => {
+        const g2 = geo.current;
+        if (!g2) return;
+        if (!seeded) seed(g2);
+        draw(g2, 0.8);
+      };
+      return () => {
+        live.current.wake = () => {};
+      };
+    }
+
     let frame = 0;
     let last = 0;
-    const s = { x: 0, v: 0 };
 
-    const goal = () => {
+    const goal = (g: Geo, now: number) => {
+      const p = pointer.current;
+      if (p.active) return { x: p.x, y: p.y };
       const r = root.getBoundingClientRect();
       const vh = window.innerHeight || 1;
-      const p = (r.top + r.height / 2 - vh / 2) / (vh / 2 + r.height / 2);
-      return Math.max(-1, Math.min(1, p));
+      const sp = clamp((r.top + r.height / 2 - vh / 2) / (vh / 2 + r.height / 2), -1, 1);
+      const drift = live.current.paused ? 0 : 1;
+      return {
+        x: g.w * 0.5 + Math.sin(now / 4200) * g.w * 0.05 * drift,
+        y: g.h * 0.42 - sp * g.h * 0.35 + Math.sin(now / 3100) * g.h * 0.03 * drift,
+      };
     };
 
     const tick = (now: number) => {
+      frame = 0;
+      const g = geo.current;
+      if (!g) return;
       const dt = Math.min((now - last) / 1000, 1 / 30);
       last = now;
-      const g = goal();
-      s.v += (STIFFNESS * (g - s.x) - DAMPING * s.v) * dt;
-      s.x += s.v * dt;
-      root.style.setProperty('--mb-sp', s.x.toFixed(4));
-      frame = Math.abs(g - s.x) > 0.0005 || Math.abs(s.v) > 0.0005 ? requestAnimationFrame(tick) : 0;
+      if (!seeded) seed(g);
+
+      const target = goal(g, now);
+      if (!s.ready) {
+        s.x = target.x;
+        s.y = target.y;
+        s.ready = true;
+      }
+      s.vx += (STIFFNESS * (target.x - s.x) - DAMPING * s.vx) * dt;
+      s.vy += (STIFFNESS * (target.y - s.y) - DAMPING * s.vy) * dt;
+      s.x += s.vx * dt;
+      s.y += s.vy * dt;
+      const heatGoal = live.current.hover ? 1 : 0;
+      s.vh += (40 * (heatGoal - s.heat) - 12 * s.vh) * dt;
+      s.heat = clamp(s.heat + s.vh * dt, 0, 1);
+
+      cell.style.setProperty('--mb-po-x', `${(s.x - g.cellX).toFixed(1)}px`);
+      cell.style.setProperty('--mb-po-y', `${(s.y - g.cellY).toFixed(1)}px`);
+      root.style.setProperty('--mb-gx', clamp((s.x - g.ox) / g.ow, -1.2, 1.2).toFixed(3));
+      root.style.setProperty('--mb-gy', clamp((s.y - g.oy) / g.ow, -1.2, 1.2).toFixed(3));
+
+      const introAt = live.current.introAt;
+      const level = introAt ? smooth(clamp((now - introAt - DUST_DELAY) / DUST_RAMP, 0, 1)) : 0;
+      const p = pointer.current;
+      const pushing = p.active && now - p.at < 120;
+      const still = live.current.paused;
+
+      if (!still) {
+        for (const m of motes) {
+          m.age += dt;
+          m.vx += (Math.random() - 0.5) * 22 * dt;
+          m.vy += ((Math.random() - 0.5) * 22 - 3.2) * dt;
+          if (pushing) {
+            const d = Math.hypot(m.x - p.x, m.y - p.y);
+            if (d < 150) {
+              const f = (1 - d / 150) * 0.9;
+              m.vx += p.vx * f * dt * 6;
+              m.vy += p.vy * f * dt * 6;
+            }
+          }
+          const drag = Math.pow(0.35, dt);
+          m.vx *= drag;
+          m.vy *= drag;
+          m.x += m.vx * dt;
+          m.y += m.vy * dt;
+          if (m.age > m.life || m.x < -20 || m.y < -20 || m.x > g.w + 20 || m.y > g.h + 20) spawn(g, m, false);
+        }
+      }
+      draw(g, level);
+
+      const springing =
+        Math.abs(target.x - s.x) > 0.3 || Math.abs(target.y - s.y) > 0.3 || Math.abs(s.vx) + Math.abs(s.vy) > 0.3;
+      const heating = Math.abs(heatGoal - s.heat) > 0.002;
+      const introducing = introAt > 0 && now - introAt < DUST_DELAY + DUST_RAMP + 200;
+      if (live.current.inView && (!still || springing || heating || introducing)) frame = requestAnimationFrame(tick);
     };
 
     const wake = () => {
-      if (!inView || frame) return;
+      if (frame || !live.current.inView) return;
       last = performance.now();
       frame = requestAnimationFrame(tick);
     };
-
-    s.x = goal();
-    root.style.setProperty('--mb-sp', s.x.toFixed(4));
-
-    const io = new IntersectionObserver(([entry]) => {
-      inView = entry.isIntersecting;
-      if (inView) wake();
-    });
-    io.observe(root);
+    live.current.wake = wake;
     window.addEventListener('scroll', wake, { passive: true });
-    window.addEventListener('resize', wake);
+    wake();
     return () => {
-      io.disconnect();
-      window.removeEventListener('scroll', wake);
-      window.removeEventListener('resize', wake);
       cancelAnimationFrame(frame);
+      live.current.wake = () => {};
+      window.removeEventListener('scroll', wake);
     };
   }, [reduced]);
+
+  useEffect(() => {
+    live.current.wake();
+  }, [paused, hovered]);
+
+  const track = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== 'mouse') return;
+    const r = e.currentTarget.getBoundingClientRect();
+    const p = pointer.current;
+    const x = e.clientX - r.left;
+    const y = e.clientY - r.top;
+    const now = performance.now();
+    const dt = Math.max(16, now - p.at) / 1000;
+    p.vx = p.active ? clamp((x - p.x) / dt, -2000, 2000) : 0;
+    p.vy = p.active ? clamp((y - p.y) / dt, -2000, 2000) : 0;
+    p.x = x;
+    p.y = y;
+    p.at = now;
+    p.active = true;
+    if (!hovered) setHovered(true);
+    live.current.wake();
+  };
+
+  const leave = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== 'mouse') return;
+    pointer.current.active = false;
+    setHovered(false);
+    live.current.wake();
+  };
 
   const hasNote = note.trim().length > 0;
   const interactive = hasNote && !reduced;
   const open = !interactive || hovered || pinned;
+  const armed = phase === 'armed';
+  const intro = phase === 'intro';
 
-  const onHover = (e: PointerEvent<HTMLElement>, on: boolean) => {
-    if (e.pointerType === 'mouse') setHovered(on);
-  };
-
-  const rootStyle = { '--mb-mat': matColor } as CSSProperties;
   const plaqueText = (
     <>
       <span className={styles.title}>{title}</span>
@@ -130,56 +399,63 @@ export default function MatBoardFrame({
   return (
     <div
       ref={rootRef}
-      className={cx(styles.root, finishClass[frameFinish] ?? styles.finishOak, className)}
-      style={rootStyle}
+      className={cx(styles.root, hovered && styles.rootWarm, finishClass[frameFinish] ?? styles.finishOak, className)}
+      style={{ '--mb-mat': matColor } as CSSProperties}
+      onPointerMove={track}
+      onPointerLeave={leave}
     >
-      <span className={styles.wallGrain} aria-hidden="true" />
-      <figure
-        className={styles.piece}
-        onPointerEnter={(e) => onHover(e, true)}
-        onPointerLeave={(e) => onHover(e, false)}
-      >
-        <div className={styles.hang}>
-          <span className={styles.spot} aria-hidden="true" />
-          <span className={styles.wallShadow} aria-hidden="true" />
-          <div className={styles.frame}>
-            <span className={styles.railTop} aria-hidden="true" />
-            <span className={styles.railBottom} aria-hidden="true" />
-            <span className={styles.railLeft} aria-hidden="true" />
-            <span className={styles.railRight} aria-hidden="true" />
-            <div className={styles.mat}>
-              <span className={styles.matTexture} aria-hidden="true" />
-              <div className={styles.window}>
+      <span className={styles.wallTexture} aria-hidden="true" />
+      <span className={cx(styles.pool, intro && styles.poolIntro)} aria-hidden="true" />
+
+      <figure className={styles.layout}>
+        <div ref={cellRef} className={styles.cell}>
+          <div ref={objectRef} className={styles.object}>
+            <span className={styles.castShadow} aria-hidden="true" />
+            <span className={styles.contactShadow} aria-hidden="true" />
+            <span className={styles.sideTop} aria-hidden="true" />
+            <span className={styles.sideBottom} aria-hidden="true" />
+            <span className={styles.sideLeft} aria-hidden="true" />
+            <span className={styles.sideRight} aria-hidden="true" />
+            <div className={styles.inner}>
+              <span className={styles.backing} aria-hidden="true" />
+              <span className={styles.wallTop} aria-hidden="true" />
+              <span className={styles.wallBottom} aria-hidden="true" />
+              <span className={styles.wallLeft} aria-hidden="true" />
+              <span className={styles.wallRight} aria-hidden="true" />
+              <span className={styles.artShadow} aria-hidden="true" />
+              <div className={styles.paper}>
                 {image ? (
                   <img className={styles.art} src={image} alt={imageAlt} draggable={false} />
                 ) : (
-                  <div className={styles.textArt}>
-                    <p className={styles.textArtCopy}>{contentText}</p>
-                  </div>
+                  <p className={styles.textArt}>{contentText}</p>
                 )}
-                <span className={styles.recess} aria-hidden="true" />
-                <span className={styles.bevel} aria-hidden="true" />
-                <span className={styles.bevelLight} aria-hidden="true" />
+                <span className={styles.artLight} aria-hidden="true" />
               </div>
+              <span className={styles.glass} aria-hidden="true">
+                <span className={cx(styles.glint, intro && styles.glintIntro)} />
+              </span>
             </div>
-            <span className={styles.glass} aria-hidden="true" />
+            <span className={styles.face} aria-hidden="true" />
+            <span className={styles.faceEdge} aria-hidden="true" />
           </div>
+          <span className={styles.objectLight} aria-hidden="true" />
         </div>
 
-        <figcaption className={cx(styles.plaque, open && styles.plaqueOpen)}>
-          <span className={styles.brass} aria-hidden="true" />
-          <span className={styles.screwStart} aria-hidden="true" />
-          <span className={styles.screwEnd} aria-hidden="true" />
+        <figcaption className={cx(styles.plaque, intro && styles.plaqueIntro)}>
+          <span className={styles.standoffStart} aria-hidden="true" />
+          <span className={styles.standoffEnd} aria-hidden="true" />
           {interactive ? (
             <button
               type="button"
-              className={[styles.plaqueHead, styles.plaqueButton].join(' ')}
+              className={cx(styles.plaqueHead, styles.plaqueButton)}
               aria-expanded={open}
               aria-controls={noteId}
               onClick={() => setPinned((p) => !p)}
             >
               {plaqueText}
-              <span className={cx(styles.chevron, open && styles.chevronOpen)} aria-hidden="true" />
+              <svg className={cx(styles.chevron, open && styles.chevronOpen)} viewBox="0 0 12 12" aria-hidden="true">
+                <path d="M2.5 4.5 6 8l3.5-3.5" />
+              </svg>
             </button>
           ) : (
             <div className={styles.plaqueHead}>{plaqueText}</div>
@@ -193,30 +469,64 @@ export default function MatBoardFrame({
           )}
         </figcaption>
       </figure>
+
+      <span className={styles.beamBlur} aria-hidden="true">
+        <span className={styles.beam} />
+      </span>
+      <canvas ref={canvasRef} className={styles.dust} aria-hidden="true" />
+      <span className={cx(styles.shade, armed && styles.shadeArmed, intro && styles.shadeIntro)} aria-hidden="true" />
+
+      <span className={styles.lamp} aria-hidden="true">
+        <span className={styles.canopy} />
+        <span className={styles.stem} />
+        <span ref={pivotRef} className={styles.pivot} />
+        <span className={styles.head}>
+          <span className={cx(styles.lens, armed && styles.lensArmed, intro && styles.lensIntro)} />
+        </span>
+      </span>
+
+      {!reduced && (
+        <button
+          type="button"
+          className={styles.pause}
+          aria-label={paused ? 'Play ambient light motion' : 'Pause ambient light motion'}
+          aria-pressed={paused}
+          onClick={() => setPaused((p) => !p)}
+        >
+          <svg className={styles.pauseIcon} viewBox="0 0 16 16" aria-hidden="true">
+            {paused ? <path d="M5 3.5v9l7.5-4.5z" /> : <path d="M4.5 3.5h2.5v9H4.5zM9 3.5h2.5v9H9z" />}
+          </svg>
+        </button>
+      )}
     </div>
   );
 }
 ```
 
 ```css
+@property --mbf-heat {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
 .root {
-  --mb-sp: 0;
-  --mb-mat: #e9e0cf;
-  --mb-wall: #ebe4d7;
-  --mb-wood: #b3844e;
-  --mb-brass-light: #d9bd78;
-  --mb-brass: #c3a05a;
-  --mb-brass-dark: #a98432;
-  --mb-engrave: #1c160d;
-  --mb-ink: #2a231a;
-  --mb-paper: #f7f2e8;
-  --mb-font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
-  --mb-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --mb-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.4  0 0 0 0 0.33  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  --mb-grain-h: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='60'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.006 .42' numOctaves='4' seed='7' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.22  0 0 0 0 0.12  0 0 0 0 0.04  0 0 0 1.5 -0.38'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
-  --mb-grain-v: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='600'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.42 .006' numOctaves='4' seed='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.22  0 0 0 0 0.12  0 0 0 0 0.04  0 0 0 1.5 -0.38'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
-  --mb-profile: rgba(255, 244, 222, 0.32) 0%, rgba(255, 244, 222, 0.08) 14%, transparent 38%, rgba(30, 16, 4, 0.14) 66%,
-    rgba(255, 238, 205, 0.34) 80%, rgba(30, 16, 4, 0.42) 100%;
+  --mb-mat: #e4e1da;
+  --mb-wall: #1b2127;
+  --mb-wall-deep: #0d1014;
+  --mb-light-cool: #dfe7ff;
+  --mb-light-warm: #ffd29a;
+  --mb-wood: #b98a55;
+  --mb-wood-hi: #e2bf8c;
+  --mb-wood-lo: #6e4b27;
+  --mb-paper: #f3f1ec;
+  --mb-plaque-ink: #f2f4f7;
+  --mb-plaque-soft: rgba(226, 233, 242, 0.74);
+  --mb-focus: #ffd29a;
+  --mb-font: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --mb-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --mb-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='40'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.01 .6' numOctaves='3' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0 0.02  0 0 0 1.4 -0.4'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
+  --mb-light: color-mix(in oklab, var(--mb-light-cool), var(--mb-light-warm) calc(var(--mbf-heat) * 100%));
 
   position: relative;
   isolation: isolate;
@@ -224,480 +534,732 @@ export default function MatBoardFrame({
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  padding-block: 56px 48px;
-  padding-inline: 20px;
   border-radius: 24px;
   background:
-    radial-gradient(70% 55% at 32% 0%, rgba(255, 252, 244, 0.7) 0%, transparent 70%),
-    linear-gradient(180deg, var(--mb-wall) 0%, color-mix(in srgb, var(--mb-wall) 88%, #8a6f4c) 100%);
-  color: var(--mb-ink);
-  font-family: var(--mb-font-ui);
+    radial-gradient(90% 80% at 40% 45%, transparent 30%, rgba(4, 5, 7, 0.55) 100%),
+    linear-gradient(180deg, color-mix(in srgb, var(--mb-wall) 75%, #000) 0%, var(--mb-wall) 45%, var(--mb-wall-deep) 100%);
+  color: var(--mb-plaque-ink);
+  font-family: var(--mb-font);
+  transition: --mbf-heat 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.rootWarm {
+  --mbf-heat: 1;
 }
 
 .finishOak {
-  --mb-wood: #b3844e;
+  --mb-wood: #b98a55;
+  --mb-wood-hi: #e6c592;
+  --mb-wood-lo: #6b4824;
 }
 
 .finishWalnut {
-  --mb-wood: #5f3e28;
+  --mb-wood: #5c3a23;
+  --mb-wood-hi: #93664a;
+  --mb-wood-lo: #2c1a0e;
 }
 
 .finishEbony {
-  --mb-wood: #24201c;
+  --mb-wood: #1a1a1b;
+  --mb-wood-hi: #57575c;
+  --mb-wood-lo: #050505;
+  --mb-grain: var(--mb-noise);
 }
 
 .finishWhite {
-  --mb-wood: #eee9df;
-  --mb-grain-h: var(--mb-noise);
-  --mb-grain-v: var(--mb-noise);
+  --mb-wood: #e9e8e4;
+  --mb-wood-hi: #ffffff;
+  --mb-wood-lo: #a9a8a2;
+  --mb-grain: var(--mb-noise);
 }
 
-.wallGrain {
+.wallTexture {
   position: absolute;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   background-image: var(--mb-noise);
-  opacity: 0.35;
-  mix-blend-mode: multiply;
+  opacity: 0.16;
+  mix-blend-mode: overlay;
   pointer-events: none;
 }
 
-.piece {
-  --mb-fw: clamp(16px, 3.6cqi, 30px);
-  --mb-mw: clamp(20px, 6.8cqi, 58px);
-  --mb-bw: clamp(4px, 0.7cqi, 6px);
-
-  display: grid;
-  justify-items: center;
-  row-gap: 30px;
-  margin: 0 auto;
-  max-inline-size: 760px;
-}
-
-.hang {
-  position: relative;
-  inline-size: 100%;
-  max-inline-size: 440px;
-}
-
-.spot {
+.pool {
   position: absolute;
-  z-index: -1;
-  inset-block-start: -22%;
-  inset-inline: -30%;
-  block-size: 90%;
-  background: radial-gradient(50% 50% at 50% 30%, rgba(255, 246, 226, 0.75) 0%, rgba(255, 246, 226, 0.2) 45%, transparent 75%);
-  transform: translateY(calc(var(--mb-sp) * 14px));
-  pointer-events: none;
-}
-
-.wallShadow {
-  position: absolute;
-  z-index: -1;
-  inset: 4% 3% -2% 3%;
-  border-radius: 6px;
-  background: rgba(58, 40, 20, 0.5);
-  filter: blur(22px);
-  transform: translate(calc(var(--mb-sp) * -4px), calc(20px - var(--mb-sp) * 12px));
-  pointer-events: none;
-}
-
-.frame {
-  position: relative;
-  padding: var(--mb-fw);
-  background: var(--mb-wood);
-  box-shadow:
-    0 0 0 1px rgba(30, 18, 6, 0.28),
-    0 1px 1px rgba(30, 18, 6, 0.35),
-    0 6px 10px -4px rgba(30, 18, 6, 0.35);
-}
-
-.railTop,
-.railBottom,
-.railLeft,
-.railRight {
-  position: absolute;
-  background-color: var(--mb-wood);
-  pointer-events: none;
-}
-
-.railTop,
-.railBottom {
-  inset-inline: 0;
-  block-size: var(--mb-fw);
-}
-
-.railLeft,
-.railRight {
-  inset-block: 0;
-  inline-size: var(--mb-fw);
-}
-
-.railTop {
-  inset-block-start: 0;
-  clip-path: polygon(0 0, 100% 0, calc(100% - var(--mb-fw)) 100%, var(--mb-fw) 100%);
-  background-image:
-    linear-gradient(rgba(255, 248, 232, 0.12), rgba(255, 248, 232, 0.12)),
-    linear-gradient(to bottom, var(--mb-profile)),
-    var(--mb-grain-h);
-}
-
-.railBottom {
-  inset-block-end: 0;
-  clip-path: polygon(var(--mb-fw) 0, calc(100% - var(--mb-fw)) 0, 100% 100%, 0 100%);
-  background-image:
-    linear-gradient(rgba(20, 10, 2, 0.2), rgba(20, 10, 2, 0.2)),
-    linear-gradient(to top, var(--mb-profile)),
-    var(--mb-grain-h);
-  background-position: 0 0, 0 0, 120px 20px;
-}
-
-.railLeft {
-  inset-inline-start: 0;
-  clip-path: polygon(0 0, 100% var(--mb-fw), 100% calc(100% - var(--mb-fw)), 0 100%);
-  background-image:
-    linear-gradient(rgba(255, 248, 232, 0.04), rgba(255, 248, 232, 0.04)),
-    linear-gradient(to right, var(--mb-profile)),
-    var(--mb-grain-v);
-}
-
-.railRight {
-  inset-inline-end: 0;
-  clip-path: polygon(0 var(--mb-fw), 100% 0, 100% 100%, 0 calc(100% - var(--mb-fw)));
-  background-image:
-    linear-gradient(rgba(20, 10, 2, 0.12), rgba(20, 10, 2, 0.12)),
-    linear-gradient(to left, var(--mb-profile)),
-    var(--mb-grain-v);
-  background-position: 0 0, 0 0, 20px 200px;
-}
-
-.mat {
-  position: relative;
-  z-index: 1;
-  padding: var(--mb-mw);
+  z-index: 0;
+  inset-block-start: calc(var(--mb-pool-y, 50%) - var(--mb-pool-h, 600px) / 2);
+  inset-inline-start: calc(var(--mb-pool-x, 35%) - var(--mb-pool-w, 900px) / 2);
+  inline-size: var(--mb-pool-w, 900px);
+  block-size: var(--mb-pool-h, 600px);
   background:
-    radial-gradient(90% 70% at 28% 8%, rgba(255, 253, 247, 0.45) 0%, transparent 70%),
-    var(--mb-mat);
-  box-shadow:
-    inset 0 2px 3px rgba(30, 18, 6, 0.32),
-    inset 2px 0 3px rgba(30, 18, 6, 0.16),
-    inset 0 0 0 1px rgba(30, 18, 6, 0.12);
-}
-
-.matTexture {
-  position: absolute;
-  inset: 0;
-  background-image: var(--mb-noise);
-  opacity: 0.32;
-  mix-blend-mode: multiply;
+    radial-gradient(closest-side at 54% 46%, color-mix(in srgb, var(--mb-light) 52%, transparent) 0%,
+      color-mix(in srgb, var(--mb-light) 40%, transparent) 50%, color-mix(in srgb, var(--mb-light) 12%, transparent) 72%, transparent 92%);
+  mix-blend-mode: screen;
   pointer-events: none;
+  transform-origin: 60% 30%;
 }
 
-.window {
-  position: relative;
-  aspect-ratio: 4 / 5;
-  box-shadow: 0 0 0 0.5px rgba(40, 26, 10, 0.18);
+.poolIntro {
+  animation: mbPool 1500ms cubic-bezier(0.16, 1, 0.3, 1) 260ms backwards;
 }
 
-.art,
-.textArt,
-.recess {
-  position: absolute;
-  inset: var(--mb-bw);
-}
-
-.art {
-  display: block;
-  inline-size: calc(100% - var(--mb-bw) * 2);
-  block-size: calc(100% - var(--mb-bw) * 2);
-  object-fit: cover;
-  user-select: none;
-  background: #2a2520;
-}
-
-.textArt {
-  display: grid;
-  place-items: center;
-  box-sizing: border-box;
-  padding: 12%;
-  overflow: hidden;
-  background:
-    radial-gradient(80% 60% at 40% 20%, #fffdf8 0%, transparent 70%),
-    var(--mb-paper);
-}
-
-.textArtCopy {
-  margin: 0;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 7;
-  overflow: hidden;
-  font-family: var(--mb-font-display);
-  font-style: italic;
-  font-size: clamp(20px, 4.2cqi, 34px);
-  line-height: 1.15;
-  letter-spacing: -0.015em;
-  text-align: center;
-  text-wrap: balance;
-  overflow-wrap: anywhere;
-  color: var(--mb-ink);
-}
-
-.recess {
-  box-shadow:
-    inset 0 3px 6px rgba(10, 6, 2, 0.4),
-    inset 2px 0 4px rgba(10, 6, 2, 0.18),
-    inset 0 0 0 1px rgba(10, 6, 2, 0.28);
-  pointer-events: none;
-}
-
-.bevel,
-.bevelLight {
-  position: absolute;
-  inset: 0;
-  border: var(--mb-bw) solid;
-  pointer-events: none;
-}
-
-.bevel {
-  border-block-start-color: color-mix(in srgb, var(--mb-mat) 45%, #cfc4b0);
-  border-inline-start-color: color-mix(in srgb, var(--mb-mat) 25%, #f1ebdf);
-  border-inline-end-color: #fbf8f1;
-  border-block-end-color: #fffdf8;
-}
-
-.bevelLight {
-  border-block-start-color: rgba(255, 253, 247, 0.6);
-  border-inline-start-color: rgba(255, 253, 247, 0.85);
-  border-inline-end-color: rgba(190, 176, 150, 0.35);
-  border-block-end-color: rgba(255, 253, 247, 0);
-  opacity: calc(0.45 - var(--mb-sp) * 0.45);
-}
-
-.glass {
+.beamBlur {
   position: absolute;
   z-index: 2;
-  inset: var(--mb-fw);
-  background: linear-gradient(
-    118deg,
-    transparent 34%,
-    rgba(255, 255, 255, 0.16) 44%,
-    rgba(255, 255, 255, 0.05) 50%,
-    transparent 60%
-  );
-  background-size: 260% 100%;
-  background-position: calc(50% + var(--mb-sp) * 36%) 0;
+  opacity: 0.85;
+  inset-block-start: var(--mb-beam-y, -999px);
+  inset-inline-start: calc(var(--mb-beam-x, 0px) - var(--mb-beam-w, 0px) / 2);
+  inline-size: var(--mb-beam-w, 0px);
+  block-size: var(--mb-beam-len, 0px);
+  transform-origin: 50% 0;
+  transform: rotate(var(--mb-beam-rot, 0deg));
+  filter: blur(14px);
   mix-blend-mode: screen;
   pointer-events: none;
 }
 
-.plaque {
-  position: relative;
-  box-sizing: border-box;
-  inline-size: min(100%, 320px);
-  margin: 0;
-  padding-block: 14px;
-  padding-inline: 24px;
-  border-radius: 3px;
-  color: var(--mb-engrave);
-  text-shadow: 0 1px 0 rgba(255, 240, 200, 0.55);
-  box-shadow:
-    0 1px 1px rgba(40, 26, 6, 0.3),
-    0 8px 16px -10px rgba(40, 26, 6, 0.5);
-  transform: translateY(0);
-  transition:
-    transform 460ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 460ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.plaqueOpen {
-  transform: translateY(-6px);
-  box-shadow:
-    0 1px 1px rgba(40, 26, 6, 0.25),
-    0 18px 26px -14px rgba(40, 26, 6, 0.55);
-}
-
-.brass {
+.beam {
   position: absolute;
   inset: 0;
-  z-index: -1;
-  border-radius: inherit;
+  clip-path: polygon(calc(50% - 9px) 0, calc(50% + 9px) 0, 100% 100%, 0 100%);
   background:
-    var(--mb-noise),
-    repeating-linear-gradient(180deg, rgba(255, 250, 230, 0.07) 0 1px, transparent 1px 3px),
-    linear-gradient(100deg, rgba(255, 250, 230, 0) 25%, rgba(255, 250, 230, 0.1) 50%, rgba(255, 250, 230, 0) 75%),
-    linear-gradient(180deg, var(--mb-brass-light) 0%, var(--mb-brass) 100%);
-  background-blend-mode: soft-light, normal, normal, normal;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 247, 220, 0.65),
-    inset 0 -1px 0 rgba(90, 62, 12, 0.45),
-    inset 0 0 0 1px rgba(110, 78, 20, 0.35);
+    radial-gradient(60% 50% at 50% 0%, color-mix(in srgb, var(--mb-light) 50%, transparent), transparent 70%),
+    linear-gradient(180deg, color-mix(in srgb, var(--mb-light) 42%, transparent) 0%,
+      color-mix(in srgb, var(--mb-light) 16%, transparent) 40%, color-mix(in srgb, var(--mb-light) 5%, transparent) 62%, transparent 80%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 70%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 70%, transparent 100%);
 }
 
-.screwStart,
-.screwEnd {
+.layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 40cqi) minmax(0, 1fr);
+  column-gap: 7cqi;
+  align-items: end;
+  margin: 0;
+  padding-block: clamp(96px, 10cqi, 128px) clamp(56px, 6cqi, 80px);
+  padding-inline: 12cqi 8cqi;
+}
+
+.cell {
+  position: relative;
+  perspective: 1100px;
+  perspective-origin: var(--mb-po-x, 70%) var(--mb-po-y, 30%);
+}
+
+.object {
+  --fw: clamp(6px, 0.95cqi, 12px);
+  --depth: clamp(26px, 6cqi, 76px);
+  --side: calc(var(--depth) + 10px);
+
+  position: relative;
+  aspect-ratio: 4 / 5;
+  transform-style: preserve-3d;
+}
+
+.castShadow {
   position: absolute;
-  inset-block-start: 50%;
-  inline-size: 7px;
-  aspect-ratio: 1;
-  margin-block-start: -3.5px;
-  border-radius: 50%;
-  background:
-    linear-gradient(45deg, transparent 42%, rgba(70, 48, 10, 0.75) 42% 58%, transparent 58%),
-    radial-gradient(circle at 35% 30%, var(--mb-brass-light), var(--mb-brass-dark));
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  filter: blur(24px);
+  transform: translateZ(calc(var(--side) * -1)) translate(-6%, 6.5%);
+}
+
+.contactShadow {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  filter: blur(5px);
+  transform: translateZ(calc(var(--side) * -1 + 1px)) translate(-0.8%, 1.2%);
+}
+
+.sideTop,
+.sideBottom,
+.sideLeft,
+.sideRight {
+  position: absolute;
+  background-color: var(--mb-wood);
+  background-image: var(--mb-grain);
+  background-size: 300px 30px;
+  background-blend-mode: multiply;
+}
+
+.sideTop {
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: var(--side);
+  transform-origin: 50% 0;
+  transform: rotateX(-90deg);
+  box-shadow: inset 0 0 0 999px rgba(255, 240, 220, 0.18);
+}
+
+.sideBottom {
+  inset-block-end: 0;
+  inset-inline: 0;
+  block-size: var(--side);
+  transform-origin: 50% 100%;
+  transform: rotateX(90deg);
+  box-shadow: inset 0 0 0 999px rgba(0, 0, 0, 0.6);
+}
+
+.sideLeft {
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--side);
+  transform-origin: 0 50%;
+  transform: rotateY(90deg);
+  box-shadow: inset 0 0 0 999px rgba(0, 0, 0, 0.42);
+}
+
+.sideRight {
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: var(--side);
+  transform-origin: 100% 50%;
+  transform: rotateY(-90deg);
+  box-shadow: inset 0 0 0 999px rgba(255, 236, 210, 0.08);
+}
+
+.inner {
+  position: absolute;
+  inset: var(--fw);
+  transform-style: preserve-3d;
+}
+
+.backing {
+  position: absolute;
+  inset: 0;
+  transform: translateZ(calc(var(--depth) * -1));
+  background-color: var(--mb-mat);
+  background-image:
+    linear-gradient(180deg, rgba(8, 10, 14, 0.62) 0%, rgba(8, 10, 14, 0.18) 7%, transparent 16%),
+    linear-gradient(270deg, rgba(8, 10, 14, 0.38) 0%, transparent 9%),
+    radial-gradient(90% 70% at 70% 14%, color-mix(in srgb, var(--mb-light) 55%, transparent), transparent 70%),
+    linear-gradient(205deg, transparent 25%, rgba(10, 14, 20, 0.55) 100%),
+    var(--mb-noise);
+  background-blend-mode: normal, normal, soft-light, normal, multiply;
+}
+
+.wallTop,
+.wallBottom,
+.wallLeft,
+.wallRight {
+  position: absolute;
+  background-color: var(--mb-mat);
+}
+
+.wallTop {
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: var(--depth);
+  transform-origin: 50% 0;
+  transform: rotateX(-90deg);
+  background-image: linear-gradient(180deg, rgba(6, 8, 12, 0.82), rgba(6, 8, 12, 0.6));
+}
+
+.wallBottom {
+  inset-block-end: 0;
+  inset-inline: 0;
+  block-size: var(--depth);
+  transform-origin: 50% 100%;
+  transform: rotateX(90deg);
+  background-image:
+    linear-gradient(0deg, color-mix(in srgb, var(--mb-light) 18%, transparent) 0%, rgba(10, 12, 16, 0.1) 45%, rgba(10, 12, 16, 0.45) 100%),
+    linear-gradient(90deg, rgba(10, 12, 16, 0.4), transparent 55%);
+}
+
+.wallLeft {
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--depth);
+  transform-origin: 0 50%;
+  transform: rotateY(90deg);
+  background-image:
+    linear-gradient(180deg, rgba(6, 8, 12, 0.55) 0%, transparent 18%, transparent 80%, rgba(6, 8, 12, 0.18) 100%),
+    linear-gradient(90deg, color-mix(in srgb, var(--mb-light) 14%, transparent) 0%, rgba(10, 12, 16, 0.12) 45%, rgba(10, 12, 16, 0.5) 100%);
+}
+
+.wallRight {
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: var(--depth);
+  transform-origin: 100% 50%;
+  transform: rotateY(-90deg);
+  background-image: linear-gradient(180deg, rgba(6, 8, 12, 0.78) 0%, rgba(6, 8, 12, 0.55) 25%, rgba(6, 8, 12, 0.5) 100%);
+}
+
+.artShadow {
+  position: absolute;
+  inset: 12% 13% 14% 13%;
+  background: rgba(6, 8, 12, 0.62);
+  filter: blur(9px);
+  transform: translateZ(calc(var(--depth) * -1 + 1px)) translate(-3.5%, 3%);
+}
+
+.paper {
+  position: absolute;
+  inset: 12% 13% 14% 13%;
+  box-sizing: border-box;
+  display: grid;
+  overflow: hidden;
+  padding: 4.5%;
+  background: var(--mb-paper);
+  background-image: var(--mb-noise);
+  background-blend-mode: multiply;
   box-shadow:
-    0 0.5px 0 rgba(255, 247, 220, 0.7),
-    inset 0 0 0 0.5px rgba(70, 48, 10, 0.5);
+    inset 0 0 0 0.5px rgba(0, 0, 0, 0.18),
+    inset -1px 1px 0 rgba(255, 255, 255, 0.7);
+  transform: translateZ(calc(var(--depth) * -0.42));
 }
 
-.screwStart {
-  inset-inline-start: 8px;
+.art {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  min-block-size: 0;
+  object-fit: cover;
+  user-select: none;
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.35);
 }
 
-.screwEnd {
-  inset-inline-end: 8px;
+.textArt {
+  align-self: center;
+  margin: 0;
+  padding: 6%;
+  color: #15181c;
+  font-family: var(--mb-font);
+  font-size: clamp(14px, 2.4cqi, 30px);
+  font-weight: 650;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.textArt::selection,
+.title::selection,
+.price::selection,
+.note::selection {
+  background: color-mix(in srgb, var(--mb-light-warm) 55%, transparent);
+  color: #0d1014;
+}
+
+.artLight {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(130% 100% at 85% 0%, color-mix(in srgb, var(--mb-light) 22%, transparent) 0%, transparent 55%),
+    linear-gradient(205deg, transparent 35%, rgba(8, 10, 16, 0.42) 100%),
+    linear-gradient(180deg, rgba(8, 10, 16, 0.28) 0%, transparent 10%);
+  mix-blend-mode: soft-light;
+}
+
+.glass {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateZ(-1px);
+  background:
+    radial-gradient(22% 16% at calc(78% - var(--mb-gx, 0) * 26%) calc(10% - var(--mb-gy, 0) * 18%),
+      color-mix(in srgb, var(--mb-light) 24%, transparent), transparent 70%),
+    linear-gradient(118deg, transparent calc(42% - var(--mb-gx, 0) * 14%), rgba(255, 255, 255, 0.07) calc(48% - var(--mb-gx, 0) * 14%),
+      rgba(255, 255, 255, 0.02) calc(56% - var(--mb-gx, 0) * 14%), transparent calc(60% - var(--mb-gx, 0) * 14%));
+}
+
+.glint {
+  position: absolute;
+  inset-block: -20%;
+  inset-inline-start: -60%;
+  inline-size: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22) 50%, transparent);
+  transform: skewX(-18deg) translateX(0);
+  opacity: 0;
+}
+
+.glintIntro {
+  animation: mbGlint 1300ms cubic-bezier(0.45, 0, 0.2, 1) 900ms both;
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  padding: var(--fw);
+  transform: translateZ(0.5px);
+  background:
+    linear-gradient(225deg, var(--mb-wood-hi) 0%, transparent 38%),
+    linear-gradient(45deg, var(--mb-wood-lo) 0%, transparent 45%),
+    var(--mb-grain),
+    var(--mb-wood);
+  background-size: auto, auto, 300px 30px, auto;
+  background-blend-mode: soft-light, multiply, multiply, normal;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+.faceEdge {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transform: translateZ(1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 246, 230, 0.55),
+    inset -1px 0 0 rgba(255, 246, 230, 0.32),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.55),
+    inset 1px 0 0 rgba(0, 0, 0, 0.35);
+}
+
+.objectLight {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 95% at 72% 8%, transparent 35%, rgba(8, 10, 16, 0.42) 100%);
+  mix-blend-mode: multiply;
+}
+
+.plaque {
+  position: relative;
+  justify-self: start;
+  box-sizing: border-box;
+  inline-size: min(100%, 300px);
+  margin-block-end: 6%;
+  padding: 18px 20px 18px;
+  border-radius: 3px;
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.11) 0%, rgba(255, 255, 255, 0.04) 45%, rgba(255, 255, 255, 0.06) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 -2px 0 rgba(255, 255, 255, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    -10px 16px 28px -10px rgba(0, 0, 0, 0.75);
+}
+
+.plaqueIntro {
+  animation: mbRise 900ms cubic-bezier(0.16, 1, 0.3, 1) 1250ms backwards;
+}
+
+.standoffStart,
+.standoffEnd {
+  position: absolute;
+  inset-block-start: 9px;
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 65% 35%, #f3f4f6 0%, #9aa0a8 45%, #4a4f56 100%);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+.standoffStart {
+  inset-inline-start: 9px;
+}
+
+.standoffEnd {
+  inset-inline-end: 9px;
 }
 
 .plaqueHead {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  column-gap: 12px;
-  row-gap: 3px;
-  box-sizing: border-box;
+  column-gap: 14px;
+  row-gap: 6px;
+  align-items: start;
   inline-size: 100%;
-  min-block-size: 44px;
+  padding-block-start: 6px;
+  text-align: start;
+}
+
+.plaqueButton {
   margin: 0;
-  padding: 0;
+  padding-inline: 0;
+  padding-block-end: 0;
   border: 0;
   background: none;
   color: inherit;
   font: inherit;
-  text-align: start;
-  text-shadow: inherit;
-}
-
-.plaqueButton {
   cursor: pointer;
   border-radius: 2px;
 }
 
-.plaqueHead:focus-visible {
-  outline: 2px solid var(--mb-engrave);
-  outline-offset: 5px;
+.plaqueButton:focus-visible {
+  outline: 2px solid var(--mb-focus);
+  outline-offset: 6px;
 }
 
 .title {
   grid-column: 1;
-  font-family: var(--mb-font-display);
+  color: var(--mb-plaque-ink);
   font-size: 18px;
   font-weight: 600;
-  line-height: 1.15;
-  letter-spacing: -0.01em;
+  line-height: 1.25;
+  letter-spacing: -0.012em;
   overflow-wrap: anywhere;
-  text-wrap: balance;
 }
 
 .price {
   grid-column: 1;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  color: var(--mb-plaque-soft);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.3;
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
-  opacity: 0.82;
 }
 
 .chevron {
   grid-column: 2;
-  grid-row: 1 / span 2;
-  inline-size: 8px;
-  aspect-ratio: 1;
-  margin-inline-end: 2px;
-  border-inline-end: 1.5px solid currentColor;
-  border-block-end: 1.5px solid currentColor;
-  opacity: 0.7;
-  transform: translateY(-2px) rotate(-135deg);
-  transition: transform 460ms cubic-bezier(0.22, 1, 0.36, 1);
+  grid-row: 1;
+  inline-size: 14px;
+  block-size: 14px;
+  margin-block-start: 4px;
+  fill: none;
+  stroke: var(--mb-plaque-soft);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
 }
 
 .noteWrap {
   display: grid;
   grid-template-rows: 0fr;
-  visibility: hidden;
-  transition:
-    grid-template-rows 460ms cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 0s linear 460ms;
-}
-
-.noteClip {
-  min-block-size: 0;
-  overflow: hidden;
-}
-
-.note {
-  margin: 0;
-  padding-block-start: 10px;
-  margin-block-start: 10px;
-  border-block-start: 1px solid rgba(70, 48, 10, 0.3);
-  font-size: 14px;
-  line-height: 1.5;
-  text-shadow: none;
-  overflow-wrap: anywhere;
-  opacity: 0;
-  transform: translateY(6px);
-  transition:
-    opacity 300ms ease-out,
-    transform 460ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: grid-template-rows 520ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .noteWrapOpen {
   grid-template-rows: 1fr;
-  visibility: visible;
+}
+
+.noteClip {
+  overflow: hidden;
+  min-block-size: 0;
+}
+
+.note {
+  margin: 0;
+  padding-block-start: 14px;
+  margin-block-start: 14px;
+  border-block-start: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--mb-plaque-soft);
+  font-size: 14px;
+  line-height: 1.55;
+  opacity: 0;
+  transform: translateY(-6px);
   transition:
-    grid-template-rows 460ms cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 0s;
+    opacity 260ms ease-out,
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .noteShown {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
+  transition-delay: 120ms;
+}
+
+.dust {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+}
+
+.shade {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: #050608;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.shadeArmed {
+  opacity: 0.9;
+}
+
+.shadeIntro {
+  animation: mbStrike 1700ms linear both;
+}
+
+.lamp {
+  position: absolute;
+  z-index: 4;
+  inset-block-start: 0;
+  inset-inline-start: 57%;
+  inline-size: 0;
+  block-size: 0;
+  pointer-events: none;
+}
+
+.canopy {
+  position: absolute;
+  inset-inline-start: -15px;
+  inset-block-start: 0;
+  inline-size: 30px;
+  block-size: 6px;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(180deg, #2a2f35, #16191d);
+}
+
+.stem {
+  position: absolute;
+  inset-inline-start: -1px;
+  inset-block-start: 6px;
+  inline-size: 2px;
+  block-size: 30px;
+  background: linear-gradient(90deg, #3a3f46, #121417);
+}
+
+.pivot {
+  position: absolute;
+  inset-inline-start: -4px;
+  inset-block-start: 34px;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #5a6068, #121417);
+  z-index: 1;
+}
+
+.head {
+  position: absolute;
+  inset-inline-start: -12px;
+  inset-block-start: 38px;
+  inline-size: 24px;
+  block-size: 40px;
+  border-radius: 5px 5px 3px 3px;
+  transform-origin: 50% 0;
+  transform: rotate(var(--mb-beam-rot, 0deg));
+  background: linear-gradient(90deg, #0d0f12 0%, #2c3138 38%, #4a5058 48%, #1d2126 70%, #0a0c0e 100%);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.55);
+}
+
+.lens {
+  position: absolute;
+  inset-inline: 2px;
+  inset-block-end: -3px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #fff, var(--mb-light) 60%, color-mix(in srgb, var(--mb-light) 40%, #000) 100%);
+  box-shadow:
+    0 0 10px 2px color-mix(in srgb, var(--mb-light) 80%, transparent),
+    0 0 34px 8px color-mix(in srgb, var(--mb-light) 30%, transparent);
+}
+
+.lensArmed {
+  opacity: 0.08;
+}
+
+.lensIntro {
+  animation: mbLens 1700ms linear both;
+}
+
+.pause {
+  position: absolute;
+  z-index: 5;
+  inset-block-end: 14px;
+  inset-inline-end: 14px;
+  display: grid;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(236, 240, 246, 0.6);
+  cursor: pointer;
   transition:
-    opacity 360ms ease-out 90ms,
-    transform 460ms cubic-bezier(0.22, 1, 0.36, 1) 60ms;
+    color 200ms ease-out,
+    border-color 200ms ease-out,
+    background-color 200ms ease-out;
 }
 
-.chevronOpen {
-  transform: translateY(2px) rotate(45deg);
+.pauseIcon {
+  inline-size: 12px;
+  block-size: 12px;
+  fill: currentColor;
 }
 
-@container (min-width: 680px) {
-  .root {
-    padding-block: 80px 72px;
+.pause:hover {
+  color: rgba(246, 248, 251, 0.95);
+  border-color: rgba(255, 255, 255, 0.32);
+  background-color: rgba(255, 255, 255, 0.07);
+}
+
+.pause:focus-visible {
+  outline: 2px solid var(--mb-focus);
+  outline-offset: 3px;
+}
+
+@keyframes mbStrike {
+  0% { opacity: 0.9; }
+  8% { opacity: 0.9; }
+  11% { opacity: 0.45; }
+  15% { opacity: 0.86; }
+  20% { opacity: 0.3; }
+  24% { opacity: 0.7; }
+  30% { opacity: 0.22; }
+  100% { opacity: 0; animation-timing-function: ease-out; }
+}
+
+@keyframes mbLens {
+  0% { opacity: 0.08; }
+  8% { opacity: 0.08; }
+  11% { opacity: 0.7; }
+  15% { opacity: 0.15; }
+  20% { opacity: 0.9; }
+  24% { opacity: 0.4; }
+  30% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@keyframes mbPool {
+  from { opacity: 0; transform: scale(0.55); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes mbGlint {
+  0% { opacity: 0; transform: skewX(-18deg) translateX(0); }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: skewX(-18deg) translateX(480%); }
+}
+
+@keyframes mbRise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+@container (max-width: 640px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 28px;
+    padding-block: 96px 64px;
+    padding-inline: 9cqi;
   }
 
-  .piece {
-    grid-template-columns: minmax(0, 440px) 240px;
-    justify-content: center;
-    align-items: end;
-    column-gap: 48px;
+  .object {
+    --depth: clamp(22px, 7cqi, 40px);
+    --fw: 7px;
   }
 
   .plaque {
-    inline-size: 100%;
-    margin-block-end: 14%;
+    inline-size: min(100%, 340px);
+    margin-block-end: 0;
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  .plaque,
-  .chevron,
-  .noteWrap,
-  .noteWrapOpen,
-  .note,
-  .noteShown {
-    transition: none;
+  .lamp {
+    inset-inline-start: 82%;
   }
 }
 ```

@@ -1,0 +1,40 @@
+{
+  "id": "c094",
+  "name": "SizeFinderRuler",
+  "display_name": "Size Finder Ruler",
+  "category": "controls",
+  "tier": "everyday",
+  "job": "A draggable ruler where the visitor slides to their measurement (foot length, chest, ring) and the recommended size lights up with a note",
+  "visitor_action": "drag the ruler or use arrow keys; tap a tick",
+  "owner_settings": [
+    "Measurement label",
+    "Unit (cm or in)",
+    "Size heading",
+    "Size ranges (from, to, size, note)",
+    "Accent color"
+  ],
+  "site_types": [
+    "store",
+    "services",
+    "business"
+  ],
+  "mobile": "horizontal drag ruler with big readout",
+  "motion": "ruler scrolls with momentum and snaps to ticks, size badge swaps with a small pop (reduced-motion: no momentum, instant badge)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "deferred-to-QA",
+    "craft": "deferred-to-QA"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Drafting desk: warm maple ruler strip, black engraved ticks, citrus-yellow indicator needle, clean paper-white readout",
+  "notes": "Never rendered by the builder (render and craft deferred to QA). Maple grain and paper texture are CSS-embedded SVG noise, so tune their strength on first look. Needle uses a fixed citrus-on-dark pairing: a dark accent colour would lose contrast on the mat."
+}

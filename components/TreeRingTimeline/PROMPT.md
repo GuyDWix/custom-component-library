@@ -20,7 +20,6 @@ export interface TreeRingTimelineProps {
   milestones?: TreeRingMilestone[];
   centreLabel?: string;
   centreCaption?: string;
-  eyebrow?: string;
   woodTone?: WoodTone;
   ringThickness?: RingThickness;
   ariaLabel?: string;
@@ -148,7 +147,6 @@ export default function TreeRingTimeline({
   milestones = defaultMilestones,
   centreLabel = 'Since 2009',
   centreCaption = 'Est.',
-  eyebrow = 'Our story, ring by ring',
   woodTone = 'oak',
   ringThickness = 'natural',
   ariaLabel = 'Years in business',
@@ -260,7 +258,6 @@ export default function TreeRingTimeline({
 
   return (
     <section ref={rootRef} className={rootClass} aria-label={ariaLabel}>
-      <span className={styles.grain} aria-hidden="true" />
       <div className={styles.inner}>
         <div className={styles.discCol}>
           <div
@@ -366,7 +363,6 @@ export default function TreeRingTimeline({
         </div>
 
         <div className={styles.story}>
-          {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
           {current && (
             <div className={styles.feature} aria-live="polite">
               <p key={active} className={stepped ? `${styles.year} ${styles.yearIn}` : styles.year}>
@@ -401,20 +397,19 @@ export default function TreeRingTimeline({
 
 ```css
 .root {
-  --trt-ground: #f4ede1;
-  --trt-ground-deep: #e8dcc8;
-  --trt-ink: #3a2314;
-  --trt-muted: rgba(58, 35, 20, 0.66);
+  --trt-ground: #f7f8f5;
+  --trt-surface: #ffffff;
+  --trt-ink: #1d3a2b;
+  --trt-muted: #4f6458;
+  --trt-accent: #2c6a47;
+  --trt-hairline: rgba(29, 58, 43, 0.14);
+  --trt-tint: rgba(44, 106, 71, 0.07);
   --trt-honey: #e2b878;
   --trt-walnut: #8a5a34;
   --trt-latewood: #6b3f22;
   --trt-bark: #4a2e1c;
   --trt-bark-edge: #2e1b10;
-  --trt-accent: #a4581f;
-  --trt-paper: #fbf7ef;
-  --trt-font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
-  --trt-font-ui: 'Avenir Next', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --trt-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85 .22' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.24  0 0 0 0 0.14  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --trt-font: Seravek, 'Gill Sans Nova', 'Segoe UI', Ubuntu, Calibri, 'Source Sans 3', system-ui, sans-serif;
 
   position: relative;
   isolation: isolate;
@@ -424,13 +419,24 @@ export default function TreeRingTimeline({
   inline-size: 100%;
   padding-block: 40px;
   padding-inline: 20px;
-  border-radius: 28px;
-  background:
-    radial-gradient(60% 50% at 18% 12%, rgba(255, 252, 244, 0.9) 0%, transparent 70%),
-    radial-gradient(70% 60% at 90% 100%, var(--trt-ground-deep) 0%, transparent 70%),
-    var(--trt-ground);
+  border-radius: 24px;
+  border: 1px solid var(--trt-hairline);
+  background: var(--trt-ground);
   color: var(--trt-ink);
-  font-family: var(--trt-font-serif);
+  font-family: var(--trt-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+.root::selection,
+.year::selection,
+.title::selection,
+.note::selection,
+.rowYear::selection,
+.rowTitle::selection,
+.stampLabel::selection,
+.stampCaption::selection {
+  background: color-mix(in srgb, var(--trt-accent) 22%, transparent);
+  color: var(--trt-ink);
 }
 
 .walnut {
@@ -447,16 +453,6 @@ export default function TreeRingTimeline({
   --trt-latewood: #8e6743;
   --trt-bark: #6a5442;
   --trt-bark-edge: #45352a;
-}
-
-.grain {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image: var(--trt-noise);
-  mix-blend-mode: multiply;
-  opacity: 0.22;
 }
 
 .inner {
@@ -495,7 +491,7 @@ export default function TreeRingTimeline({
 }
 
 .shadow {
-  fill: rgba(46, 27, 16, 0.34);
+  fill: rgba(28, 36, 26, 0.3);
 }
 
 .edge {
@@ -570,8 +566,8 @@ export default function TreeRingTimeline({
 }
 
 .pin {
-  fill: var(--trt-paper);
-  stroke: var(--trt-bark-edge);
+  fill: var(--trt-surface);
+  stroke: var(--trt-ink);
   stroke-width: 2;
   pointer-events: none;
   transition: cy 520ms cubic-bezier(0.34, 1.45, 0.5, 1);
@@ -584,26 +580,24 @@ export default function TreeRingTimeline({
   display: grid;
   place-content: center;
   justify-items: center;
-  inline-size: 17%;
+  gap: 1px;
+  inline-size: 21%;
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: radial-gradient(circle at 38% 32%, #fff9ec 0%, var(--trt-paper) 55%, #eadbc0 100%);
+  background: var(--trt-surface);
   box-shadow:
-    0 0 0 2px var(--trt-bark-edge),
-    0 0 0 5px color-mix(in srgb, var(--trt-paper) 70%, transparent),
-    0 6px 14px rgba(46, 27, 16, 0.35);
+    0 0 0 1px var(--trt-hairline),
+    0 4px 12px -2px rgba(20, 30, 22, 0.28);
   pointer-events: none;
   text-align: center;
   overflow: hidden;
 }
 
 .stampCaption {
-  font-family: var(--trt-font-ui);
-  font-size: 8px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1.1;
   color: var(--trt-muted);
 }
 
@@ -611,11 +605,13 @@ export default function TreeRingTimeline({
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
-  max-inline-size: 90%;
+  max-inline-size: 86%;
   overflow: hidden;
   font-size: 10px;
   font-weight: 600;
   line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--trt-ink);
   overflow-wrap: anywhere;
 }
 
@@ -629,20 +625,18 @@ export default function TreeRingTimeline({
   padding-block: 7px;
   padding-inline: 12px;
   transform: translate(-50%, calc(-100% - 12px));
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--trt-paper) 94%, transparent);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.8) inset,
-    0 0 0 1px rgba(58, 35, 20, 0.16),
-    0 10px 24px -8px rgba(46, 27, 16, 0.45);
+  border: 1px solid var(--trt-hairline);
+  border-radius: 10px;
+  background: var(--trt-surface);
+  box-shadow: 0 8px 20px -10px rgba(20, 30, 22, 0.35);
   pointer-events: none;
   white-space: nowrap;
   transition: inset-block-start 520ms cubic-bezier(0.34, 1.45, 0.5, 1);
 }
 
 .tagYear {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums lining-nums;
   color: var(--trt-accent);
 }
@@ -652,28 +646,19 @@ export default function TreeRingTimeline({
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 14px;
+  color: var(--trt-ink);
 }
 
 .story {
   display: grid;
   align-content: start;
-  gap: 20px;
+  gap: 28px;
   min-inline-size: 0;
-}
-
-.eyebrow {
-  margin: 0;
-  font-family: var(--trt-font-ui);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--trt-accent);
 }
 
 .feature {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .year {
@@ -682,7 +667,7 @@ export default function TreeRingTimeline({
   font-weight: 600;
   line-height: 0.9;
   letter-spacing: -0.04em;
-  font-variant-numeric: lining-nums;
+  font-variant-numeric: tabular-nums lining-nums;
   color: var(--trt-ink);
   overflow-wrap: anywhere;
 }
@@ -692,7 +677,7 @@ export default function TreeRingTimeline({
   font-size: 24px;
   font-weight: 600;
   line-height: 1.2;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   text-wrap: balance;
   overflow-wrap: anywhere;
 }
@@ -703,44 +688,47 @@ export default function TreeRingTimeline({
   font-size: 17px;
   line-height: 1.55;
   color: var(--trt-muted);
+  text-wrap: pretty;
   overflow-wrap: anywhere;
 }
 
 .list {
   display: grid;
-  margin: 0;
+  margin-block: 0;
+  margin-inline: -10px;
   padding: 0;
   list-style: none;
-  border-block-start: 1px solid rgba(58, 35, 20, 0.18);
+  border-block-start: 1px solid var(--trt-hairline);
+  scrollbar-color: color-mix(in srgb, var(--trt-ink) 28%, transparent) transparent;
 }
 
 .item {
-  border-block-end: 1px solid rgba(58, 35, 20, 0.12);
+  border-block-end: 1px solid var(--trt-hairline);
 }
 
 .row {
   display: grid;
-  grid-template-columns: 4.5em minmax(0, 1fr);
+  grid-template-columns: 4em minmax(0, 1fr);
   align-items: baseline;
   gap: 12px;
   inline-size: 100%;
   min-block-size: 44px;
-  padding-block: 10px;
-  padding-inline: 8px;
+  padding-block: 11px;
+  padding-inline: 10px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 0;
   background: transparent;
   color: var(--trt-ink);
   font: inherit;
   text-align: start;
   cursor: pointer;
   transition:
-    background-color 220ms ease-out,
-    color 220ms ease-out;
+    background-color 180ms ease-out,
+    color 180ms ease-out;
 }
 
 .row:hover {
-  background: rgba(164, 88, 31, 0.07);
+  background: var(--trt-tint);
 }
 
 .row:focus-visible {
@@ -749,12 +737,12 @@ export default function TreeRingTimeline({
 }
 
 .rowActive {
-  background: rgba(164, 88, 31, 0.12);
+  background: color-mix(in srgb, var(--trt-accent) 11%, transparent);
 }
 
 .rowYear {
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums lining-nums;
   color: var(--trt-accent);
   overflow-wrap: anywhere;
@@ -775,8 +763,12 @@ export default function TreeRingTimeline({
     display: inline-flex;
   }
 
+  .stamp {
+    inline-size: 17%;
+  }
+
   .stampCaption {
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .stampLabel {

@@ -1,4 +1,5 @@
 {
+  "id": "g12",
   "name": "WorldConnectionsMap",
   "display_name": "World Connections Map",
   "category": "data",
@@ -20,24 +21,23 @@
     "agency",
     "nonprofit"
   ],
-  "mobile": "map scales to container width; collision-aware labels show only the active location plus up to 3 that fit",
-  "motion": "arcs draw in with travelling light pulses, subtle dot shimmer (reduced-motion: arcs drawn static, no pulses)",
+  "mobile": "map scales to container width; camera eases to the selection and pushes the map above a bottom telemetry panel; collision-aware labels show only the active location plus up to 3 that fit",
+  "motion": "Dots sweep west→east like a scanner with a lit band, markers popping in behind the sweep; arcs trace in once the band passes, then comet heads run the routes with trailing light and a landing ring at each destination; hover/focus springs the camera to the selected route, a light pool warms the dots around the city and its arcs re-trace outward from it (reduced-motion: fully-drawn static map with lit rails, no sweep, comets or rings)",
   "scores": {
-    "concept": null,
-    "usefulness": null,
-    "uniqueness": null,
-    "reach": null,
-    "craft": null
+    "concept": 3,
+    "usefulness": 2,
+    "uniqueness": 3,
+    "reach": 3
   },
   "checks": {
     "tsc": "pass",
-    "portable_rules_lint": "self-checked: SSR-safe render, no dangerouslySetInnerHTML, flat single-class selectors, logical properties, no viewport @media, no transition: all",
-    "render": "self-checked 2026-11-23 at 1280px, 375px and ?worst=1 (no label overlaps)",
-    "craft": "pending"
+    "render": "skipped 2026-11-23 (Guy: token saving — no shot.sh, no screenshots)",
+    "craft": "pending (Guy reviews in the gallery; no self-scoring per token-saving decision 2026-11-23)"
   },
+  "craft_score": null,
   "status": "built",
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
-  "notes": "Land shape is a 360x142 one-degree mask, run-length encoded inline in Component.tsx (~1.8 KB), rasterised from hand-authored continent outlines. Labels are placed in JS by a greedy collision pass (priority: active > linked > connection count), trying right/left/above/below/nudged slots, avoiding other markers and the play button; labels that don't fit are hidden. Narrow containers (<560px) cap idle labels at 3.",
-  "art_direction": "Arctic night: midnight blue-black, cool slate dots, ice-cyan arcs with white-hot pulses, faint aurora-teal glow; light variant is frost-blue with deep-cyan arcs. Material: glass label chips over a dotted land layer, grain overlay."
+  "art_direction": "Mission control: near-black blue console ground with a faint green-teal atmosphere, slate land dots lit brighter near the cities, routes as phosphor-green light trails with white-hot comet heads and landing rings, a spring camera that eases to the selected route, and a flat telemetry HUD (self-hosted Wix Madefor grotesk for names, tabular mono for coordinates and distances) with hairline borders and no glass. Light variant: day chart-room paper, deep-green routes, additive glow off.",
+  "notes": "Land shape is a 360x142 one-degree mask, run-length encoded inline in Component.tsx (~1.8 KB); at extreme zoom (a single location) the 1° dot grid gets sparse, which reads as low-res satellite telemetry but is a resolution limit, not a bug. Labels are placed in JS by a greedy collision pass (priority: active > linked > connection count); labels that don't fit are hidden. 2026-11-23: redesigned (batch B) to Mission control — canvas dot map, comet-head arcs, spring camera, telemetry HUD; render/craft gates skipped per token-saving decision."
 }

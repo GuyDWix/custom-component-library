@@ -1,0 +1,570 @@
+@font-face {
+  font-family: 'Archivo';
+  src: url('./fonts/archivo-latin.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Condensed Black cut: the poster headline and the hidden-offer title. */
+@font-face {
+  font-family: 'Archivo Poster';
+  src: url('./fonts/archivo-condensed-900-latin.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/*
+ * The component IS the sticker: one full-bleed lemon-vinyl sheet that fills its
+ * frame edge to edge. Under it, an equally composed ink field waits for the peel.
+ * Positions are physical (left/right/top/bottom) on purpose: the peel geometry is.
+ */
+.root {
+  --pc-radius: 20px;
+  --pc-peel: #ffd21e;
+  --pc-peel-lift: color-mix(in srgb, var(--pc-peel) 58%, #fffbe0);
+  --pc-peel-deep: color-mix(in srgb, var(--pc-peel) 78%, #6d4a00);
+  --pc-peel-shade: color-mix(in srgb, var(--pc-peel) 82%, #c27a00);
+  --pc-ink: #1a1208;
+  --pc-well: #15100a;
+  --pc-well-text: #fff6dc;
+  --pc-font: 'Archivo', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --pc-font-poster: 'Archivo Poster', 'Archivo', 'Arial Narrow', 'Helvetica Neue', sans-serif;
+  --pc-title-tall: 16cqi;
+  --pc-title-square: 12cqi;
+  --pc-title-wide: 11cqi;
+  --pc-body-tall: 4cqi;
+  --pc-body-wide: 1.5cqi;
+  --pc-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  container-type: inline-size;
+  box-sizing: border-box;
+  inline-size: 100%;
+  border-radius: var(--pc-radius);
+  background: var(--pc-well);
+  color: var(--pc-ink);
+  font-family: var(--pc-font);
+}
+
+.root ::selection {
+  background: var(--pc-ink);
+  color: var(--pc-peel);
+}
+
+.card {
+  --pc-p: 0;
+  --pc-m: 0;
+  --pc-pad: clamp(18px, 4.6cqi, 64px);
+
+  position: relative;
+  display: block;
+  inline-size: 100%;
+  aspect-ratio: 4 / 5;
+  container-type: inline-size;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: var(--pc-radius);
+  cursor: pointer;
+}
+
+@container (min-width: 460px) {
+  .card {
+    aspect-ratio: 1 / 1;
+  }
+}
+
+@container (min-width: 700px) {
+  .card {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+.card:focus-visible {
+  outline: 3px solid var(--pc-ink);
+  outline-offset: -8px;
+}
+
+/* ---------- The ink field under the sticker ---------- */
+
+.well {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: clip;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      75% 95% at var(--pc-corner-x) var(--pc-corner-y),
+      color-mix(in srgb, var(--pc-peel) 30%, var(--pc-well)) 0%,
+      color-mix(in srgb, var(--pc-peel) 9%, var(--pc-well)) 46%,
+      transparent 78%
+    ),
+    repeating-radial-gradient(
+      circle at var(--pc-corner-x) var(--pc-corner-y),
+      transparent 0 46px,
+      color-mix(in srgb, var(--pc-peel) 15%, transparent) 46px 47.5px
+    ),
+    linear-gradient(172deg, #21180d 0%, var(--pc-well) 100%);
+  pointer-events: none;
+}
+
+/* Printed rays, oversized so they can turn with the peel and never run out of card. */
+.well::before {
+  content: '';
+  position: absolute;
+  inset: -75%;
+  background: repeating-conic-gradient(
+    from 0deg at calc((0.75 + var(--pc-cx)) * 40%) calc((0.75 + var(--pc-cy)) * 40%),
+    color-mix(in srgb, var(--pc-peel) 20%, transparent) 0deg 3.2deg,
+    transparent 3.2deg 7deg
+  );
+  -webkit-mask-image: radial-gradient(
+    42% 42% at calc((0.75 + var(--pc-cx)) * 40%) calc((0.75 + var(--pc-cy)) * 40%),
+    #000 0%,
+    rgba(0, 0, 0, 0.4) 55%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    42% 42% at calc((0.75 + var(--pc-cx)) * 40%) calc((0.75 + var(--pc-cy)) * 40%),
+    #000 0%,
+    rgba(0, 0, 0, 0.4) 55%,
+    transparent 100%
+  );
+  transform-origin: calc((0.75 + var(--pc-cx)) * 40%) calc((0.75 + var(--pc-cy)) * 40%);
+  transform: rotate(calc(var(--pc-p) * 18deg));
+}
+
+/* Halftone dots and ink grain. */
+.well::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--pc-peel) 42%, transparent) 0 1.4px, transparent 2px) 0 0 / 9px 9px,
+    var(--pc-noise);
+  background-blend-mode: normal, screen;
+  -webkit-mask-image: radial-gradient(
+    70% 85% at var(--pc-corner-x) var(--pc-corner-y),
+    rgba(0, 0, 0, 0.9) 0%,
+    transparent 85%
+  );
+  mask-image: radial-gradient(
+    70% 85% at var(--pc-corner-x) var(--pc-corner-y),
+    rgba(0, 0, 0, 0.9) 0%,
+    transparent 85%
+  );
+  opacity: 0.55;
+}
+
+/* The hidden offer: three staggered beats as the crease sweeps past. */
+.message {
+  --pc-dir: 1;
+
+  position: absolute;
+  z-index: 0;
+  box-sizing: border-box;
+  inline-size: 46cqi;
+  color: var(--pc-well-text);
+  pointer-events: none;
+}
+
+@container (min-width: 460px) {
+  .message {
+    inline-size: 40cqi;
+  }
+}
+
+@container (min-width: 700px) {
+  .message {
+    inline-size: 25cqi;
+  }
+}
+
+.messageTopRight {
+  top: calc(var(--pc-pad) * 0.9);
+  right: calc(var(--pc-pad) * 0.9);
+}
+
+.messageTopLeft {
+  top: calc(var(--pc-pad) * 0.9);
+  left: calc(var(--pc-pad) * 0.9);
+}
+
+.messageBottomRight {
+  --pc-dir: -1;
+
+  bottom: calc(var(--pc-pad) * 0.9);
+  right: calc(var(--pc-pad) * 0.9);
+}
+
+.messageBottomLeft {
+  --pc-dir: -1;
+
+  bottom: calc(var(--pc-pad) * 0.9);
+  left: calc(var(--pc-pad) * 0.9);
+}
+
+.hiddenTitle {
+  --pc-beat: clamp(0, calc(var(--pc-m) * 3), 1);
+
+  margin: 0;
+  font-family: var(--pc-font-poster);
+  font-size: clamp(22px, 7.2cqi, 40px);
+  font-weight: 900;
+  line-height: 0.9;
+  text-transform: uppercase;
+  color: var(--pc-peel);
+  overflow-wrap: break-word;
+  opacity: var(--pc-beat);
+  transform: translateY(calc((1 - var(--pc-beat)) * 12px * var(--pc-dir)));
+}
+
+@container (min-width: 700px) {
+  .hiddenTitle {
+    font-size: clamp(32px, 3.8cqi, 64px);
+  }
+}
+
+.hiddenBody {
+  --pc-beat: clamp(0, calc(var(--pc-m) * 3 - 0.8), 1);
+
+  margin: 8px 0 0;
+  font-size: clamp(12px, 3.2cqi, 15px);
+  font-weight: 500;
+  line-height: 1.4;
+  color: rgba(255, 246, 220, 0.82);
+  overflow-wrap: break-word;
+  opacity: var(--pc-beat);
+  transform: translateY(calc((1 - var(--pc-beat)) * 12px * var(--pc-dir)));
+}
+
+@container (min-width: 700px) {
+  .hiddenBody {
+    margin-block-start: 12px;
+    font-size: clamp(15px, 1.25cqi, 22px);
+  }
+}
+
+/* A die-cut coupon chip: notched sides, dashed tear line. */
+.hiddenCode {
+  --pc-beat: clamp(0, calc(var(--pc-m) * 3 - 1.6), 1);
+
+  display: inline-block;
+  max-inline-size: 100%;
+  box-sizing: border-box;
+  margin-block-start: 12px;
+  padding: 8px 17px;
+  border: 1.5px dashed rgba(26, 18, 8, 0.45);
+  background: var(--pc-peel);
+  -webkit-mask:
+    radial-gradient(circle 6px at 0 50%, #0000 97%, #000) 0 0 / 51% 100% no-repeat,
+    radial-gradient(circle 6px at 100% 50%, #0000 97%, #000) 100% 0 / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle 6px at 0 50%, #0000 97%, #000) 0 0 / 51% 100% no-repeat,
+    radial-gradient(circle 6px at 100% 50%, #0000 97%, #000) 100% 0 / 51% 100% no-repeat;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+  color: var(--pc-ink);
+  overflow-wrap: break-word;
+  opacity: var(--pc-beat);
+  transform: translateY(calc((1 - var(--pc-beat)) * 12px * var(--pc-dir))) scale(calc(0.92 + var(--pc-beat) * 0.08));
+}
+
+@container (min-width: 700px) {
+  .hiddenCode {
+    margin-block-start: 18px;
+    padding: 10px 22px;
+    font-size: clamp(14px, 1.15cqi, 19px);
+  }
+}
+
+/* ---------- The lemon vinyl ---------- */
+
+.sticker {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: clip;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      125% 125% at var(--pc-corner-x) var(--pc-corner-y),
+      var(--pc-peel-lift) 0%,
+      var(--pc-peel) 42%,
+      var(--pc-peel-shade) 100%
+    );
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 248, 0.55),
+    inset 0 0 0 1px color-mix(in srgb, var(--pc-peel-deep) 45%, transparent),
+    inset 0 -4px 6px -3px color-mix(in srgb, var(--pc-peel-deep) 70%, transparent);
+}
+
+/* Print stress: the vinyl bends darker toward the lifting crease. */
+.sticker::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    64% 80% at var(--pc-corner-x) var(--pc-corner-y),
+    rgba(92, 60, 0, 0.24),
+    transparent 72%
+  );
+  opacity: calc(0.4 + var(--pc-p) * 0.6);
+  pointer-events: none;
+}
+
+/* A two-tone printed sunburst fanning out of the peeled corner. */
+.vinylRays {
+  position: absolute;
+  inset: 0;
+  background: repeating-conic-gradient(
+    from 0deg at var(--pc-corner-x) var(--pc-corner-y),
+    rgba(255, 249, 196, 0.3) 0deg 3.75deg,
+    rgba(150, 98, 0, 0.1) 3.75deg 7.5deg
+  );
+  -webkit-mask-image: radial-gradient(
+    130% 130% at var(--pc-corner-x) var(--pc-corner-y),
+    #000 0%,
+    rgba(0, 0, 0, 0.6) 50%,
+    transparent 98%
+  );
+  mask-image: radial-gradient(
+    130% 130% at var(--pc-corner-x) var(--pc-corner-y),
+    #000 0%,
+    rgba(0, 0, 0, 0.6) 50%,
+    transparent 98%
+  );
+  pointer-events: none;
+}
+
+/* Halftone screen, heavier away from the peel. */
+.vinylDots {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(140, 90, 0, 0.55) 0 1.5px, transparent 2.1px) 0 0 / 10px 10px;
+  -webkit-mask-image: radial-gradient(
+    85% 85% at var(--pc-opp-x) var(--pc-opp-y),
+    rgba(0, 0, 0, 0.55) 0%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    85% 85% at var(--pc-opp-x) var(--pc-opp-y),
+    rgba(0, 0, 0, 0.55) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* Air-bubble pinpricks and two small blisters trapped under the film. */
+.vinylBubbles {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle 4px at 31% 14%, rgba(110, 70, 0, 0.7) 0 0.9px, rgba(255, 255, 240, 0.8) 1.3px 2px, transparent 3.4px),
+    radial-gradient(circle 4px at 52% 38%, rgba(110, 70, 0, 0.7) 0 0.9px, rgba(255, 255, 240, 0.8) 1.3px 2px, transparent 3.4px),
+    radial-gradient(circle 4px at 9% 47%, rgba(110, 70, 0, 0.7) 0 0.9px, rgba(255, 255, 240, 0.8) 1.3px 2px, transparent 3.4px),
+    radial-gradient(circle 4px at 71% 63%, rgba(110, 70, 0, 0.7) 0 0.9px, rgba(255, 255, 240, 0.8) 1.3px 2px, transparent 3.4px),
+    radial-gradient(circle 4px at 88% 52%, rgba(110, 70, 0, 0.7) 0 0.9px, rgba(255, 255, 240, 0.8) 1.3px 2px, transparent 3.4px),
+    radial-gradient(circle 4px at 44% 8%, rgba(110, 70, 0, 0.7) 0 0.9px, rgba(255, 255, 240, 0.8) 1.3px 2px, transparent 3.4px),
+    radial-gradient(circle 4px at 17% 22%, rgba(110, 70, 0, 0.7) 0 0.9px, rgba(255, 255, 240, 0.8) 1.3px 2px, transparent 3.4px),
+    radial-gradient(circle 5px at calc(64% - 5px) calc(30% - 5px), rgba(255, 255, 250, 0.9) 0 1.5px, transparent 2.6px),
+    radial-gradient(circle 17px at 64% 30%, rgba(255, 255, 230, 0.2) 0 11px, rgba(255, 255, 255, 0.5) 12px 13px, rgba(120, 78, 0, 0.3) 14px 15px, transparent 16.5px),
+    radial-gradient(circle 4px at calc(37% - 3px) calc(45% - 3px), rgba(255, 255, 250, 0.9) 0 1px, transparent 2px),
+    radial-gradient(circle 11px at 37% 45%, rgba(255, 255, 230, 0.2) 0 7px, rgba(255, 255, 255, 0.5) 8px 8.8px, rgba(120, 78, 0, 0.3) 9.4px 10px, transparent 10.8px);
+  pointer-events: none;
+}
+
+.vinylGrain {
+  position: absolute;
+  inset: 0;
+  background-image: var(--pc-noise);
+  opacity: 0.14;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* Clear gloss laminate: a window reflection that slides as the sticker bends. */
+.vinylGloss {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(
+      116deg,
+      transparent 14%,
+      rgba(255, 255, 250, 0.1) 22%,
+      rgba(255, 255, 250, 0.36) 31%,
+      rgba(255, 255, 250, 0.05) 39%,
+      transparent 46%
+    ),
+    linear-gradient(116deg, transparent 52%, rgba(255, 255, 250, 0.16) 55%, transparent 59%),
+    linear-gradient(180deg, rgba(255, 255, 250, 0.3) 0%, transparent 16%);
+  transform: translateX(calc(var(--pc-p) * 6%));
+  pointer-events: none;
+}
+
+/* ---------- Printed copy ---------- */
+
+.print {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 3.4cqi, 34px);
+  box-sizing: border-box;
+  min-inline-size: 0;
+  padding-inline: var(--pc-pad);
+}
+
+/* The copy hangs on the edge away from the peel; the brand strip closes the opposite edge. */
+.layoutTopRight .copy,
+.layoutTopLeft .copy {
+  margin-block-start: auto;
+  padding-block-end: calc(var(--pc-pad) * 0.9);
+}
+
+.layoutBottomRight .copy,
+.layoutBottomLeft .copy {
+  margin-block-end: auto;
+  padding-block-start: calc(var(--pc-pad) * 0.9);
+}
+
+.layoutBottomRight .strip,
+.layoutBottomLeft .strip {
+  order: -1;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--pc-font-poster);
+  font-size: var(--pc-title-tall);
+  font-weight: 900;
+  line-height: 0.86;
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+  color: var(--pc-ink);
+  text-shadow: 0 0.03em 0 rgba(255, 252, 214, 0.5);
+  overflow-wrap: break-word;
+  hyphens: manual;
+  text-wrap: balance;
+}
+
+.body {
+  margin: 0;
+  max-inline-size: 34ch;
+  padding-inline-start: 12px;
+  border-inline-start: 3px solid var(--pc-ink);
+  font-size: clamp(12px, var(--pc-body-tall), 17px);
+  font-weight: 600;
+  line-height: 1.42;
+  color: rgba(26, 18, 8, 0.88);
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  overflow: hidden;
+}
+
+@container (min-width: 460px) {
+  .title {
+    font-size: var(--pc-title-square);
+  }
+}
+
+@container (min-width: 700px) {
+  .copy {
+    inline-size: calc(58cqi + var(--pc-pad) * 2);
+    max-inline-size: 100%;
+    gap: clamp(16px, 2.2cqi, 40px);
+  }
+
+  .layoutTopLeft .copy,
+  .layoutBottomLeft .copy {
+    margin-inline-start: auto;
+  }
+
+  .title {
+    font-size: var(--pc-title-wide);
+  }
+
+  .body {
+    max-inline-size: 38cqi;
+    padding-inline-start: 18px;
+    border-inline-start-width: 4px;
+    font-size: clamp(15px, var(--pc-body-wide), 26px);
+  }
+}
+
+/* The printed brand strip: a full-width ink band on the sheet's edge. */
+.strip {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 2cqi, 28px);
+  box-sizing: border-box;
+  inline-size: 100%;
+  margin: 0;
+  padding: clamp(12px, 2.1cqi, 30px) var(--pc-pad);
+  background: var(--pc-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 244, 190, 0.14);
+  font-size: clamp(12px, 3.1cqi, 17px);
+  letter-spacing: 0.13em;
+  line-height: 1.25;
+  text-transform: uppercase;
+  hyphens: none;
+}
+
+@container (min-width: 700px) {
+  .strip {
+    font-size: clamp(13px, 1.2cqi, 20px);
+  }
+}
+
+.stripLead {
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  font-weight: 800;
+  color: var(--pc-peel);
+}
+
+.stripLine {
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  font-weight: 700;
+  color: rgba(255, 246, 220, 0.76);
+}
+
+/* A printed tick rule between the name and the details. */
+.stripRule {
+  flex: 1 1 16px;
+  min-inline-size: 12px;
+  block-size: 12px;
+  background:
+    repeating-linear-gradient(90deg, var(--pc-peel) 0 2px, transparent 2px 11px) 0 0 / 100% 100% no-repeat,
+    repeating-linear-gradient(90deg, var(--pc-peel) 0 1px, transparent 1px 4px) 0 30% / 100% 40% no-repeat;
+  opacity: 0.7;
+}
+
+.peelCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+}

@@ -1,0 +1,41 @@
+{
+  "id": "c050",
+  "name": "FlipMenuCard",
+  "display_name": "Flip Menu Card",
+  "category": "cards",
+  "tier": "everyday",
+  "job": "A menu-item card that flips like a cafe order slip to show ingredients, allergens and a tasting note on the back",
+  "visitor_action": "click/tap or Enter to flip; flips back the same way",
+  "owner_settings": [
+    "Photo",
+    "Dish name",
+    "Price",
+    "Back-side details (ingredients, allergens, tasting note)",
+    "Dietary tags",
+    "Item number"
+  ],
+  "site_types": [
+    "restaurant",
+    "store",
+    "events"
+  ],
+  "mobile": "tap to flip, back side scrolls if long",
+  "motion": "3D card flip with slight overshoot and shadow shift (reduced-motion: crossfade between faces)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped (Guy 2026-11-23 token saving)",
+    "craft": "skipped (Guy 2026-11-23 token saving)"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Trattoria order slip as a real object: tomato-red gingham tablecloth, ivory paper slip with perforated top, hand-torn bottom, grease marks and a dog-eared corner, tipped-in taped polaroid, rubber-stamped item number, vinyl price sticker, handwritten name, red reverse side with taped chef's note",
+  "notes": "2026-11-23: composition round 2. Slip rebuilt as a paper object (torn edge, grease, dog-ear, taped polaroid, ink stamp, vinyl sticker, handwritten name fitted so no word breaks mid-word) on a gingham counter with pencil/basil/coffee-ring props; flip = lift, swing, land with cast shadow and pad shift. Not run through shot.sh; builder checked via ad-hoc CDP shots only. Weakness: props hidden under 700px container, flip beats judged only from end-state frames."
+}

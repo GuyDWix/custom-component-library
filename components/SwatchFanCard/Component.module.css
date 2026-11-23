@@ -1,0 +1,676 @@
+@font-face {
+  font-family: 'SwatchFanInterTight';
+  src: url('./fonts/inter-tight-latin.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+.root {
+  --sf-counter: #ece4d0;
+  --sf-counter-deep: #ddd3bb;
+  --sf-paper: #f7f2e5;
+  --sf-paper-shade: #eee6d2;
+  --sf-edge-1: #e6decb;
+  --sf-edge-2: #d4cab0;
+  --sf-edge-3: #bfb496;
+  --sf-ink: #211d15;
+  --sf-muted: #5c5445;
+  --sf-hairline: rgba(33, 29, 21, 0.16);
+  --sf-twine: #2b251b;
+  --sf-font-display: 'SwatchFanInterTight', 'Inter Tight', 'Inter', 'Helvetica Neue', system-ui, sans-serif;
+  --sf-font-ui: 'SwatchFanInterTight', 'Inter', 'Helvetica Neue', system-ui, sans-serif;
+  --sf-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.38  0 0 0 0 0.3  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --tint: #7d8b6f;
+  --cw: 167px;
+  --ch: 326px;
+  --t: 570px;
+  --px: 340px;
+  --py: 584px;
+  --fx: 75px;
+  --fy: 26px;
+  --fw: 558px;
+  --fh: 290px;
+  --mt: 34px;
+  --ms: 9px;
+  --hy: 17px;
+  --rad: 24px;
+  --mat: 10px;
+  --side-font: 13px;
+  --sidelen: 180px;
+  --sidevis: visible;
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  position: relative;
+  isolation: isolate;
+  container-type: inline-size;
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 680px;
+  margin-inline: auto;
+  border-radius: var(--rad);
+  color: var(--sf-ink);
+  color-scheme: light;
+  font-family: var(--sf-font-ui);
+  box-shadow: 0 44px 70px -40px rgba(60, 46, 26, 0.65);
+}
+
+.root ::selection {
+  background: color-mix(in srgb, var(--tint) 40%, var(--sf-paper));
+  color: var(--sf-ink);
+}
+
+.sheet,
+.stockUnder,
+.stockUnderDeep {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* The counter top the frame and chips lie on. */
+.sheet {
+  z-index: -2;
+  background:
+    radial-gradient(80% 45% at 30% 0%, rgba(255, 255, 255, 0.6), transparent 70%),
+    linear-gradient(180deg, var(--sf-counter) 0%, var(--sf-counter-deep) 100%);
+}
+
+.stockUnder {
+  z-index: -3;
+  background: #d3c8ad;
+  transform: translateY(5px);
+}
+
+.stockUnderDeep {
+  z-index: -4;
+  background: #b4a684;
+  transform: translateY(10px);
+}
+
+/* ---------- the table: framed photo, then the fan on top of it ---------- */
+
+.table {
+  position: relative;
+  block-size: var(--t);
+  direction: ltr;
+}
+
+/* Paint light pooling on the counter around the chips. */
+.pool {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-color: var(--tint);
+  mix-blend-mode: multiply;
+  opacity: 0.4;
+  -webkit-mask-image: radial-gradient(70% 55% at 50% 100%, #000 0%, rgba(0, 0, 0, 0.45) 55%, transparent 100%);
+  mask-image: radial-gradient(70% 55% at 50% 100%, #000 0%, rgba(0, 0, 0, 0.45) 55%, transparent 100%);
+  pointer-events: none;
+  transition: background-color 460ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.idle .pool {
+  animation: breathe 6s ease-in-out infinite alternate;
+}
+
+/* The photo is a framed print taped to the counter, not a top image block. */
+.frame {
+  position: absolute;
+  z-index: 1;
+  inset-inline-start: var(--fx);
+  inset-block-start: var(--fy);
+  inline-size: var(--fw);
+  block-size: var(--fh);
+  box-sizing: border-box;
+  padding: var(--mat);
+  border-radius: 5px;
+  background: linear-gradient(160deg, #fdfaf1 0%, #f1e9d6 100%);
+  box-shadow:
+    0 0 0 1px rgba(70, 56, 32, 0.14),
+    1px 2px 0 #e0d6bd,
+    0 3px 4px rgba(46, 36, 18, 0.18),
+    0 20px 30px -12px rgba(46, 36, 18, 0.46),
+    0 46px 56px -32px rgba(46, 36, 18, 0.42);
+  transform-origin: 50% 80%;
+}
+
+.stage {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  inline-size: 100%;
+  block-size: 100%;
+  border-radius: 2px;
+  background: var(--sf-counter-deep);
+}
+
+/* The mat's cut edge: the picture sits slightly recessed. */
+.stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px rgba(33, 29, 21, 0.18),
+    inset 0 3px 9px -2px rgba(33, 29, 21, 0.4);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.tape {
+  position: absolute;
+  z-index: 2;
+  inline-size: 68px;
+  block-size: 24px;
+  background:
+    linear-gradient(180deg, rgba(246, 237, 200, 0.86), rgba(228, 214, 168, 0.8)),
+    var(--sf-noise);
+  clip-path: polygon(0 0, 100% 0, 97% 25%, 100% 50%, 97% 75%, 100% 100%, 0 100%, 3% 75%, 0 50%, 3% 25%);
+  opacity: 0.94;
+}
+
+.tapeL {
+  inset-block-start: -8px;
+  inset-inline-start: -20px;
+  transform: rotate(-38deg);
+}
+
+.tapeR {
+  inset-block-start: -8px;
+  inset-inline-end: -20px;
+  transform: rotate(37deg);
+}
+
+.photo {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  user-select: none;
+  filter: saturate(1.5) contrast(1.16) brightness(0.93);
+}
+
+.tintDepth,
+.tintGlow,
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* A faint overall cast, kept low so the photo's own colour stays rich. */
+.tintDepth {
+  background-color: var(--tint);
+  mix-blend-mode: color;
+  opacity: 0.34;
+  transition: background-color 460ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Paint light pooling up from the chips: the visible tint layer. */
+.tintGlow {
+  background-color: var(--tint);
+  mix-blend-mode: multiply;
+  opacity: 0.8;
+  -webkit-mask-image: radial-gradient(80% 95% at 50% 118%, #000 0%, rgba(0, 0, 0, 0.5) 45%, transparent 100%);
+  mask-image: radial-gradient(80% 95% at 50% 118%, #000 0%, rgba(0, 0, 0, 0.5) 45%, transparent 100%);
+  transition: background-color 460ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.vignette {
+  background:
+    radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(30, 24, 14, 0.28) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, transparent 28%);
+}
+
+.tintStatic {
+  transition: none;
+}
+
+/* ---------- no-image fallback: a painted wall with dabs and a roller stroke ---------- */
+
+.wall {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(70% 60% at 20% 10%, rgba(255, 255, 255, 0.5), transparent 70%),
+    linear-gradient(165deg, #eee7d6 0%, #ddd2ba 100%);
+}
+
+.wall::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--sf-noise);
+  opacity: 0.2;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.swath {
+  position: absolute;
+  inset-inline-start: 8%;
+  inset-block-start: 12%;
+  inline-size: 62%;
+  block-size: 46%;
+  border-radius: 10px 34px 8px 30px / 22px 12px 26px 10px;
+  background-color: var(--tint);
+  background-image:
+    repeating-linear-gradient(1deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(-1deg, rgba(0, 0, 0, 0.05) 0 2px, transparent 2px 11px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 3px, transparent 3px 17px),
+    radial-gradient(90% 120% at 18% 0%, rgba(255, 255, 255, 0.22), transparent 60%),
+    linear-gradient(180deg, transparent 60%, rgba(0, 0, 0, 0.14));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 10px 14px -10px rgba(40, 30, 14, 0.55);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 2.5%, #000 95%, rgba(0, 0, 0, 0.35) 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 2.5%, #000 95%, rgba(0, 0, 0, 0.35) 100%);
+  transform: rotate(-3deg);
+  transition: background-color 460ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* The lap line where the roller stroke overlaps itself. */
+.swathLap {
+  position: absolute;
+  inset-inline-start: 14%;
+  inset-block-start: 24%;
+  inline-size: 48%;
+  block-size: 3px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.16);
+  filter: blur(1px);
+  transform: rotate(-3deg);
+}
+
+.dab {
+  position: absolute;
+  inset-inline-start: var(--dx);
+  inset-block-start: var(--dy);
+  inline-size: var(--ds);
+  aspect-ratio: 1.1;
+  border-radius: 58% 42% 47% 53% / 46% 55% 45% 54%;
+  background:
+    radial-gradient(58% 52% at 34% 28%, color-mix(in srgb, var(--pig) 62%, #fff) 0%, transparent 70%),
+    radial-gradient(90% 90% at 50% 50%, var(--pig) 55%, color-mix(in srgb, var(--pig) 78%, #000) 100%);
+  box-shadow:
+    inset 3px 3px 6px rgba(255, 255, 255, 0.28),
+    inset -4px -5px 8px rgba(0, 0, 0, 0.2),
+    0 8px 12px -5px rgba(40, 30, 14, 0.5);
+  transform: rotate(var(--dr)) scale(0.94);
+  transition: transform 520ms var(--spring);
+}
+
+.dabOn {
+  transform: rotate(var(--dr)) scale(1.2);
+}
+
+/* ---------- the fan: the hero ---------- */
+
+.fan {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Each chip is pivoted at one point hidden behind the counter lip; the component sets its transform. */
+.chip {
+  position: absolute;
+  inset-inline-start: calc(var(--px) - var(--cw) / 2);
+  inset-block-start: calc(var(--py) - var(--ch));
+  inline-size: var(--cw);
+  block-size: var(--ch);
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transform-origin: 50% 100%;
+  outline: none;
+}
+
+.chip:focus-visible .card {
+  outline: 3px solid var(--sf-ink);
+  outline-offset: 3px;
+}
+
+/* Paper stock with real edge thickness; the extrusion and shadow follow the light, not the chip's rotation. */
+.card {
+  position: absolute;
+  inset: 0;
+  border-radius: 7px;
+  background: linear-gradient(180deg, var(--sf-paper) 0%, var(--sf-paper-shade) 100%);
+  box-shadow:
+    calc(var(--ex) * 1px) calc(var(--ey) * 1px) 0 var(--sf-edge-1),
+    calc(var(--ex) * 2px) calc(var(--ey) * 2px) 0 var(--sf-edge-2),
+    calc(var(--ex) * 3px) calc(var(--ey) * 3px) 0 var(--sf-edge-3),
+    0 0 0 1px rgba(70, 56, 32, 0.18),
+    calc(var(--ex) * var(--k) * 6px) calc(var(--ey) * var(--k) * 6px) calc(var(--k) * 9px) -3px rgba(46, 36, 18, 0.5),
+    calc(var(--ex) * var(--k) * 16px) calc(var(--ey) * var(--k) * 16px) calc(var(--k) * 24px) -9px rgba(46, 36, 18, 0.48);
+}
+
+/* Chips further from the picked one sit a little deeper in the pile. */
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(36, 28, 14, var(--shade));
+  pointer-events: none;
+}
+
+/* Matte paint face: pigment, paper tooth, a little roller sheen, nothing glossy. */
+.face {
+  position: absolute;
+  inset-block-start: var(--mt);
+  inset-block-end: 0;
+  inset-inline: var(--ms);
+  overflow: hidden;
+  border-radius: 3px 3px 0 0;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 2px, transparent 2px 9px, rgba(0, 0, 0, 0.03) 9px 11px, transparent 11px 19px),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.13) 0%, transparent 40%, rgba(0, 0, 0, 0.13) 100%),
+    var(--pig);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.1),
+    inset 0 0 0 4px color-mix(in srgb, var(--pig) 88%, #fff);
+}
+
+.face::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--sf-noise);
+  opacity: 0.34;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* The picked chip carries its name as display type. */
+.big {
+  position: absolute;
+  inset-block-start: 12px;
+  inset-inline: 12px;
+  z-index: 1;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+  font-family: var(--sf-font-display);
+  font-size: var(--big);
+  font-weight: 800;
+  line-height: 0.96;
+  letter-spacing: -0.04em;
+  color: var(--on);
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  text-wrap: balance;
+}
+
+/* Everyone else is printed along the exposed edge, like a paint deck. */
+.sideBox {
+  position: absolute;
+  inset-block-start: calc(var(--mt) + 13px);
+  inline-size: 17px;
+  block-size: var(--sidelen);
+  visibility: var(--sidevis);
+  z-index: 1;
+}
+
+.sideL {
+  inset-inline-start: calc(var(--ms) + 7px);
+}
+
+.sideR {
+  inset-inline-end: calc(var(--ms) + 7px);
+}
+
+.side {
+  display: block;
+  max-height: 100%;
+  writing-mode: vertical-rl;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--sf-font-display);
+  font-size: var(--side-font);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0;
+  color: var(--on);
+}
+
+/* The punched hole with a flat metal eyelet the twine runs through. */
+.eyelet {
+  position: absolute;
+  inset-block-start: calc(var(--hy) - 6.5px);
+  inset-inline-start: calc(50% + var(--hx) - 6.5px);
+  inline-size: 13px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, #2b251b 0 31%, transparent 34%),
+    linear-gradient(145deg, #d8cdab, #a89c7b);
+  box-shadow:
+    inset 0 0 0 1px rgba(60, 48, 26, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* ---------- the twine linking every chip ---------- */
+
+.twine {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  z-index: 300;
+  overflow: visible;
+  pointer-events: none;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.twineShadow {
+  stroke: rgba(30, 22, 10, 0.4);
+  stroke-width: 4.6;
+  transform: translate(2px, 6px);
+  filter: blur(2.6px);
+}
+
+.twineBody {
+  stroke: var(--sf-twine);
+  stroke-width: 3.8;
+}
+
+/* Cord twist: short bright dashes across the strand. */
+.twineSpin {
+  stroke: rgba(255, 244, 214, 0.36);
+  stroke-width: 3.8;
+  stroke-dasharray: 1.6 3.4;
+  stroke-linecap: butt;
+}
+
+.knot {
+  fill: var(--sf-twine);
+  stroke: none;
+}
+
+.knotHi {
+  fill: rgba(255, 244, 214, 0.5);
+  stroke: none;
+}
+
+/* ---------- the counter lip: label and price ---------- */
+
+.body {
+  position: relative;
+  z-index: 6;
+  display: grid;
+  gap: 12px;
+  padding: clamp(22px, 4.4cqi, 30px) clamp(20px, 4.8cqi, 32px) clamp(24px, 4.6cqi, 32px);
+  border-end-start-radius: var(--rad);
+  border-end-end-radius: var(--rad);
+  background: linear-gradient(180deg, #fbf8ee 0%, var(--sf-paper) 100%);
+  box-shadow:
+    0 -1px 0 rgba(255, 255, 255, 0.9),
+    0 -16px 24px -12px rgba(46, 36, 18, 0.4);
+}
+
+.body::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0;
+  block-size: 1px;
+  background: rgba(70, 56, 32, 0.16);
+  pointer-events: none;
+}
+
+.counterGlow {
+  position: absolute;
+  inset: 0;
+  border-end-start-radius: inherit;
+  border-end-end-radius: inherit;
+  background-color: var(--tint);
+  opacity: 0.2;
+  -webkit-mask-image: radial-gradient(60% 90% at 50% 0%, #000 0%, transparent 100%);
+  mask-image: radial-gradient(60% 90% at 50% 0%, #000 0%, transparent 100%);
+  pointer-events: none;
+  transition: background-color 460ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.titleRow {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px 20px;
+}
+
+.title {
+  flex: 1 1 230px;
+  min-inline-size: 0;
+  margin: 0;
+  font-family: var(--sf-font-display);
+  font-size: clamp(26px, 5.8cqi, 40px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+/* Very long product names step down and cap at three lines so the card height stays bounded. */
+.titleLong {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  font-size: clamp(21px, 4.2cqi, 27px);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+}
+
+.price {
+  flex: none;
+  margin: 0;
+  font-family: var(--sf-font-display);
+  font-size: clamp(22px, 4.4cqi, 28px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.colorRow {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  min-inline-size: 0;
+  margin: 0;
+}
+
+.dot {
+  flex: none;
+  inline-size: 18px;
+  aspect-ratio: 1.1;
+  border-radius: 58% 42% 47% 53% / 46% 55% 45% 54%;
+  background: var(--tint);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.14),
+    0 2px 4px -1px rgba(40, 30, 14, 0.4);
+  transition: background-color 460ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.colorName {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+  animation: rise 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.colorNameStatic {
+  animation: none;
+}
+
+.count {
+  flex: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sf-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: var(--sf-noise);
+  opacity: 0.08;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 8;
+}
+
+.cardEdge {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px var(--sf-hairline);
+  pointer-events: none;
+  z-index: 9;
+}
+
+@keyframes breathe {
+  from {
+    opacity: 0.3;
+  }
+  to {
+    opacity: 0.48;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

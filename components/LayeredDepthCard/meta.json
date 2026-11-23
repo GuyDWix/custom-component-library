@@ -1,0 +1,42 @@
+{
+  "id": "c063",
+  "name": "LayeredDepthCard",
+  "display_name": "Layered Depth Card",
+  "category": "cards",
+  "tier": "showpiece",
+  "job": "A card built from stacked flat layers (background, product, shadow, label) that separate in parallax as the card tilts",
+  "visitor_action": "move pointer or tilt to separate layers; on touch, dragging shifts the layers; arrow keys shift them when focused",
+  "owner_settings": [
+    "Background image",
+    "Foreground image (cutout)",
+    "Title",
+    "Caption",
+    "Hanging label",
+    "Layer depth"
+  ],
+  "site_types": [
+    "store",
+    "portfolio",
+    "events",
+    "restaurant"
+  ],
+  "mobile": "slow idle float, drag to shift layers",
+  "motion": "layers translate by depth with smoothed pointer easing, balloon and hanging tag swing as pendulums, staged paper-by-paper entrance (reduced-motion: layers locked at a gentle offset)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 2,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "deferred-to-QA",
+    "craft": "deferred-to-QA"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Paper theatre: layered matte cut-paper in dusk coral and indigo, soft stepped shadows between planes, grainy print texture",
+  "notes": "Defaults are painted in code (dusk sky, paper hot-air balloon) so no cut-out image is needed; setting a background or foreground image swaps those planes. Self-hosted Gabarito font. Not yet seen in a browser: layout positions were set by calculation only. 2026-11-23: targeted fix (Sonnet 5.5, QA near-pass): title floor raised above the near-hill tips so it is never covered at any length; hanging tag width capped to the string anchor and clamped to 5 lines so text stays inside the card. Pending QA re-sweep. 2026-11-23: surgical fix 2 (worst-375): long captions (>90 chars) at narrow widths get a tighter size and lower position so they clear the title above."
+}

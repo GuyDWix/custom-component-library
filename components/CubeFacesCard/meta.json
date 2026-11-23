@@ -1,0 +1,40 @@
+{
+  "id": "c061",
+  "name": "CubeFacesCard",
+  "display_name": "Cube Faces Card",
+  "category": "cards",
+  "tier": "showpiece",
+  "job": "A service card shaped as a rotating cube whose four faces carry overview, process, price and proof",
+  "visitor_action": "hover-drag or swipe to rotate; arrows and tab buttons jump to a face",
+  "owner_settings": [
+    "Four faces (label, title, text, key figure and its note)",
+    "Face color",
+    "Accent color",
+    "Auto-turn on or off"
+  ],
+  "site_types": [
+    "services",
+    "business",
+    "portfolio",
+    "events"
+  ],
+  "mobile": "swipe rotates, face tabs shown below",
+  "motion": "3D quarter-turn with spring settle and slight idle drift (reduced-motion: tabbed faces with fade)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "deferred-to-QA",
+    "craft": "deferred-to-QA"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Ceramic block: glazed off-white tile faces with cobalt line icons, soft ambient occlusion, hairline bevel catching light",
+  "notes": "Not yet rendered or seen by the builder (QA sweep pending). Known risk: face text colors are fixed navy, so a dark Face color setting would hurt contrast. 2026-11-23: targeted fix (Sonnet 5.5, QA fail): cube pushed left with horizon word bleeding right + tilted floor (narrow: word peeks over cube), stat splits number/unit and sizes to fit (never truncated), tabs wrap 2x2 at phone width; not yet re-rendered, QA to re-sweep. 2026-11-23: surgical fix 2 (worst-375): face grid column pinned to minmax(0,1fr) so worst content no longer overflows the face (tag/note were clipped), tag wraps instead of ellipsizing, note clamp ellipsis kept inside the face, tabs wrap to full labels (13px at phone width); not yet re-swept by QA."
+}

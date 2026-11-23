@@ -3,7 +3,6 @@ import WatercolourWashField from './Component';
 import type { WashEdgeStyle } from './Component';
 
 const worst = {
-  eyebrow: 'Seasonal community supper series and neighbourhood fundraising evenings, spring through early autumn',
   title: 'An extraordinarily long-winded headline about Mediterranean-inspired, locally-sourced, zero-waste neighbourhood dining experiences',
   body:
     'Every Thursday, Friday and Saturday evening we open the long table by the window for a slow, seven-course supper built entirely around whatever the farmers, foragers and fishermen bring to our kitchen door that morning. Menus change without notice, dietary requirements are welcomed with forty-eight hours of warning, and the last seating is at nine-thirty sharp, after which the candles are lit and nobody is rushed out.',
@@ -16,7 +15,7 @@ const stage = {
   display: 'grid',
   placeItems: 'center',
   padding: 'clamp(16px, 4vw, 56px)',
-  background: 'linear-gradient(180deg, #efe9e1 0%, #e6e2da 100%)',
+  background: 'linear-gradient(180deg, #eceae4 0%, #e3e1da 100%)',
 };
 
 export default function Preview() {

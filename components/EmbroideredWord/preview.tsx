@@ -12,18 +12,18 @@ const stage = {
   display: 'grid',
   placeItems: 'center',
   padding: 'clamp(16px, 4vw, 56px)',
-  background: 'linear-gradient(180deg, #f3efe8 0%, #ebe5da 100%)',
+  background: 'linear-gradient(180deg, #eceae6 0%, #e1dfdb 100%)',
 };
 
 export default function Preview() {
   const params = useMemo(() => new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search), []);
   const isWorst = params.get('worst') === '1';
-  const stitchStyle = (params.get('style') as StitchStyle | null) ?? 'satin';
+  const stitchStyle = (params.get('style') as StitchStyle | null) ?? 'filled';
 
   return (
     <div style={stage}>
       <div style={{ width: '100%', maxWidth: 1100 }}>
-        <EmbroideredWord stitchStyle={stitchStyle} {...(isWorst ? worst : {})} />
+        <EmbroideredWord stitchStyle={stitchStyle} resewOnHover={params.get('resew') === '1'} {...(isWorst ? worst : {})} />
       </div>
     </div>
   );

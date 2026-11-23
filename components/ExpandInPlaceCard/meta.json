@@ -1,0 +1,45 @@
+{
+  "id": "c053",
+  "name": "ExpandInPlaceCard",
+  "display_name": "Expand In-Place Card",
+  "category": "cards",
+  "tier": "everyday",
+  "job": "A compact card that smoothly grows to a larger layout in place, nudging neighbours aside, to reveal full description and a link",
+  "visitor_action": "click/tap the card or press Enter on the round control to expand; Esc or clicking again collapses",
+  "owner_settings": [
+    "Image",
+    "Image alt text",
+    "Title",
+    "Summary",
+    "Full text",
+    "Link label",
+    "Link URL",
+    "Accent color"
+  ],
+  "site_types": [
+    "services",
+    "business",
+    "portfolio",
+    "blog",
+    "store"
+  ],
+  "mobile": "expands to full width inline and scrolls into view",
+  "motion": "hero morph: the photo springs from an asymmetric arched panel into a full-bleed stage while the card grows, then the details row opens and the words cascade in with stagger (reduced-motion: instant, static)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped",
+    "craft": "skipped"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Harbour slate: cool grey-blue panels, crisp white type, one signal-orange accent, matte soft-radius surfaces",
+  "notes": "2026-11-23: quality redo 2 (Sonnet 5.5, QA fail). Rebuilt as a composed hero with a clip-path morph and word-stagger; photo has an always-on CSS-painted harbour fallback. Relies on clip-path/grid-row interpolation, so old browsers snap between states. 2026-11-23: composition round 2: collapsed state is now a near-full-bleed arched photo with a display-size headline overlapping it, chart rings and compass ticks in the margin, and a machined steel button seated in a bite on the card edge; expand unfurls the arch to full bleed, shrinks the headline, then cascades the details. Known weakness: summary can straddle the arch edge at mid widths; wide layout is fixed-composition (arch/bite) so it assumes a container of about 640px or more, below that it switches to a dome layout."
+}

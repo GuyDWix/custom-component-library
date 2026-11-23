@@ -19,7 +19,7 @@
     "restaurant"
   ],
   "mobile": "smaller radius, larger panels, swipe spins",
-  "motion": "3D rotation with inertia and spring snap, slow idle drift with pause control, back photos dim and blur (reduced-motion: simple horizontal slider)",
+  "motion": "Inertia drag with velocity fling and spring settle; slow idle drift with quiet pause control; side panels fall out of focus by angle (blur, dim, desaturate); caption crossfades between photos (reduced-motion: static horizontal photo strip)",
   "scores": {
     "concept": 3,
     "usefulness": 3,
@@ -28,13 +28,13 @@
   },
   "checks": {
     "tsc": "pass",
-    "render": "pass (1 fix: larger mobile panels, clean reduced-motion floor)",
-    "craft": "pass (3, no polish pass needed)"
+    "render": "pass (prior build); redesign not re-shot (shots disabled 2026-11-23)",
+    "craft": "pass (3, prior build); redesign pending visual review"
   },
   "craft_score": 3,
   "status": "built",
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
-  "art_direction": "Gallery rotunda: pale plaster ground, matte-white mounts, soft overhead light and floor reflection",
-  "notes": "Per-panel CSS blur on side photos costs GPU on low-end phones; the pipeline's headless 375 shot captures before images paint (verified fine in a real 375 browser)."
+  "art_direction": "Planetarium: near-black dome with faint star field and projector halo, photos as glowing lightbox panels on a true-perspective cylinder, black-glass floor with reflections and warm light pools, depth-of-field falloff by angle",
+  "notes": "2026-11-23: redesigned (batch B) to Planetarium - dark dome, lit panels on a true-perspective cylinder, black-glass floor reflection, depth-of-field by angle, inertia drag. Self-hosted Wix Madefor Display (fonts/). Per-panel CSS blur on side photos costs GPU on low-end phones; shots/scoring skipped (shot.sh disabled 2026-11-23), so the dark restyle is tsc-verified but not visually re-verified."
 }

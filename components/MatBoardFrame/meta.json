@@ -4,7 +4,7 @@
   "display_name": "Mat Board Frame",
   "category": "ambient",
   "tier": "everyday",
-  "job": "Frame a featured product, dish or artwork with a bevel-cut picture-framing mat and a small gallery plaque holding its name and price",
+  "job": "Frame a featured product, dish or artwork in a museum-lit shadow box with a small acrylic gallery plaque holding its name and price",
   "visitor_action": "hover the piece or tap the plaque to lift it and reveal a longer note; Enter or Space on the focused plaque toggles it",
   "owner_settings": [
     "Image (or text shown when there is no image)",
@@ -14,9 +14,15 @@
     "Mat color",
     "Frame finish (oak, walnut, ebony, white)"
   ],
-  "site_types": ["store", "portfolio", "restaurant", "events", "services"],
-  "mobile": "thinner mat and frame, plaque sits beneath the frame",
-  "motion": "wall shadow, picture-light glow, glass reflection and bevel highlight shift with scroll on a spring; plaque lifts and the note slides open on hover or tap (reduced-motion: static frame with the note always visible)",
+  "site_types": [
+    "store",
+    "portfolio",
+    "restaurant",
+    "events",
+    "services"
+  ],
+  "mobile": "frame fills the width, plaque sits beneath it, lamp stays top-right; no hover warmth on touch, tap the plaque for the note",
+  "motion": "Entrance in 4 overlapping beats: the halogen strikes with a flicker, the light pool spreads down the wall, a glint sweeps the museum glass, then dust drifts into the beam and the plaque rises. Viewpoint is a spring driven by pointer and scroll, so the art parallaxes inside the box and the glass reflection slides; hover warms the light (cool to 2700K-ish) and opens the plaque note; pointer movement swirls the dust. Ambient dust and idle drift pause off-screen and via a small pause control (reduced-motion: lit static frame, still dust specks, note always visible)",
   "scores": {
     "concept": 2,
     "usefulness": 3,
@@ -26,12 +32,12 @@
   "checks": {
     "tsc": "pass",
     "render": "pass",
-    "craft": "pass (3, after 1 polish pass)"
+    "craft": "pending independent review"
   },
   "craft_score": 3,
   "status": "built",
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
-  "art_direction": "Gallery oak: warm oak frame, oatmeal mat with crisp cut bevel, brass plaque with engraved black text, soft wall shadow",
-  "notes": "Scroll-linked light shift is deliberately subtle and barely reads in a still; the CSS wood grain reads as fine figure, not photo-real oak."
+  "art_direction": "Gallery night: dark slate wall, museum spotlight cone with soft falloff and drifting dust, thin float frame in a deep 3D shadow box, museum-glass reflection that follows the pointer/scroll, clean acrylic plaque set in sans. Dark.",
+  "notes": "2026-11-23: redesigned (batch A) to Gallery night (dark spotlit wall, 3D shadow box, acrylic plaque). Known weakness: the backing and inner box walls are flat CSS shading, and the beam reads faintly in a still; intro and hover were not captured in screenshots."
 }

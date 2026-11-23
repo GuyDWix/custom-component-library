@@ -1,0 +1,43 @@
+{
+  "id": "c043",
+  "name": "SignOffSignature",
+  "display_name": "Sign-off Signature",
+  "category": "text",
+  "tier": "everyday",
+  "job": "A handwritten signature that draws itself stroke by stroke beneath a short note, giving owner messages a personal close",
+  "visitor_action": "none (draws in view)",
+  "owner_settings": [
+    "Note text",
+    "Signature name",
+    "Handwriting style",
+    "Ink color",
+    "Flourish underline",
+    "Paper tone"
+  ],
+  "site_types": [
+    "business",
+    "services",
+    "portfolio",
+    "blog",
+    "restaurant"
+  ],
+  "mobile": "same",
+  "motion": "signature stroke draws with eased speed and a pen lift before the underline (reduced-motion: finished signature)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped (token-saving directive, 2026-11-23)",
+    "craft": "skipped (token-saving directive, 2026-11-23)"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Fountain-pen letter: cream laid paper, indigo ink with slight thick-thin pressure, faint flourish underline, soft pen-tip shine",
+  "notes": "Glyph letterforms are hand-authored cubic-bezier approximations and were not visually verified this run (render gate skipped); long names shrink to fit, which softens stroke contrast."
+}

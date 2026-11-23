@@ -1,0 +1,40 @@
+{
+  "id": "c044",
+  "name": "FoldedPaperHeadline",
+  "display_name": "Folded Paper Headline",
+  "category": "text",
+  "tier": "showpiece",
+  "job": "A headline printed across a zig-zag folded paper strip that opens flat as the visitor scrolls, letters straightening with each crease",
+  "visitor_action": "scroll to unfold; readable at every stage",
+  "owner_settings": [
+    "Headline text",
+    "Paper color",
+    "Text color",
+    "Fold count"
+  ],
+  "site_types": [
+    "events",
+    "portfolio",
+    "store",
+    "business"
+  ],
+  "mobile": "fewer folds, unfolds on view instead of scroll",
+  "motion": "facets rotate to flat with perspective and eased settle (reduced-motion: flat open strip)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 2,
+    "uniqueness": 3,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped",
+    "craft": "skipped"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Origami studio: coral-red folded stock, cream type, sharp light and shadow planes on each facet, matte paper grain",
+  "notes": "Scroll-mapped unfold needs scroll room below the strip; on a very short page it never fully opens"
+}

@@ -1,0 +1,40 @@
+{
+  "id": "c095",
+  "name": "DayNightMenuSwitch",
+  "display_name": "Day / Night Menu Switch",
+  "category": "controls",
+  "tier": "everyday",
+  "job": "A two-state toggle for lunch and dinner (or day and evening) offerings where the scene behind it shifts from sunlit to lamp-lit as the menu swaps",
+  "visitor_action": "click/tap the toggle or press Space; swipe on touch",
+  "owner_settings": [
+    "Two menus (title, hours, note, dishes with name, description and price)",
+    "Toggle labels",
+    "Day colors (sky, paper)",
+    "Evening colors (night sky, lamp glow)"
+  ],
+  "site_types": [
+    "restaurant",
+    "events",
+    "services",
+    "store"
+  ],
+  "mobile": "toggle on top, menu below, swipe switches",
+  "motion": "sun and moon pass each other, background crossfades, items slide (reduced-motion: instant swap)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "deferred-to-QA",
+    "craft": "deferred-to-QA"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Golden hour to candlelight: apricot and cream day scene, aubergine and amber evening scene, soft gradient sky and glow",
+  "notes": "Not yet seen in a browser (render and craft deferred to QA): sun/moon arc geometry, title placement over the hills and the wide/narrow breakpoint at 760px are calculated, not eyeballed."
+}

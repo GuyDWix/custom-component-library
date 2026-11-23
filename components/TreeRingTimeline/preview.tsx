@@ -24,7 +24,7 @@ const stage = {
   display: 'grid',
   placeItems: 'center',
   padding: 'clamp(16px, 4vw, 56px)',
-  background: '#ece4d6',
+  background: '#e8ebe6',
 };
 
 export default function Preview() {
@@ -44,7 +44,6 @@ export default function Preview() {
                 milestones: worstMilestones,
                 centreLabel: 'Hand-built furniture and joinery since nineteen eighty-nine',
                 centreCaption: '',
-                eyebrow: 'Thirty-six years of the Montgomery-Vanderhoeven Woodworking Collective',
               }
             : {})}
         />

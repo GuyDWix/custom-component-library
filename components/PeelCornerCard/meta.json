@@ -1,0 +1,40 @@
+{
+  "id": "c054",
+  "name": "PeelCornerCard",
+  "display_name": "Peel Corner Card",
+  "category": "cards",
+  "tier": "showpiece",
+  "job": "A card with a curling sticker corner that peels back to uncover a hidden offer, bonus or detail beneath",
+  "visitor_action": "hover the corner or drag it to peel; tap peels fully on touch; Enter/Space toggles the peel, Escape flattens it",
+  "owner_settings": [
+    "Card content (title, text, footnote)",
+    "Hidden message (title, text, code)",
+    "Peel color",
+    "Corner position"
+  ],
+  "site_types": [
+    "store",
+    "restaurant",
+    "events",
+    "services"
+  ],
+  "mobile": "tap peels the corner in one animated motion",
+  "motion": "corner curl follows pointer with real fold geometry, releases with spring ease; idle corner breathes (reduced-motion: corner pre-peeled showing message)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 2,
+    "uniqueness": 3,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped",
+    "craft": "skipped"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Full-bleed lemon vinyl sticker sheet that IS the component: two-tone printed sunburst, halftone screen, air-bubble pinpricks and blisters, gloss laminate, ink brand strip with tick rule; a huge ~50% corner peel whose clear adhesive back shows the mirrored sunburst; revealed ink field with rotating rays, rings, halftone and a notched coupon chip",
+  "notes": "2026-11-23: quality redo 2 (Sonnet 5.5, QA fail). Peel rebuilt as ~36% hero corner (true outline-clipped reflection, rounded flap, liner paper, layered canvas shadows, overhangs card when held); card fills with condensed-black headline fit to length, brand strip beside peel, ink well with staggered hidden offer. Not re-shot by builder (QA re-sweeps). Weakness: extreme worst-case footers can clip at 375; held peel covers most of the sticker by design. | 2026-11-23: composition round 2 - no stage: sticker fills the frame edge to edge (16:9 wide, 1:1, 4:5 by container width), peel ~50% idle with adhesive-back flap + mirrored print ghost, ink brand strip, composed ink reveal. Verified by hand in browser at 1280/375/worst (shot.sh not run). Weakness: body copy is line-clamped to 5 lines; held peel covers about half the sticker by design."
+}

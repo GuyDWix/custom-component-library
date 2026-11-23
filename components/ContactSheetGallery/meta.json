@@ -3,14 +3,14 @@
   "name": "ContactSheetGallery",
   "display_name": "Contact Sheet Gallery",
   "category": "media",
-  "tier": "everyday",
-  "job": "Show a photo set as a printed contact sheet; picking a frame circles it in grease pencil and lifts it into a large view",
-  "visitor_action": "click/tap a frame; arrow keys move between frames; Esc closes the large view; swipe between photos in the large view",
+  "tier": "showpiece",
+  "job": "Show a photo set as negatives on a glowing light table; a loupe follows the pointer to inspect frames, and picking one circles it in china marker and lifts it through the loupe into a large print",
+  "visitor_action": "move the pointer to look through the loupe; click/tap a frame; arrow keys move between frames; Esc closes the large view; swipe between photos in the large view",
   "owner_settings": [
     "Photos (image, caption, picked mark)",
     "Frame numbers on/off",
     "Marker color",
-    "Paper tone",
+    "Table light tone",
     "Title",
     "Roll label"
   ],
@@ -20,8 +20,8 @@
     "blog",
     "restaurant"
   ],
-  "mobile": "3-column sheet, tap opens full-width view, swipe between photos",
-  "motion": "marker circle draws itself, picked frame lifts with spring and soft shadow (reduced-motion: static circle, instant open)",
+  "mobile": "3-column sheet, loupe follows horizontal drags, tap opens full-width view, swipe between photos",
+  "motion": "loupe settles onto the sheet on entry and springs after the pointer with real magnification and barrel distortion; on pick a china-marker circle draws, then the print lifts through the loupe: a circular mask expands while the negative develops into a positive; the table light breathes slowly (reduced-motion: loupe rests statically on the first picked frame, circles pre-drawn, instant open, positive shown)",
   "scores": {
     "concept": 3,
     "usefulness": 3,
@@ -30,13 +30,13 @@
   },
   "checks": {
     "tsc": "pass",
-    "render": "pass (1 fix: ring dash rendering + overlay fitted to visible area)",
-    "craft": "pass (1 polish pass: heading width, title size, header spacing)"
+    "render": "unverified (shots disabled 2026-11-23, Guy token saving; modules transform clean on dev server)",
+    "craft": "unverified (no shots this pass; independent review pending)"
   },
-  "craft_score": 3,
+  "craft_score": null,
   "status": "built",
   "provenance": "original, built from a concept description",
   "studio2_tested": true,
-  "art_direction": "Darkroom proof: warm off-white photo paper, carbon-black film borders with tiny edge numbers, china-marker red circle, fine paper grain",
-  "notes": "Large view is sized to the element, so it is small when the sheet is short (one strip); prev/next arrows are not mirrored for right-to-left languages. 2026-11-23: removed on-screen hint/replay per contract §2 rule"
+  "art_direction": "Lightbox: near-black darkroom, a glowing milky light table that bleeds off the card edges, amber color-negative frames with luminous sprocket holes and mono edge data, china-marker red pick circles, a glass-and-metal loupe with lens distortion as the hero object; Space Grotesk display, tabular mono data",
+  "notes": "Loupe distortion uses a canvas-generated displacement map behind an SVG feDisplacementMap; if a browser cannot run feImage the lens degrades to plain 2.15x magnification. Large view is sized to the element, so it is small when the sheet is short (one strip); prev/next arrows are not mirrored for RTL. 2026-11-23: redesigned (batch B) to the Lightbox direction (dark mode): negatives on a glowing light table, pointer-following loupe, china-marker pick circle, print lifts through the loupe and develops negative-to-positive"
 }

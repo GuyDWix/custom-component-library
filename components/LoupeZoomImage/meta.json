@@ -1,0 +1,43 @@
+{
+  "id": "c002",
+  "name": "LoupeZoomImage",
+  "display_name": "Loupe Zoom Image",
+  "category": "media",
+  "tier": "everyday",
+  "job": "Let visitors inspect product detail through a glass loupe that magnifies the photo under the pointer",
+  "visitor_action": "hover or drag the loupe over the image; keyboard arrows move it; tap toggles it on touch",
+  "owner_settings": [
+    "Image",
+    "Image description",
+    "Zoom level",
+    "Loupe size",
+    "Rim color",
+    "Caption",
+    "Detail line",
+    "Photo aspect ratio"
+  ],
+  "site_types": [
+    "store",
+    "portfolio",
+    "business"
+  ],
+  "mobile": "tap toggles the loupe at the tapped spot; tap-and-hold shows it above the finger and it follows the drag",
+  "motion": "loupe rests tilted on the print with a faint breathing float, picks up with a scale-in pop and follows the pointer with spring lag; glare, fringe and shadow drift with velocity (reduced-motion: no lag, instant moves)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped",
+    "craft": "skipped"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Jeweller's bench: neutral linen backdrop, polished brass rim, glass with curved highlight and faint chromatic fringe at the edge",
+  "notes": "2026-11-23: quality redo (Sonnet 5.5). Root cause of 'broken': default Unsplash photo URL returned 404, and the collapsed broken <img> left the stage empty (lens image also dark). Fix: self-contained vector watch shot as default and onError fallback, frame owns the aspect ratio, full-bleed print, 320px brass loupe resting tilted on it. Render/craft gates not run (screenshots disabled); verify in gallery. Default image is a stylised vector, not a photograph; a supplied low-res photo reads soft at high zoom. | 2026-11-23: QA nit fixes. Handle now mirrors toward the side of the frame with room and shortens to fit (--lz-hx/hy/hk set in paint), so it no longer overlaps the x4 chip or clips at the 375 card edge."
+}

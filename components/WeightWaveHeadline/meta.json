@@ -1,0 +1,43 @@
+{
+  "id": "c033",
+  "name": "WeightWaveHeadline",
+  "display_name": "Weight Wave Headline",
+  "category": "text",
+  "tier": "showpiece",
+  "job": "A headline in a variable font whose letter weight swells and relaxes in a wave that follows the pointer",
+  "visitor_action": "move pointer across the headline to swell the wave; on touch a slow automatic wave sweeps left to right, with a quiet pause control",
+  "owner_settings": [
+    "Headline text",
+    "Font choice",
+    "Lightest weight",
+    "Heaviest weight",
+    "Text color",
+    "Bar color"
+  ],
+  "site_types": [
+    "portfolio",
+    "business",
+    "events",
+    "blog",
+    "store"
+  ],
+  "mobile": "slow automatic wave left to right with a quiet pause control",
+  "motion": "weights ease toward target with spring, wave radius falls off smoothly (reduced-motion: single medium weight, static)",
+  "art_direction": "Type foundry poster: bone-grey ground, near-black grotesk, a single signal-orange underline bar, tight tracking",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped (binding: Guy 2026-11-23)",
+    "craft": "skipped (binding: Guy 2026-11-23)"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "notes": "The wave only animates when the chosen font is variable; a static fallback font renders the poster at rest weight with no motion."
+}

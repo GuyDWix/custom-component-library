@@ -1,0 +1,42 @@
+{
+  "id": "c052",
+  "name": "HangingTagCard",
+  "display_name": "Hanging Tag Card",
+  "category": "cards",
+  "tier": "showpiece",
+  "job": "A product or service card hung from a string that swings with real pendulum physics when touched",
+  "visitor_action": "hover or drag the tag to swing it; tap on touch; arrow keys push it when focused, Escape settles it",
+  "owner_settings": [
+    "Title",
+    "Price or label",
+    "Short note",
+    "String color",
+    "Ink color",
+    "Tag shape"
+  ],
+  "site_types": [
+    "store",
+    "portfolio",
+    "events",
+    "business"
+  ],
+  "mobile": "tap swings once, no drag required",
+  "motion": "pendulum swing with damped spring settle, shadow follows angle (reduced-motion: static slightly tilted tag)",
+  "art_direction": "Kraft atelier: unbleached kraft stock with reinforced eyelet, twine, ink-stamp type in forest green, soft cast shadow on wall",
+  "scores": {
+    "concept": 3,
+    "usefulness": 2,
+    "uniqueness": 3,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped (token saving, 2026-11-23)",
+    "craft": "skipped (token saving, 2026-11-23)"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "notes": "Render and craft gates skipped per Guy 2026-11-23; unreviewed visually. Fonts are self-hosted woff2 files in the component folder. 2026-11-23: quality redo 2 (Sonnet 5.5, QA fail) 2026-11-23: composition round 2 (lit plaster wall fills frame, tag ~68% of frame height, thick twisted cord tied off at an iron nail, kraft with relief and fibre, paper-reinforced brass eyelet, heavier shadow; checked in headless Chrome at 1280 only, shot.sh not run)"
+}

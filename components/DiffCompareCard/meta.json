@@ -1,0 +1,41 @@
+{
+  "id": "c059",
+  "name": "DiffCompareCard",
+  "display_name": "Diff Compare Card",
+  "category": "cards",
+  "tier": "everyday",
+  "job": "Compare two options side by side where only the rows that differ are highlighted and matching rows fade back",
+  "visitor_action": "toggle \"differences only\" to drop the matching weights off the rods; hover or focus a row to lift both of its masses",
+  "owner_settings": [
+    "First option name",
+    "Second option name",
+    "Rows (label, first value, second value)",
+    "Highlight color",
+    "Differences-only toggle label"
+  ],
+  "site_types": [
+    "store",
+    "services",
+    "business",
+    "events"
+  ],
+  "mobile": "beam and nameplates stay on top with a steeper tilt; each row's label tag sits above its two masses on the pillar",
+  "motion": "nameplates drop in, masses thread onto the rods, then the beam swings down toward the heavier option on a damped spring with the stacks trailing it and the tally ring sweeping; toggling differences-only drops the matching weights off the rods and jolts the beam (reduced-motion: static tilted scale, instant filter)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped",
+    "craft": "skipped"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Assay balance in ink and mint: the two options hang from a tilting beam as heavy nameplates; differing rows are slotted masses strung on each rod (heavier value = wider ink slab, lighter = mint), matching rows are small grey tare weights that drop off when differences-only is on; a dial hub shows the tally",
+  "notes": "2026-11-23: composition round 2 (Sonnet 5.5): replaced the comparison table with a physical balance (beam tilts toward the heavier option from parsed numbers; weak spot: non-numeric differing rows carry no weight so the beam stays level if every difference is text). Sticky names dropped; render/craft re-judged by QA."
+}

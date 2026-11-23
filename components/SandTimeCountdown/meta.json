@@ -1,0 +1,43 @@
+{
+  "id": "c073",
+  "name": "SandTimeCountdown",
+  "display_name": "Sand Time Countdown",
+  "category": "data",
+  "tier": "showpiece",
+  "job": "Count down to a launch, sale or event as an hourglass whose grains of sand fall in proportion to the time left, with days, hours and minutes printed on the base",
+  "visitor_action": "none; hover flips the glass briefly to a lively state",
+  "owner_settings": [
+    "Target date and time",
+    "Start date",
+    "Heading",
+    "Finished message",
+    "Sand color",
+    "Frame style (columns, rods or open)",
+    "Day, hour and minute labels"
+  ],
+  "site_types": [
+    "events",
+    "store",
+    "restaurant",
+    "business"
+  ],
+  "mobile": "smaller glass, fewer grains, numbers below",
+  "motion": "grains stream and pile with gravity physics in canvas, the pile slowly shifts with real time (reduced-motion: static glass at the right fill, numbers only)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "deferred-to-QA",
+    "craft": "deferred-to-QA"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Observatory brass: midnight-teal backdrop, brushed brass frame, pale gold sand with warm glints, cream numerals",
+  "notes": "Not yet seen in a browser (render and craft deferred to the QA sweep). With no target date it shows a rolling demo countdown (about 12 days) that restarts on every page load. Hover 'flip' is a rock-and-slosh of the glass, not a full 180 degree turn. 2026-11-23: targeted fix (Sonnet 5.5, QA fail): glass moved off-centre with the dial bleeding past the frame edge, raking moonbeam and cast shadow, title tick-free zone (mask), unit labels wrap instead of truncating. Not yet re-shot; QA re-sweeps."
+}

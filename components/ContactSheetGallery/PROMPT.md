@@ -1,6 +1,6 @@
 Create a custom element called "Contact Sheet Gallery". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: photos (image, caption, picked mark), frame numbers on/off, marker color, paper tone, title, roll label. Add other settings if they help.
+The site owner must be able to change: photos (image, caption, picked mark), frame numbers on/off, marker color, table light tone, title, roll label. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
@@ -48,27 +48,36 @@ export const defaultPhotos: ContactSheetPhoto[] = [
 type Phase = 'closed' | 'open' | 'closing';
 type Motion = { x: number; y: number; s: number; vx: number; vy: number; vs: number };
 type Box = { left: number; top: number; w: number; h: number; pad: number; imgW: number; imgH: number };
+type Pt = { x: number; y: number };
+type LoupeState = { x: number; y: number; vx: number; vy: number };
 
 const STIFFNESS = 240;
 const DAMPING = 23;
+const L_STIFF = 150;
+const L_DAMP = 16;
 const CAPTION_H = 52;
-const OPEN_DELAY = 320;
+const OPEN_DELAY = 340;
 const SWIPE = 56;
-const SHEET_HELP = 'Pick a frame to see it large. Arrow keys move between frames; Escape closes.';
-const TILT = [-0.35, 0.28, -0.18, 0.4, -0.24];
+const ZOOM = 2.15;
+const BULGE = 0.42;
+const BULGE_SCALE = 30;
+const SHEET_HELP =
+  'Move over the sheet to inspect frames with the loupe. Pick a frame to see it large. Arrow keys move between frames; Escape closes.';
+const TILT = [-0.5, 0.4, -0.3, 0.55, -0.42];
 const RING = 'M78 10C52 0 14 6 6 34C0 58 16 90 50 94C82 97 99 74 96 46C93 20 70 6 44 9C36 10 30 13 26 17';
 
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 const pad2 = (n: number) => String(n).padStart(2, '0');
 const pickedSet = (photos: ContactSheetPhoto[]) => new Set(photos.flatMap((p, i) => (p.picked ? [i] : [])));
 const rest = (): Motion => ({ x: 0, y: 0, s: 1, vx: 0, vy: 0, vs: 0 });
+const clampChan = (v: number) => Math.max(0, Math.min(255, Math.round(v * 255)));
 
 export default function ContactSheetGallery({
   photos = defaultPhotos,
   title = 'A long weekend by the sea',
   rollLabel = 'Roll 07 · 400 · Proof',
   showFrameNumbers = true,
-  markerColor = '#D2361F',
+  markerColor = '#E8502E',
   paperTone = '#F2EBDD',
   ariaLabel = 'Contact sheet',
   photoLabel = 'Photo',
@@ -86,11 +95,16 @@ export default function ContactSheetGallery({
   const [inView, setInView] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [swap, setSwap] = useState({ key: 0, dir: 0 });
+  const [bulge, setBulge] = useState<{ url: string; size: number } | null>(null);
 
   const rootRef = useRef<HTMLElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const printRef = useRef<HTMLElement>(null);
+  const tableRef = useRef<HTMLDivElement>(null);
+  const loupeRef = useRef<HTMLDivElement>(null);
+  const lensRef = useRef<HTMLDivElement>(null);
+  const cloneRef = useRef<HTMLDivElement>(null);
   const frameEls = useRef<(HTMLButtonElement | null)[]>([]);
   const ratios = useRef<number[]>([]);
   const motion = useRef<Motion>(rest());
@@ -100,21 +114,48 @@ export default function ContactSheetGallery({
   const timer = useRef(0);
   const launching = useRef(false);
   const drag = useRef({ active: false, id: -1, x0: 0, dx: 0 });
+  const loupeM = useRef<LoupeState>({ x: 0, y: 0, vx: 0, vy: 0 });
+  const loupeT = useRef<Pt>({ x: 0, y: 0 });
+  const restPt = useRef<Pt>({ x: 220, y: 140 });
+  const loupeD = useRef(160);
+  const lensD = useRef(140);
+  const bulgeD = useRef(0);
+  const idle = useRef(true);
+  const entered = useRef(false);
   const phaseRef = useRef(phase);
   const indexRef = useRef(index);
   const reducedRef = useRef(reduced);
   const inViewRef = useRef(inView);
+  const restIdx = useRef(0);
   phaseRef.current = phase;
   indexRef.current = index;
   reducedRef.current = reduced;
   inViewRef.current = inView;
+  const firstPicked = photos.findIndex((p) => p.picked);
+  restIdx.current = firstPicked >= 0 ? firstPicked : 0;
 
-  const filterId = `csg-${useId().replace(/:/g, '')}`;
+  const uid = useId().replace(/:/g, '');
+  const ringFilterId = `csg-wax-${uid}`;
+  const bulgeFilterId = `csg-lens-${uid}`;
 
   useEffect(() => {
     setMarked(pickedSet(photos));
     ratios.current = [];
   }, [photos]);
+
+  const paintLoupe = useCallback(() => {
+    const lp = loupeRef.current;
+    const cl = cloneRef.current;
+    if (!lp) return;
+    const L = loupeM.current;
+    const d = loupeD.current;
+    lp.style.transform = `translate3d(${(L.x - d / 2).toFixed(1)}px, ${(L.y - d / 2).toFixed(1)}px, 0)`;
+    if (!cl) return;
+    const dl = lensD.current;
+    const cx = L.x;
+    const cy = L.y;
+    cl.style.transform = `translate(${(dl / 2 - cx * ZOOM).toFixed(1)}px, ${(dl / 2 - cy * ZOOM).toFixed(1)}px, 0) scale(${ZOOM})`;
+  }, []);
 
   const computeBox = useCallback((i: number): Box | null => {
     const st = stageRef.current;
@@ -148,14 +189,28 @@ export default function ContactSheetGallery({
     Object.assign(el.style, { left: `${b.left}px`, top: `${b.top}px`, width: `${b.w}px`, height: `${b.h}px`, visibility: 'visible' });
     el.style.setProperty('--pad', `${b.pad}px`);
     el.style.setProperty('--img-h', `${b.imgH}px`);
+    el.style.setProperty('--img-w', `${b.imgW}px`);
   }, []);
 
   const frameOffset = useCallback((i: number, b: Box) => {
     const fr = frameEls.current[i]?.getBoundingClientRect();
     const ov = overlayRef.current?.getBoundingClientRect();
-    if (!fr || !ov) return { x: 0, y: 0, s: 1 };
+    if (!fr || !ov) return { x: 0, y: 0, s: 0.2 };
     const s = fr.width / b.imgW;
     return { x: fr.left - ov.left - b.left - b.pad * s, y: fr.top - ov.top - b.top - b.pad * s, s };
+  }, []);
+
+  const loupeOffset = useCallback((b: Box) => {
+    const lp = loupeRef.current;
+    const st = stageRef.current;
+    if (!lp || !st) return { x: 0, y: 0, s: 0.25 };
+    const lr = lp.getBoundingClientRect();
+    const sr = st.getBoundingClientRect();
+    const d = loupeD.current;
+    const s = d / b.imgW;
+    const cx = lr.left + d / 2 - sr.left;
+    const cy = lr.top + d / 2 - sr.top;
+    return { x: cx - s * (b.pad + b.imgW / 2), y: cy - s * (b.pad + b.imgH / 2), s };
   }, []);
 
   const paint = useCallback(() => {
@@ -174,6 +229,8 @@ export default function ContactSheetGallery({
     (now: number, last: number) => {
       const m = motion.current;
       const t = target.current;
+      const L = loupeM.current;
+      const LT = loupeT.current;
       const dt = Math.min((now - last) / 1000, 1 / 30);
       const n = Math.max(1, Math.ceil(dt * 120));
       const h = dt / n;
@@ -186,24 +243,32 @@ export default function ContactSheetGallery({
         m.vs += (STIFFNESS * (t.s - m.s) - DAMPING * m.vs) * h;
         m.y += m.vy * h;
         m.s += m.vs * h;
+        L.vx += (L_STIFF * (LT.x - L.x) - L_DAMP * L.vx) * h;
+        L.vy += (L_STIFF * (LT.y - L.y) - L_DAMP * L.vy) * h;
+        L.x += L.vx * h;
+        L.y += L.vy * h;
       }
-      const settled =
+      const printSettled =
         Math.abs(t.x - m.x) + Math.abs(t.y - m.y) < 0.6 &&
         Math.abs(t.s - m.s) < 0.002 &&
         Math.abs(m.vx) + Math.abs(m.vy) < 8 &&
         Math.abs(m.vs) < 0.02;
+      const loupeSettled = Math.abs(LT.x - L.x) + Math.abs(LT.y - L.y) < 0.5 && Math.abs(L.vx) + Math.abs(L.vy) < 5;
       const snap = !inViewRef.current || reducedRef.current;
-      if ((settled || snap) && !drag.current.active) {
-        Object.assign(m, t, { vx: 0, vy: 0, vs: 0 });
+      if ((printSettled && loupeSettled) || snap) {
+        if (!drag.current.active) Object.assign(m, t, { vx: 0, vy: 0, vs: 0 });
+        Object.assign(L, LT, { vx: 0, vy: 0 });
         paint();
+        paintLoupe();
         raf.current = 0;
         if (phaseRef.current === 'closing') finishClose();
         return;
       }
       paint();
+      paintLoupe();
       raf.current = requestAnimationFrame((next) => step(next, now));
     },
-    [paint, finishClose],
+    [paint, paintLoupe, finishClose],
   );
 
   const kick = useCallback(() => {
@@ -211,6 +276,57 @@ export default function ContactSheetGallery({
     const start = performance.now();
     raf.current = requestAnimationFrame((t) => step(t, start - 16));
   }, [step]);
+
+  const bulgeFor = useCallback((d: number) => {
+    const n = Math.max(64, Math.round(d));
+    const cv = document.createElement('canvas');
+    cv.width = n;
+    cv.height = n;
+    const ctx = cv.getContext('2d');
+    if (!ctx) return;
+    const img = ctx.createImageData(n, n);
+    const half = n / 2;
+    for (let py = 0; py < n; py++) {
+      for (let px = 0; px < n; px++) {
+        const x = (px + 0.5) / half - 1;
+        const y = (py + 0.5) / half - 1;
+        const r = Math.min(1, Math.hypot(x, y));
+        const u = (BULGE * (1 - r * r)) / (1 + BULGE * (1 - r * r));
+        const o = (py * n + px) * 4;
+        img.data[o] = clampChan(0.5 - (u * x * half) / BULGE_SCALE);
+        img.data[o + 1] = clampChan(0.5 - (u * y * half) / BULGE_SCALE);
+        img.data[o + 2] = 128;
+        img.data[o + 3] = 255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    setBulge({ url: cv.toDataURL(), size: n });
+  }, []);
+
+  const measure = useCallback(() => {
+    const table = tableRef.current;
+    const lp = loupeRef.current;
+    const cl = cloneRef.current;
+    if (!table || !lp || !cl) return;
+    loupeD.current = lp.offsetWidth || 160;
+    lensD.current = lensRef.current?.offsetWidth || Math.round(loupeD.current * 0.87);
+    cl.style.width = `${table.clientWidth}px`;
+    const fr = frameEls.current[restIdx.current]?.getBoundingClientRect();
+    const tr = table.getBoundingClientRect();
+    if (fr) restPt.current = { x: fr.left - tr.left + fr.width / 2, y: fr.top - tr.top + fr.height / 2 };
+    if (idle.current && phaseRef.current === 'closed') {
+      loupeT.current = restPt.current;
+      if (reducedRef.current) {
+        Object.assign(loupeM.current, restPt.current, { vx: 0, vy: 0 });
+        paintLoupe();
+      }
+    }
+    if (bulgeD.current !== lensD.current) {
+      bulgeD.current = lensD.current;
+      bulgeFor(lensD.current);
+    }
+    kick();
+  }, [bulgeFor, paintLoupe, kick]);
 
   const mark = (i: number) =>
     setMarked((prev) => {
@@ -233,6 +349,7 @@ export default function ContactSheetGallery({
     setIndex(i);
     setFocusIndex(i);
     indexRef.current = i;
+    setSwap((s) => ({ key: s.key + 1, dir: 0 }));
     if (reducedRef.current || !fresh) launch();
     else timer.current = window.setTimeout(launch, OPEN_DELAY);
   };
@@ -240,6 +357,7 @@ export default function ContactSheetGallery({
   const close = useCallback(() => {
     if (phaseRef.current !== 'open') return;
     const b = box.current;
+    const pr = printRef.current;
     if (reducedRef.current || !b) {
       finishClose();
       return;
@@ -247,6 +365,7 @@ export default function ContactSheetGallery({
     phaseRef.current = 'closing';
     setPhase('closing');
     target.current = frameOffset(indexRef.current, b);
+    if (pr) pr.style.setProperty('--reveal', `${b.imgW / 2}px`);
     kick();
   }, [finishClose, frameOffset, kick]);
 
@@ -265,6 +384,10 @@ export default function ContactSheetGallery({
   );
 
   useIsoLayoutEffect(() => {
+    measure();
+  }, [measure, photos, cols]);
+
+  useIsoLayoutEffect(() => {
     if (phase !== 'open') return;
     if (launching.current) fitOverlay();
     const b = computeBox(index);
@@ -274,12 +397,29 @@ export default function ContactSheetGallery({
     if (launching.current) {
       launching.current = false;
       target.current = { x: 0, y: 0, s: 1 };
-      motion.current = reducedRef.current ? rest() : { ...rest(), ...frameOffset(index, b) };
+      const pr = printRef.current;
+      if (pr) {
+        if (reducedRef.current) {
+          pr.style.setProperty('--mx', `${b.pad + b.imgW / 2}px`);
+          pr.style.setProperty('--my', `${b.pad + b.imgH / 2}px`);
+          pr.style.setProperty('--reveal', `${b.imgW * 1.75}px`);
+        } else {
+          pr.style.setProperty('--mx', `${b.pad + b.imgW / 2}px`);
+          pr.style.setProperty('--my', `${b.pad + b.imgH / 2}px`);
+          pr.style.setProperty('--reveal', `${b.imgW / 2}px`);
+          pr.style.transition = 'none';
+          pr.getBoundingClientRect();
+          pr.style.transition = '';
+          const end = `${b.imgW * 1.75}px`;
+          requestAnimationFrame(() => pr.style.setProperty('--reveal', end));
+        }
+      }
+      motion.current = reducedRef.current ? rest() : { ...rest(), ...loupeOffset(b) };
       paint();
       kick();
       overlayRef.current?.focus({ preventScroll: true });
     }
-  }, [phase, index, fitOverlay, computeBox, placePrint, frameOffset, paint, kick]);
+  }, [phase, index, fitOverlay, computeBox, placePrint, loupeOffset, paint, kick, measure]);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -294,6 +434,7 @@ export default function ContactSheetGallery({
     if (!root) return;
     const ro = new ResizeObserver(() => {
       setCols(root.clientWidth < 560 ? 3 : 4);
+      measure();
       if (phaseRef.current !== 'open') return;
       fitOverlay();
       const b = computeBox(indexRef.current);
@@ -303,14 +444,30 @@ export default function ContactSheetGallery({
       }
     });
     ro.observe(root);
-    const io = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: 0.1 });
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        setInView(entry.isIntersecting);
+        if (entry.isIntersecting && !entered.current) {
+          entered.current = true;
+          const rp = restPt.current;
+          loupeT.current = rp;
+          if (reducedRef.current) {
+            Object.assign(loupeM.current, rp, { vx: 0, vy: 0 });
+            paintLoupe();
+          } else {
+            loupeM.current = { x: rp.x, y: rp.y - 34, vx: 0, vy: 0 };
+            kick();
+          }
+        }
+      },
+      { threshold: 0.1 },
+    );
     io.observe(root);
     return () => {
       ro.disconnect();
       io.disconnect();
     };
-  }, [fitOverlay, computeBox, placePrint]);
-
+  }, [fitOverlay, computeBox, placePrint, measure, paintLoupe, kick]);
 
   useEffect(
     () => () => {
@@ -319,6 +476,45 @@ export default function ContactSheetGallery({
     },
     [],
   );
+
+  const aimAtFrame = (i: number) => {
+    if (phaseRef.current !== 'closed') return;
+    const fr = frameEls.current[i];
+    const table = tableRef.current;
+    if (!fr || !table) return;
+    const f = fr.getBoundingClientRect();
+    const t = table.getBoundingClientRect();
+    const p = { x: f.left - t.left + f.width / 2, y: f.top - t.top + f.height / 2 };
+    loupeT.current = p;
+    if (reducedRef.current) {
+      Object.assign(loupeM.current, p, { vx: 0, vy: 0 });
+      paintLoupe();
+    } else kick();
+  };
+
+  const onTableMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (phaseRef.current !== 'closed') return;
+    const table = tableRef.current;
+    if (!table) return;
+    idle.current = false;
+    const t = table.getBoundingClientRect();
+    const p = { x: e.clientX - t.left, y: e.clientY - t.top };
+    loupeT.current = p;
+    if (reducedRef.current) {
+      Object.assign(loupeM.current, p, { vx: 0, vy: 0 });
+      paintLoupe();
+    } else kick();
+  };
+
+  const onTableLeave = () => {
+    idle.current = true;
+    if (phaseRef.current !== 'closed') return;
+    loupeT.current = restPt.current;
+    if (reducedRef.current) {
+      Object.assign(loupeM.current, restPt.current, { vx: 0, vy: 0 });
+      paintLoupe();
+    } else kick();
+  };
 
   const onSheetKey = (e: KeyboardEvent<HTMLDivElement>) => {
     const moves: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: cols, ArrowUp: -cols };
@@ -381,89 +577,141 @@ export default function ContactSheetGallery({
   const rootStyle = { '--csg-paper': paperTone, '--csg-marker': markerColor } as CSSProperties;
   const on = (base: string, active: string, flag: boolean) => (flag ? `${base} ${active}` : base);
 
+  const stripNode = (cells: number[], s: number, clone: boolean) => (
+    <div key={s} className={styles.strip} style={{ '--tilt': `${TILT[s % TILT.length]}deg` } as CSSProperties}>
+      <div className={styles.bandTop} aria-hidden="true">
+        {showFrameNumbers && rollLabel && <span className={styles.edgeLabel}>{rollLabel}</span>}
+      </div>
+      <div className={styles.frames} style={gridCols}>
+        {cells.map((i) => {
+          const photo = photos[i];
+          if (!photo) return <span key={i} className={styles.blank} aria-hidden="true" />;
+          const drawn = inView && marked.has(i);
+          const img = (
+            <img
+              className={styles.thumb}
+              src={photo.image}
+              alt=""
+              draggable={false}
+              loading={clone ? 'eager' : 'lazy'}
+              onLoad={(e) => {
+                const img = e.currentTarget;
+                if (img.naturalWidth && img.naturalHeight) ratios.current[i] = img.naturalWidth / img.naturalHeight;
+              }}
+            />
+          );
+          const ring = (
+            <svg
+              className={styles.ring}
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+              focusable="false"
+              style={{ '--delay': photo.picked ? `${300 + introRank(i) * 260}ms` : '0ms' } as CSSProperties}
+            >
+              <g filter={`url(#${ringFilterId})`}>
+                <path className={on(styles.ringCore, styles.ringDrawn, drawn)} d={RING} pathLength={1} />
+                <path className={on(styles.ringWax, styles.ringDrawn, drawn)} d={RING} pathLength={1} />
+              </g>
+            </svg>
+          );
+          if (clone) {
+            return (
+              <div key={i} className={styles.frame}>
+                {img}
+                {ring}
+              </div>
+            );
+          }
+          return (
+            <button
+              key={i}
+              ref={(el) => {
+                frameEls.current[i] = el;
+              }}
+              type="button"
+              className={styles.frame}
+              tabIndex={i === focusIndex ? 0 : -1}
+              aria-label={nameOf(i)}
+              aria-haspopup="dialog"
+              onClick={() => openAt(i)}
+              onFocus={() => {
+                setFocusIndex(i);
+                aimAtFrame(i);
+              }}
+            >
+              {img}
+              {ring}
+            </button>
+          );
+        })}
+      </div>
+      <div className={styles.bandBottom} style={gridCols} aria-hidden="true">
+        {showFrameNumbers &&
+          cells.map((i) => (
+            <span key={i} className={styles.edgeNum}>
+              <span>{pad2(i + 1)}</span>
+              <span>{pad2(i + 1)}A</span>
+            </span>
+          ))}
+      </div>
+    </div>
+  );
+
   return (
     <section ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle} aria-label={ariaLabel}>
-      <span className={styles.light} aria-hidden="true" />
       <span className={styles.grain} aria-hidden="true" />
       <svg className={styles.defs} aria-hidden="true" focusable="false">
-        <filter id={filterId} x="-10%" y="-10%" width="120%" height="120%">
+        <filter id={ringFilterId} x="-10%" y="-10%" width="120%" height="120%">
           <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" />
           <feDisplacementMap in="SourceGraphic" scale="1.8" />
         </filter>
+        {bulge && (
+          <filter id={bulgeFilterId} x="-8%" y="-8%" width="116%" height="116%">
+            <feImage href={bulge.url} x="0" y="0" width={bulge.size} height={bulge.size} result="map" preserveAspectRatio="none" />
+            <feDisplacementMap in="SourceGraphic" in2="map" scale={BULGE_SCALE} xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        )}
       </svg>
 
-      <div className={styles.inner}>
-        <header className={styles.header}>
-          <div className={styles.heading}>
-            {rollLabel && <p className={styles.eyebrow}>{rollLabel}</p>}
-            {title && <h2 className={styles.title}>{title}</h2>}
-          </div>
-        </header>
+      <header className={styles.header}>
+        {title && <h2 className={styles.title}>{title}</h2>}
+        {rollLabel && <p className={styles.roll}>{rollLabel}</p>}
+      </header>
 
-        <div className={styles.sheet} role="group" aria-label={ariaLabel} aria-description={SHEET_HELP} onKeyDown={onSheetKey}>
-          {strips.map((cells, s) => (
-            <div key={s} className={styles.strip} style={{ '--tilt': `${TILT[s % TILT.length]}deg` } as CSSProperties}>
-              <div className={styles.bandTop} aria-hidden="true">
-                {showFrameNumbers && rollLabel && <span className={styles.edgeLabel}>{rollLabel}</span>}
+      <div
+        ref={tableRef}
+        className={`${styles.panel} ${styles.table}`}
+        onPointerMove={onTableMove}
+        onPointerLeave={onTableLeave}
+      >
+        <span className={on(styles.bloom, styles.bloomStill, !inView)} aria-hidden="true" />
+        <div
+          className={styles.sheet}
+          role="group"
+          aria-label={ariaLabel}
+          aria-description={SHEET_HELP}
+          onKeyDown={onSheetKey}
+        >
+          {strips.map((cells, s) => stripNode(cells, s, false))}
+        </div>
+
+        <div ref={loupeRef} className={styles.loupe} aria-hidden="true">
+          <div className={on(styles.loupeBody, styles.loupeOn, inView && phase === 'closed')}>
+            <span className={styles.loupeHalo} />
+            <span className={styles.loupeShadow} />
+            <div className={styles.loupeBarrel}>
+              <div ref={lensRef} className={styles.lens} style={bulge ? { filter: `url(#${bulgeFilterId})` } : undefined}>
+                <div ref={cloneRef} className={`${styles.panel} ${styles.lensClone}`}>
+                  <div className={styles.sheet}>{strips.map((cells, s) => stripNode(cells, s, true))}</div>
+                </div>
               </div>
-              <div className={styles.frames} style={gridCols}>
-                {cells.map((i) => {
-                  const photo = photos[i];
-                  if (!photo) return <span key={i} className={styles.blank} aria-hidden="true" />;
-                  const drawn = inView && marked.has(i);
-                  return (
-                    <button
-                      key={i}
-                      ref={(el) => {
-                        frameEls.current[i] = el;
-                      }}
-                      type="button"
-                      className={styles.frame}
-                      tabIndex={i === focusIndex ? 0 : -1}
-                      aria-label={nameOf(i)}
-                      aria-haspopup="dialog"
-                      onClick={() => openAt(i)}
-                      onFocus={() => setFocusIndex(i)}
-                    >
-                      <img
-                        className={styles.thumb}
-                        src={photo.image}
-                        alt=""
-                        draggable={false}
-                        loading="lazy"
-                        onLoad={(e) => {
-                          const img = e.currentTarget;
-                          if (img.naturalWidth && img.naturalHeight) ratios.current[i] = img.naturalWidth / img.naturalHeight;
-                        }}
-                      />
-                      <svg
-                        className={styles.ring}
-                        viewBox="0 0 100 100"
-                        preserveAspectRatio="none"
-                        aria-hidden="true"
-                        focusable="false"
-                        style={{ '--delay': photo.picked ? `${300 + introRank(i) * 260}ms` : '0ms' } as CSSProperties}
-                      >
-                        <g filter={`url(#${filterId})`}>
-                          <path className={on(styles.ringCore, styles.ringDrawn, drawn)} d={RING} pathLength={1} />
-                          <path className={on(styles.ringWax, styles.ringDrawn, drawn)} d={RING} pathLength={1} />
-                        </g>
-                      </svg>
-                    </button>
-                  );
-                })}
-              </div>
-              <div className={styles.bandBottom} style={gridCols} aria-hidden="true">
-                {showFrameNumbers &&
-                  cells.map((i) => (
-                    <span key={i} className={styles.edgeNum}>
-                      <span>▸ {pad2(i + 1)}</span>
-                      <span>{pad2(i + 1)}A</span>
-                    </span>
-                  ))}
-              </div>
+              <span className={styles.lensRoom} />
+              <span className={styles.lensSpec} />
+              <span className={styles.lensFringe} />
+              <span className={styles.lensGrain} />
             </div>
-          ))}
+          </div>
         </div>
       </div>
 
@@ -547,17 +795,41 @@ export default function ContactSheetGallery({
 ```
 
 ```css
+@property --reveal {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 1600px;
+}
+
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('./fonts/space-grotesk-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('./fonts/space-grotesk-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 .root {
+  --csg-room: #0d0b08;
   --csg-paper: #f2ebdd;
-  --csg-marker: #d2361f;
-  --csg-film: #12100e;
-  --csg-ink: #1f1b16;
-  --csg-muted: rgba(31, 27, 22, 0.66);
-  --csg-shadow: 58, 40, 18;
-  --csg-font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
-  --csg-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --csg-marker: #e8502e;
+  --csg-ink: #f4eee0;
+  --csg-muted: rgba(244, 238, 224, 0.62);
+  --csg-amber: #e2a55c;
+  --csg-mask: #d88c3c;
+  --csg-film: #170d05;
+  --csg-loupe: clamp(130px, 27cqi, 225px);
+  --csg-font-display: 'Space Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --csg-font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  --csg-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.38  0 0 0 0 0.3  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --csg-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.47  0 0 0 0 0.42  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   --csg-holes: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='7'><rect x='4' y='0.5' width='10' height='6' rx='1.6'/></svg>");
 
   position: relative;
@@ -566,34 +838,26 @@ export default function ContactSheetGallery({
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  background: var(--csg-paper);
+  background:
+    radial-gradient(100% 62% at 50% 100%, color-mix(in srgb, var(--csg-paper) 9%, var(--csg-room)) 0%, var(--csg-room) 72%),
+    var(--csg-room);
   color: var(--csg-ink);
-  font-family: var(--csg-font-ui);
+  font-family: var(--csg-font-display);
   border-radius: 6px;
   box-shadow:
-    inset 0 0 0 1px rgba(var(--csg-shadow), 0.06),
-    0 1px 2px rgba(var(--csg-shadow), 0.12),
-    0 24px 60px -30px rgba(var(--csg-shadow), 0.45);
+    inset 0 0 0 1px rgba(255, 236, 200, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 26px 64px -32px rgba(0, 0, 0, 0.8);
 }
 
-.light,
 .grain {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: -1;
-}
-
-.light {
-  background:
-    radial-gradient(90% 70% at 16% 0%, rgba(255, 255, 255, 0.6) 0%, transparent 58%),
-    radial-gradient(150% 120% at 50% 35%, transparent 52%, rgba(var(--csg-shadow), 0.16) 100%);
-}
-
-.grain {
+  z-index: 4;
   background-image: var(--csg-noise);
-  mix-blend-mode: multiply;
-  opacity: 0.38;
+  mix-blend-mode: overlay;
+  opacity: 0.32;
 }
 
 .defs {
@@ -603,78 +867,109 @@ export default function ContactSheetGallery({
   overflow: hidden;
 }
 
-.inner {
-  max-inline-size: 1180px;
-  margin-inline: auto;
-  padding-block: 36px 40px;
-  padding-inline: 16px;
-}
+/* ---------- dark margin ---------- */
 
 .header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 14px 40px;
-  margin-block-end: 28px;
-}
-
-.heading {
-  display: grid;
-  gap: 12px;
-  min-inline-size: 0;
-  max-inline-size: 720px;
-  flex: 1 1 320px;
-}
-
-.eyebrow {
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-family: var(--csg-font-mono);
-  font-size: 14px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--csg-muted);
-  overflow-wrap: anywhere;
-}
-
-.eyebrow::before {
-  content: '';
-  flex: none;
-  inline-size: 26px;
-  block-size: 3px;
-  border-radius: 3px;
-  background: var(--csg-marker);
+  position: relative;
+  z-index: 2;
+  padding-inline: clamp(18px, 4.5cqi, 56px);
+  padding-block: clamp(28px, 5.5cqi, 60px) clamp(18px, 3.4cqi, 30px);
 }
 
 .title {
   margin: 0;
   font-family: var(--csg-font-display);
-  font-size: 40px;
   font-weight: 500;
-  line-height: 0.98;
+  font-size: clamp(34px, 7.4cqi, 82px);
+  line-height: 1;
   letter-spacing: -0.035em;
+  max-inline-size: 17ch;
+  color: var(--csg-ink);
   text-wrap: balance;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.roll {
+  margin: clamp(12px, 2cqi, 20px) 0 0;
+  font-family: var(--csg-font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--csg-amber);
+  max-inline-size: 100%;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- the glowing light table ---------- */
+
+.panel {
+  position: relative;
+  padding-block: clamp(22px, 4cqi, 42px) clamp(30px, 5.5cqi, 54px);
+  background:
+    radial-gradient(135% 105% at 50% 0%,
+      color-mix(in srgb, var(--csg-paper) 58%, #fff) 0%,
+      var(--csg-paper) 44%,
+      color-mix(in srgb, var(--csg-paper) 74%, #66573d) 100%);
+}
+
+.table {
+  z-index: 1;
+  touch-action: pan-y pinch-zoom;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow:
+    0 -30px 90px -28px color-mix(in srgb, var(--csg-paper) 26%, transparent),
+    0 -10px 30px -16px color-mix(in srgb, var(--csg-paper) 22%, transparent),
+    inset 0 2px 8px rgba(66, 48, 22, 0.16),
+    inset 0 -1px 0 rgba(66, 48, 22, 0.1);
+}
+
+.bloom {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(75% 52% at 50% 0%, color-mix(in srgb, var(--csg-paper) 46%, #fff) 0%, transparent 72%);
+  mix-blend-mode: screen;
+  animation: bloom 7.5s ease-in-out infinite alternate;
+}
+
+.bloomStill {
+  animation-play-state: paused;
+}
+
+@keyframes bloom {
+  from {
+    opacity: 0.2;
+  }
+  to {
+    opacity: 0.38;
+  }
 }
 
 .sheet {
+  position: relative;
+  z-index: 1;
   display: grid;
-  gap: 22px;
+  gap: clamp(14px, 2.8cqi, 26px);
+  touch-action: pan-y pinch-zoom;
 }
+
+/* ---------- film strips ---------- */
 
 .strip {
   position: relative;
-  padding-inline: 8px;
-  border-radius: 2px;
+  inline-size: 103%;
+  margin-inline: -1.5%;
+  padding-inline: 10px;
+  border-radius: 3px;
   background:
-    linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.05) 46%, transparent 62%),
-    linear-gradient(180deg, #2a2622 0%, var(--csg-film) 16%, #0d0b0a 84%, #221e1a 100%);
+    linear-gradient(100deg, transparent 32%, rgba(255, 205, 130, 0.06) 47%, transparent 64%),
+    linear-gradient(180deg, rgba(56, 36, 16, 0.85) 0%, #211206 9%, var(--csg-film) 88%, rgba(48, 30, 13, 0.85) 100%);
   box-shadow:
-    0 1px 1px rgba(var(--csg-shadow), 0.3),
-    0 12px 24px -14px rgba(var(--csg-shadow), 0.6);
+    0 1px 1px rgba(9, 5, 2, 0.5),
+    0 14px 28px -16px rgba(8, 5, 2, 0.65),
+    inset 0 1px 0 rgba(255, 196, 116, 0.12);
   transform: rotate(var(--tilt, 0deg));
 }
 
@@ -690,9 +985,14 @@ export default function ContactSheetGallery({
   position: absolute;
   inset-inline: 0;
   block-size: 7px;
-  background: color-mix(in srgb, var(--csg-paper) 82%, #000);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--csg-paper) 52%, #fff),
+    color-mix(in srgb, var(--csg-paper) 80%, #c99c5e)
+  );
   -webkit-mask: var(--csg-holes) repeat-x;
   mask: var(--csg-holes) repeat-x;
+  filter: drop-shadow(0 0 3px rgba(255, 216, 152, 0.55));
 }
 
 .bandTop::before {
@@ -711,11 +1011,11 @@ export default function ContactSheetGallery({
 .edgeLabel,
 .edgeNum {
   font-family: var(--csg-font-mono);
-  font-size: 9px;
+  font-size: 12px;
   line-height: 1;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--csg-paper) 62%, transparent);
+  color: #dfa15a;
   white-space: nowrap;
 }
 
@@ -740,7 +1040,7 @@ export default function ContactSheetGallery({
 
 .frames {
   display: grid;
-  gap: 6px;
+  gap: 7px;
 }
 
 .frame {
@@ -750,7 +1050,8 @@ export default function ContactSheetGallery({
   padding: 0;
   border: 0;
   border-radius: 1px;
-  background: #050404;
+  background: #0c0702;
+  box-shadow: 0 0 0 2px rgba(216, 140, 60, 0.4);
   cursor: zoom-in;
   -webkit-tap-highlight-color: transparent;
 }
@@ -760,13 +1061,13 @@ export default function ContactSheetGallery({
   position: absolute;
   inset: 0;
   box-shadow:
-    inset 0 0 0 1px rgba(0, 0, 0, 0.55),
-    inset 0 0 18px rgba(0, 0, 0, 0.35);
+    inset 0 0 0 1px rgba(0, 0, 0, 0.6),
+    inset 0 0 16px rgba(0, 0, 0, 0.35);
   pointer-events: none;
 }
 
 .frame:focus-visible {
-  outline: 2px solid var(--csg-paper);
+  outline: 2px solid var(--csg-amber);
   outline-offset: 3px;
 }
 
@@ -775,19 +1076,26 @@ export default function ContactSheetGallery({
   inline-size: 100%;
   block-size: 100%;
   object-fit: cover;
-  filter: sepia(0.14) saturate(0.82) contrast(1.05) brightness(0.96);
-  transition: filter 320ms ease;
+  filter: invert(1) sepia(0.42) saturate(1.9) hue-rotate(180deg) brightness(1.02) contrast(1.05);
+  transition: filter 280ms ease;
 }
 
 .thumb:hover {
-  filter: sepia(0.04) saturate(1) contrast(1.06) brightness(1.06);
+  filter: invert(1) sepia(0.42) saturate(2) hue-rotate(180deg) brightness(1.16) contrast(1.05);
+}
+
+.frame:focus-visible::after {
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.6),
+    inset 0 0 16px rgba(0, 0, 0, 0.35),
+    inset 0 0 26px rgba(255, 210, 140, 0.28);
 }
 
 .blank {
+  display: block;
   aspect-ratio: 3 / 2;
-  background:
-    radial-gradient(80% 70% at 50% 50%, #1c1916 0%, #0a0908 100%);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  background: radial-gradient(80% 70% at 50% 50%, #241708 0%, #0a0703 100%);
+  box-shadow: 0 0 0 2px rgba(216, 140, 60, 0.25);
 }
 
 .ring {
@@ -799,7 +1107,7 @@ export default function ContactSheetGallery({
   overflow: visible;
   pointer-events: none;
   z-index: 2;
-  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.3)) drop-shadow(0 0 2px rgba(232, 80, 46, 0.45));
 }
 
 .ringCore,
@@ -810,23 +1118,142 @@ export default function ContactSheetGallery({
   stroke-linejoin: round;
   stroke-dasharray: 1 2;
   stroke-dashoffset: 1;
-  transition: stroke-dashoffset 680ms cubic-bezier(0.65, 0.05, 0.3, 1) var(--delay, 0ms);
+  transition: stroke-dashoffset 640ms cubic-bezier(0.65, 0.05, 0.3, 1) var(--delay, 0ms);
 }
 
 .ringCore {
   stroke-width: 1.7;
-  opacity: 0.92;
+  opacity: 0.95;
 }
 
 .ringWax {
   stroke-width: 0.6;
-  opacity: 0.55;
+  opacity: 0.6;
   transform: translate(0.5px, 0.9px);
 }
 
 .ringDrawn {
   stroke-dashoffset: 0;
 }
+
+/* ---------- the loupe ---------- */
+
+.loupe {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: var(--csg-loupe);
+  block-size: var(--csg-loupe);
+  z-index: 3;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.loupeBody {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  scale: 1.09;
+  transition:
+    opacity 520ms ease,
+    scale 680ms cubic-bezier(0.3, 1.35, 0.4, 1);
+}
+
+.loupeOn {
+  opacity: 1;
+  scale: 1;
+}
+
+.loupeHalo {
+  position: absolute;
+  inset: -3%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    transparent 76%,
+    color-mix(in srgb, var(--csg-paper) 26%, transparent) 85%,
+    transparent 97%
+  );
+  filter: blur(2px);
+}
+
+.loupeShadow {
+  position: absolute;
+  inset-inline: 8%;
+  inset-block-end: -9%;
+  block-size: 16%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(7, 4, 1, 0.5), transparent 72%);
+  filter: blur(5px);
+}
+
+.loupeBarrel {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 215deg, #45403a, #191511 22%, #3d3830 47%, #141110 68%, #2c2823 86%, #45403a);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.5),
+    0 6px 18px -6px rgba(255, 186, 106, 0.12),
+    inset 0 1px 1px rgba(255, 255, 255, 0.14),
+    inset 0 -2px 4px rgba(255, 196, 120, 0.18);
+}
+
+.lens {
+  position: absolute;
+  inset: 6.5%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--csg-room);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55),
+    inset 0 0 16px rgba(0, 0, 0, 0.3);
+}
+
+.lensClone {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.lensRoom {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(135% 125% at 50% -12%, rgba(5, 4, 2, 0.52) 0%, rgba(5, 4, 2, 0.1) 42%, transparent 64%);
+}
+
+.lensSpec {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(58% 42% at 31% 15%, rgba(255, 249, 236, 0.5) 0%, rgba(255, 249, 236, 0.07) 48%, transparent 72%);
+  mix-blend-mode: soft-light;
+}
+
+.lensFringe {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 2px rgba(140, 190, 255, 0.14),
+    inset 0 0 0 3.5px rgba(255, 150, 70, 0.12),
+    inset 0 0 12px rgba(18, 9, 3, 0.38);
+}
+
+.lensGrain {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-image: var(--csg-noise);
+  opacity: 0.14;
+  mix-blend-mode: overlay;
+}
+
+/* ---------- overlay: the lifted print ---------- */
 
 .overlay {
   position: absolute;
@@ -837,7 +1264,7 @@ export default function ContactSheetGallery({
   z-index: 10;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
-  padding-block: 68px 14px;
+  padding-block: 64px 14px;
   padding-inline: 16px;
   outline: none;
 }
@@ -846,10 +1273,7 @@ export default function ContactSheetGallery({
   position: absolute;
   inset: 0;
   z-index: 9;
-  background:
-    radial-gradient(70% 60% at 50% 45%, rgba(46, 36, 26, 0.62) 0%, rgba(14, 11, 9, 0.86) 100%);
-  backdrop-filter: blur(5px) saturate(0.75);
-  -webkit-backdrop-filter: blur(5px) saturate(0.75);
+  background: radial-gradient(72% 62% at 50% 44%, rgba(20, 12, 5, 0.72) 0%, rgba(7, 5, 3, 0.92) 100%);
   opacity: 0;
   transition: opacity 380ms ease;
 }
@@ -872,7 +1296,7 @@ export default function ContactSheetGallery({
   padding: var(--pad, 14px);
   padding-block-end: 0;
   border-radius: 2px;
-  background: linear-gradient(168deg, #fffdf8 0%, #f6f1e6 60%, #ece5d6 100%);
+  background: linear-gradient(168deg, #fdfaf2 0%, #f6f0e2 58%, #ece4d2 100%);
   transform-origin: 0 0;
   will-change: transform;
   visibility: hidden;
@@ -881,9 +1305,21 @@ export default function ContactSheetGallery({
   user-select: none;
   -webkit-user-select: none;
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.25),
-    0 4px 10px -4px rgba(0, 0, 0, 0.3);
-  transition: box-shadow 520ms cubic-bezier(0.16, 1, 0.3, 1);
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 4px 10px -4px rgba(0, 0, 0, 0.32);
+  transition:
+    --reveal 620ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 520ms cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-mask-image: radial-gradient(
+    circle at var(--mx, 50%) var(--my, 50%),
+    #000 calc(var(--reveal) - 26px),
+    transparent var(--reveal)
+  );
+  mask-image: radial-gradient(
+    circle at var(--mx, 50%) var(--my, 50%),
+    #000 calc(var(--reveal) - 26px),
+    transparent var(--reveal)
+  );
 }
 
 .print:active {
@@ -893,15 +1329,15 @@ export default function ContactSheetGallery({
 .printLifted {
   box-shadow:
     inset 0 1px 0 #fff,
-    0 1px 2px rgba(0, 0, 0, 0.3),
-    0 18px 36px -12px rgba(0, 0, 0, 0.55),
-    0 60px 120px -40px rgba(0, 0, 0, 0.7);
+    0 1px 2px rgba(0, 0, 0, 0.32),
+    0 18px 36px -12px rgba(0, 0, 0, 0.6),
+    0 64px 128px -40px rgba(0, 0, 0, 0.78);
 }
 
 .printImage {
   position: relative;
   overflow: hidden;
-  background: #111;
+  background: #161009;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
 }
 
@@ -911,11 +1347,32 @@ export default function ContactSheetGallery({
   block-size: 100%;
   object-fit: cover;
   pointer-events: none;
-  filter: sepia(0.08) contrast(1.03);
+  filter: sepia(0.05) contrast(1.03);
 }
 
 .printImgIn {
-  animation: develop 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: developIn 660ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes developIn {
+  0% {
+    opacity: 0;
+    filter: invert(1) sepia(0.42) saturate(1.9) hue-rotate(180deg) brightness(1.05) contrast(1.02);
+    transform: translateX(calc(var(--dir, 0) * 4%)) scale(1.02);
+  }
+  28% {
+    opacity: 1;
+    filter: invert(1) sepia(0.42) saturate(1.9) hue-rotate(180deg) brightness(1.2) contrast(0.9);
+    transform: none;
+  }
+  60% {
+    filter: invert(0.34) sepia(0.16) saturate(1.4) hue-rotate(158deg) brightness(1.12) contrast(1.02);
+  }
+  100% {
+    opacity: 1;
+    filter: sepia(0.05) contrast(1.03);
+    transform: none;
+  }
 }
 
 .printSheen {
@@ -923,10 +1380,10 @@ export default function ContactSheetGallery({
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(125deg, rgba(255, 255, 255, 0.28) 0%, transparent 38%),
+    linear-gradient(122deg, rgba(255, 255, 255, 0.24) 0%, transparent 36%),
     var(--csg-noise);
   mix-blend-mode: soft-light;
-  opacity: 0.8;
+  opacity: 0.7;
 }
 
 .caption {
@@ -941,7 +1398,7 @@ export default function ContactSheetGallery({
 
 .captionOn {
   opacity: 1;
-  transition-delay: 220ms;
+  transition-delay: 240ms;
 }
 
 .captionNum {
@@ -950,23 +1407,26 @@ export default function ContactSheetGallery({
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.06em;
-  color: var(--csg-marker);
+  color: #a04b12;
   font-variant-numeric: tabular-nums;
 }
 
 .captionText {
   min-inline-size: 0;
-  font-family: var(--csg-font-display);
-  font-style: italic;
-  font-size: 17px;
-  line-height: 1.2;
+  font-size: 16px;
+  line-height: 1.3;
   letter-spacing: -0.01em;
-  color: var(--csg-ink);
+  color: #2a2218;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   overflow-wrap: anywhere;
+}
+
+.captionText::selection {
+  background: #e8502e;
+  color: #fff;
 }
 
 .bar {
@@ -977,18 +1437,19 @@ export default function ContactSheetGallery({
   justify-content: center;
   gap: 18px;
   padding-block-start: 14px;
-  color: var(--csg-paper);
+  color: var(--csg-ink);
   opacity: 0;
   transition: opacity 260ms ease;
 }
 
 .counter {
-  min-inline-size: 72px;
+  min-inline-size: 76px;
   text-align: center;
   font-family: var(--csg-font-mono);
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 0.12em;
   font-variant-numeric: tabular-nums;
+  color: var(--csg-muted);
 }
 
 .barButton,
@@ -999,9 +1460,9 @@ export default function ContactSheetGallery({
   block-size: 48px;
   padding: 0;
   border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--csg-paper) 34%, transparent);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--csg-paper);
+  border: 1px solid rgba(244, 238, 224, 0.24);
+  background: rgba(18, 12, 6, 0.55);
+  color: var(--csg-ink);
   cursor: pointer;
   transition:
     background-color 200ms ease,
@@ -1012,8 +1473,8 @@ export default function ContactSheetGallery({
 
 .barButton:hover,
 .close:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: color-mix(in srgb, var(--csg-paper) 70%, transparent);
+  background: rgba(30, 20, 10, 0.75);
+  border-color: rgba(244, 238, 224, 0.55);
 }
 
 .barButton:active,
@@ -1023,7 +1484,7 @@ export default function ContactSheetGallery({
 
 .barButton:focus-visible,
 .close:focus-visible {
-  outline: 2px solid var(--csg-marker);
+  outline: 2px solid var(--csg-amber);
   outline-offset: 3px;
 }
 
@@ -1050,6 +1511,8 @@ export default function ContactSheetGallery({
   border: 0;
 }
 
+/* ---------- responsive (container) ---------- */
+
 @container (max-width: 559px) {
   .ringCore {
     stroke-width: 2.6;
@@ -1058,69 +1521,50 @@ export default function ContactSheetGallery({
   .ringWax {
     stroke-width: 1;
   }
+
+  .overlay {
+    padding-block: 48px 10px;
+  }
 }
 
 @container (min-width: 560px) {
-  .inner {
-    padding-block: 48px 52px;
-    padding-inline: 32px;
-  }
-
-  .title {
-    font-size: 52px;
-  }
-
   .strip {
-    padding-inline: 12px;
+    padding-inline: 14px;
   }
 
-  .edgeLabel,
-  .edgeNum {
-    font-size: 10px;
+  .frames {
+    gap: 9px;
+  }
+
+  .bandBottom {
+    column-gap: 9px;
+  }
+
+  .captionText {
+    font-size: 18px;
   }
 }
 
 @container (min-width: 900px) {
-  .inner {
-    padding-block: 64px 68px;
-    padding-inline: 56px;
-  }
-
   .header {
-    margin-block-end: 36px;
+    padding-block-end: clamp(22px, 4cqi, 36px);
   }
 
-  .title {
-    font-size: 68px;
-  }
-
-  .sheet {
-    gap: 28px;
-  }
-
-  .frames,
-  .bandBottom {
-    column-gap: 10px;
+  .frames {
     gap: 10px;
   }
 
-  .captionText {
-    font-size: 20px;
+  .bandBottom {
+    column-gap: 10px;
+  }
+
+  .bandTop,
+  .bandBottom {
+    block-size: 26px;
   }
 }
 
-@keyframes develop {
-  from {
-    opacity: 0;
-    transform: translateX(calc(var(--dir, 0) * 4%)) scale(1.02);
-    filter: sepia(0.5) brightness(1.3) contrast(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-    filter: sepia(0.08) contrast(1.03);
-  }
-}
+/* ---------- reduced motion ---------- */
 
 @media (prefers-reduced-motion: reduce) {
   .ringCore,
@@ -1128,11 +1572,13 @@ export default function ContactSheetGallery({
   .print,
   .caption,
   .backdrop,
-  .bar {
+  .bar,
+  .loupeBody {
     transition: none;
   }
 
-  .printImgIn {
+  .printImgIn,
+  .bloom {
     animation: none;
   }
 }

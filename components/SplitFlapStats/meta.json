@@ -1,0 +1,40 @@
+{
+  "id": "c069",
+  "name": "SplitFlapStats",
+  "display_name": "Split-Flap Stats",
+  "category": "data",
+  "tier": "everyday",
+  "job": "Show 2-4 key numbers on a departure-board split-flap display that flips into place",
+  "visitor_action": "none (flips when in view); hover or focus replays one tile",
+  "owner_settings": [
+    "Stats (value, label)",
+    "Board color",
+    "Digit color",
+    "Label lamp color"
+  ],
+  "site_types": [
+    "business",
+    "events",
+    "store",
+    "portfolio"
+  ],
+  "mobile": "first figure full width, the rest in two columns",
+  "motion": "each digit flips through values with gravity-eased flaps and staggered landing; label lamps ignite and the board light warms up as they land (reduced-motion: final values, static)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "deferred-to-QA",
+    "craft": "deferred-to-QA"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Station hall: matte charcoal flaps with hinge line, bone-white digits, amber label lamps, faint light falloff across the board",
+  "notes": "Not yet seen in a browser (render and craft deferred to QA): digit vertical centring inside the flaps and the cell sizing maths are untested."
+}

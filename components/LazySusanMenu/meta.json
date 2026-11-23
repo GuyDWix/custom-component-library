@@ -1,0 +1,39 @@
+{
+  "id": "c005",
+  "name": "LazySusanMenu",
+  "display_name": "Lazy Susan Menu",
+  "category": "media",
+  "tier": "showpiece",
+  "job": "Present dishes or products on a turntable viewed from above that rotates the chosen item to the front with its label and price",
+  "visitor_action": "drag or swipe to spin; tap an item to bring it forward; arrows rotate step by step",
+  "owner_settings": [
+    "Dishes (image, name, price)",
+    "Plate size",
+    "Spin speed",
+    "Table tone"
+  ],
+  "site_types": [
+    "restaurant",
+    "store",
+    "events"
+  ],
+  "mobile": "smaller table, swipe to spin, label under the plate",
+  "motion": "inertial spin with eased snap to nearest item; wood grain turns under a fixed candle so ring crests flash as they cross the light lobe; plates counter-rotate to stay upright while their shadows, glaze highlights and warm pool follow the candle; candle flame and pool flicker (paused off-screen); reduced-motion: step change with no spin or flicker",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped",
+    "craft": "skipped"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Candlelit banquet table photographed from above: turned walnut turntable with eccentric growth rings, anisotropic grain sheen and a machined brass rim and spindle, ceramic plates with rim highlights and shadows cast away from a single candle, on dark linen; ivory place card across the table edge in DM Serif Display",
+  "notes": "2026-11-23: quality redo (Sonnet 5.5). Fixed plate position bug (plates were rotated twice). Material pass done blind from the gallery screenshot (no render run), so wood-texture contrast, sheen strength and the 1080px+ candle/tumbler props need one look in the browser. Fling friction and snap spring were tuned without a live pass; the inertial feel may need one calibration round. | 2026-11-23: QA nit fixes. Plate photo well enlarged (inset 18%->8%, inside the rim); plaque clamped: name max 3 lines, price one line with ellipsis + title, tighter card/root bottom padding so worst-case root height <= 894px (was 938). Verified in headless Chrome at 900."
+}

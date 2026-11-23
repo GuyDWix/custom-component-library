@@ -21,7 +21,7 @@ const stage = {
   display: 'grid',
   placeItems: 'center',
   padding: 'clamp(16px, 4vw, 56px)',
-  background: 'linear-gradient(180deg, #eef3f6 0%, #f5f2ec 100%)',
+  background: 'linear-gradient(180deg, #f2f5f7 0%, #eef1ee 100%)',
 };
 
 export default function Preview() {

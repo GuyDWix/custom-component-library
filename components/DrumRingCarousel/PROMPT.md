@@ -63,7 +63,7 @@ function panelStyle(offset: number, g: Geo): CSSProperties {
     transform: `translateZ(${g.r.toFixed(1)}px) rotateY(${(-offset * g.step).toFixed(4)}rad) translateZ(${(-g.r).toFixed(1)}px)`,
     opacity: fade.toFixed(3),
     visibility: fade > 0 ? 'visible' : 'hidden',
-    filter: `brightness(${(1 - Math.min(d, 2.4) * 0.13).toFixed(3)}) blur(${(Math.min(d, 2.4) * 1.5).toFixed(2)}px) saturate(${(1 - Math.min(d, 2) * 0.12).toFixed(3)})`,
+    filter: `brightness(${(1.05 - Math.min(d, 2.4) * 0.27).toFixed(3)}) blur(${(Math.min(d, 2.4) * 1.7).toFixed(2)}px) saturate(${(1.05 - Math.min(d, 2) * 0.26).toFixed(3)})`,
     zIndex: 10 - Math.round(d),
   } as CSSProperties;
 }
@@ -89,7 +89,7 @@ export default function DrumRingCarousel({
   photos = defaultPhotos,
   drumRadius = 860,
   spinSpeed = 4,
-  backgroundTone = '#ebe5dc',
+  backgroundTone = '#0a0e1a',
   className,
 }: DrumRingCarouselProps) {
   const n = photos.length;
@@ -326,7 +326,7 @@ export default function DrumRingCarousel({
     '--dr-tone': backgroundTone,
     '--dr-panel-w': `${panelW}px`,
     '--dr-panel-h': `${panelH}px`,
-    '--dr-perspective': `${Math.round(geo.r * 1.6)}px`,
+    '--dr-perspective': `${Math.round(geo.r * 1.35)}px`,
   } as CSSProperties;
 
   return (
@@ -340,9 +340,10 @@ export default function DrumRingCarousel({
       onBlur={onBlur}
       onKeyDown={onRootKeyDown}
     >
+      <span className={styles.stars} aria-hidden="true" />
       <span className={styles.wall} aria-hidden="true" />
-      <span className={styles.floor} aria-hidden="true" />
       <span className={styles.lamp} aria-hidden="true" />
+      <span className={styles.floor} aria-hidden="true" />
       <span className={styles.plaster} aria-hidden="true" />
 
       {reduced ? (
@@ -410,6 +411,7 @@ export default function DrumRingCarousel({
                 <span className={styles.reflect}>
                   <Mount item={p} />
                 </span>
+                <span className={styles.pool} aria-hidden="true" />
               </div>
             ))}
           </div>
@@ -484,18 +486,33 @@ export default function DrumRingCarousel({
 ```
 
 ```css
+@font-face {
+  font-family: 'Wix Madefor Display';
+  src: url('./fonts/WixMadeforDisplay-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Wix Madefor Display';
+  src: url('./fonts/WixMadeforDisplay-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+
 .root {
-  --dr-tone: #ebe5dc;
-  --dr-plaster: color-mix(in srgb, var(--dr-tone) 70%, #fff);
-  --dr-floor: color-mix(in srgb, var(--dr-tone) 88%, #8a7a66);
-  --dr-mount: #fbfaf6;
-  --dr-mat-shade: #e9e5dd;
-  --dr-ink: #2a2520;
-  --dr-muted: rgba(42, 37, 32, 0.62);
-  --dr-hairline: rgba(42, 37, 32, 0.16);
-  --dr-font-display: 'Fraunces', 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif;
-  --dr-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --dr-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.4  0 0 0 0 0.35  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --dr-tone: #0a0e1a;
+  --dr-dome-glow: color-mix(in srgb, var(--dr-tone) 52%, #1c3054);
+  --dr-floor: color-mix(in srgb, var(--dr-tone) 42%, #000);
+  --dr-ink: #e9eef7;
+  --dr-muted: rgba(233, 238, 247, 0.64);
+  --dr-hairline: rgba(233, 238, 247, 0.15);
+  --dr-accent: #8fb8ff;
+  --dr-light: #ffedc8;
+  --dr-font-display: 'Wix Madefor Display', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
+  --dr-font-ui: 'Avenir Next', Avenir, 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
+  --dr-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.62  0 0 0 0 0.68  0 0 0 0 0.82  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --dr-stars: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='620'><g fill='%23e9eef7'><circle cx='52' cy='84' r='0.9' opacity='0.5'/><circle cx='118' cy='203' r='0.7' opacity='0.35'/><circle cx='173' cy='56' r='1.2' opacity='0.7'/><circle cx='238' cy='168' r='0.6' opacity='0.3'/><circle cx='296' cy='92' r='1' opacity='0.55'/><circle cx='349' cy='258' r='0.7' opacity='0.4'/><circle cx='412' cy='44' r='0.8' opacity='0.45'/><circle cx='466' cy='150' r='1.3' opacity='0.8'/><circle cx='519' cy='308' r='0.6' opacity='0.3'/><circle cx='574' cy='74' r='0.9' opacity='0.5'/><circle cx='631' cy='212' r='0.7' opacity='0.35'/><circle cx='688' cy='118' r='1.1' opacity='0.65'/><circle cx='742' cy='283' r='0.6' opacity='0.3'/><circle cx='801' cy='63' r='0.9' opacity='0.5'/><circle cx='858' cy='190' r='0.7' opacity='0.4'/><circle cx='913' cy='98' r='1.2' opacity='0.7'/><circle cx='972' cy='246' r='0.6' opacity='0.3'/><circle cx='1030' cy='140' r='0.8' opacity='0.45'/><circle cx='1088' cy='76' r='1' opacity='0.55'/><circle cx='1142' cy='196' r='0.7' opacity='0.35'/><circle cx='86' cy='346' r='0.8' opacity='0.4'/><circle cx='205' cy='402' r='0.7' opacity='0.35'/><circle cx='331' cy='368' r='0.9' opacity='0.45'/><circle cx='448' cy='430' r='0.6' opacity='0.3'/><circle cx='558' cy='396' r='0.8' opacity='0.4'/><circle cx='668' cy='352' r='1' opacity='0.5'/><circle cx='782' cy='428' r='0.6' opacity='0.3'/><circle cx='897' cy='380' r='0.9' opacity='0.45'/><circle cx='1012' cy='340' r='0.7' opacity='0.35'/><circle cx='1126' cy='404' r='0.8' opacity='0.4'/><circle cx='160' cy='130' r='0.5' opacity='0.25'/><circle cx='400' cy='200' r='0.5' opacity='0.25'/><circle cx='640' cy='30' r='0.6' opacity='0.3'/><circle cx='760' cy='55' r='0.5' opacity='0.25'/><circle cx='258' cy='290' r='0.5' opacity='0.25'/><circle cx='940' cy='180' r='0.5' opacity='0.25'/><circle cx='560' cy='170' r='0.5' opacity='0.25'/><circle cx='1130' cy='300' r='0.5' opacity='0.25'/></g><g fill='%238fb8ff'><circle cx='466' cy='150' r='3.2' opacity='0.16'/><circle cx='913' cy='98' r='3' opacity='0.14'/><circle cx='173' cy='56' r='2.6' opacity='0.12'/></g></svg>");
   --dr-top: 44px;
   --dr-horizon: calc(var(--dr-top) + 28px + var(--dr-panel-h));
 
@@ -509,8 +526,10 @@ export default function DrumRingCarousel({
   gap: 8px;
   padding-block: var(--dr-top) 32px;
   padding-inline: 0;
-  border-radius: 28px;
-  background: var(--dr-plaster);
+  border-radius: 24px;
+  background:
+    radial-gradient(130% 90% at 50% -18%, var(--dr-dome-glow) 0%, transparent 58%),
+    linear-gradient(180deg, var(--dr-tone) 0%, color-mix(in srgb, var(--dr-tone) 72%, #000) 100%);
   color: var(--dr-ink);
   font-family: var(--dr-font-ui);
   -webkit-tap-highlight-color: transparent;
@@ -520,6 +539,12 @@ export default function DrumRingCarousel({
   --dr-horizon: calc(var(--dr-top) + 8px + var(--dr-panel-w) * 0.86 * 1.24);
 }
 
+.root ::selection {
+  background: color-mix(in srgb, var(--dr-accent) 72%, transparent);
+  color: #05070d;
+}
+
+.stars,
 .wall,
 .floor,
 .lamp,
@@ -529,38 +554,64 @@ export default function DrumRingCarousel({
   z-index: -1;
 }
 
+.stars {
+  inset: 0;
+  background-image: var(--dr-stars);
+  background-size: cover;
+  background-position: 50% 0;
+  background-repeat: no-repeat;
+  animation: twinkle 9s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+  from {
+    opacity: 0.62;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .wall {
-  inset-inline: 0;
-  inset-block: 0 calc(100% - var(--dr-horizon));
-  background:
-    repeating-linear-gradient(90deg, transparent 0 calc(25% - 1px), rgba(120, 104, 86, 0.05) calc(25% - 1px) 25%),
-    linear-gradient(180deg, color-mix(in srgb, var(--dr-plaster) 92%, #fff) 0%, var(--dr-plaster) 70%, color-mix(in srgb, var(--dr-tone) 96%, #7d6e5c) 100%);
+  inset: 0;
+  background: radial-gradient(115% 92% at 50% 26%, transparent 42%, rgba(1, 2, 6, 0.52) 100%);
+}
+
+.lamp {
+  inset-block-start: -32%;
+  inset-inline-start: 50%;
+  inline-size: min(92%, 940px);
+  aspect-ratio: 1.7;
+  translate: -50% 0;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--dr-accent) 13%, transparent), transparent 78%);
+  filter: blur(18px);
 }
 
 .floor {
   inset-inline: 0;
   inset-block: var(--dr-horizon) 0;
   background:
-    radial-gradient(70% 60% at 50% 0%, rgba(255, 255, 255, 0.55), transparent 70%),
-    linear-gradient(180deg, var(--dr-floor) 0%, color-mix(in srgb, var(--dr-floor) 92%, var(--dr-plaster)) 100%);
-  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.7), inset 0 1px 0 rgba(90, 76, 60, 0.12);
+    radial-gradient(56% 46% at 50% 0%, color-mix(in srgb, var(--dr-light) 8%, transparent), transparent 72%),
+    radial-gradient(90% 70% at 50% 0%, rgba(24, 36, 64, 0.32), transparent 75%),
+    linear-gradient(180deg, color-mix(in srgb, var(--dr-floor) 86%, #131c2e) 0%, #030509 98%);
+  box-shadow: inset 0 1px 0 rgba(233, 238, 247, 0.06);
 }
 
-.lamp {
-  inset-block-start: -30%;
-  inset-inline-start: 50%;
-  inline-size: min(90%, 900px);
-  aspect-ratio: 1.6;
-  translate: -50% 0;
-  background: radial-gradient(closest-side, rgba(255, 252, 244, 0.95), rgba(255, 252, 244, 0) 100%);
-  filter: blur(10px);
+.floor::before {
+  content: '';
+  position: absolute;
+  inset-inline: 14%;
+  inset-block-start: 0;
+  block-size: 1px;
+  background: linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--dr-light) 42%, transparent) 40%, color-mix(in srgb, var(--dr-light) 42%, transparent) 60%, transparent 100%);
+  opacity: 0.6;
 }
 
 .plaster {
   inset: 0;
   background-image: var(--dr-noise);
-  opacity: 0.3;
-  mix-blend-mode: multiply;
+  opacity: 0.1;
+  mix-blend-mode: screen;
 }
 
 .stage {
@@ -578,7 +629,7 @@ export default function DrumRingCarousel({
 }
 
 .stage:focus-visible {
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--dr-ink) 55%, transparent);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--dr-accent) 72%, transparent);
   border-radius: 20px;
 }
 
@@ -613,43 +664,56 @@ export default function DrumRingCarousel({
 }
 
 .reflect {
-  inset-block-start: calc(100% + 4px);
+  inset-block-start: calc(100% + 3px);
   block-size: 100%;
   transform: scaleY(-1);
-  opacity: 0.32;
-  filter: blur(1.2px);
+  opacity: 0.42;
+  filter: blur(2px) brightness(0.62) saturate(0.85);
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0.35) 18%, transparent 42%);
-  mask-image: linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0.35) 18%, transparent 42%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.22) 24%, transparent 46%);
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.22) 24%, transparent 46%);
+}
+
+.pool {
+  position: absolute;
+  inset-inline: -10%;
+  inset-block-start: calc(100% - 6px);
+  block-size: 44px;
+  background: radial-gradient(50% 100% at 50% 0%, color-mix(in srgb, var(--dr-light) 26%, transparent), transparent 72%);
+  filter: blur(4px);
+  pointer-events: none;
 }
 
 .shadow {
   position: absolute;
-  inset-inline: 4%;
-  inset-block-start: calc(100% - 10px);
-  block-size: 20px;
+  inset-inline: 5%;
+  inset-block-start: calc(100% - 8px);
+  block-size: 14px;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(70, 56, 40, 0.34), transparent);
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.66), transparent);
   filter: blur(4px);
 }
 
 .board {
   position: absolute;
   inset: 0;
-  border-radius: 3px;
+  border-radius: 5px;
   background:
-    linear-gradient(180deg, #fff 0%, var(--dr-mount) 45%, color-mix(in srgb, var(--dr-mount) 94%, #b9ad9c) 100%);
+    radial-gradient(140% 90% at 50% 0%, #1a2130 0%, transparent 60%),
+    linear-gradient(180deg, #151b28 0%, #0d121c 55%, #080b12 100%);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.9),
-    0 1px 2px rgba(70, 56, 40, 0.1),
-    0 22px 44px -20px rgba(70, 56, 40, 0.42);
+    inset 0 1px 0 rgba(255, 237, 200, 0.09),
+    inset 0 0 0 1px rgba(255, 237, 200, 0.04),
+    0 0 0 1px rgba(2, 4, 9, 0.8),
+    0 14px 34px -14px rgba(0, 0, 0, 0.85),
+    0 0 38px -6px color-mix(in srgb, var(--dr-light) 20%, transparent);
 }
 
 .window {
   position: absolute;
   inset: 8.5% 8.5% 11%;
   overflow: hidden;
-  background: var(--dr-mat-shade);
+  background: #0a0e16;
 }
 
 .img,
@@ -660,29 +724,33 @@ export default function DrumRingCarousel({
   object-fit: cover;
 }
 
+.img {
+  filter: brightness(1.04) saturate(1.06);
+}
+
 .blank {
   display: block;
   inline-size: 100%;
   block-size: 100%;
   background:
-    linear-gradient(135deg, transparent 49.6%, rgba(42, 37, 32, 0.1) 50%, transparent 50.4%),
-    linear-gradient(180deg, var(--dr-mat-shade), color-mix(in srgb, var(--dr-mat-shade) 85%, var(--dr-tone)));
+    linear-gradient(135deg, transparent 49.6%, rgba(233, 238, 247, 0.07) 50%, transparent 50.4%),
+    linear-gradient(180deg, #10151f, #0a0e16);
 }
 
 .bevel {
   position: absolute;
   inset: 0;
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.95),
-    0 0 0 2px rgba(160, 148, 130, 0.22),
-    inset 0 2px 4px rgba(30, 22, 14, 0.22);
+    inset 0 0 0 1px rgba(233, 238, 247, 0.07),
+    inset 0 2px 10px rgba(0, 0, 0, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .light {
   position: absolute;
   inset: 0;
-  border-radius: 3px;
-  background: linear-gradient(172deg, rgba(255, 253, 246, 0.38) 0%, rgba(255, 253, 246, 0) 38%, rgba(60, 46, 30, 0.06) 100%);
+  border-radius: 5px;
+  background: linear-gradient(168deg, rgba(255, 246, 224, 0.3) 0%, rgba(255, 246, 224, 0.05) 24%, transparent 42%, rgba(4, 7, 14, 0.22) 100%);
   mix-blend-mode: soft-light;
 }
 
@@ -703,7 +771,7 @@ export default function DrumRingCarousel({
   padding: 0;
   border: 1px solid var(--dr-hairline);
   border-radius: 50%;
-  background: color-mix(in srgb, var(--dr-plaster) 60%, transparent);
+  background: rgba(233, 238, 247, 0.045);
   color: var(--dr-ink);
   cursor: pointer;
   transition: background-color 180ms ease, border-color 180ms ease, transform 160ms ease;
@@ -717,8 +785,8 @@ export default function DrumRingCarousel({
 .arrow:hover,
 .pause:hover,
 .close:hover {
-  background: #fff;
-  border-color: rgba(42, 37, 32, 0.28);
+  background: rgba(233, 238, 247, 0.1);
+  border-color: rgba(233, 238, 247, 0.32);
 }
 
 .arrow:active,
@@ -737,7 +805,7 @@ export default function DrumRingCarousel({
 .close:focus-visible,
 .slideButton:focus-visible,
 .track:focus-visible {
-  outline: 2px solid var(--dr-ink);
+  outline: 2px solid var(--dr-accent);
   outline-offset: 3px;
 }
 
@@ -771,7 +839,7 @@ export default function DrumRingCarousel({
   gap: 10px;
   font-size: 12px;
   font-weight: 500;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   font-variant-numeric: tabular-nums;
   color: var(--dr-muted);
 }
@@ -786,10 +854,11 @@ export default function DrumRingCarousel({
 .caption {
   max-inline-size: 100%;
   font-family: var(--dr-font-display);
-  font-size: 24px;
+  font-size: 25px;
   font-weight: 400;
-  line-height: 1.2;
-  letter-spacing: -0.015em;
+  line-height: 1.18;
+  letter-spacing: -0.01em;
+  color: var(--dr-ink);
   text-wrap: balance;
   overflow-wrap: anywhere;
   display: -webkit-box;
@@ -821,6 +890,10 @@ export default function DrumRingCarousel({
   color: var(--dr-muted);
   border-color: transparent;
   background: transparent;
+}
+
+.pause:hover {
+  color: var(--dr-ink);
 }
 
 .pauseIcon {
@@ -869,7 +942,8 @@ export default function DrumRingCarousel({
   font-family: var(--dr-font-display);
   font-size: 17px;
   line-height: 1.3;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.005em;
+  color: var(--dr-ink);
   overflow-wrap: anywhere;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -884,9 +958,9 @@ export default function DrumRingCarousel({
   display: grid;
   place-items: center;
   padding: 56px 24px 32px;
-  background: color-mix(in srgb, var(--dr-plaster) 86%, transparent);
-  -webkit-backdrop-filter: blur(14px) saturate(0.9);
-  backdrop-filter: blur(14px) saturate(0.9);
+  background: color-mix(in srgb, #03050b 82%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+  backdrop-filter: blur(16px) saturate(1.1);
   animation: viewerIn 280ms ease-out both;
 }
 
@@ -921,9 +995,13 @@ export default function DrumRingCarousel({
   aspect-ratio: 1 / 1.2;
   max-inline-size: 100%;
   padding: 18px;
-  background: var(--dr-mount);
-  border-radius: 3px;
-  box-shadow: 0 1px 2px rgba(70, 56, 40, 0.1), 0 30px 60px -28px rgba(70, 56, 40, 0.45);
+  background: linear-gradient(180deg, #161d2b 0%, #0b0f18 100%);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 237, 200, 0.1),
+    0 0 0 1px rgba(2, 4, 9, 0.8),
+    0 24px 70px -20px rgba(0, 0, 0, 0.9),
+    0 0 70px -8px color-mix(in srgb, var(--dr-light) 28%, transparent);
 }
 
 .viewerCaption {
@@ -931,7 +1009,8 @@ export default function DrumRingCarousel({
   font-family: var(--dr-font-display);
   font-size: 20px;
   line-height: 1.3;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.005em;
+  color: var(--dr-ink);
   text-align: center;
   text-wrap: balance;
   overflow-wrap: anywhere;
@@ -957,6 +1036,15 @@ export default function DrumRingCarousel({
 
   .root {
     border-radius: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stars,
+  .caption,
+  .viewerFigure,
+  .viewer {
+    animation: none;
   }
 }
 ```

@@ -19,8 +19,8 @@
     "services",
     "blog"
   ],
-  "mobile": "callouts stack under the portrait and lines shorten to ticks",
-  "motion": "leader lines draw outward from the portrait once, labels fade in (reduced-motion: lines and labels shown at once)",
+  "mobile": "portrait on top with numbered anchors on the photo; name, role and facts stack below as a numbered list; tapping a fact spotlights its anchor",
+  "motion": "Staggered entrance: key light blooms, portrait wipes up while the camera pushes in and pulls focus (blur to sharp), name words rise from masks, anchors pop with a ripple, leader lines draw out to their elbows and terminal dots, then facts rise. Hovering, focusing or tapping a fact spotlights its area of the photo (the rest dims to cobalt, a lens ring glides between spots, the photo pushes in toward it). Reduced-motion: everything shown at once; spotlight changes by opacity only, no push-in",
   "scores": {
     "concept": 2,
     "usefulness": 3,
@@ -30,12 +30,12 @@
   "checks": {
     "tsc": "pass",
     "render": "pass",
-    "craft": "pass (3, no polish pass needed)"
+    "craft": "pass (3, after 2 polish rounds)"
   },
   "craft_score": 3,
   "status": "built",
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
-  "art_direction": "Field guide: sage-green paper, sepia ink lines and small serif labels, brass number dots, matte print texture",
-  "notes": "Leader anchors sit at fixed spots on the photo, so on some crops a dot can land on the face; lines only show at 720px+ container width (ticks below that)."
+  "art_direction": "Cobalt studio: saturated cobalt backdrop with a soft key light and floor falloff, a large portrait with cast shadow, crop marks and cobalt light spill, an oversized tight sans name overlapping the photo, crisp white hairline leader lines with square elbow joints and acid-lime terminal dots, readable label/value facts (14px label, 19px value)",
+  "notes": "2026-11-23: redesigned (batch A) to Cobalt studio. Weakness: anchor spots sit at fixed horizontal positions on the photo (20%/80%), so the spotlight can land on background rather than a meaningful detail on some crops; lines only show at 760px+ container width."
 }

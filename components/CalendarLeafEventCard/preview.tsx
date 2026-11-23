@@ -13,6 +13,8 @@ const worst: CalendarLeafEventCardProps = {
   detailsLabel: 'Read the full programme, menu and accessibility information',
   addLabel: 'Save this date to my calendar',
   addedLabel: 'Saved to your calendar, see you there',
+  timeZone: 'America/Los_Angeles',
+  dateLanguage: 'en-GB',
 };
 
 const stage = {
@@ -21,7 +23,7 @@ const stage = {
   display: 'grid',
   placeItems: 'center',
   padding: 'clamp(16px, 4vw, 56px)',
-  background: 'linear-gradient(180deg, #f3eee6 0%, #e9e2d6 100%)',
+  background: 'linear-gradient(180deg, #24252b 0%, #17181c 100%)',
 };
 
 export default function Preview() {

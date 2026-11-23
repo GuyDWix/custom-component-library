@@ -1,0 +1,41 @@
+{
+  "id": "c012",
+  "name": "HotspotPinPhoto",
+  "display_name": "Hotspot Pin Photo",
+  "category": "media",
+  "tier": "everyday",
+  "job": "Annotate a single photo (room, outfit, venue) with pulsing pins that open small notes with name, price or link",
+  "visitor_action": "click, tap or focus a pin to open its note; Tab and arrow keys move between pins; Escape or clicking elsewhere closes",
+  "owner_settings": [
+    "Image",
+    "Image description",
+    "Pins (position, title, text, link)",
+    "Pin colour",
+    "Photo caption"
+  ],
+  "site_types": [
+    "store",
+    "restaurant",
+    "services",
+    "events"
+  ],
+  "mobile": "notes open as a bottom card, pins enlarge",
+  "motion": "pin halo pulses slowly, note scales from pin with spring (reduced-motion: static halo, instant note)",
+  "art_direction": "Showroom tags: neutral photo with warm paper note cards, tomato-red pins with soft halo, dark-brown text",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped",
+    "craft": "skipped"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "notes": "Render and craft gates skipped per token-saving directive (2026-11-23); visual QA pending. Known weakness: notes anchored to pins near the photo's vertical centre can extend past the photo's bottom edge at wide sizes, and the halo pulse runs indefinitely with no pause control."
+}

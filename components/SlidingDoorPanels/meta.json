@@ -1,0 +1,40 @@
+{
+  "id": "c009",
+  "name": "SlidingDoorPanels",
+  "display_name": "Sliding Door Panels",
+  "category": "media",
+  "tier": "everyday",
+  "job": "Cover a photo with vertical shoji-like panels that slide apart to reveal the next image, one panel at a time in a rhythm",
+  "visitor_action": "click the arrows or let it auto-advance; swipe on touch; arrow keys browse when focused",
+  "owner_settings": [
+    "Images (image and caption)",
+    "Panel count",
+    "Auto-advance on/off",
+    "Advance speed"
+  ],
+  "site_types": [
+    "restaurant",
+    "business",
+    "services",
+    "events"
+  ],
+  "mobile": "3 wide panels, swipe advances",
+  "motion": "panels glide apart staggered with a spring-settle ease and a soft rattle in the track on arrival; closed beat shows the photo ghosting through lit paper (reduced-motion: leaves stay parked, photos crossfade)",
+  "art_direction": "Shoji at golden hour: pale cedar frames with grain and end-grain tenons, translucent washi paper with raking warm light, koshi lattice with real depth, panels riding a visible track with a soft sill shadow, cream mincho captions on a sumi scrim",
+  "scores": {
+    "concept": 2,
+    "usefulness": 2,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped",
+    "craft": "skipped"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "notes": "2026-11-23: quality redo (Sonnet 5.5): flat cream slabs replaced by lit washi over cedar frames, koshi lattice with cast shadows, track and sill, spring-settle cascade; not yet reviewed in the gallery (no screenshots taken). Risk: backdrop-filter on up to 10 panels. | 2026-11-23: QA nit fixes. 01 / 05 counter now sits on a scrim chip (rgba dark pill + blur + hairline ring)."
+}

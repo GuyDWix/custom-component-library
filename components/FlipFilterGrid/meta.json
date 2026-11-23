@@ -1,0 +1,41 @@
+{
+  "id": "c088",
+  "name": "FlipFilterGrid",
+  "display_name": "Flip Filter Grid",
+  "category": "controls",
+  "tier": "everyday",
+  "job": "Filter chips that sort a set of cards by category while the cards glide to their new places instead of jumping",
+  "visitor_action": "click/tap one or more chips; Esc clears",
+  "owner_settings": [
+    "Items (title, image, category, optional detail)",
+    "Categories",
+    "Chip color",
+    "Columns"
+  ],
+  "site_types": [
+    "portfolio",
+    "store",
+    "restaurant",
+    "events",
+    "blog"
+  ],
+  "mobile": "chips scroll sideways, two-column grid",
+  "motion": "cards translate to new positions with spring, hidden ones shrink and fade (reduced-motion: instant filter)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "deferred-to-QA",
+    "craft": "deferred-to-QA"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Market stall sort: butter-cream ground, tomato-red active chips, tidy white cards with thin hairline borders, friendly rounded sans",
+  "notes": "Not yet seen rendered (screenshots deferred to QA). Risks to check: staggered spring choreography timing, featured 2x2 card resizing mid-flight, and caption-height measurement with worst-case titles at 375."
+}

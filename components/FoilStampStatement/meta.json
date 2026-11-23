@@ -1,0 +1,42 @@
+{
+  "id": "c030",
+  "name": "FoilStampStatement",
+  "display_name": "Foil Stamp Statement",
+  "category": "text",
+  "tier": "showpiece",
+  "job": "A statement stamped in metallic foil whose sheen sweeps across the letters as the visitor tilts the pointer or phone",
+  "visitor_action": "move the pointer across the statement to sweep the sheen; on touch, drag a finger across it; arrow keys move the sheen when focused",
+  "owner_settings": [
+    "Statement text",
+    "Detail line",
+    "Foil finish (gold, silver, or rose)",
+    "Background color",
+    "Sheen strength"
+  ],
+  "site_types": [
+    "business",
+    "store",
+    "events",
+    "portfolio",
+    "restaurant"
+  ],
+  "mobile": "finger drag moves the sheen; slow idle sweep otherwise",
+  "motion": "sheen band glides with spring lag following input, idle sweep every few seconds (reduced-motion: static foil gradient)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 2,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped",
+    "craft": "skipped"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Wedding stationer: deep bottle-green card, hot-stamped champagne foil with specular gradient, slight deboss shadow around letters",
+  "notes": "Render and craft gates skipped per token-saving directive; Cormorant Garamond (500/600, latin) self-hosted from Fontsource, so a still frame cannot show the spring-lag sheen that carries the piece."
+}

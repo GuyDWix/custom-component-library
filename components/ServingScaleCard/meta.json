@@ -7,17 +7,22 @@
   "job": "A recipe or kit card with a servings stepper where every ingredient quantity rolls to the new amount in real time, so the card does the arithmetic for the visitor",
   "visitor_action": "tap plus or minus; when the servings number is focused, arrow keys step servings (Page Up/Down by 5, Home/End to the limits)",
   "owner_settings": [
-    "Title and small heading",
+    "Title and subtitle",
     "Photo",
     "Base servings",
     "Ingredients (name, amount and unit)",
     "Method note",
     "Section labels (servings, ingredients, method)",
-    "Accent, rim and card colors"
+    "Accent, panel and background colors"
   ],
-  "site_types": ["restaurant", "blog", "store", "events"],
-  "mobile": "full-width card, photo on top, wide 56px stepper buttons spread across the card",
-  "motion": "amounts roll vertically digit by digit with a staggered spring, changed amounts get a brief tomato highlight, stepper presses with spring (reduced-motion: numbers swap instantly)",
+  "site_types": [
+    "restaurant",
+    "blog",
+    "store",
+    "events"
+  ],
+  "mobile": "photo stage on top with the giant servings numeral and a drag dial between 48px plus/minus buttons, basil panel below; ingredient grid narrows its columns",
+  "motion": "on each change: the tick dial springs to the new value (drag it directly), the giant numeral rolls like an odometer with a vertical motion-blur smear, the factor chip pops, ingredient amounts roll in a staggered cascade with a tomato underline sweep, and the photo gives a small push-in (reduced-motion: numbers and dial swap instantly, no smear or push)",
   "scores": {
     "concept": 2,
     "usefulness": 3,
@@ -26,13 +31,13 @@
   },
   "checks": {
     "tsc": "pass",
-    "render": "pass (1 fix: photo/copy mismatch, worst-case column alignment, 375 stepper layout)",
-    "craft": "pass (3, after 1 polish pass)"
+    "render": "pass (fixes: ingredient row placement, hero position in worst case, numeral clipping)",
+    "craft": "advisory 3, pending orchestrator review"
   },
   "craft_score": 3,
   "status": "built",
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
-  "art_direction": "Pantry enamel: cream enamel card, cobalt rim stripe, flat tomato-red stepper, speckle texture (gloss dropped per contemporary-polish rule)",
-  "notes": "The hero (rolling amounts) only shows on interaction; in a still it reads as a well-made recipe card. Amounts above 20 round to whole numbers, which may be coarse for some metric units."
+  "art_direction": "Basil: dark ground, full-bleed food photo with a huge white servings numeral as the hero, a deep basil-green panel with white type and a tabular ingredient grid, tomato accent on the dial needle and factor chip, sans throughout",
+  "notes": "2026-11-23: redesigned (batch A) to Basil (dark, photo + giant odometer numeral + drag dial + basil panel); props renamed: eyebrow -> subtitle (rendered below the title), rimColor/enamelColor -> panelColor/backgroundColor. Weakness: bright photos need the scrim; worst case without a photo leaves the hero side as a plain dark field. 2026-11-23: review fixes: servings numeral now bleeds bottom-left over the photo (~400px wide, clipped off the card's left edge; two-column wide layout removed for a full-bleed stage), nested panel replaced with a flush panel (no margin/radius/border ring), dial label clipping fixed (mask fade narrowed from 22% to 24px per side). 2026-11-23: self-hosted Inter Tight (latin 700/800 woff2 in fonts/, @font-face in the module, font-display swap); UI face 'Inter' still system-fallback."
 }

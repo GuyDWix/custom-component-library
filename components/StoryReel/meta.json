@@ -1,0 +1,42 @@
+{
+  "id": "c020",
+  "name": "StoryReel",
+  "display_name": "Story Reel",
+  "category": "media",
+  "tier": "everyday",
+  "job": "Auto-advance a short sequence of photos with captions in a stories-style reel with segmented progress and tap zones",
+  "visitor_action": "tap right/left to move; press-and-hold to pause; keys work",
+  "owner_settings": [
+    "Slides (image, caption)",
+    "Seconds per slide",
+    "Progress colour",
+    "Start playing automatically",
+    "Repeat from the start"
+  ],
+  "site_types": [
+    "events",
+    "restaurant",
+    "store",
+    "blog",
+    "business"
+  ],
+  "mobile": "portrait ratio fills width, tap zones are large",
+  "motion": "progress segments fill linearly, slides crossfade with slight scale (reduced-motion: no auto-advance, manual only)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped",
+    "craft": "skipped"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Newsroom dusk: charcoal frame, coral progress bar, off-white captions on soft gradient scrim",
+  "notes": "Render and craft gates skipped by binding builder directive (2026-11-23). Known weakness: every slide renders stacked in the DOM, so a long reel loads all its photos up front rather than one at a time. 2026-11-23: replaced 404 default images"
+}

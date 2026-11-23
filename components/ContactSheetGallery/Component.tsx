@@ -43,27 +43,36 @@ export const defaultPhotos: ContactSheetPhoto[] = [
 type Phase = 'closed' | 'open' | 'closing';
 type Motion = { x: number; y: number; s: number; vx: number; vy: number; vs: number };
 type Box = { left: number; top: number; w: number; h: number; pad: number; imgW: number; imgH: number };
+type Pt = { x: number; y: number };
+type LoupeState = { x: number; y: number; vx: number; vy: number };
 
 const STIFFNESS = 240;
 const DAMPING = 23;
+const L_STIFF = 150;
+const L_DAMP = 16;
 const CAPTION_H = 52;
-const OPEN_DELAY = 320;
+const OPEN_DELAY = 340;
 const SWIPE = 56;
-const SHEET_HELP = 'Pick a frame to see it large. Arrow keys move between frames; Escape closes.';
-const TILT = [-0.35, 0.28, -0.18, 0.4, -0.24];
+const ZOOM = 2.15;
+const BULGE = 0.42;
+const BULGE_SCALE = 30;
+const SHEET_HELP =
+  'Move over the sheet to inspect frames with the loupe. Pick a frame to see it large. Arrow keys move between frames; Escape closes.';
+const TILT = [-0.5, 0.4, -0.3, 0.55, -0.42];
 const RING = 'M78 10C52 0 14 6 6 34C0 58 16 90 50 94C82 97 99 74 96 46C93 20 70 6 44 9C36 10 30 13 26 17';
 
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 const pad2 = (n: number) => String(n).padStart(2, '0');
 const pickedSet = (photos: ContactSheetPhoto[]) => new Set(photos.flatMap((p, i) => (p.picked ? [i] : [])));
 const rest = (): Motion => ({ x: 0, y: 0, s: 1, vx: 0, vy: 0, vs: 0 });
+const clampChan = (v: number) => Math.max(0, Math.min(255, Math.round(v * 255)));
 
 export default function ContactSheetGallery({
   photos = defaultPhotos,
   title = 'A long weekend by the sea',
   rollLabel = 'Roll 07 · 400 · Proof',
   showFrameNumbers = true,
-  markerColor = '#D2361F',
+  markerColor = '#E8502E',
   paperTone = '#F2EBDD',
   ariaLabel = 'Contact sheet',
   photoLabel = 'Photo',
@@ -81,11 +90,16 @@ export default function ContactSheetGallery({
   const [inView, setInView] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [swap, setSwap] = useState({ key: 0, dir: 0 });
+  const [bulge, setBulge] = useState<{ url: string; size: number } | null>(null);
 
   const rootRef = useRef<HTMLElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const printRef = useRef<HTMLElement>(null);
+  const tableRef = useRef<HTMLDivElement>(null);
+  const loupeRef = useRef<HTMLDivElement>(null);
+  const lensRef = useRef<HTMLDivElement>(null);
+  const cloneRef = useRef<HTMLDivElement>(null);
   const frameEls = useRef<(HTMLButtonElement | null)[]>([]);
   const ratios = useRef<number[]>([]);
   const motion = useRef<Motion>(rest());
@@ -95,21 +109,48 @@ export default function ContactSheetGallery({
   const timer = useRef(0);
   const launching = useRef(false);
   const drag = useRef({ active: false, id: -1, x0: 0, dx: 0 });
+  const loupeM = useRef<LoupeState>({ x: 0, y: 0, vx: 0, vy: 0 });
+  const loupeT = useRef<Pt>({ x: 0, y: 0 });
+  const restPt = useRef<Pt>({ x: 220, y: 140 });
+  const loupeD = useRef(160);
+  const lensD = useRef(140);
+  const bulgeD = useRef(0);
+  const idle = useRef(true);
+  const entered = useRef(false);
   const phaseRef = useRef(phase);
   const indexRef = useRef(index);
   const reducedRef = useRef(reduced);
   const inViewRef = useRef(inView);
+  const restIdx = useRef(0);
   phaseRef.current = phase;
   indexRef.current = index;
   reducedRef.current = reduced;
   inViewRef.current = inView;
+  const firstPicked = photos.findIndex((p) => p.picked);
+  restIdx.current = firstPicked >= 0 ? firstPicked : 0;
 
-  const filterId = `csg-${useId().replace(/:/g, '')}`;
+  const uid = useId().replace(/:/g, '');
+  const ringFilterId = `csg-wax-${uid}`;
+  const bulgeFilterId = `csg-lens-${uid}`;
 
   useEffect(() => {
     setMarked(pickedSet(photos));
     ratios.current = [];
   }, [photos]);
+
+  const paintLoupe = useCallback(() => {
+    const lp = loupeRef.current;
+    const cl = cloneRef.current;
+    if (!lp) return;
+    const L = loupeM.current;
+    const d = loupeD.current;
+    lp.style.transform = `translate3d(${(L.x - d / 2).toFixed(1)}px, ${(L.y - d / 2).toFixed(1)}px, 0)`;
+    if (!cl) return;
+    const dl = lensD.current;
+    const cx = L.x;
+    const cy = L.y;
+    cl.style.transform = `translate(${(dl / 2 - cx * ZOOM).toFixed(1)}px, ${(dl / 2 - cy * ZOOM).toFixed(1)}px, 0) scale(${ZOOM})`;
+  }, []);
 
   const computeBox = useCallback((i: number): Box | null => {
     const st = stageRef.current;
@@ -143,14 +184,28 @@ export default function ContactSheetGallery({
     Object.assign(el.style, { left: `${b.left}px`, top: `${b.top}px`, width: `${b.w}px`, height: `${b.h}px`, visibility: 'visible' });
     el.style.setProperty('--pad', `${b.pad}px`);
     el.style.setProperty('--img-h', `${b.imgH}px`);
+    el.style.setProperty('--img-w', `${b.imgW}px`);
   }, []);
 
   const frameOffset = useCallback((i: number, b: Box) => {
     const fr = frameEls.current[i]?.getBoundingClientRect();
     const ov = overlayRef.current?.getBoundingClientRect();
-    if (!fr || !ov) return { x: 0, y: 0, s: 1 };
+    if (!fr || !ov) return { x: 0, y: 0, s: 0.2 };
     const s = fr.width / b.imgW;
     return { x: fr.left - ov.left - b.left - b.pad * s, y: fr.top - ov.top - b.top - b.pad * s, s };
+  }, []);
+
+  const loupeOffset = useCallback((b: Box) => {
+    const lp = loupeRef.current;
+    const st = stageRef.current;
+    if (!lp || !st) return { x: 0, y: 0, s: 0.25 };
+    const lr = lp.getBoundingClientRect();
+    const sr = st.getBoundingClientRect();
+    const d = loupeD.current;
+    const s = d / b.imgW;
+    const cx = lr.left + d / 2 - sr.left;
+    const cy = lr.top + d / 2 - sr.top;
+    return { x: cx - s * (b.pad + b.imgW / 2), y: cy - s * (b.pad + b.imgH / 2), s };
   }, []);
 
   const paint = useCallback(() => {
@@ -169,6 +224,8 @@ export default function ContactSheetGallery({
     (now: number, last: number) => {
       const m = motion.current;
       const t = target.current;
+      const L = loupeM.current;
+      const LT = loupeT.current;
       const dt = Math.min((now - last) / 1000, 1 / 30);
       const n = Math.max(1, Math.ceil(dt * 120));
       const h = dt / n;
@@ -181,24 +238,32 @@ export default function ContactSheetGallery({
         m.vs += (STIFFNESS * (t.s - m.s) - DAMPING * m.vs) * h;
         m.y += m.vy * h;
         m.s += m.vs * h;
+        L.vx += (L_STIFF * (LT.x - L.x) - L_DAMP * L.vx) * h;
+        L.vy += (L_STIFF * (LT.y - L.y) - L_DAMP * L.vy) * h;
+        L.x += L.vx * h;
+        L.y += L.vy * h;
       }
-      const settled =
+      const printSettled =
         Math.abs(t.x - m.x) + Math.abs(t.y - m.y) < 0.6 &&
         Math.abs(t.s - m.s) < 0.002 &&
         Math.abs(m.vx) + Math.abs(m.vy) < 8 &&
         Math.abs(m.vs) < 0.02;
+      const loupeSettled = Math.abs(LT.x - L.x) + Math.abs(LT.y - L.y) < 0.5 && Math.abs(L.vx) + Math.abs(L.vy) < 5;
       const snap = !inViewRef.current || reducedRef.current;
-      if ((settled || snap) && !drag.current.active) {
-        Object.assign(m, t, { vx: 0, vy: 0, vs: 0 });
+      if ((printSettled && loupeSettled) || snap) {
+        if (!drag.current.active) Object.assign(m, t, { vx: 0, vy: 0, vs: 0 });
+        Object.assign(L, LT, { vx: 0, vy: 0 });
         paint();
+        paintLoupe();
         raf.current = 0;
         if (phaseRef.current === 'closing') finishClose();
         return;
       }
       paint();
+      paintLoupe();
       raf.current = requestAnimationFrame((next) => step(next, now));
     },
-    [paint, finishClose],
+    [paint, paintLoupe, finishClose],
   );
 
   const kick = useCallback(() => {
@@ -206,6 +271,57 @@ export default function ContactSheetGallery({
     const start = performance.now();
     raf.current = requestAnimationFrame((t) => step(t, start - 16));
   }, [step]);
+
+  const bulgeFor = useCallback((d: number) => {
+    const n = Math.max(64, Math.round(d));
+    const cv = document.createElement('canvas');
+    cv.width = n;
+    cv.height = n;
+    const ctx = cv.getContext('2d');
+    if (!ctx) return;
+    const img = ctx.createImageData(n, n);
+    const half = n / 2;
+    for (let py = 0; py < n; py++) {
+      for (let px = 0; px < n; px++) {
+        const x = (px + 0.5) / half - 1;
+        const y = (py + 0.5) / half - 1;
+        const r = Math.min(1, Math.hypot(x, y));
+        const u = (BULGE * (1 - r * r)) / (1 + BULGE * (1 - r * r));
+        const o = (py * n + px) * 4;
+        img.data[o] = clampChan(0.5 - (u * x * half) / BULGE_SCALE);
+        img.data[o + 1] = clampChan(0.5 - (u * y * half) / BULGE_SCALE);
+        img.data[o + 2] = 128;
+        img.data[o + 3] = 255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    setBulge({ url: cv.toDataURL(), size: n });
+  }, []);
+
+  const measure = useCallback(() => {
+    const table = tableRef.current;
+    const lp = loupeRef.current;
+    const cl = cloneRef.current;
+    if (!table || !lp || !cl) return;
+    loupeD.current = lp.offsetWidth || 160;
+    lensD.current = lensRef.current?.offsetWidth || Math.round(loupeD.current * 0.87);
+    cl.style.width = `${table.clientWidth}px`;
+    const fr = frameEls.current[restIdx.current]?.getBoundingClientRect();
+    const tr = table.getBoundingClientRect();
+    if (fr) restPt.current = { x: fr.left - tr.left + fr.width / 2, y: fr.top - tr.top + fr.height / 2 };
+    if (idle.current && phaseRef.current === 'closed') {
+      loupeT.current = restPt.current;
+      if (reducedRef.current) {
+        Object.assign(loupeM.current, restPt.current, { vx: 0, vy: 0 });
+        paintLoupe();
+      }
+    }
+    if (bulgeD.current !== lensD.current) {
+      bulgeD.current = lensD.current;
+      bulgeFor(lensD.current);
+    }
+    kick();
+  }, [bulgeFor, paintLoupe, kick]);
 
   const mark = (i: number) =>
     setMarked((prev) => {
@@ -228,6 +344,7 @@ export default function ContactSheetGallery({
     setIndex(i);
     setFocusIndex(i);
     indexRef.current = i;
+    setSwap((s) => ({ key: s.key + 1, dir: 0 }));
     if (reducedRef.current || !fresh) launch();
     else timer.current = window.setTimeout(launch, OPEN_DELAY);
   };
@@ -235,6 +352,7 @@ export default function ContactSheetGallery({
   const close = useCallback(() => {
     if (phaseRef.current !== 'open') return;
     const b = box.current;
+    const pr = printRef.current;
     if (reducedRef.current || !b) {
       finishClose();
       return;
@@ -242,6 +360,7 @@ export default function ContactSheetGallery({
     phaseRef.current = 'closing';
     setPhase('closing');
     target.current = frameOffset(indexRef.current, b);
+    if (pr) pr.style.setProperty('--reveal', `${b.imgW / 2}px`);
     kick();
   }, [finishClose, frameOffset, kick]);
 
@@ -260,6 +379,10 @@ export default function ContactSheetGallery({
   );
 
   useIsoLayoutEffect(() => {
+    measure();
+  }, [measure, photos, cols]);
+
+  useIsoLayoutEffect(() => {
     if (phase !== 'open') return;
     if (launching.current) fitOverlay();
     const b = computeBox(index);
@@ -269,12 +392,29 @@ export default function ContactSheetGallery({
     if (launching.current) {
       launching.current = false;
       target.current = { x: 0, y: 0, s: 1 };
-      motion.current = reducedRef.current ? rest() : { ...rest(), ...frameOffset(index, b) };
+      const pr = printRef.current;
+      if (pr) {
+        if (reducedRef.current) {
+          pr.style.setProperty('--mx', `${b.pad + b.imgW / 2}px`);
+          pr.style.setProperty('--my', `${b.pad + b.imgH / 2}px`);
+          pr.style.setProperty('--reveal', `${b.imgW * 1.75}px`);
+        } else {
+          pr.style.setProperty('--mx', `${b.pad + b.imgW / 2}px`);
+          pr.style.setProperty('--my', `${b.pad + b.imgH / 2}px`);
+          pr.style.setProperty('--reveal', `${b.imgW / 2}px`);
+          pr.style.transition = 'none';
+          pr.getBoundingClientRect();
+          pr.style.transition = '';
+          const end = `${b.imgW * 1.75}px`;
+          requestAnimationFrame(() => pr.style.setProperty('--reveal', end));
+        }
+      }
+      motion.current = reducedRef.current ? rest() : { ...rest(), ...loupeOffset(b) };
       paint();
       kick();
       overlayRef.current?.focus({ preventScroll: true });
     }
-  }, [phase, index, fitOverlay, computeBox, placePrint, frameOffset, paint, kick]);
+  }, [phase, index, fitOverlay, computeBox, placePrint, loupeOffset, paint, kick, measure]);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -289,6 +429,7 @@ export default function ContactSheetGallery({
     if (!root) return;
     const ro = new ResizeObserver(() => {
       setCols(root.clientWidth < 560 ? 3 : 4);
+      measure();
       if (phaseRef.current !== 'open') return;
       fitOverlay();
       const b = computeBox(indexRef.current);
@@ -298,14 +439,30 @@ export default function ContactSheetGallery({
       }
     });
     ro.observe(root);
-    const io = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: 0.1 });
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        setInView(entry.isIntersecting);
+        if (entry.isIntersecting && !entered.current) {
+          entered.current = true;
+          const rp = restPt.current;
+          loupeT.current = rp;
+          if (reducedRef.current) {
+            Object.assign(loupeM.current, rp, { vx: 0, vy: 0 });
+            paintLoupe();
+          } else {
+            loupeM.current = { x: rp.x, y: rp.y - 34, vx: 0, vy: 0 };
+            kick();
+          }
+        }
+      },
+      { threshold: 0.1 },
+    );
     io.observe(root);
     return () => {
       ro.disconnect();
       io.disconnect();
     };
-  }, [fitOverlay, computeBox, placePrint]);
-
+  }, [fitOverlay, computeBox, placePrint, measure, paintLoupe, kick]);
 
   useEffect(
     () => () => {
@@ -314,6 +471,45 @@ export default function ContactSheetGallery({
     },
     [],
   );
+
+  const aimAtFrame = (i: number) => {
+    if (phaseRef.current !== 'closed') return;
+    const fr = frameEls.current[i];
+    const table = tableRef.current;
+    if (!fr || !table) return;
+    const f = fr.getBoundingClientRect();
+    const t = table.getBoundingClientRect();
+    const p = { x: f.left - t.left + f.width / 2, y: f.top - t.top + f.height / 2 };
+    loupeT.current = p;
+    if (reducedRef.current) {
+      Object.assign(loupeM.current, p, { vx: 0, vy: 0 });
+      paintLoupe();
+    } else kick();
+  };
+
+  const onTableMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (phaseRef.current !== 'closed') return;
+    const table = tableRef.current;
+    if (!table) return;
+    idle.current = false;
+    const t = table.getBoundingClientRect();
+    const p = { x: e.clientX - t.left, y: e.clientY - t.top };
+    loupeT.current = p;
+    if (reducedRef.current) {
+      Object.assign(loupeM.current, p, { vx: 0, vy: 0 });
+      paintLoupe();
+    } else kick();
+  };
+
+  const onTableLeave = () => {
+    idle.current = true;
+    if (phaseRef.current !== 'closed') return;
+    loupeT.current = restPt.current;
+    if (reducedRef.current) {
+      Object.assign(loupeM.current, restPt.current, { vx: 0, vy: 0 });
+      paintLoupe();
+    } else kick();
+  };
 
   const onSheetKey = (e: KeyboardEvent<HTMLDivElement>) => {
     const moves: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: cols, ArrowUp: -cols };
@@ -376,89 +572,141 @@ export default function ContactSheetGallery({
   const rootStyle = { '--csg-paper': paperTone, '--csg-marker': markerColor } as CSSProperties;
   const on = (base: string, active: string, flag: boolean) => (flag ? `${base} ${active}` : base);
 
+  const stripNode = (cells: number[], s: number, clone: boolean) => (
+    <div key={s} className={styles.strip} style={{ '--tilt': `${TILT[s % TILT.length]}deg` } as CSSProperties}>
+      <div className={styles.bandTop} aria-hidden="true">
+        {showFrameNumbers && rollLabel && <span className={styles.edgeLabel}>{rollLabel}</span>}
+      </div>
+      <div className={styles.frames} style={gridCols}>
+        {cells.map((i) => {
+          const photo = photos[i];
+          if (!photo) return <span key={i} className={styles.blank} aria-hidden="true" />;
+          const drawn = inView && marked.has(i);
+          const img = (
+            <img
+              className={styles.thumb}
+              src={photo.image}
+              alt=""
+              draggable={false}
+              loading={clone ? 'eager' : 'lazy'}
+              onLoad={(e) => {
+                const img = e.currentTarget;
+                if (img.naturalWidth && img.naturalHeight) ratios.current[i] = img.naturalWidth / img.naturalHeight;
+              }}
+            />
+          );
+          const ring = (
+            <svg
+              className={styles.ring}
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+              focusable="false"
+              style={{ '--delay': photo.picked ? `${300 + introRank(i) * 260}ms` : '0ms' } as CSSProperties}
+            >
+              <g filter={`url(#${ringFilterId})`}>
+                <path className={on(styles.ringCore, styles.ringDrawn, drawn)} d={RING} pathLength={1} />
+                <path className={on(styles.ringWax, styles.ringDrawn, drawn)} d={RING} pathLength={1} />
+              </g>
+            </svg>
+          );
+          if (clone) {
+            return (
+              <div key={i} className={styles.frame}>
+                {img}
+                {ring}
+              </div>
+            );
+          }
+          return (
+            <button
+              key={i}
+              ref={(el) => {
+                frameEls.current[i] = el;
+              }}
+              type="button"
+              className={styles.frame}
+              tabIndex={i === focusIndex ? 0 : -1}
+              aria-label={nameOf(i)}
+              aria-haspopup="dialog"
+              onClick={() => openAt(i)}
+              onFocus={() => {
+                setFocusIndex(i);
+                aimAtFrame(i);
+              }}
+            >
+              {img}
+              {ring}
+            </button>
+          );
+        })}
+      </div>
+      <div className={styles.bandBottom} style={gridCols} aria-hidden="true">
+        {showFrameNumbers &&
+          cells.map((i) => (
+            <span key={i} className={styles.edgeNum}>
+              <span>{pad2(i + 1)}</span>
+              <span>{pad2(i + 1)}A</span>
+            </span>
+          ))}
+      </div>
+    </div>
+  );
+
   return (
     <section ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle} aria-label={ariaLabel}>
-      <span className={styles.light} aria-hidden="true" />
       <span className={styles.grain} aria-hidden="true" />
       <svg className={styles.defs} aria-hidden="true" focusable="false">
-        <filter id={filterId} x="-10%" y="-10%" width="120%" height="120%">
+        <filter id={ringFilterId} x="-10%" y="-10%" width="120%" height="120%">
           <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" />
           <feDisplacementMap in="SourceGraphic" scale="1.8" />
         </filter>
+        {bulge && (
+          <filter id={bulgeFilterId} x="-8%" y="-8%" width="116%" height="116%">
+            <feImage href={bulge.url} x="0" y="0" width={bulge.size} height={bulge.size} result="map" preserveAspectRatio="none" />
+            <feDisplacementMap in="SourceGraphic" in2="map" scale={BULGE_SCALE} xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        )}
       </svg>
 
-      <div className={styles.inner}>
-        <header className={styles.header}>
-          <div className={styles.heading}>
-            {rollLabel && <p className={styles.eyebrow}>{rollLabel}</p>}
-            {title && <h2 className={styles.title}>{title}</h2>}
-          </div>
-        </header>
+      <header className={styles.header}>
+        {title && <h2 className={styles.title}>{title}</h2>}
+        {rollLabel && <p className={styles.roll}>{rollLabel}</p>}
+      </header>
 
-        <div className={styles.sheet} role="group" aria-label={ariaLabel} aria-description={SHEET_HELP} onKeyDown={onSheetKey}>
-          {strips.map((cells, s) => (
-            <div key={s} className={styles.strip} style={{ '--tilt': `${TILT[s % TILT.length]}deg` } as CSSProperties}>
-              <div className={styles.bandTop} aria-hidden="true">
-                {showFrameNumbers && rollLabel && <span className={styles.edgeLabel}>{rollLabel}</span>}
+      <div
+        ref={tableRef}
+        className={`${styles.panel} ${styles.table}`}
+        onPointerMove={onTableMove}
+        onPointerLeave={onTableLeave}
+      >
+        <span className={on(styles.bloom, styles.bloomStill, !inView)} aria-hidden="true" />
+        <div
+          className={styles.sheet}
+          role="group"
+          aria-label={ariaLabel}
+          aria-description={SHEET_HELP}
+          onKeyDown={onSheetKey}
+        >
+          {strips.map((cells, s) => stripNode(cells, s, false))}
+        </div>
+
+        <div ref={loupeRef} className={styles.loupe} aria-hidden="true">
+          <div className={on(styles.loupeBody, styles.loupeOn, inView && phase === 'closed')}>
+            <span className={styles.loupeHalo} />
+            <span className={styles.loupeShadow} />
+            <div className={styles.loupeBarrel}>
+              <div ref={lensRef} className={styles.lens} style={bulge ? { filter: `url(#${bulgeFilterId})` } : undefined}>
+                <div ref={cloneRef} className={`${styles.panel} ${styles.lensClone}`}>
+                  <div className={styles.sheet}>{strips.map((cells, s) => stripNode(cells, s, true))}</div>
+                </div>
               </div>
-              <div className={styles.frames} style={gridCols}>
-                {cells.map((i) => {
-                  const photo = photos[i];
-                  if (!photo) return <span key={i} className={styles.blank} aria-hidden="true" />;
-                  const drawn = inView && marked.has(i);
-                  return (
-                    <button
-                      key={i}
-                      ref={(el) => {
-                        frameEls.current[i] = el;
-                      }}
-                      type="button"
-                      className={styles.frame}
-                      tabIndex={i === focusIndex ? 0 : -1}
-                      aria-label={nameOf(i)}
-                      aria-haspopup="dialog"
-                      onClick={() => openAt(i)}
-                      onFocus={() => setFocusIndex(i)}
-                    >
-                      <img
-                        className={styles.thumb}
-                        src={photo.image}
-                        alt=""
-                        draggable={false}
-                        loading="lazy"
-                        onLoad={(e) => {
-                          const img = e.currentTarget;
-                          if (img.naturalWidth && img.naturalHeight) ratios.current[i] = img.naturalWidth / img.naturalHeight;
-                        }}
-                      />
-                      <svg
-                        className={styles.ring}
-                        viewBox="0 0 100 100"
-                        preserveAspectRatio="none"
-                        aria-hidden="true"
-                        focusable="false"
-                        style={{ '--delay': photo.picked ? `${300 + introRank(i) * 260}ms` : '0ms' } as CSSProperties}
-                      >
-                        <g filter={`url(#${filterId})`}>
-                          <path className={on(styles.ringCore, styles.ringDrawn, drawn)} d={RING} pathLength={1} />
-                          <path className={on(styles.ringWax, styles.ringDrawn, drawn)} d={RING} pathLength={1} />
-                        </g>
-                      </svg>
-                    </button>
-                  );
-                })}
-              </div>
-              <div className={styles.bandBottom} style={gridCols} aria-hidden="true">
-                {showFrameNumbers &&
-                  cells.map((i) => (
-                    <span key={i} className={styles.edgeNum}>
-                      <span>▸ {pad2(i + 1)}</span>
-                      <span>{pad2(i + 1)}A</span>
-                    </span>
-                  ))}
-              </div>
+              <span className={styles.lensRoom} />
+              <span className={styles.lensSpec} />
+              <span className={styles.lensFringe} />
+              <span className={styles.lensGrain} />
             </div>
-          ))}
+          </div>
         </div>
       </div>
 

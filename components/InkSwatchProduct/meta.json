@@ -1,0 +1,39 @@
+{
+  "id": "c006",
+  "name": "InkSwatchProduct",
+  "display_name": "Ink Swatch Product",
+  "category": "media",
+  "tier": "everyday",
+  "job": "Switch a product photo between colour variants with the new colour bleeding outward from the tapped swatch like ink in water",
+  "visitor_action": "click/tap a swatch; arrow keys cycle",
+  "owner_settings": [
+    "Product title",
+    "Colour variants (image, colour name, swatch colour)",
+    "Default variant",
+    "Swatch shape (circle or square)"
+  ],
+  "site_types": [
+    "store",
+    "business",
+    "portfolio"
+  ],
+  "mobile": "swatches below the image, thumb-sized",
+  "motion": "ink front springs out of the tapped swatch (organic noise-fingered edge, pigment veins running ahead, wet rim + shine, colour wash that relaxes behind the front); interruptible; reduced-motion: 150ms crossfade",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped (binding instruction, 2026-11-23)",
+    "craft": "skipped (binding instruction, 2026-11-23)"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Dye house: bone-white stage tinted by the active pigment, photo bleeding off the right edge with a stained wet edge, flat pigment swatches, heavy Bricolage display type",
+  "notes": "2026-11-23: quality redo (Sonnet 5.5). Root cause of 'broken': reveal spring was integrated in ms against per-second constants (unstable, radius diverged to NaN so mask never played) and the frame carried a stray radial mask; default photos also did not match swatch colours. Rebuilt the reveal as a canvas ink bloom (organic distance field, veins, wet rim, wash), photos re-matched to colours, composition reworked (photo bleeds off edge). Unverified in a browser: no screenshots by instruction; field/front math checked offline only. | 2026-11-23: QA nit fixes. Default photos replaced (Nike swoosh in all four originals): Ember + Tangerine use brand-free Unsplash photos (curl 200), Onyx + Powder use the CSS-painted pigment fallback; swatch names wrap (overflow-wrap:anywhere) instead of ellipsis."
+}

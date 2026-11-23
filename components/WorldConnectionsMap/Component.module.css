@@ -1,30 +1,52 @@
 @property --wcm-dot-color {
   syntax: '<color>';
   inherits: true;
-  initial-value: #5f6f86;
+  initial-value: #46536b;
 }
 
 @property --wcm-arc-color {
   syntax: '<color>';
   inherits: true;
-  initial-value: #8eeaff;
+  initial-value: #46f59c;
+}
+
+@font-face {
+  font-family: 'Wix Madefor Display';
+  src: url('./fonts/WixMadeforDisplay-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Wix Madefor Display';
+  src: url('./fonts/WixMadeforDisplay-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+
+.frame {
+  container: wcm / inline-size;
+  inline-size: 100%;
 }
 
 .root {
-  --wcm-font: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --wcm-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+  --wcm-font: 'Wix Madefor Display', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
+  --wcm-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
   --wcm-play: paused;
+  --wcm-motion-display: block;
+  --wcm-vignette: inset 0 0 110px 26px rgba(0, 3, 8, 0.55);
 
   position: relative;
   isolation: isolate;
   overflow: hidden;
   inline-size: 100%;
-  container: wcm / inline-size;
-  border-radius: 28px;
+  aspect-ratio: 2.05 / 1;
+  min-block-size: 308px;
+  border-radius: 22px;
   background-color: var(--wcm-bg);
   background-image:
-    radial-gradient(90% 75% at 44% 22%, var(--wcm-surface-hi) 0%, transparent 70%),
-    linear-gradient(180deg, transparent 55%, var(--wcm-floor) 100%);
+    radial-gradient(85% 62% at 40% 14%, var(--wcm-surface-hi) 0%, transparent 72%),
+    linear-gradient(180deg, transparent 58%, var(--wcm-floor) 100%);
   border: 1px solid var(--wcm-frame);
   box-shadow: var(--wcm-shadow);
   color: var(--wcm-ink);
@@ -32,46 +54,49 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.root ::selection {
+  background: color-mix(in srgb, var(--wcm-arc-color) 30%, transparent);
+}
+
 .themeDark {
-  --wcm-bg: #03060d;
-  --wcm-surface-hi: #0c1a2f;
-  --wcm-floor: #010309;
-  --wcm-frame: rgba(170, 225, 255, 0.08);
-  --wcm-shadow: inset 0 1px 0 rgba(200, 235, 255, 0.07), 0 50px 90px -50px rgba(0, 4, 12, 0.9);
-  --wcm-dot-color: #5f6f86;
-  --wcm-arc-color: #8eeaff;
-  --wcm-pulse-color: color-mix(in srgb, var(--wcm-arc-color) 12%, #ffffff);
-  --wcm-glow-color: #2fe0c0;
-  --wcm-ink: #f2f9ff;
-  --wcm-ink-muted: rgba(214, 233, 248, 0.72);
-  --wcm-chip-bg: rgba(5, 11, 22, 0.86);
-  --wcm-chip-border: rgba(170, 225, 255, 0.12);
-  --wcm-chip-shine: rgba(220, 245, 255, 0.09);
-  --wcm-dot-opacity: 1;
-  --wcm-grain-opacity: 0.09;
-  --wcm-grain-blend: overlay;
-  --wcm-glow-strength: 9%;
+  --wcm-bg: #04070d;
+  --wcm-surface-hi: rgba(70, 245, 156, 0.05);
+  --wcm-floor: #01030a;
+  --wcm-frame: rgba(140, 255, 190, 0.1);
+  --wcm-shadow: inset 0 1px 0 rgba(190, 255, 220, 0.06), 0 46px 90px -52px rgba(0, 4, 10, 0.92);
+  --wcm-dot-color: #46536b;
+  --wcm-arc-color: #46f59c;
+  --wcm-pulse-color: color-mix(in srgb, var(--wcm-arc-color) 14%, #ffffff);
+  --wcm-ink: #ecf4ef;
+  --wcm-ink-muted: rgba(199, 216, 206, 0.74);
+  --wcm-data: rgba(151, 235, 192, 0.82);
+  --wcm-chip-bg: rgba(6, 12, 18, 0.92);
+  --wcm-chip-border: rgba(140, 255, 190, 0.14);
+  --wcm-chip-active: color-mix(in srgb, var(--wcm-arc-color) 42%, transparent);
+  --wcm-additive: 1;
+  --wcm-grain-opacity: 0.06;
+  --wcm-scan-opacity: 0.035;
 }
 
 .themeLight {
-  --wcm-bg: #e4ebf2;
-  --wcm-surface-hi: #f8fbfe;
-  --wcm-floor: #d3dde8;
-  --wcm-frame: rgba(20, 40, 70, 0.09);
-  --wcm-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 50px 90px -55px rgba(20, 45, 80, 0.45);
-  --wcm-dot-color: #2a3a52;
-  --wcm-arc-color: #0a8db8;
-  --wcm-pulse-color: color-mix(in srgb, var(--wcm-arc-color) 65%, #00141f);
-  --wcm-glow-color: #19b8a0;
-  --wcm-ink: #13202f;
-  --wcm-ink-muted: rgba(19, 32, 47, 0.72);
-  --wcm-chip-bg: rgba(248, 251, 254, 0.9);
-  --wcm-chip-border: rgba(20, 40, 70, 0.1);
-  --wcm-chip-shine: rgba(255, 255, 255, 0.9);
-  --wcm-dot-opacity: 0.62;
-  --wcm-grain-opacity: 0.16;
-  --wcm-grain-blend: multiply;
-  --wcm-glow-strength: 14%;
+  --wcm-bg: #e8edf1;
+  --wcm-surface-hi: #f9fcfd;
+  --wcm-floor: #d5dde4;
+  --wcm-frame: rgba(23, 42, 62, 0.12);
+  --wcm-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 46px 90px -56px rgba(18, 40, 62, 0.42);
+  --wcm-dot-color: #33415c;
+  --wcm-arc-color: #0b7d4f;
+  --wcm-pulse-color: color-mix(in srgb, var(--wcm-arc-color) 58%, #001c10);
+  --wcm-ink: #16243a;
+  --wcm-ink-muted: rgba(22, 36, 58, 0.7);
+  --wcm-data: #2e5a7a;
+  --wcm-chip-bg: rgba(249, 252, 253, 0.94);
+  --wcm-chip-border: rgba(23, 42, 62, 0.14);
+  --wcm-chip-active: color-mix(in srgb, var(--wcm-arc-color) 45%, transparent);
+  --wcm-additive: 0;
+  --wcm-grain-opacity: 0.05;
+  --wcm-scan-opacity: 0;
+  --wcm-vignette: inset 0 0 90px 18px rgba(30, 52, 74, 0.14);
 }
 
 .revealed {
@@ -83,167 +108,34 @@
 }
 
 .paused {
-  --wcm-draw-duration: 0s;
-  --wcm-draw-delay: 0s;
   --wcm-motion-display: none;
 }
 
-.atmosphere {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(55% 38% at 50% 8%, color-mix(in srgb, var(--wcm-glow-color) var(--wcm-glow-strength), transparent) 0%, transparent 75%),
-    radial-gradient(40% 44% at 62% 52%, color-mix(in srgb, var(--wcm-arc-color) calc(var(--wcm-glow-strength) * 0.6), transparent) 0%, transparent 72%),
-    radial-gradient(120% 90% at 50% 50%, transparent 55%, var(--wcm-floor) 100%);
+.focusMode {
+  --wcm-vignette: inset 0 0 130px 42px rgba(0, 3, 8, 0.64);
 }
 
-.map {
-  --arc-line: 0.5;
-  --arc-halo: 2;
-  --arc-pulse: 0.9;
-  --arc-ring: 0.32;
-
-  position: relative;
-  direction: ltr;
-  aspect-ratio: 360 / 142;
-  margin-block: 44px 52px;
-  margin-inline: 28px;
-}
-
-.equator,
-.tropic {
-  position: absolute;
-  inset-inline: 4%;
-  block-size: 1px;
-  pointer-events: none;
-  background-image: repeating-linear-gradient(90deg, var(--wcm-dot-color) 0 2px, transparent 2px 8px);
-  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
-}
-
-.equator {
-  opacity: 0.22;
-}
-
-.tropic {
-  opacity: 0.09;
-}
-
-.dotsBase,
-.dotsFx {
-  position: absolute;
-  inset: 0;
-  display: block;
-  inline-size: 100%;
-  block-size: 100%;
-  pointer-events: none;
-  mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
-}
-
-.dotsBase {
-  opacity: var(--wcm-dot-opacity);
-}
-
-.arcs {
+.canvas {
   position: absolute;
   inset: 0;
   inline-size: 100%;
   block-size: 100%;
-  overflow: visible;
   pointer-events: none;
 }
 
-.stopFaint {
-  stop-color: var(--wcm-arc-color);
-  stop-opacity: 0.4;
-}
-
-.stopFull {
-  stop-color: var(--wcm-arc-color);
-  stop-opacity: 1;
-}
-
-.stopSoft {
-  stop-color: var(--wcm-arc-color);
-  stop-opacity: 0.8;
-}
-
-.arc {
-  --arc-boost: 1;
-  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.arcLit {
-  --arc-boost: 1.7;
-}
-
-.arcDim {
-  opacity: 0.12;
-}
-
-.arcHalo,
-.arcLine {
-  fill: none;
-  stroke-linecap: round;
-  stroke-dasharray: 100 100;
-  animation: wcmDraw var(--wcm-draw-duration, 2s) cubic-bezier(0.65, 0, 0.35, 1) both;
-  animation-delay: var(--wcm-draw-delay, var(--draw-delay));
-  animation-play-state: var(--wcm-play);
-}
-
-.arcHalo {
-  stroke: var(--wcm-arc-color);
-  stroke-width: calc(var(--arc-halo) * var(--arc-boost));
-  opacity: 0.18;
-  transition: stroke-width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.arcLine {
-  stroke-width: calc(var(--arc-line) * var(--arc-boost));
-  transition: stroke-width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.pulse,
-.pulseTrail {
-  display: var(--wcm-motion-display, inline);
-  fill: none;
-  stroke-linecap: round;
-  stroke-dashoffset: var(--from);
-  animation: wcmPulse var(--pulse-duration) linear var(--pulse-delay) infinite;
-  animation-play-state: var(--wcm-play);
-}
-
-.pulse {
-  --from: 4;
-  --to: -100;
-  stroke: var(--wcm-pulse-color);
-  stroke-width: var(--arc-pulse);
-  stroke-dasharray: 4 300;
-}
-
-.pulseTrail {
-  --from: 18;
-  --to: -86;
-  stroke: var(--wcm-arc-color);
-  stroke-width: calc(var(--arc-pulse) * 0.7);
-  stroke-dasharray: 18 300;
-  opacity: 0.85;
-}
-
-.landing {
-  display: var(--wcm-motion-display, inline);
-  fill: none;
-  stroke: var(--wcm-pulse-color);
-  stroke-width: var(--arc-ring);
-  opacity: 0;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: wcmLand var(--pulse-duration) linear var(--pulse-delay) infinite;
-  animation-play-state: var(--wcm-play);
+.vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  box-shadow: var(--wcm-vignette);
+  transition: box-shadow 0.6s ease;
 }
 
 .marker {
+  --reticle-o: 0;
+  --core-scale: 1;
+
   position: absolute;
   z-index: 2;
   inline-size: 44px;
@@ -258,11 +150,19 @@
   font: inherit;
   cursor: pointer;
   outline: none;
+  opacity: 0;
+  animation: wcmMarkerIn 0.5s ease var(--pop, 0s) backwards;
+  animation-play-state: var(--wcm-play);
   transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+.marker:hover,
 .marker:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--wcm-arc-color);
+  --reticle-o: 1;
+}
+
+.marker:focus-visible {
+  box-shadow: 0 0 0 2px var(--wcm-chip-active), 0 0 0 4px var(--wcm-chip-bg);
 }
 
 .markerLinked {
@@ -271,14 +171,54 @@
 
 .markerActive {
   z-index: 4;
+  --reticle-o: 1;
+  --reticle-turn: rotate(0deg) scale(1);
+  --core-scale: 1.55;
 }
 
 .markerDim {
-  opacity: 0.32;
+  opacity: 0.34;
 }
 
-.core,
-.ring {
+.reticle {
+  --reticle-c: color-mix(in srgb, var(--wcm-arc-color) 62%, #ffffff 38%);
+
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  inline-size: 30px;
+  block-size: 30px;
+  margin-block-start: -15px;
+  margin-inline-start: -15px;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--reticle-c), var(--reticle-c)),
+    linear-gradient(var(--reticle-c), var(--reticle-c)),
+    linear-gradient(var(--reticle-c), var(--reticle-c)),
+    linear-gradient(var(--reticle-c), var(--reticle-c)),
+    linear-gradient(var(--reticle-c), var(--reticle-c)),
+    linear-gradient(var(--reticle-c), var(--reticle-c)),
+    linear-gradient(var(--reticle-c), var(--reticle-c)),
+    linear-gradient(var(--reticle-c), var(--reticle-c));
+  background-repeat: no-repeat;
+  background-size:
+    34% 1.5px, 1.5px 34%,
+    34% 1.5px, 1.5px 34%,
+    34% 1.5px, 1.5px 34%,
+    34% 1.5px, 1.5px 34%;
+  background-position:
+    0 0, 0 0,
+    100% 0, 100% 0,
+    0 100%, 0 100%,
+    100% 100%, 100% 100%;
+  opacity: var(--reticle-o);
+  transform: var(--reticle-turn, rotate(45deg) scale(0.72));
+  transition:
+    opacity 0.24s ease,
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.core {
   position: absolute;
   inset-block-start: 50%;
   inset-inline-start: 50%;
@@ -288,27 +228,31 @@
   margin-inline-start: -4.5px;
   border-radius: 50%;
   pointer-events: none;
-}
-
-.core {
-  background: radial-gradient(circle at 35% 30%, var(--wcm-pulse-color), var(--wcm-arc-color) 60%);
+  background: radial-gradient(circle at 35% 30%, var(--wcm-pulse-color), var(--wcm-arc-color) 62%);
   box-shadow:
     0 0 0 2.5px var(--wcm-bg),
-    0 0 0 3.5px color-mix(in srgb, var(--wcm-arc-color) 40%, transparent),
-    0 0 18px 3px color-mix(in srgb, var(--wcm-arc-color) 55%, transparent);
+    0 0 0 3.5px var(--wcm-chip-active),
+    0 0 16px 3px color-mix(in srgb, var(--wcm-arc-color) 55%, transparent);
+  transform: scale(var(--core-scale));
   transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.coreActive {
-  transform: scale(1.55);
+  animation: wcmCoreIn 0.66s cubic-bezier(0.16, 1, 0.3, 1) calc(var(--pop, 0s) + 0.06s) backwards;
+  animation-play-state: var(--wcm-play);
 }
 
 .ring {
-  display: var(--wcm-motion-display, block);
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  inline-size: 9px;
+  block-size: 9px;
+  margin-block-start: -4.5px;
+  margin-inline-start: -4.5px;
+  display: var(--wcm-motion-display);
   border: 1.5px solid var(--wcm-arc-color);
+  border-radius: 50%;
+  pointer-events: none;
   opacity: 0;
-  animation: wcmRing 3.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
-  animation-delay: calc(var(--i) * -0.43s);
+  animation: wcmRing 3.4s cubic-bezier(0.2, 0.6, 0.3, 1) calc(var(--i, 0) * -0.43s) infinite;
   animation-play-state: var(--wcm-play);
 }
 
@@ -316,39 +260,31 @@
   position: absolute;
   inset-block-start: calc(50% + var(--ly, -14px));
   inset-inline-start: calc(50% + var(--lx, 12px));
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
   inline-size: max-content;
   max-inline-size: 22ch;
-  padding-block: 6px;
-  padding-inline: 10px 11px;
+  padding-block: 5px;
+  padding-inline: 9px 10px;
   border: 1px solid var(--wcm-chip-border);
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--wcm-chip-bg);
-  backdrop-filter: blur(12px) saturate(1.4);
-  -webkit-backdrop-filter: blur(12px) saturate(1.4);
-  box-shadow:
-    inset 0 1px 0 var(--wcm-chip-shine),
-    0 12px 28px -14px rgba(0, 0, 0, 0.6);
   color: var(--wcm-ink);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
   text-align: start;
+  overflow-wrap: anywhere;
   pointer-events: none;
+  box-shadow: 0 10px 24px -16px rgba(0, 0, 0, 0.55);
   opacity: 0;
-  transform: scale(0.92);
-  transform-origin: left center;
+  transform: scale(0.9);
   transition:
-    opacity 0.3s ease,
+    opacity 0.28s ease,
     transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.3s ease;
+    border-color 0.28s ease;
 }
 
 .labelShown {
-  opacity: 1;
-  transform: none;
-}
-
-.labelLinked {
   opacity: 1;
   transform: none;
 }
@@ -357,39 +293,100 @@
   opacity: 1;
   transform: none;
   max-inline-size: 30ch;
-  border-color: color-mix(in srgb, var(--wcm-arc-color) 45%, transparent);
+  border-color: var(--wcm-chip-active);
 }
 
-.labelName {
-  display: -webkit-box;
-  overflow: hidden;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.2;
+.hud {
+  position: absolute;
+  inset-block-end: 14px;
+  inset-inline-start: 14px;
+  z-index: 5;
+  inline-size: min(320px, calc(100% - 88px));
+  padding: 14px 16px 13px;
+  border: 1px solid var(--wcm-chip-border);
+  border-radius: 12px;
+  background: var(--wcm-chip-bg);
+  box-shadow: 0 20px 44px -22px rgba(0, 0, 0, 0.62);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hudShown {
+  opacity: 1;
+  transform: none;
+}
+
+.hudBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hudName {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.15;
   letter-spacing: -0.012em;
-  overflow-wrap: anywhere;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  color: var(--wcm-ink);
+  animation: wcmHudIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.labelNameFull {
-  -webkit-line-clamp: 4;
-}
-
-.labelMeta {
-  display: none;
-  color: var(--wcm-ink-muted);
+.hudCoords {
+  margin: 0;
   font-family: var(--wcm-mono);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
-  letter-spacing: 0.06em;
-  line-height: 1.3;
-  white-space: pre;
+  letter-spacing: 0.05em;
+  line-height: 1.4;
+  color: var(--wcm-data);
   font-variant-numeric: tabular-nums;
+  animation: wcmHudIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) 40ms both;
 }
 
-.labelMetaShown {
-  display: block;
+.hudRoutes {
+  margin: 9px 0 0;
+  padding: 9px 0 0;
+  border-block-start: 1px solid var(--wcm-chip-border);
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hudRoute {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  animation: wcmHudIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) calc(80ms + var(--row, 0) * 45ms) both;
+}
+
+.hudRouteName {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  color: var(--wcm-ink);
+}
+
+.hudRouteKm {
+  margin-inline-start: auto;
+  font-family: var(--wcm-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  line-height: 1.3;
+  white-space: nowrap;
+  color: var(--wcm-data);
+  font-variant-numeric: tabular-nums;
 }
 
 .playToggle {
@@ -405,19 +402,18 @@
   border: 1px solid var(--wcm-chip-border);
   border-radius: 50%;
   background: var(--wcm-chip-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: inset 0 1px 0 var(--wcm-chip-shine);
   color: var(--wcm-ink);
   cursor: pointer;
   opacity: 0.6;
   transition:
     opacity 0.25s ease,
-    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    border-color 0.25s ease;
 }
 
 .playToggle:hover {
   opacity: 1;
+  border-color: var(--wcm-chip-active);
 }
 
 .playToggle:active {
@@ -440,88 +436,74 @@
   inset: 0;
   z-index: 6;
   pointer-events: none;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.5) 0 1px, transparent 1px 3px),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   opacity: var(--wcm-grain-opacity);
-  mix-blend-mode: var(--wcm-grain-blend);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
 }
 
-@container wcm (max-width: 640px) {
-  .map {
-    --arc-line: 0.85;
-    --arc-halo: 3;
-    --arc-pulse: 1.4;
-    --arc-ring: 0.7;
-    margin-block: 28px 64px;
-    margin-inline: 12px;
+@container wcm (max-width: 560px) {
+  .root {
+    aspect-ratio: 0.92;
+    min-block-size: 340px;
+    border-radius: 16px;
   }
 
-  .label {
-    padding-block: 4px;
-    padding-inline: 8px 9px;
-    border-radius: 8px;
+  .playToggle {
+    inset-block-end: auto;
+    inset-block-start: 10px;
+    inset-inline-end: 10px;
   }
 
-  .labelActive {
-    max-inline-size: 20ch;
+  .hud {
+    inset-block-end: 10px;
+    inset-inline-start: 10px;
+    inline-size: calc(100% - 20px);
+    padding: 12px 14px 11px;
   }
 
-  .labelName {
+  .hudName {
+    font-size: 15px;
+  }
+
+  .hudRouteName {
     font-size: 12.5px;
   }
 
-  .labelMeta {
-    font-size: 10px;
+  .label {
+    max-inline-size: 18ch;
+    font-size: 12.5px;
+    padding-block: 4px;
+    padding-inline: 8px 9px;
+  }
+
+  .labelActive {
+    max-inline-size: 22ch;
   }
 }
 
 @container wcm (min-width: 1100px) {
-  .map {
-    margin-block: 64px 72px;
-    margin-inline: 40px;
+  .root {
+    border-radius: 26px;
   }
 }
 
-@keyframes wcmDraw {
+@keyframes wcmMarkerIn {
   from {
-    stroke-dashoffset: 100;
-  }
-  to {
-    stroke-dashoffset: 0;
+    opacity: 0;
   }
 }
 
-@keyframes wcmPulse {
-  0% {
-    stroke-dashoffset: var(--from);
-    animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1);
-  }
-  70%,
-  100% {
-    stroke-dashoffset: var(--to);
-  }
-}
-
-@keyframes wcmLand {
-  0%,
-  47% {
-    opacity: 0;
-    transform: scale(0.4);
-  }
-  53% {
-    opacity: 0.95;
-    transform: scale(0.8);
-    animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
-  }
-  88%,
-  100% {
-    opacity: 0;
-    transform: scale(3.6);
+@keyframes wcmCoreIn {
+  from {
+    transform: scale(0);
   }
 }
 
 @keyframes wcmRing {
   0% {
-    opacity: 0.65;
+    opacity: 0.6;
     transform: scale(1);
   }
   100% {
@@ -530,12 +512,45 @@
   }
 }
 
+@keyframes wcmHudIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .marker,
+  .core {
+    animation: none;
+    opacity: 1;
+  }
+
+  .ring {
+    display: none;
+  }
+
+  .reticle {
+    transition: none;
+  }
+
+  .core {
+    transition: none;
+  }
+
   .label,
-  .core,
-  .arc,
-  .arcLine,
-  .arcHalo {
+  .hud,
+  .vignette {
     transition-duration: 0.01ms;
+  }
+
+  .hudName,
+  .hudCoords,
+  .hudRoute {
+    animation: none;
   }
 }

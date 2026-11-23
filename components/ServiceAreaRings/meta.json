@@ -1,0 +1,35 @@
+{
+  "id": "c078",
+  "name": "ServiceAreaRings",
+  "display_name": "Service Area Rings",
+  "category": "data",
+  "tier": "everyday",
+  "job": "Explain where a business delivers or travels as concentric radar-style rings from the shop, each ring naming neighbourhoods with its delivery time and fee",
+  "visitor_action": "hover or tap a ring or neighbourhood to see its time and fee; arrow keys move between rings",
+  "owner_settings": [
+    "Rings (distance label, time, fee)",
+    "Neighbourhoods per ring",
+    "Centre label",
+    "Accent color"
+  ],
+  "site_types": ["restaurant", "store", "services", "business"],
+  "mobile": "rings fill the width, details open in a card below",
+  "motion": "rings expand from the centre in a stagger, selected ring tints with a quick fade (reduced-motion: rings static)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "deferred-to-QA",
+    "craft": "deferred-to-QA"
+  },
+  "craft_score": null,
+  "status": "built",
+  "provenance": "original, built from a concept description",
+  "studio2_tested": false,
+  "art_direction": "Harbour chart: pale sea-foam paper, fine navy contour lines, signal-orange centre pin, cartographic hairlines with soft grain",
+  "notes": "Not yet seen rendered (QA sweep pending). Neighbourhood labels are placed by an estimate of text width, so very long names on a crowded ring can still crowd each other on the wide layout; at narrow widths they collapse to tappable dots."
+}
