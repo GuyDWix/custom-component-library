@@ -4,7 +4,7 @@
   "display_name": "Mosaic Dissolve Slides",
   "category": "media",
   "tier": "showpiece",
-  "job": "Move between slides by flipping a grid of small tiles from one image to the next in a ripple that starts where the visitor clicked",
+  "job": "Move between slides with a WebGL pixel-displacement dissolve that radiates outward from the click point",
   "visitor_action": "click arrows or the image; swipe on touch; a quiet pause control stops auto-advance",
   "owner_settings": [
     "Images (image, caption)",
@@ -18,8 +18,8 @@
     "events",
     "business"
   ],
-  "mobile": "larger tiles, swipe advances",
-  "motion": "tiles collapse and turn in a radial wave from the click point over ink, flat and crisp; the photo is continuous at rest (reduced-motion: instant crossfade, no auto-advance until played)",
+  "mobile": "smaller max block size, swipe advances",
+  "motion": "shader mosaic: pixel blocks swell then shrink as a wave radiates from the click point (centre for keyboard/auto), swapping slide A for B; seamless, no grid lines; reduced-motion or no-WebGL: static crossfade, no auto-advance in reduced-motion",
   "scores": {
     "concept": 3,
     "usefulness": 2,
@@ -33,5 +33,5 @@
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Modern digital: ink #0c0d0f, paper #ecebe6, one signal #c8ff3a (progress/focus only); Space Grotesk 500 with one oversized counter; seamless zero-gap tiles over a continuous photo, no frame, segmented progress under the photo"
+  "art_direction": "Modern digital: ink #0c0d0f, paper #ecebe6, one signal #c8ff3a (progress/focus only); Space Grotesk 500 with one oversized counter; real fragment-shader dissolve on a canvas, no bezel or grid, segmented progress"
 }

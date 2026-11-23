@@ -36,75 +36,28 @@
   background: var(--md-ink);
 }
 
-.base,
-.face {
-  background-repeat: no-repeat;
-}
-
 .base {
   position: absolute;
   inset: 0;
+  background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
 }
 
-.facePlaceholder {
+.placeholder {
   background-color: #1a1c1f;
 }
 
-.grid {
+.canvas {
   position: absolute;
   inset: 0;
-  display: grid;
-  gap: 0;
-  visibility: hidden;
+  inline-size: 100%;
+  block-size: 100%;
+  display: block;
 }
 
-.root[data-phase='flip'] .grid {
-  visibility: visible;
-}
-
-.root[data-phase='flip'][data-motion='full'] .base {
-  visibility: hidden;
-}
-
-.tile {
-  position: relative;
-}
-
-.flipper {
-  position: absolute;
-  inset: -0.5px;
-  will-change: transform;
-}
-
-.face {
-  position: absolute;
-  inset: 0;
-}
-
-.faceBack {
-  visibility: hidden;
-}
-
-.flipper[data-b] .faceFront {
-  visibility: hidden;
-}
-
-.flipper[data-b] .faceBack {
-  visibility: visible;
-}
-
-.root[data-motion='reduced'][data-phase='flip'] .grid {
+.fade {
   animation: md-fade var(--md-fade) linear both;
-}
-
-.root[data-motion='reduced'] .faceFront {
-  visibility: hidden;
-}
-
-.root[data-motion='reduced'] .faceBack {
-  visibility: visible;
 }
 
 @keyframes md-fade {

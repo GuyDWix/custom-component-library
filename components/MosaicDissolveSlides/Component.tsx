@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type {
   CSSProperties,
   FocusEvent as ReactFocusEvent,
@@ -51,9 +51,8 @@ export const defaultSlides: MosaicSlide[] = [
 
 type Phase = 'idle' | 'flip';
 
-const FLIP_MS = 640;
-const WAVE_MS = 720;
-const FADE_MS = 200;
+const DISSOLVE_MS = 1150;
+const FADE_MS = 240;
 const ASPECT = 3 / 2;
 const SWIPE_MIN = 44;
 const PROGRESS_MIN_SEGMENTS = 2;
@@ -64,59 +63,207 @@ const PLAY_LABEL = 'Play slideshow';
 const PAUSE_LABEL = 'Pause slideshow';
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
-
-/* ---- flip driver: one rAF loop writes every tile's transform ---- */
-
-// cubic-bezier(0.22, 0.9, 0.25, 1) sampled once; looked up per tile per frame
-const EASE_STEPS = 64;
-const EASE_LUT = (() => {
-  const [x1, y1, x2, y2] = [0.22, 0.9, 0.25, 1];
-  const bez = (a: number, b: number, u: number) => 3 * a * u * (1 - u) * (1 - u) + 3 * b * u * u * (1 - u) + u * u * u;
-  const xs: number[] = [];
-  const ys: number[] = [];
-  for (let k = 0; k <= 200; k++) {
-    const u = k / 200;
-    xs.push(bez(x1, x2, u));
-    ys.push(bez(y1, y2, u));
-  }
-  const out: number[] = [];
-  let k = 0;
-  for (let s = 0; s <= EASE_STEPS; s++) {
-    const x = s / EASE_STEPS;
-    while (k < 199 && xs[k + 1] < x) k++;
-    const f = (x - xs[k]) / Math.max(1e-6, xs[k + 1] - xs[k]);
-    out.push(ys[k] + (ys[k + 1] - ys[k]) * clamp(f, 0, 1));
-  }
-  return out;
-})();
-const ease = (p: number) => {
-  const f = clamp(p, 0, 1) * EASE_STEPS;
-  const i = Math.min(EASE_STEPS - 1, Math.floor(f));
-  return EASE_LUT[i] + (EASE_LUT[i + 1] - EASE_LUT[i]) * (f - i);
-};
+const easeInOut = (p: number) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
 const pad = (n: number) => String(n).padStart(2, '0');
 
-/** Pick a column/row count whose cells are as close to square as possible. */
-function fitGrid(w: number, target: number): { cols: number; rows: number } {
-  const h = w / ASPECT;
-  let base = Math.round(w / target);
-  if (w < 520) base = Math.min(base, 8);
-  base = clamp(base, 3, 18);
-  let cols = base;
-  let rows = Math.max(2, Math.round(base / ASPECT));
-  // near-square cells, but never drifting far from the requested tile size
-  const cost = (c: number, r: number) => (Math.abs(w / c - h / r) + 0.6 * Math.abs(w / c - target)) / target;
-  let err = cost(cols, rows);
-  for (let c = Math.max(3, base - 2); c <= Math.min(18, base + 2); c++) {
-    const r = Math.max(2, Math.round(c / ASPECT));
-    const e = cost(c, r);
-    if (e < err) {
-      err = e;
-      cols = c;
-      rows = r;
+/* ---- WebGL dissolve: pixel blocks swell and shrink as a wave passes, swapping image A for B ---- */
+
+const VERT = `attribute vec2 aPos;
+void main(){ gl_Position = vec4(aPos, 0.0, 1.0); }`;
+
+const FRAG = `precision highp float;
+uniform sampler2D uA;
+uniform sampler2D uB;
+uniform vec2 uRes;
+uniform vec2 uOrigin;
+uniform vec2 uCoverA;
+uniform vec2 uCoverB;
+uniform float uP;
+uniform float uCell;
+uniform float uMax;
+
+float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+
+void main(){
+  vec2 px = gl_FragCoord.xy;
+  float d = length(px - uOrigin) / uMax;
+  const float W = 0.6;
+  float t = clamp((uP * (1.0 + W) - d) / W, 0.0, 1.0);
+  float bump = sin(3.14159265 * t);
+  float lvl = floor((1.0 - pow(bump, 0.7)) * 5.0);
+  float cell = uCell / exp2(lvl);
+  vec2 q = (lvl >= 5.0 || bump < 0.003) ? px : (floor(px / cell) + 0.5) * cell;
+  float thr = 0.28 + 0.44 * hash(floor(px / uCell));
+  float m = step(thr, t);
+  vec2 uv = q / uRes;
+  vec4 a = texture2D(uA, (uv - 0.5) * uCoverA + 0.5);
+  vec4 b = texture2D(uB, (uv - 0.5) * uCoverB + 0.5);
+  gl_FragColor = vec4(mix(a.rgb, b.rgb, m), 1.0);
+}`;
+
+interface TexEntry {
+  tex: WebGLTexture;
+  aspect: number;
+}
+
+interface Renderer {
+  ensure: (src: string) => Promise<void>;
+  resize: (cssW: number, cssH: number, dpr: number) => void;
+  render: (a: string, b: string, p: number, ox: number, oy: number, cellCss: number) => void;
+  dispose: () => void;
+}
+
+function createRenderer(canvas: HTMLCanvasElement, onLost: () => void, onRestored: () => void): Renderer | null {
+  const gl = canvas.getContext('webgl', { antialias: false, alpha: false, premultipliedAlpha: false });
+  if (!gl) return null;
+
+  const compile = (type: number, code: string) => {
+    const sh = gl.createShader(type);
+    if (!sh) return null;
+    gl.shaderSource(sh, code);
+    gl.compileShader(sh);
+    return gl.getShaderParameter(sh, gl.COMPILE_STATUS) ? sh : null;
+  };
+  const vs = compile(gl.VERTEX_SHADER, VERT);
+  const fs = compile(gl.FRAGMENT_SHADER, FRAG);
+  const prog = gl.createProgram();
+  if (!vs || !fs || !prog) return null;
+  gl.attachShader(prog, vs);
+  gl.attachShader(prog, fs);
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return null;
+  gl.useProgram(prog);
+
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+  const aPos = gl.getAttribLocation(prog, 'aPos');
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+  const loc = (n: string) => gl.getUniformLocation(prog, n);
+  const u = {
+    a: loc('uA'), b: loc('uB'), res: loc('uRes'), origin: loc('uOrigin'),
+    coverA: loc('uCoverA'), coverB: loc('uCoverB'), p: loc('uP'), cell: loc('uCell'), max: loc('uMax'),
+  };
+  gl.uniform1i(u.a, 0);
+  gl.uniform1i(u.b, 1);
+
+  const cache = new Map<string, Promise<TexEntry>>();
+  const ready = new Map<string, TexEntry>();
+  let disposed = false;
+  let w = 1;
+  let h = 1;
+
+  const upload = (source: TexImageSource | Uint8Array, width: number, height: number): TexEntry => {
+    const tex = gl.createTexture() as WebGLTexture;
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+    if (source instanceof Uint8Array) {
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, source);
+    } else {
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
     }
-  }
-  return { cols, rows };
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    return { tex, aspect: width / height };
+  };
+
+  const placeholder = () => upload(new Uint8Array([26, 28, 31, 255]), ASPECT, 1);
+
+  const ensure = (src: string) => {
+    let p = cache.get(src);
+    if (!p) {
+      p = new Promise<TexEntry>((resolve) => {
+        const done = (e: TexEntry) => {
+          if (!disposed) ready.set(src, e);
+          resolve(e);
+        };
+        if (!src) return done(placeholder());
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.decoding = 'async';
+        img.onload = () => {
+          if (disposed) return resolve(placeholder());
+          try {
+            done(upload(img, img.naturalWidth, img.naturalHeight));
+          } catch {
+            done(placeholder());
+          }
+        };
+        img.onerror = () => (disposed ? resolve(placeholder()) : done(placeholder()));
+        img.src = src;
+      });
+      cache.set(src, p);
+    }
+    return p.then(() => undefined);
+  };
+
+  const cover = (aspect: number) => {
+    const view = w / h;
+    return aspect > view ? [view / aspect, 1] : [1, aspect / view];
+  };
+
+  const render: Renderer['render'] = (a, b, p, ox, oy, cellCss) => {
+    const ea = ready.get(a);
+    const eb = ready.get(b);
+    if (!ea || !eb || gl.isContextLost()) return;
+    gl.viewport(0, 0, w, h);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, ea.tex);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, eb.tex);
+    const [ax, ay] = cover(ea.aspect);
+    const [bx, by] = cover(eb.aspect);
+    const px = ox * w;
+    const py = (1 - oy) * h;
+    const far = Math.max(
+      Math.hypot(px, py), Math.hypot(w - px, py), Math.hypot(px, h - py), Math.hypot(w - px, h - py),
+    );
+    gl.uniform2f(u.res, w, h);
+    gl.uniform2f(u.origin, px, py);
+    gl.uniform2f(u.coverA, ax, ay);
+    gl.uniform2f(u.coverB, bx, by);
+    gl.uniform1f(u.p, p);
+    gl.uniform1f(u.cell, Math.max(2, (cellCss * w) / canvas.clientWidth || 2));
+    gl.uniform1f(u.max, far);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  };
+
+  const resize: Renderer['resize'] = (cssW, cssH, dpr) => {
+    w = Math.max(1, Math.round(cssW * dpr));
+    h = Math.max(1, Math.round(cssH * dpr));
+    if (canvas.width !== w) canvas.width = w;
+    if (canvas.height !== h) canvas.height = h;
+  };
+
+  const lost = (e: Event) => {
+    e.preventDefault();
+    cache.clear();
+    ready.clear();
+    onLost();
+  };
+  const restored = () => onRestored();
+  canvas.addEventListener('webglcontextlost', lost);
+  canvas.addEventListener('webglcontextrestored', restored);
+
+  const dispose = () => {
+    disposed = true;
+    canvas.removeEventListener('webglcontextlost', lost);
+    canvas.removeEventListener('webglcontextrestored', restored);
+    ready.forEach((e) => gl.deleteTexture(e.tex));
+    ready.clear();
+    cache.clear();
+    gl.deleteBuffer(buf);
+    gl.deleteProgram(prog);
+    gl.deleteShader(vs);
+    gl.deleteShader(fs);
+    gl.getExtension('WEBGL_lose_context')?.loseContext();
+  };
+
+  return { ensure, resize, render, dispose };
 }
 
 export default function MosaicDissolveSlides({
@@ -130,7 +277,6 @@ export default function MosaicDissolveSlides({
   const tileTarget = clamp(tileSize, 28, 96);
   const holdMs = clamp(advanceSeconds, 2.5, 30) * 1000;
 
-  const [grid, setGrid] = useState({ cols: 12, rows: 8 });
   const [index, setIndex] = useState(0);
   const [nextIndex, setNextIndex] = useState<number | null>(null);
   const [phase, setPhase] = useState<Phase>('idle');
@@ -140,11 +286,14 @@ export default function MosaicDissolveSlides({
   const [hover, setHover] = useState(false);
   const [focusWithin, setFocusWithin] = useState(false);
   const [playOn, setPlayOn] = useState(autoAdvance);
+  const [glReady, setGlReady] = useState(false);
+  const [glKey, setGlKey] = useState(0);
+  const [viewW, setViewW] = useState(0);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
-  const commitTimer = useRef(0);
-  const flipRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const glRef = useRef<Renderer | null>(null);
   const swipeStart = useRef<{ x: number; y: number } | null>(null);
   const suppressClick = useRef(false);
   const autoRemaining = useRef(holdMs);
@@ -153,8 +302,10 @@ export default function MosaicDissolveSlides({
   const current: MosaicSlide | undefined = count > 0 ? slides[safeIndex] : undefined;
   const back: MosaicSlide | undefined = nextIndex !== null ? slides[nextIndex] : current;
   const captionText = (current?.caption ?? '').trim() || (current?.alt ?? '').trim();
-
-  useEffect(() => () => window.clearTimeout(commitTimer.current), []);
+  const frontSrc = current?.src ?? '';
+  const backSrc = back?.src ?? '';
+  const useGL = glReady && !reduced;
+  const cellCss = clamp(Math.min(tileTarget, viewW / 8 || tileTarget), 12, 96);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -176,22 +327,58 @@ export default function MosaicDissolveSlides({
     return () => io.disconnect();
   }, []);
 
+  // GL lifecycle: created once motion is allowed, disposed on unmount / reduced-motion / context loss.
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || reduced) return;
+    const r = createRenderer(
+      canvas,
+      () => setGlReady(false),
+      () => setGlKey((k) => k + 1),
+    );
+    if (!r) return;
+    glRef.current = r;
+    setGlReady(true);
+    return () => {
+      glRef.current = null;
+      setGlReady(false);
+      r.dispose();
+    };
+  }, [reduced, glKey]);
+
+  // Viewport size drives canvas resolution and the cell size.
   useEffect(() => {
     const el = viewportRef.current;
     if (!el) return;
     const measure = () => {
       const w = el.clientWidth;
       if (w < 40) return;
-      setGrid((prev) => {
-        const g = fitGrid(w, tileTarget);
-        return g.cols === prev.cols && g.rows === prev.rows ? prev : g;
-      });
+      setViewW(w);
+      glRef.current?.resize(w, w / ASPECT, Math.min(window.devicePixelRatio || 1, 2));
     };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [tileTarget]);
+  }, [glReady]);
+
+  // Rest frame: the canvas always shows the current slide (same pixels as the fallback image).
+  useLayoutEffect(() => {
+    const r = glRef.current;
+    if (!useGL || !r || phase !== 'idle') return;
+    let cancelled = false;
+    const draw = () => r.render(frontSrc, frontSrc, 0, 0.5, 0.5, cellCss);
+    r.ensure(frontSrc).then(() => !cancelled && draw());
+    return () => {
+      cancelled = true;
+    };
+  }, [useGL, phase, frontSrc, viewW, cellCss]);
+
+  const commit = useCallback((target: number) => {
+    setIndex(target);
+    setNextIndex(null);
+    setPhase('idle');
+  }, []);
 
   const goTo = useCallback(
     (target: number, ox: number, oy: number) => {
@@ -201,31 +388,53 @@ export default function MosaicDissolveSlides({
       setOrigin({ x: clamp(ox, 0, 1), y: clamp(oy, 0, 1) });
       setNextIndex(t);
       setPhase('flip');
-      const total = reduced ? FADE_MS + 60 : WAVE_MS + FLIP_MS + 120;
-      window.clearTimeout(commitTimer.current);
-      commitTimer.current = window.setTimeout(() => {
-        setIndex(t);
-        setNextIndex(null);
-        setPhase('idle');
-      }, total);
     },
-    [phase, count, safeIndex, reduced],
+    [phase, count, safeIndex],
   );
 
-  // Warm the neighbouring slides so the first flip never waits on a download or decode.
+  // Dissolve driver: one rAF loop writes the shader's progress; commits when the wave has crossed the frame.
+  useEffect(() => {
+    const r = glRef.current;
+    if (phase !== 'flip' || nextIndex === null || !useGL || !r) return;
+    let cancelled = false;
+    let raf = 0;
+    Promise.all([r.ensure(frontSrc), r.ensure(backSrc)]).then(() => {
+      if (cancelled) return;
+      const t0 = performance.now();
+      const frame = (now: number) => {
+        const p = clamp((now - t0) / DISSOLVE_MS, 0, 1);
+        r.render(frontSrc, backSrc, easeInOut(p), origin.x, origin.y, cellCss);
+        if (p < 1) raf = requestAnimationFrame(frame);
+        else commit(nextIndex);
+      };
+      raf = requestAnimationFrame(frame);
+    });
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(raf);
+    };
+  }, [phase, nextIndex, useGL, frontSrc, backSrc, origin, cellCss, commit]);
+
+  // Static fallback (reduced motion, no WebGL): plain crossfade.
+  useEffect(() => {
+    if (phase !== 'flip' || nextIndex === null || useGL) return;
+    const id = window.setTimeout(() => commit(nextIndex), FADE_MS + 60);
+    return () => window.clearTimeout(id);
+  }, [phase, nextIndex, useGL, commit]);
+
+  // Warm the neighbouring slides so the first dissolve never waits on a download or decode.
   useEffect(() => {
     if (count < 2 || !inView) return;
-    const warm = (i: number) => {
+    [safeIndex + 1, safeIndex - 1].forEach((i) => {
       const src = slides[((i % count) + count) % count]?.src;
       if (!src) return;
+      glRef.current?.ensure(src);
       const img = new Image();
       img.decoding = 'async';
       img.src = src;
       img.decode?.().catch(() => {});
-    };
-    warm(safeIndex + 1);
-    warm(safeIndex - 1);
-  }, [slides, count, safeIndex, inView]);
+    });
+  }, [slides, count, safeIndex, inView, glReady]);
 
   const isPlaying =
     playOn && inView && !hover && !focusWithin && phase === 'idle' && count > 1;
@@ -294,119 +503,8 @@ export default function MosaicDissolveSlides({
     goTo(safeIndex + 1, 1, 0.5);
   };
 
-  const tiles = useMemo(() => {
-    const { cols, rows } = grid;
-    const iy = 1 / ASPECT; // height in width units
-    const maxDist = Math.max(
-      Math.hypot(origin.x, origin.y * iy),
-      Math.hypot(1 - origin.x, origin.y * iy),
-      Math.hypot(origin.x, (1 - origin.y) * iy),
-      Math.hypot(1 - origin.x, (1 - origin.y) * iy),
-    );
-    const list: { i: number; j: number; pos: string; d: number }[] = [];
-    for (let j = 0; j < rows; j++) {
-      for (let i = 0; i < cols; i++) {
-        const dx = (i + 0.5) / cols - origin.x;
-        const dy = ((j + 0.5) / rows - origin.y) * iy;
-        list.push({
-          i,
-          j,
-          d: Math.pow(Math.hypot(dx, dy) / maxDist, 0.85) * WAVE_MS,
-          pos: `${cols > 1 ? (i / (cols - 1)) * 100 : 0}% ${rows > 1 ? (j / (rows - 1)) * 100 : 0}%`,
-        });
-      }
-    }
-    return list;
-  }, [grid, origin]);
-  const tilesRef = useRef(tiles);
-  tilesRef.current = tiles;
-
-  // One rAF loop drives the whole wave: every in-flight tile gets one transform write per frame.
-  useEffect(() => {
-    if (phase !== 'flip' || reduced) return;
-    const list = tilesRef.current;
-    const els = flipRefs.current;
-    const n = list.length;
-    const done = new Uint8Array(n);
-    const turned = new Uint8Array(n);
-    const total = WAVE_MS + FLIP_MS;
-    const t0 = performance.now();
-    let raf = 0;
-
-    const frame = (now: number) => {
-      const t = now - t0;
-      for (let k = 0; k < n; k++) {
-        if (done[k]) continue;
-        const el = els[k];
-        if (!el) continue;
-        const p = (t - list[k].d) / FLIP_MS;
-        if (p <= 0) continue;
-        if (p >= 1) {
-          el.style.transform = '';
-          el.dataset.b = '1';
-          done[k] = 1;
-          continue;
-        }
-        const e = ease(p);
-        if (e > 0.5 && !turned[k]) {
-          turned[k] = 1;
-          el.dataset.b = '1';
-        }
-        el.style.transform = `scaleX(${Math.abs(Math.cos(Math.PI * e)).toFixed(3)})`;
-      }
-      if (t < total) raf = requestAnimationFrame(frame);
-    };
-    raf = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(raf);
-  }, [phase, reduced]);
-
-  // Back at rest (new slide committed in the same render): clear every tile before paint.
-  useLayoutEffect(() => {
-    if (phase !== 'idle') return;
-    for (const el of flipRefs.current) {
-      if (!el) continue;
-      el.style.transform = '';
-      delete el.dataset.b;
-    }
-  }, [phase, safeIndex, grid]);
-
-  const bgSize = `${grid.cols * 100}% ${grid.rows * 100}%`;
-  const face = (src: string, pos: string): CSSProperties => ({
-    backgroundImage: src ? `url("${src}")` : undefined,
-    backgroundPosition: pos,
-    backgroundSize: bgSize,
-    backgroundRepeat: 'no-repeat',
-  });
-
-  const frontSrc = current?.src ?? '';
-  const backSrc = back?.src ?? '';
-  // Memoised so hover, focus and progress updates never re-diff hundreds of tiles.
-  const tileEls = useMemo(
-    () =>
-      tiles.map((tl, k) => (
-        <div key={`${tl.i}-${tl.j}`} className={styles.tile}>
-          <div
-            className={styles.flipper}
-            ref={(el) => {
-              flipRefs.current[k] = el;
-            }}
-          >
-            <span
-              className={[styles.face, styles.faceFront, frontSrc ? '' : styles.facePlaceholder].filter(Boolean).join(' ')}
-              style={face(frontSrc, tl.pos)}
-            />
-            <span
-              className={[styles.face, styles.faceBack, backSrc ? '' : styles.facePlaceholder].filter(Boolean).join(' ')}
-              style={face(backSrc, tl.pos)}
-            />
-          </div>
-        </div>
-      )),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [tiles, frontSrc, backSrc, bgSize],
-  );
-
   const rootStyle = { '--md-fade': `${FADE_MS}ms` } as CSSProperties;
+  const bg = (src: string) => (src ? { backgroundImage: `url("${src}")` } : undefined);
 
   return (
     <div
@@ -415,6 +513,7 @@ export default function MosaicDissolveSlides({
       style={rootStyle}
       data-phase={phase}
       data-motion={reduced ? 'reduced' : 'full'}
+      data-render={useGL ? 'gl' : 'static'}
       data-inview={inView ? 'in' : 'out'}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
@@ -432,21 +531,19 @@ export default function MosaicDissolveSlides({
         }}
       >
         <span
-          className={[styles.base, frontSrc ? '' : styles.facePlaceholder].filter(Boolean).join(' ')}
-          style={{ backgroundImage: frontSrc ? `url("${frontSrc}")` : undefined }}
+          className={[styles.base, frontSrc ? '' : styles.placeholder].filter(Boolean).join(' ')}
+          style={bg(frontSrc)}
           role="img"
           aria-label={current?.alt ?? ''}
         />
-        <div
-          className={styles.grid}
-          aria-hidden="true"
-          style={{
-            gridTemplateColumns: `repeat(${grid.cols}, 1fr)`,
-            gridTemplateRows: `repeat(${grid.rows}, 1fr)`,
-          }}
-        >
-          {tileEls}
-        </div>
+        {phase === 'flip' && !useGL && (
+          <span
+            className={[styles.base, styles.fade, backSrc ? '' : styles.placeholder].filter(Boolean).join(' ')}
+            style={bg(backSrc)}
+            aria-hidden="true"
+          />
+        )}
+        <canvas key={glKey} ref={canvasRef} className={styles.canvas} hidden={!useGL} aria-hidden="true" />
       </div>
 
       <div className={styles.meta}>
