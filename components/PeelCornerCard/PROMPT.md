@@ -45,7 +45,7 @@ const CORNER_VECS: Record<PeelCorner, CornerVecs> = {
   'bottom-left': { ax: 1, ay: 0, bx: 0, by: -1 },
 };
 
-// Where the print-stress shading and the printed sunburst sit, per corner.
+// Where the print-stress shading sits, per corner.
 const CORNER_POS: Record<PeelCorner, { x: number; y: number }> = {
   'top-right': { x: 1, y: 0 },
   'top-left': { x: 0, y: 0 },
@@ -127,9 +127,9 @@ type Frame = 'tall' | 'square' | 'wide';
 
 // Copy-area budget per frame shape, in container-width units (card width = 100).
 const FRAMES: Record<Frame, { width: number; height: number; bodyWidth: number; cap: number }> = {
-  tall: { width: 84, height: 74, bodyWidth: 66, cap: 21 },
-  square: { width: 84, height: 54, bodyWidth: 66, cap: 17 },
-  wide: { width: 58, height: 38, bodyWidth: 38, cap: 15 },
+  tall: { width: 84, height: 74, bodyWidth: 66, cap: 15 },
+  square: { width: 84, height: 54, bodyWidth: 66, cap: 12 },
+  wide: { width: 58, height: 38, bodyWidth: 38, cap: 8 },
 };
 
 /** Body size in container-width units; the CSS floor keeps it readable. */
@@ -153,8 +153,8 @@ function titleSizeCqi(title: string, body: string, frame: Frame) {
   const bodyLines = body ? Math.ceil((body.length * 0.55 * b) / f.bodyWidth) : 0;
   const bodyHeight = bodyLines * b * 1.42 + (body ? (frame === 'wide' ? 2.4 : 3.4) : 0);
   const titleHeight = clamp(f.height - bodyHeight, 14, f.height);
-  const byArea = 0.93 * Math.sqrt((f.width * titleHeight) / (n * 0.5 * 0.9));
-  const byWord = f.width / (longestWord(title) * 0.62);
+  const byArea = 0.93 * Math.sqrt((f.width * titleHeight) / (n * 0.56 * 1.0));
+  const byWord = f.width / (longestWord(title) * 0.6);
   return clamp(Math.min(byArea, byWord, f.cap), 5.2, f.cap);
 }
 
@@ -175,7 +175,7 @@ export default function PeelCornerCard({
   hiddenTitle = 'You found it',
   hiddenBody = 'Members get a free lemon tart with any loaf this week. Show this card at the counter.',
   hiddenCode = 'LEMON-TART',
-  peelColor = '#ffd21e',
+  peelColor = '#e6b85c',
   corner = 'top-right',
   className,
 }: PeelCornerCardProps) {
@@ -292,7 +292,7 @@ export default function PeelCornerCard({
     // 1. Sticker front: everything beyond the crease.
     sticker.style.clipPath = `polygon(${g.front.map(([x, y]) => `${x}px ${y}px`).join(', ')})`;
 
-    // 2. Peel progress drives the hidden message, the sunburst and the print stress.
+    // 2. Peel progress drives the hidden message and the print stress.
     if (card) {
       card.style.setProperty('--pc-p', p.toFixed(3));
       card.style.setProperty('--pc-m', clamp((p - 0.64) / 0.3, 0, 1).toFixed(3));
@@ -363,13 +363,12 @@ export default function PeelCornerCard({
     ctx.fillStyle = '#d8d4c6';
     const layers: [number, number, number, number][] = [
       // blur, offset, alpha, spread-with-peel
-      [3, 1.5, 0.6, 0],
-      [12, 7, 0.42, 4],
-      [34, 18, 0.34, 14],
+      [2, 1, 0.3, 0],
+      [22, 11, 0.2, 8],
     ];
     for (const [blur, off, alpha, grow] of layers) {
       const o = (off + grow * p) * dpr;
-      ctx.shadowColor = `rgba(52, 36, 6, ${alpha})`;
+      ctx.shadowColor = `rgba(38, 26, 10, ${alpha})`;
       ctx.shadowBlur = (blur + grow * p) * dpr;
       ctx.shadowOffsetX = bisX * o;
       ctx.shadowOffsetY = bisY * o;
@@ -381,8 +380,7 @@ export default function PeelCornerCard({
     ctx.save();
     ctx.clip(cutPath);
     for (const [alpha, off, w] of [
-      [0.3, 3, 9],
-      [0.16, 8, 16],
+      [0.16, 4, 10],
     ] as [number, number, number][]) {
       ctx.save();
       ctx.translate(-bisX * off, -bisY * off);
@@ -399,73 +397,43 @@ export default function PeelCornerCard({
     // other side. Dark where it rolls away at the crease, a bright cylinder
     // highlight just behind it, then softening toward the tip.
     const back = ctx.createLinearGradient(apexX, apexY, tipX, tipY);
-    back.addColorStop(0, '#6f6b5c');
-    back.addColorStop(0.05, '#aaa696');
-    back.addColorStop(0.125, '#ffffff');
-    back.addColorStop(0.27, '#d6d3c4');
-    back.addColorStop(0.5, '#f5f3e8');
-    back.addColorStop(0.8, '#e4e1d3');
-    back.addColorStop(1, '#bbb7a5');
+    back.addColorStop(0, '#8a8272');
+    back.addColorStop(0.07, '#cfc8b6');
+    back.addColorStop(0.16, '#fbf8ef');
+    back.addColorStop(0.4, '#f1ede1');
+    back.addColorStop(0.8, '#e6e1d2');
+    back.addColorStop(1, '#d3cdbb');
     ctx.fillStyle = back;
     ctx.fill(flap);
 
     ctx.save();
     ctx.clip(flap);
-    // Ink shows through the clear back: multiply the sticker colour over the shading.
+    // Faint ink show-through from the printed side.
     ctx.globalCompositeOperation = 'multiply';
-    ctx.globalAlpha = 0.5;
+    ctx.globalAlpha = 0.16;
     ctx.fillStyle = colorRef.current;
     ctx.fillRect(0, 0, cw + bleed * 2, ch);
     ctx.globalCompositeOperation = 'source-over';
-    // The printed sunburst, mirrored: it fans out of the tip, which is where the corner went.
     ctx.globalAlpha = 1;
-    ctx.fillStyle = 'rgba(140, 92, 0, 0.07)';
-    const rays0 = Math.atan2(-bisY, -bisX);
-    const rayStep = Math.PI / 12;
-    for (let i = -7; i <= 7; i++) {
-      const a1 = rays0 + i * rayStep;
-      const a2 = a1 + rayStep * 0.5;
-      ctx.beginPath();
-      ctx.moveTo(tipX, tipY);
-      ctx.lineTo(tipX + Math.cos(a1) * 3000, tipY + Math.sin(a1) * 3000);
-      ctx.lineTo(tipX + Math.cos(a2) * 3000, tipY + Math.sin(a2) * 3000);
-      ctx.closePath();
-      ctx.fill();
-    }
     // Roll shading across the crease: edges of the flap fall away from the light.
     const [aX, aY] = g.creasePx[0];
     const [bX, bY] = g.creasePx[g.creasePx.length - 1];
     const roll = ctx.createLinearGradient(ox + aX, oy + aY, ox + bX, oy + bY);
-    roll.addColorStop(0, 'rgba(60, 50, 26, 0.22)');
+    roll.addColorStop(0, 'rgba(60, 50, 26, 0.16)');
     roll.addColorStop(0.28, 'rgba(60, 50, 26, 0)');
     roll.addColorStop(0.72, 'rgba(60, 50, 26, 0)');
-    roll.addColorStop(1, 'rgba(60, 50, 26, 0.22)');
+    roll.addColorStop(1, 'rgba(60, 50, 26, 0.16)');
     ctx.fillStyle = roll;
     ctx.fillRect(0, 0, cw + bleed * 2, ch);
     ctx.restore();
 
-    // 3d. Vinyl thickness on the flap's outline (the sticker's own sides, rounded corners included).
+    // 3d. Hairline edge on the flap outline.
     ctx.save();
     ctx.clip(flap);
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = 'rgba(112, 82, 4, 0.5)';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(70, 50, 16, 0.22)';
+    ctx.lineWidth = 1.2;
     ctx.stroke(flap);
-    ctx.strokeStyle = colorRef.current;
-    ctx.lineWidth = 1.5;
-    ctx.stroke(flap);
-    ctx.restore();
-
-    // 3e. Vinyl thickness right at the crease, on the sticker side of the fold.
-    ctx.save();
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = 'rgba(112, 82, 4, 0.45)';
-    ctx.lineWidth = 3.4;
-    ctx.stroke(creasePath);
-    ctx.strokeStyle = colorRef.current;
-    ctx.lineWidth = 2.2;
-    ctx.stroke(creasePath);
     ctx.restore();
 
     // 3f. Curled-edge highlight: glossy vinyl catching light along the crease,
@@ -476,12 +444,12 @@ export default function PeelCornerCard({
     ctx.globalAlpha = 1;
     const shine = ctx.createLinearGradient(ox + aX, oy + aY, ox + bX, oy + bY);
     shine.addColorStop(0, 'rgba(255, 255, 248, 0)');
-    shine.addColorStop(0.2, 'rgba(255, 255, 248, 0.45)');
-    shine.addColorStop(0.5, 'rgba(255, 255, 250, 0.75)');
-    shine.addColorStop(0.8, 'rgba(255, 255, 248, 0.45)');
+    shine.addColorStop(0.2, 'rgba(255, 255, 248, 0.3)');
+    shine.addColorStop(0.5, 'rgba(255, 255, 250, 0.55)');
+    shine.addColorStop(0.8, 'rgba(255, 255, 248, 0.3)');
     shine.addColorStop(1, 'rgba(255, 255, 248, 0)');
     ctx.strokeStyle = shine;
-    ctx.lineWidth = 1.7;
+    ctx.lineWidth = 1.2;
     ctx.stroke(creasePath);
     ctx.restore();
   }, [geometry]);
@@ -729,7 +697,6 @@ export default function PeelCornerCard({
         </div>
 
         <div ref={stickerRef} className={styles.sticker}>
-          <span className={styles.vinylRays} aria-hidden="true" />
           <span className={styles.vinylGloss} aria-hidden="true" />
           <div className={styles.print}>
             <div className={styles.copy}>
@@ -741,7 +708,6 @@ export default function PeelCornerCard({
             {stripLines.length > 0 && (
               <p className={styles.strip}>
                 <span className={styles.stripLead}>{glueDashes(stripLines[0])}</span>
-                {stripLines.length > 1 && <span className={styles.stripRule} aria-hidden="true" />}
                 {stripLines.slice(1).map((line, i) => (
                   <span key={i} className={styles.stripLine}>
                     {glueDashes(line)}
@@ -768,31 +734,21 @@ export default function PeelCornerCard({
   font-display: swap;
 }
 
-/* Condensed Black cut: the poster headline and the hidden-offer title. */
-@font-face {
-  font-family: 'Archivo Poster';
-  src: url('./fonts/archivo-condensed-900-latin.woff2') format('woff2');
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-
 /*
- * The component IS the sticker: one full-bleed lemon-vinyl sheet that fills its
+ * The component IS the sticker: one full-bleed warm-vinyl sheet that fills its
  * frame edge to edge. Under it, an equally composed ink field waits for the peel.
  * Positions are physical (left/right/top/bottom) on purpose: the peel geometry is.
  */
 .root {
   --pc-radius: 20px;
-  --pc-peel: #ffd21e;
-  --pc-peel-lift: color-mix(in srgb, var(--pc-peel) 58%, #fffbe0);
-  --pc-peel-deep: color-mix(in srgb, var(--pc-peel) 78%, #6d4a00);
-  --pc-peel-shade: color-mix(in srgb, var(--pc-peel) 82%, #c27a00);
-  --pc-ink: #1a1208;
-  --pc-well: #15100a;
-  --pc-well-text: #fff6dc;
+  --pc-peel: #e6b85c;
+  --pc-peel-lift: color-mix(in srgb, var(--pc-peel) 70%, #fff6e2);
+  --pc-peel-deep: color-mix(in srgb, var(--pc-peel) 78%, #5a3d10);
+  --pc-peel-shade: color-mix(in srgb, var(--pc-peel) 86%, #b8782a);
+  --pc-ink: #2a1d10;
+  --pc-well: #1b1510;
+  --pc-well-text: #f6eedd;
   --pc-font: 'Archivo', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --pc-font-poster: 'Archivo Poster', 'Archivo', 'Arial Narrow', 'Helvetica Neue', sans-serif;
   --pc-title-tall: 16cqi;
   --pc-title-square: 12cqi;
   --pc-title-wide: 11cqi;
@@ -859,39 +815,13 @@ export default function PeelCornerCard({
   border-radius: inherit;
   background:
     radial-gradient(
-      75% 95% at var(--pc-corner-x) var(--pc-corner-y),
-      color-mix(in srgb, var(--pc-peel) 30%, var(--pc-well)) 0%,
-      color-mix(in srgb, var(--pc-peel) 9%, var(--pc-well)) 46%,
-      transparent 78%
+      80% 100% at var(--pc-corner-x) var(--pc-corner-y),
+      color-mix(in srgb, var(--pc-peel) 20%, var(--pc-well)) 0%,
+      color-mix(in srgb, var(--pc-peel) 6%, var(--pc-well)) 50%,
+      transparent 80%
     ),
-    linear-gradient(172deg, #21180d 0%, var(--pc-well) 100%);
+    linear-gradient(172deg, #221a13 0%, var(--pc-well) 100%);
   pointer-events: none;
-}
-
-/* Printed rays, oversized so they can turn with the peel and never run out of card. */
-.well::before {
-  content: '';
-  position: absolute;
-  inset: -75%;
-  background: repeating-conic-gradient(
-    from 0deg at calc((0.75 + var(--pc-cx)) * 40%) calc((0.75 + var(--pc-cy)) * 40%),
-    color-mix(in srgb, var(--pc-peel) 12%, transparent) 0deg 5deg,
-    transparent 5deg 10deg
-  );
-  -webkit-mask-image: radial-gradient(
-    42% 42% at calc((0.75 + var(--pc-cx)) * 40%) calc((0.75 + var(--pc-cy)) * 40%),
-    #000 0%,
-    rgba(0, 0, 0, 0.4) 55%,
-    transparent 100%
-  );
-  mask-image: radial-gradient(
-    42% 42% at calc((0.75 + var(--pc-cx)) * 40%) calc((0.75 + var(--pc-cy)) * 40%),
-    #000 0%,
-    rgba(0, 0, 0, 0.4) 55%,
-    transparent 100%
-  );
-  transform-origin: calc((0.75 + var(--pc-cx)) * 40%) calc((0.75 + var(--pc-cy)) * 40%);
-  transform: rotate(calc(var(--pc-p) * 18deg));
 }
 
 /* The hidden offer: three staggered beats as the crease sweeps past. */
@@ -946,11 +876,11 @@ export default function PeelCornerCard({
   --pc-beat: clamp(0, calc(var(--pc-m) * 3), 1);
 
   margin: 0;
-  font-family: var(--pc-font-poster);
-  font-size: clamp(22px, 7.2cqi, 40px);
-  font-weight: 900;
-  line-height: 0.9;
-  text-transform: uppercase;
+  font-size: clamp(20px, 6cqi, 34px);
+  font-weight: 650;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
   color: var(--pc-peel);
   overflow-wrap: break-word;
   opacity: var(--pc-beat);
@@ -959,7 +889,7 @@ export default function PeelCornerCard({
 
 @container (min-width: 700px) {
   .hiddenTitle {
-    font-size: clamp(32px, 3.8cqi, 64px);
+    font-size: clamp(28px, 2.9cqi, 52px);
   }
 }
 
@@ -970,7 +900,7 @@ export default function PeelCornerCard({
   font-size: clamp(12px, 3.2cqi, 15px);
   font-weight: 500;
   line-height: 1.4;
-  color: rgba(255, 246, 220, 0.82);
+  color: rgba(246, 238, 221, 0.78);
   overflow-wrap: break-word;
   opacity: var(--pc-beat);
   transform: translateY(calc((1 - var(--pc-beat)) * 12px * var(--pc-dir)));
@@ -983,42 +913,36 @@ export default function PeelCornerCard({
   }
 }
 
-/* A die-cut coupon chip: notched sides, dashed tear line. */
 .hiddenCode {
   --pc-beat: clamp(0, calc(var(--pc-m) * 3 - 1.6), 1);
 
   display: inline-block;
   max-inline-size: 100%;
   box-sizing: border-box;
-  margin-block-start: 12px;
-  padding: 8px 17px;
-  border: 1.5px dashed rgba(26, 18, 8, 0.45);
-  background: var(--pc-peel);
-  -webkit-mask:
-    radial-gradient(circle 6px at 0 50%, #0000 97%, #000) 0 0 / 51% 100% no-repeat,
-    radial-gradient(circle 6px at 100% 50%, #0000 97%, #000) 100% 0 / 51% 100% no-repeat;
-  mask:
-    radial-gradient(circle 6px at 0 50%, #0000 97%, #000) 0 0 / 51% 100% no-repeat,
-    radial-gradient(circle 6px at 100% 50%, #0000 97%, #000) 100% 0 / 51% 100% no-repeat;
+  margin-block-start: 14px;
+  padding: 7px 14px;
+  border: 1px solid color-mix(in srgb, var(--pc-peel) 55%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pc-peel) 12%, transparent);
   font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
+  font-weight: 650;
+  letter-spacing: 0.1em;
   font-variant-numeric: tabular-nums;
-  color: var(--pc-ink);
+  color: var(--pc-peel);
   overflow-wrap: break-word;
   opacity: var(--pc-beat);
-  transform: translateY(calc((1 - var(--pc-beat)) * 12px * var(--pc-dir))) scale(calc(0.92 + var(--pc-beat) * 0.08));
+  transform: translateY(calc((1 - var(--pc-beat)) * 12px * var(--pc-dir)));
 }
 
 @container (min-width: 700px) {
   .hiddenCode {
     margin-block-start: 18px;
-    padding: 10px 22px;
-    font-size: clamp(14px, 1.15cqi, 19px);
+    padding: 8px 18px;
+    font-size: clamp(14px, 1.1cqi, 18px);
   }
 }
 
-/* ---------- The lemon vinyl ---------- */
+/* ---------- The warm vinyl ---------- */
 
 .sticker {
   position: absolute;
@@ -1027,10 +951,10 @@ export default function PeelCornerCard({
   overflow: clip;
   border-radius: inherit;
   background:
-    radial-gradient(
-      125% 125% at var(--pc-corner-x) var(--pc-corner-y),
+    linear-gradient(
+      155deg,
       var(--pc-peel-lift) 0%,
-      var(--pc-peel) 42%,
+      var(--pc-peel) 48%,
       var(--pc-peel-shade) 100%
     );
   box-shadow:
@@ -1045,34 +969,10 @@ export default function PeelCornerCard({
   border-radius: inherit;
   background: radial-gradient(
     64% 80% at var(--pc-corner-x) var(--pc-corner-y),
-    rgba(92, 60, 0, 0.24),
+    rgba(92, 60, 10, 0.14),
     transparent 72%
   );
   opacity: calc(0.4 + var(--pc-p) * 0.6);
-  pointer-events: none;
-}
-
-/* A two-tone printed sunburst fanning out of the peeled corner. */
-.vinylRays {
-  position: absolute;
-  inset: 0;
-  background: repeating-conic-gradient(
-    from 0deg at var(--pc-corner-x) var(--pc-corner-y),
-    rgba(255, 249, 196, 0.16) 0deg 7.5deg,
-    rgba(150, 98, 0, 0.05) 7.5deg 15deg
-  );
-  -webkit-mask-image: radial-gradient(
-    130% 130% at var(--pc-corner-x) var(--pc-corner-y),
-    #000 0%,
-    rgba(0, 0, 0, 0.6) 50%,
-    transparent 98%
-  );
-  mask-image: radial-gradient(
-    130% 130% at var(--pc-corner-x) var(--pc-corner-y),
-    #000 0%,
-    rgba(0, 0, 0, 0.6) 50%,
-    transparent 98%
-  );
   pointer-events: none;
 }
 
@@ -1084,7 +984,7 @@ export default function PeelCornerCard({
   background: linear-gradient(
     116deg,
     transparent 22%,
-    rgba(255, 255, 250, 0.12) 32%,
+    rgba(255, 255, 250, 0.1) 32%,
     transparent 44%
   );
   transform: translateX(calc(var(--pc-p) * 6%));
@@ -1132,14 +1032,11 @@ export default function PeelCornerCard({
 
 .title {
   margin: 0;
-  font-family: var(--pc-font-poster);
   font-size: var(--pc-title-tall);
-  font-weight: 900;
-  line-height: 0.86;
-  letter-spacing: -0.005em;
-  text-transform: uppercase;
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
   color: var(--pc-ink);
-  text-shadow: 0 0.03em 0 rgba(255, 252, 214, 0.5);
   overflow-wrap: break-word;
   hyphens: manual;
   text-wrap: balance;
@@ -1148,12 +1045,10 @@ export default function PeelCornerCard({
 .body {
   margin: 0;
   max-inline-size: 34ch;
-  padding-inline-start: 12px;
-  border-inline-start: 3px solid var(--pc-ink);
-  font-size: clamp(12px, var(--pc-body-tall), 17px);
-  font-weight: 600;
-  line-height: 1.42;
-  color: rgba(26, 18, 8, 0.88);
+  font-size: clamp(13px, var(--pc-body-tall), 17px);
+  font-weight: 450;
+  line-height: 1.5;
+  color: rgba(42, 29, 16, 0.84);
   overflow-wrap: break-word;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -1185,59 +1080,44 @@ export default function PeelCornerCard({
 
   .body {
     max-inline-size: 38cqi;
-    padding-inline-start: 18px;
-    border-inline-start-width: 4px;
     font-size: clamp(15px, var(--pc-body-wide), 26px);
   }
 }
 
-/* The printed brand strip: a full-width ink band on the sheet's edge. */
+/* Quiet footer: a hairline rule and a small uppercase line. */
 .strip {
   display: flex;
   align-items: center;
-  gap: clamp(10px, 2cqi, 28px);
+  gap: clamp(10px, 2cqi, 24px);
   box-sizing: border-box;
-  inline-size: 100%;
-  margin: 0;
-  padding: clamp(12px, 2.1cqi, 30px) var(--pc-pad);
-  background: var(--pc-ink);
-  box-shadow: inset 0 1px 0 rgba(255, 244, 190, 0.14);
-  font-size: clamp(12px, 3.1cqi, 17px);
-  letter-spacing: 0.13em;
-  line-height: 1.25;
+  margin: 0 var(--pc-pad);
+  padding: clamp(12px, 2.4cqi, 26px) 0 clamp(14px, 3cqi, 30px);
+  border-block-start: 1px solid rgba(42, 29, 16, 0.22);
+  font-size: clamp(12px, 2.9cqi, 15px);
+  letter-spacing: 0.1em;
+  line-height: 1.3;
   text-transform: uppercase;
+  color: var(--pc-ink);
   hyphens: none;
 }
 
 @container (min-width: 700px) {
   .strip {
-    font-size: clamp(13px, 1.2cqi, 20px);
+    font-size: clamp(13px, 1.05cqi, 17px);
   }
 }
 
 .stripLead {
   flex: 0 1 auto;
   min-inline-size: 0;
-  font-weight: 800;
-  color: var(--pc-peel);
+  font-weight: 700;
 }
 
 .stripLine {
   flex: 0 1 auto;
   min-inline-size: 0;
-  font-weight: 700;
-  color: rgba(255, 246, 220, 0.76);
-}
-
-/* A printed tick rule between the name and the details. */
-.stripRule {
-  flex: 1 1 16px;
-  min-inline-size: 12px;
-  block-size: 12px;
-  background:
-    repeating-linear-gradient(90deg, var(--pc-peel) 0 2px, transparent 2px 11px) 0 0 / 100% 100% no-repeat,
-    repeating-linear-gradient(90deg, var(--pc-peel) 0 1px, transparent 1px 4px) 0 30% / 100% 40% no-repeat;
-  opacity: 0.7;
+  font-weight: 500;
+  color: rgba(42, 29, 16, 0.72);
 }
 
 .peelCanvas {

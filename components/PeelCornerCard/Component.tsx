@@ -40,7 +40,7 @@ const CORNER_VECS: Record<PeelCorner, CornerVecs> = {
   'bottom-left': { ax: 1, ay: 0, bx: 0, by: -1 },
 };
 
-// Where the print-stress shading and the printed sunburst sit, per corner.
+// Where the print-stress shading sits, per corner.
 const CORNER_POS: Record<PeelCorner, { x: number; y: number }> = {
   'top-right': { x: 1, y: 0 },
   'top-left': { x: 0, y: 0 },
@@ -122,9 +122,9 @@ type Frame = 'tall' | 'square' | 'wide';
 
 // Copy-area budget per frame shape, in container-width units (card width = 100).
 const FRAMES: Record<Frame, { width: number; height: number; bodyWidth: number; cap: number }> = {
-  tall: { width: 84, height: 74, bodyWidth: 66, cap: 21 },
-  square: { width: 84, height: 54, bodyWidth: 66, cap: 17 },
-  wide: { width: 58, height: 38, bodyWidth: 38, cap: 15 },
+  tall: { width: 84, height: 74, bodyWidth: 66, cap: 15 },
+  square: { width: 84, height: 54, bodyWidth: 66, cap: 12 },
+  wide: { width: 58, height: 38, bodyWidth: 38, cap: 8 },
 };
 
 /** Body size in container-width units; the CSS floor keeps it readable. */
@@ -148,8 +148,8 @@ function titleSizeCqi(title: string, body: string, frame: Frame) {
   const bodyLines = body ? Math.ceil((body.length * 0.55 * b) / f.bodyWidth) : 0;
   const bodyHeight = bodyLines * b * 1.42 + (body ? (frame === 'wide' ? 2.4 : 3.4) : 0);
   const titleHeight = clamp(f.height - bodyHeight, 14, f.height);
-  const byArea = 0.93 * Math.sqrt((f.width * titleHeight) / (n * 0.5 * 0.9));
-  const byWord = f.width / (longestWord(title) * 0.62);
+  const byArea = 0.93 * Math.sqrt((f.width * titleHeight) / (n * 0.56 * 1.0));
+  const byWord = f.width / (longestWord(title) * 0.6);
   return clamp(Math.min(byArea, byWord, f.cap), 5.2, f.cap);
 }
 
@@ -170,7 +170,7 @@ export default function PeelCornerCard({
   hiddenTitle = 'You found it',
   hiddenBody = 'Members get a free lemon tart with any loaf this week. Show this card at the counter.',
   hiddenCode = 'LEMON-TART',
-  peelColor = '#ffd21e',
+  peelColor = '#e6b85c',
   corner = 'top-right',
   className,
 }: PeelCornerCardProps) {
@@ -287,7 +287,7 @@ export default function PeelCornerCard({
     // 1. Sticker front: everything beyond the crease.
     sticker.style.clipPath = `polygon(${g.front.map(([x, y]) => `${x}px ${y}px`).join(', ')})`;
 
-    // 2. Peel progress drives the hidden message, the sunburst and the print stress.
+    // 2. Peel progress drives the hidden message and the print stress.
     if (card) {
       card.style.setProperty('--pc-p', p.toFixed(3));
       card.style.setProperty('--pc-m', clamp((p - 0.64) / 0.3, 0, 1).toFixed(3));
@@ -358,13 +358,12 @@ export default function PeelCornerCard({
     ctx.fillStyle = '#d8d4c6';
     const layers: [number, number, number, number][] = [
       // blur, offset, alpha, spread-with-peel
-      [3, 1.5, 0.6, 0],
-      [12, 7, 0.42, 4],
-      [34, 18, 0.34, 14],
+      [2, 1, 0.3, 0],
+      [22, 11, 0.2, 8],
     ];
     for (const [blur, off, alpha, grow] of layers) {
       const o = (off + grow * p) * dpr;
-      ctx.shadowColor = `rgba(52, 36, 6, ${alpha})`;
+      ctx.shadowColor = `rgba(38, 26, 10, ${alpha})`;
       ctx.shadowBlur = (blur + grow * p) * dpr;
       ctx.shadowOffsetX = bisX * o;
       ctx.shadowOffsetY = bisY * o;
@@ -376,8 +375,7 @@ export default function PeelCornerCard({
     ctx.save();
     ctx.clip(cutPath);
     for (const [alpha, off, w] of [
-      [0.3, 3, 9],
-      [0.16, 8, 16],
+      [0.16, 4, 10],
     ] as [number, number, number][]) {
       ctx.save();
       ctx.translate(-bisX * off, -bisY * off);
@@ -394,73 +392,43 @@ export default function PeelCornerCard({
     // other side. Dark where it rolls away at the crease, a bright cylinder
     // highlight just behind it, then softening toward the tip.
     const back = ctx.createLinearGradient(apexX, apexY, tipX, tipY);
-    back.addColorStop(0, '#6f6b5c');
-    back.addColorStop(0.05, '#aaa696');
-    back.addColorStop(0.125, '#ffffff');
-    back.addColorStop(0.27, '#d6d3c4');
-    back.addColorStop(0.5, '#f5f3e8');
-    back.addColorStop(0.8, '#e4e1d3');
-    back.addColorStop(1, '#bbb7a5');
+    back.addColorStop(0, '#8a8272');
+    back.addColorStop(0.07, '#cfc8b6');
+    back.addColorStop(0.16, '#fbf8ef');
+    back.addColorStop(0.4, '#f1ede1');
+    back.addColorStop(0.8, '#e6e1d2');
+    back.addColorStop(1, '#d3cdbb');
     ctx.fillStyle = back;
     ctx.fill(flap);
 
     ctx.save();
     ctx.clip(flap);
-    // Ink shows through the clear back: multiply the sticker colour over the shading.
+    // Faint ink show-through from the printed side.
     ctx.globalCompositeOperation = 'multiply';
-    ctx.globalAlpha = 0.5;
+    ctx.globalAlpha = 0.16;
     ctx.fillStyle = colorRef.current;
     ctx.fillRect(0, 0, cw + bleed * 2, ch);
     ctx.globalCompositeOperation = 'source-over';
-    // The printed sunburst, mirrored: it fans out of the tip, which is where the corner went.
     ctx.globalAlpha = 1;
-    ctx.fillStyle = 'rgba(140, 92, 0, 0.07)';
-    const rays0 = Math.atan2(-bisY, -bisX);
-    const rayStep = Math.PI / 12;
-    for (let i = -7; i <= 7; i++) {
-      const a1 = rays0 + i * rayStep;
-      const a2 = a1 + rayStep * 0.5;
-      ctx.beginPath();
-      ctx.moveTo(tipX, tipY);
-      ctx.lineTo(tipX + Math.cos(a1) * 3000, tipY + Math.sin(a1) * 3000);
-      ctx.lineTo(tipX + Math.cos(a2) * 3000, tipY + Math.sin(a2) * 3000);
-      ctx.closePath();
-      ctx.fill();
-    }
     // Roll shading across the crease: edges of the flap fall away from the light.
     const [aX, aY] = g.creasePx[0];
     const [bX, bY] = g.creasePx[g.creasePx.length - 1];
     const roll = ctx.createLinearGradient(ox + aX, oy + aY, ox + bX, oy + bY);
-    roll.addColorStop(0, 'rgba(60, 50, 26, 0.22)');
+    roll.addColorStop(0, 'rgba(60, 50, 26, 0.16)');
     roll.addColorStop(0.28, 'rgba(60, 50, 26, 0)');
     roll.addColorStop(0.72, 'rgba(60, 50, 26, 0)');
-    roll.addColorStop(1, 'rgba(60, 50, 26, 0.22)');
+    roll.addColorStop(1, 'rgba(60, 50, 26, 0.16)');
     ctx.fillStyle = roll;
     ctx.fillRect(0, 0, cw + bleed * 2, ch);
     ctx.restore();
 
-    // 3d. Vinyl thickness on the flap's outline (the sticker's own sides, rounded corners included).
+    // 3d. Hairline edge on the flap outline.
     ctx.save();
     ctx.clip(flap);
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = 'rgba(112, 82, 4, 0.5)';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(70, 50, 16, 0.22)';
+    ctx.lineWidth = 1.2;
     ctx.stroke(flap);
-    ctx.strokeStyle = colorRef.current;
-    ctx.lineWidth = 1.5;
-    ctx.stroke(flap);
-    ctx.restore();
-
-    // 3e. Vinyl thickness right at the crease, on the sticker side of the fold.
-    ctx.save();
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = 'rgba(112, 82, 4, 0.45)';
-    ctx.lineWidth = 3.4;
-    ctx.stroke(creasePath);
-    ctx.strokeStyle = colorRef.current;
-    ctx.lineWidth = 2.2;
-    ctx.stroke(creasePath);
     ctx.restore();
 
     // 3f. Curled-edge highlight: glossy vinyl catching light along the crease,
@@ -471,12 +439,12 @@ export default function PeelCornerCard({
     ctx.globalAlpha = 1;
     const shine = ctx.createLinearGradient(ox + aX, oy + aY, ox + bX, oy + bY);
     shine.addColorStop(0, 'rgba(255, 255, 248, 0)');
-    shine.addColorStop(0.2, 'rgba(255, 255, 248, 0.45)');
-    shine.addColorStop(0.5, 'rgba(255, 255, 250, 0.75)');
-    shine.addColorStop(0.8, 'rgba(255, 255, 248, 0.45)');
+    shine.addColorStop(0.2, 'rgba(255, 255, 248, 0.3)');
+    shine.addColorStop(0.5, 'rgba(255, 255, 250, 0.55)');
+    shine.addColorStop(0.8, 'rgba(255, 255, 248, 0.3)');
     shine.addColorStop(1, 'rgba(255, 255, 248, 0)');
     ctx.strokeStyle = shine;
-    ctx.lineWidth = 1.7;
+    ctx.lineWidth = 1.2;
     ctx.stroke(creasePath);
     ctx.restore();
   }, [geometry]);
@@ -724,7 +692,6 @@ export default function PeelCornerCard({
         </div>
 
         <div ref={stickerRef} className={styles.sticker}>
-          <span className={styles.vinylRays} aria-hidden="true" />
           <span className={styles.vinylGloss} aria-hidden="true" />
           <div className={styles.print}>
             <div className={styles.copy}>
@@ -736,7 +703,6 @@ export default function PeelCornerCard({
             {stripLines.length > 0 && (
               <p className={styles.strip}>
                 <span className={styles.stripLead}>{glueDashes(stripLines[0])}</span>
-                {stripLines.length > 1 && <span className={styles.stripRule} aria-hidden="true" />}
                 {stripLines.slice(1).map((line, i) => (
                   <span key={i} className={styles.stripLine}>
                     {glueDashes(line)}
