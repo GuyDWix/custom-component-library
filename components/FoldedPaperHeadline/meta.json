@@ -19,7 +19,7 @@
     "business"
   ],
   "mobile": "fewer folds, unfolds on view instead of scroll",
-  "motion": "facets rotate to flat with perspective and eased settle (reduced-motion: flat open strip)",
+  "motion": "anticipation lift, then facets unfold crease by crease on underdamped springs with a paper flutter, shadow trailing the last facet; replays each time the strip re-enters view (reduced-motion: flat open strip, no replay)",
   "scores": {
     "concept": 3,
     "usefulness": 2,
