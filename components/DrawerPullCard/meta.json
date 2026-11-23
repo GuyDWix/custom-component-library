@@ -36,5 +36,5 @@
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Minimal industrial design (Rams-like): matte warm-grey slab, edge-to-edge photo, one oversized grotesk title (Hanken 600, tight tracking); raised drawer front with a single orange round pull (#f0561d) that slides a charcoal (#232325) tray of large tabular values. Flat, no wood, no shadows."
+  "art_direction": "Neumorphic soft UI, tactile: one warm-grey surface (#e6e1d9) with paired light/dark shadows; photo sits in an inset well, drawer face is a raised slab whose shadow deepens as it is pulled, teal (#0f766e) round pull knob presses in on :active. Hanken 600 grotesk, ink #23201c, muted #55504a. Pull/Push word plus plus/minus glyph carry state, not shadow alone."
 }

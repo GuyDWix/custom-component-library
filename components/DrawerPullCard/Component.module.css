@@ -6,19 +6,19 @@
   font-display: swap;
 }
 
+/* Soft UI: one surface colour, depth from paired light/dark shadows, one teal accent. */
 .root {
-  --surface: #e7e5df;
-  --raised: #f1f0ec;
-  --ink: #1d1d1f;
-  --muted: #55554f;
-  --well: #232325;
-  --well-ink: #f1f0ec;
-  --well-muted: #a9a8a1;
-  --well-line: rgba(241, 240, 236, 0.14);
-  --accent: #f0561d;
-  --accent-ink: #1d1d1f;
-  --focus: #1d1d1f;
+  --surface: #e6e1d9;
+  --hi: rgba(255, 255, 255, 0.85);
+  --lo: rgba(120, 104, 82, 0.34);
+  --ink: #23201c;
+  --muted: #55504a;
+  --accent: #0f766e;
+  --accent-ink: #ffffff;
+  --focus: #0b514b;
   --font: 'Drawer Hanken', 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
+  --pad: clamp(1.25rem, 6cqi, 2.5rem);
+  --d: clamp(4px, 1.5cqi, 9px);
 
   container-type: inline-size;
   box-sizing: border-box;
@@ -28,19 +28,21 @@
 }
 
 .root[data-tone='walnut'] {
-  --surface: #2c2a28;
-  --raised: #373432;
-  --ink: #f1f0ec;
-  --muted: #b9b7b0;
-  --well: #151514;
-  --focus: #f1f0ec;
+  --surface: #2d3036;
+  --hi: rgba(255, 255, 255, 0.07);
+  --lo: rgba(0, 0, 0, 0.55);
+  --ink: #eceef1;
+  --muted: #b4bac2;
+  --accent: #2dd4bf;
+  --accent-ink: #0b1f1d;
+  --focus: #5eead4;
 }
 
 .root[data-tone='steel'] {
-  --surface: #dfe2e4;
-  --raised: #eceef0;
-  --muted: #4f545a;
-  --well: #1f2326;
+  --surface: #dde3ea;
+  --hi: rgba(255, 255, 255, 0.9);
+  --lo: rgba(88, 108, 132, 0.34);
+  --muted: #4a5662;
 }
 
 .root *,
@@ -52,20 +54,33 @@
 .card {
   margin: 0;
   background: var(--surface);
-  border-radius: 6px;
+  border-radius: 28px;
   overflow: clip;
+  box-shadow: calc(var(--d) * 1.6) calc(var(--d) * 1.6) calc(var(--d) * 3.2) var(--lo),
+    calc(var(--d) * -1.6) calc(var(--d) * -1.6) calc(var(--d) * 3.2) var(--hi);
 }
 
 .top {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  gap: var(--pad);
+  padding: var(--pad) var(--pad) 0;
 }
 
 .figure {
   margin: 0;
+  padding: 6px;
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: inset var(--d) var(--d) calc(var(--d) * 1.8) var(--lo),
+    inset calc(var(--d) * -1) calc(var(--d) * -1) calc(var(--d) * 1.8) var(--hi);
+}
+
+.figureInner {
   aspect-ratio: 4 / 3;
-  background: var(--raised);
+  border-radius: 17px;
   overflow: hidden;
+  background: color-mix(in srgb, var(--ink) 8%, var(--surface));
 }
 
 .photo {
@@ -87,7 +102,6 @@
   justify-content: flex-end;
   gap: 1rem;
   min-inline-size: 0;
-  padding: clamp(1.25rem, 6cqi, 2.5rem);
 }
 
 .subtitle {
@@ -119,6 +133,7 @@
   line-height: 1;
 }
 
+/* Drawer face: lifts further off the surface as it is pulled. */
 .front {
   all: unset;
   box-sizing: border-box;
@@ -126,21 +141,31 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  inline-size: 100%;
-  min-block-size: 4.5rem;
-  padding: 1rem clamp(1.25rem, 6cqi, 2.5rem);
-  background: var(--raised);
-  color: var(--ink);
-  cursor: pointer;
   position: relative;
   z-index: 1;
-  border-block-start: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  inline-size: calc(100% - var(--pad) * 2);
+  min-block-size: 5rem;
+  margin: var(--pad) var(--pad) 0;
+  padding: 1rem 1rem 1rem 1.5rem;
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: calc(var(--d) * (0.8 + var(--dp-pull, 0) * 0.6)) calc(var(--d) * (0.8 + var(--dp-pull, 0) * 0.9))
+      calc(var(--d) * (1.8 + var(--dp-pull, 0) * 1.2)) var(--lo),
+    calc(var(--d) * -0.8) calc(var(--d) * -0.8) calc(var(--d) * 1.8) var(--hi);
+  transition: box-shadow 140ms ease;
   -webkit-tap-highlight-color: transparent;
+}
+
+.front:active {
+  box-shadow: inset calc(var(--d) * 0.7) calc(var(--d) * 0.7) calc(var(--d) * 1.4) var(--lo),
+    inset calc(var(--d) * -0.7) calc(var(--d) * -0.7) calc(var(--d) * 1.4) var(--hi);
 }
 
 .front:focus-visible {
   outline: 3px solid var(--focus);
-  outline-offset: -6px;
+  outline-offset: 4px;
 }
 
 .handleLabel {
@@ -152,18 +177,35 @@
   overflow-wrap: anywhere;
 }
 
+.state {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.stateWord {
+  color: var(--muted);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
 .pull {
   position: relative;
   flex: none;
-  inline-size: 2.75rem;
-  block-size: 2.75rem;
+  inline-size: 3rem;
+  block-size: 3rem;
   border-radius: 50%;
   background: var(--accent);
+  box-shadow: calc(var(--d) * 0.5) calc(var(--d) * 0.5) calc(var(--d) * 1.1) var(--lo),
+    calc(var(--d) * -0.5) calc(var(--d) * -0.5) calc(var(--d) * 1.1) var(--hi);
   transition: transform 160ms ease;
 }
 
 .front:active .pull {
-  transform: scale(0.94);
+  transform: scale(0.92);
 }
 
 .pullH,
@@ -171,8 +213,9 @@
   position: absolute;
   inset: 50% auto auto 50%;
   inline-size: 1.125rem;
-  block-size: 2px;
-  margin: -1px 0 0 -0.5625rem;
+  block-size: 2.5px;
+  margin: -1.25px 0 0 -0.5625rem;
+  border-radius: 2px;
   background: var(--accent-ink);
 }
 
@@ -180,16 +223,22 @@
   transform: rotate(90deg) scaleX(calc(1 - var(--dp-pull, 0)));
 }
 
+/* Slot the drawer slides out of: an inset well. */
 .tray {
   block-size: 0;
   overflow: hidden;
-  background: var(--well);
+  margin-inline: var(--pad);
+  margin-block-start: calc(var(--pad) * -0.25);
+  border-radius: 0 0 20px 20px;
+  background: var(--surface);
+  box-shadow: inset var(--d) var(--d) calc(var(--d) * 1.8) var(--lo),
+    inset calc(var(--d) * -1) calc(var(--d) * -1) calc(var(--d) * 1.8) var(--hi);
 }
 
 .interior {
   visibility: hidden;
-  padding: clamp(0.5rem, 2cqi, 1rem) clamp(1.25rem, 6cqi, 2.5rem) clamp(1.25rem, 5cqi, 2rem);
-  color: var(--well-ink);
+  padding: calc(var(--pad) * 0.5) clamp(1rem, 4cqi, 1.75rem) clamp(1rem, 4cqi, 1.5rem);
+  color: var(--ink);
 }
 
 .rowsScroll {
@@ -199,7 +248,7 @@
 }
 
 .rowsScroll:focus-visible {
-  outline: 3px solid var(--well-ink);
+  outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -215,7 +264,7 @@
   align-items: baseline;
   gap: 1rem;
   padding: 0.875rem 0;
-  border-block-end: 1px solid var(--well-line);
+  border-block-end: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
   opacity: clamp(0, calc(var(--dp-pull, 0) * 1.8 - var(--dp-i, 0) * 0.14), 1);
 }
 
@@ -225,7 +274,7 @@
 
 .rowLabel {
   margin: 0;
-  color: var(--well-muted);
+  color: var(--muted);
   font-size: clamp(0.9375rem, 2.8cqi, 1.0625rem);
   line-height: 1.3;
   overflow-wrap: anywhere;
@@ -234,11 +283,17 @@
 .rowValue {
   margin: 0;
   font-size: clamp(1.125rem, 4cqi, 1.5rem);
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: -0.015em;
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
+}
+
+.card::after {
+  content: '';
+  display: block;
+  block-size: var(--pad);
 }
 
 @container (min-width: 640px) {
@@ -246,30 +301,10 @@
     grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
   }
 
-  .figure {
+  .figureInner {
     aspect-ratio: auto;
-    min-block-size: 22rem;
-  }
-
-  .info {
-    padding: 2.5rem;
-  }
-
-  .title {
-    font-size: clamp(2.5rem, 7.5cqi, 5rem);
-  }
-
-  .root[data-title='long'] .title {
-    font-size: clamp(2rem, 5.5cqi, 3.5rem);
-  }
-
-  .root[data-title='xl'] .title {
-    font-size: clamp(1.625rem, 3.8cqi, 2.5rem);
-  }
-
-  .front,
-  .interior {
-    padding-inline: 2.5rem;
+    block-size: 100%;
+    min-block-size: 20rem;
   }
 
   .rows {
@@ -284,7 +319,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .photo,
-  .pull {
+  .pull,
+  .front {
     transition: none;
   }
 }

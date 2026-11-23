@@ -184,19 +184,21 @@ export default function DrawerPullCard({
       <article className={styles.card} aria-labelledby={titleId}>
         <div className={styles.top}>
           <figure className={styles.figure}>
-            {image && imgStatus !== 'failed' && (
-              <img
-                ref={photoRef}
-                className={styles.photo}
-                data-ready={imgStatus === 'ready'}
-                src={image}
-                alt={imageAlt}
-                draggable={false}
-                decoding="async"
-                onLoad={() => setImgStatus('ready')}
-                onError={() => setImgStatus('failed')}
-              />
-            )}
+            <div className={styles.figureInner}>
+              {image && imgStatus !== 'failed' && (
+                <img
+                  ref={photoRef}
+                  className={styles.photo}
+                  data-ready={imgStatus === 'ready'}
+                  src={image}
+                  alt={imageAlt}
+                  draggable={false}
+                  decoding="async"
+                  onLoad={() => setImgStatus('ready')}
+                  onError={() => setImgStatus('failed')}
+                />
+              )}
+            </div>
           </figure>
           <div className={styles.info}>
             {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
@@ -216,9 +218,14 @@ export default function DrawerPullCard({
           onClick={onToggle}
         >
           <span className={styles.handleLabel}>{handleLabel}</span>
-          <span className={styles.pull} aria-hidden="true">
-            <span className={styles.pullH} />
-            <span className={styles.pullV} />
+          <span className={styles.state} aria-hidden="true">
+            <span className={styles.stateWord} data-open={open}>
+              {open ? 'Push' : 'Pull'}
+            </span>
+            <span className={styles.pull}>
+              <span className={styles.pullH} />
+              <span className={styles.pullV} />
+            </span>
           </span>
         </button>
 
