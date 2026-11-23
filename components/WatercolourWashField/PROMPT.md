@@ -22,6 +22,8 @@ export interface WatercolourWashFieldProps {
   washIntensity?: number;
   /** soft: feathered wet-on-wet edges. torn: crisp, drier edges. */
   edgeStyle?: WashEdgeStyle;
+  /** 0–100: how much the pointer feeds a faint extra tint into the wash (0 = off). */
+  pointerTint?: number;
   ariaLabel?: string;
   children?: ReactNode;
   className?: string;
@@ -32,7 +34,10 @@ const TICK_MS = 1000 / 60;
 const FLOW_PASSES = 2;
 const TARGET_CELLS = 38000;
 const BLOOM_TICKS = [150, 192, 236, 284];
-const HOVER_WAKE_TICKS = 220;
+const TINT_CELL = 3;
+const TINT_DECAY = 0.9955;
+const TINT_EASE = 0.07;
+const TINT_ACTIVE = 0.004;
 
 const VERTEX = `
 attribute vec2 a_pos;
@@ -51,6 +56,9 @@ uniform float u_torn;
 uniform vec3 u_kA;
 uniform vec3 u_kB;
 uniform vec3 u_paper;
+uniform vec3 u_kC;
+uniform sampler2D u_tint;
+uniform float u_pointerTint;
 
 float hash(vec2 p) {
   p = fract(p * vec2(123.34, 456.21));
@@ -79,6 +87,10 @@ float tooth(vec2 p) {
   return 0.5 * fbm(p / 6.5) + 0.32 * noise(p / 2.4 + 7.0) + 0.18 * noise(p / 1.15 + 19.0);
 }
 float dec(float v) { return v * v * 1.6; }
+float pig(vec2 uv) {
+  vec4 t = texture2D(u_sim, uv);
+  return dec(t.r) + dec(t.g);
+}
 
 void main() {
   vec2 px = gl_FragCoord.xy / u_scale;
@@ -86,50 +98,55 @@ void main() {
   vec2 pp = vec2(px.x, size.y - px.y);
 
   float h = tooth(pp);
-  float hx = tooth(pp + vec2(1.4, 0.0));
-  float hy = tooth(pp + vec2(0.0, 1.4));
-  float valley = clamp((0.5 - h) * 2.6, -1.0, 1.0);
+  float valley = clamp((0.5 - h) * 2.2, -1.0, 1.0);
 
-  float warpAmp = u_cell * mix(1.0, 1.8, u_torn);
-  vec2 warp = (vec2(fbm(pp / 10.0), fbm(pp / 10.0 + 31.0)) - 0.5) * 2.0 * warpAmp;
-  warp += (vec2(noise(pp / 2.6), noise(pp / 2.6 + 11.0)) - 0.5) * u_cell * 0.8 * (0.4 + u_torn);
+  vec2 q = vec2(fbm(pp / 54.0), fbm(pp / 54.0 + 31.0)) - 0.5;
+  vec2 fine = vec2(noise(pp / 9.0), noise(pp / 9.0 + 11.0)) - 0.5;
+  vec2 warp = q * 2.0 * u_cell * mix(1.5, 2.2, u_torn) + fine * u_cell * (0.3 + 0.5 * u_torn);
   vec2 uv = (pp + warp) / size;
+  vec2 uv2 = uv + vec2(0.011, -0.008) + q * 0.05;
   vec4 s = texture2D(u_sim, uv);
+  vec4 s2 = texture2D(u_sim, uv2);
 
-  float a = dec(s.r);
-  float b = dec(s.g);
+  float a = 0.64 * dec(s.r) + 0.42 * dec(s2.r);
+  float b = 0.64 * dec(s.g) + 0.42 * dec(s2.g);
   float wet = s.b;
   float dep = s.a;
 
-  float edge = mix(1.0, smoothstep(0.02, 0.075, a + b), u_torn);
+  float edge = mix(1.0, smoothstep(0.012, 0.11, a + b), u_torn);
   a *= edge;
   b *= edge;
 
-  float gran = 0.35 + 0.9 * dep;
-  float gA = clamp(1.0 - valley * 0.95 * gran, 0.12, 2.2);
-  float gB = clamp(1.0 - valley * 0.42 * gran, 0.4, 1.7);
-  float lustre = 1.0 + 0.16 * smoothstep(0.1, 0.9, wet);
+  float drift = fbm(pp / 130.0 + 5.0);
+  float depth = 0.78 + 0.44 * fbm(pp / 95.0 + 9.0);
+  vec3 kA = mix(u_kA, u_kC, 0.32 * drift);
+  vec3 kB = mix(u_kB, u_kC, 0.32 * (1.0 - drift));
 
-  vec3 absorb = (a * gA * u_kA + b * gB * u_kB) * u_intensity * lustre;
+  float gran = 0.3 + 0.7 * dep;
+  float gA = clamp(1.0 - valley * 0.6 * gran, 0.45, 1.6);
+  float gB = clamp(1.0 - valley * 0.3 * gran, 0.6, 1.4);
+  float lustre = 1.0 + 0.1 * smoothstep(0.1, 0.9, wet);
+
+  vec3 absorb = (a * gA * kA + b * gB * kB) * depth * u_intensity * lustre;
+
+  vec2 e1 = vec2(1.8 / u_grid.x, 0.0);
+  vec2 e2 = vec2(0.0, 1.8 / u_grid.y);
+  float gx = pig(uv + e1) - pig(uv - e1);
+  float gy = pig(uv + e2) - pig(uv - e2);
+  float rim = smoothstep(0.02, 0.3, length(vec2(gx, gy)));
+  absorb *= 1.0 + 0.32 * rim * smoothstep(0.02, 0.2, a + b);
+
+  float tint = texture2D(u_tint, pp / size).r;
+  absorb += tint * u_pointerTint * u_kC * (0.7 + 0.3 * drift) * (1.0 - 0.25 * valley * gran);
+
+  absorb /= 1.0 + 0.3 * dot(absorb, vec3(0.333));
   vec3 col = u_paper * exp(-absorb);
 
-  float relief = (h - hx) * 0.95 + (h - hy) * 0.65;
-  col *= 1.0 + relief * 0.5;
-  col *= 1.015 - 0.05 * (pp.y / size.y);
-
-  col *= 1.0 - 0.055 * smoothstep(0.03, 0.5, wet);
-  vec2 px1 = vec2(1.6 / u_grid.x, 0.0);
-  vec2 py1 = vec2(0.0, 1.6 / u_grid.y);
-  float wL = texture2D(u_sim, uv - px1).b;
-  float wR = texture2D(u_sim, uv + px1).b;
-  float wU = texture2D(u_sim, uv - py1).b;
-  float wD = texture2D(u_sim, uv + py1).b;
-  vec2 g = vec2(wR - wL, wD - wU);
-  vec3 n = normalize(vec3(-g * 5.0 + vec2(relief * 0.5), 0.5));
-  float spec = pow(max(dot(n, normalize(vec3(-0.45, -0.6, 0.66))), 0.0), 16.0);
-  col += spec * 0.13 * smoothstep(0.04, 0.25, wet);
-
-  col += (hash(pp) - 0.5) * 0.014;
+  float relief = (h - tooth(pp + vec2(1.4, 0.0))) * 0.9 + (h - tooth(pp + vec2(0.0, 1.4))) * 0.6;
+  col *= 1.0 + relief * 0.11 + 0.014 * (h - 0.5);
+  col *= 1.015 - 0.04 * (pp.y / size.y);
+  col *= 1.0 - 0.04 * smoothstep(0.03, 0.5, wet);
+  col += (hash(pp) - 0.5) * 0.006;
   gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }
 `;
@@ -435,6 +452,7 @@ export default function WatercolourWashField({
   colorTwo,
   washIntensity = 62,
   edgeStyle = 'soft',
+  pointerTint = 50,
   ariaLabel,
   children,
   className,
@@ -442,8 +460,8 @@ export default function WatercolourWashField({
   const rootRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const settingsRef = useRef({ washIntensity, edgeStyle });
-  settingsRef.current = { washIntensity, edgeStyle };
+  const settingsRef = useRef({ washIntensity, edgeStyle, pointerTint });
+  settingsRef.current = { washIntensity, edgeStyle, pointerTint };
   const redrawRef = useRef<() => void>(() => {});
   const rebuildRef = useRef<() => void>(() => {});
   const [painted, setPainted] = useState(false);
@@ -488,17 +506,29 @@ export default function WatercolourWashField({
     const u = (name: string) => gl.getUniformLocation(program, name);
     const loc = {
       sim: u('u_sim'), res: u('u_res'), scale: u('u_scale'), grid: u('u_grid'), cell: u('u_cell'),
-      intensity: u('u_intensity'), torn: u('u_torn'), kA: u('u_kA'), kB: u('u_kB'), paper: u('u_paper'),
+      intensity: u('u_intensity'), torn: u('u_torn'), kA: u('u_kA'), kB: u('u_kB'), kC: u('u_kC'), paper: u('u_paper'), tint: u('u_tint'), pointerTint: u('u_pointerTint'),
     };
     gl.uniform1i(loc.sim, 0);
+    gl.uniform1i(loc.tint, 1);
+    const tintTexture = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, tintTexture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.activeTexture(gl.TEXTURE0);
 
     const probe = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
     const readColors = () => {
       const style = getComputedStyle(root);
       const read = (name: string, fallback: Rgb) =>
         probe ? toRgb(probe, style.getPropertyValue(name).trim(), fallback) : fallback;
-      gl.uniform3fv(loc.kA, absorbance(read('--wash-color-one', [0.18, 0.23, 0.55])));
-      gl.uniform3fv(loc.kB, absorbance(read('--wash-color-two', [0.35, 0.54, 0.18])));
+      const kA = absorbance(read('--wash-color-one', [0.18, 0.23, 0.55]));
+      const kB = absorbance(read('--wash-color-two', [0.35, 0.54, 0.18]));
+      gl.uniform3fv(loc.kA, kA);
+      gl.uniform3fv(loc.kB, kB);
+      gl.uniform3fv(loc.kC, [0, 1, 2].map((i) => lerp(kA[i], kB[i], 0.5) * 0.9 + (i === 0 ? 0.03 : 0)));
       gl.uniform3fv(loc.paper, read('--wash-paper', [0.965, 0.957, 0.933]));
     };
 
@@ -510,16 +540,72 @@ export default function WatercolourWashField({
     let acc = 0;
     let started = reduced;
     let visible = false;
-    let awakeUntil = 0;
     let frame = 0;
     let last = 0;
     let finished = false;
+    let tintW = 0;
+    let tintH = 0;
+    let tintField = new Float32Array(0);
+    let tintScratch = new Float32Array(0);
+    let tintBytes = new Uint8Array(0);
+    let tintEnergy = 0;
+    let target: [number, number] | null = null;
+    let eased: [number, number] | null = null;
+    let lastMove = 0;
+
+    const stepTint = (frames: number) => {
+      if (!tintW) return;
+      const idle = performance.now() - lastMove > 450;
+      if (target && eased) {
+        const k = 1 - Math.pow(1 - TINT_EASE, frames);
+        eased[0] += (target[0] - eased[0]) * k;
+        eased[1] += (target[1] - eased[1]) * k;
+        if (!idle) {
+          const r = 0.13 * Math.sqrt(gridW * gridH) / TINT_CELL;
+          const cx = eased[0] / TINT_CELL;
+          const cy = eased[1] / TINT_CELL;
+          const x0 = Math.max(Math.floor(cx - r), 0);
+          const x1 = Math.min(Math.ceil(cx + r), tintW - 1);
+          const y0 = Math.max(Math.floor(cy - r), 0);
+          const y1 = Math.min(Math.ceil(cy + r), tintH - 1);
+          for (let y = y0; y <= y1; y++) {
+            for (let x = x0; x <= x1; x++) {
+              const d2 = ((x - cx) * (x - cx) + (y - cy) * (y - cy)) / (r * r);
+              if (d2 >= 1) continue;
+              const i = y * tintW + x;
+              tintField[i] = Math.min(tintField[i] + 0.014 * frames * (1 - d2) * (1 - d2), 0.5);
+            }
+          }
+        }
+      }
+      const decay = Math.pow(TINT_DECAY, frames);
+      let peak = 0;
+      for (let y = 0; y < tintH; y++) {
+        for (let x = 0; x < tintW; x++) {
+          const i = y * tintW + x;
+          const l = x > 0 ? tintField[i - 1] : tintField[i];
+          const rr = x + 1 < tintW ? tintField[i + 1] : tintField[i];
+          const u = y > 0 ? tintField[i - tintW] : tintField[i];
+          const d = y + 1 < tintH ? tintField[i + tintW] : tintField[i];
+          const v = (tintField[i] * 0.6 + (l + rr + u + d) * 0.1) * decay;
+          tintScratch[i] = v < 0.0004 ? 0 : v;
+          if (v > peak) peak = v;
+        }
+      }
+      [tintField, tintScratch] = [tintScratch, tintField];
+      tintEnergy = peak;
+    };
 
     const draw = () => {
       if (!sim) return;
       const { washIntensity: amount, edgeStyle: edge } = settingsRef.current;
       gl.uniform1f(loc.intensity, Math.min(Math.max(amount, 0), 100) / 66);
       gl.uniform1f(loc.torn, edge === 'torn' ? 1 : 0);
+      gl.uniform1f(loc.pointerTint, Math.min(Math.max(settingsRef.current.pointerTint, 0), 100) / 50);
+      for (let i = 0; i < tintField.length; i++) tintBytes[i] = Math.min(tintField[i] * 510, 255);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, tintW, tintH, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, tintBytes);
+      gl.activeTexture(gl.TEXTURE0);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gridW, gridH, 0, gl.RGBA, gl.UNSIGNED_BYTE, sim.pack());
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
@@ -540,6 +626,12 @@ export default function WatercolourWashField({
       gl.uniform1f(loc.scale, scale);
       gl.uniform2f(loc.grid, gridW, gridH);
       gl.uniform1f(loc.cell, width / gridW);
+      tintW = Math.ceil(gridW / TINT_CELL);
+      tintH = Math.ceil(gridH / TINT_CELL);
+      tintField = new Float32Array(tintW * tintH);
+      tintScratch = new Float32Array(tintW * tintH);
+      tintBytes = new Uint8Array(tintW * tintH);
+      tintEnergy = 0;
 
       const reserve = buildReserve(gridW, gridH, width, height, content.getBoundingClientRect(), rootRect);
       sim = createSim(gridW, gridH, reserve, settingsRef.current.edgeStyle === 'torn');
@@ -561,17 +653,18 @@ export default function WatercolourWashField({
       const deadline = performance.now() + (catching ? 12 : 8);
       let steps = 0;
       while (steps < 24 && performance.now() < deadline && (catching ? tick < catchTo : acc >= TICK_MS && steps < 3)) {
-        sim.step(tick);
+        if (tick < TOTAL_TICKS + 60) sim.step(tick);
         tick++;
         if (!catching) acc -= TICK_MS;
         steps++;
       }
+      if (!reduced && !catching && (target || tintEnergy > 0)) stepTint(Math.max(dt / TICK_MS, 0.5));
       const hidingCanvas = reduced || catching;
       if (!hidingCanvas || tick >= catchTo) {
         draw();
         setPainted(true);
       }
-      const running = tick < TOTAL_TICKS || tick < awakeUntil;
+      const running = tick < TOTAL_TICKS || tintEnergy > TINT_ACTIVE || (!!target && performance.now() - lastMove < 900);
       if (!running && !finished) {
         finished = true;
       }
@@ -622,19 +715,17 @@ export default function WatercolourWashField({
     );
     io.observe(root);
 
-    const touchPaper = (event: PointerEvent, big: boolean) => {
-      if (!sim || !started || tick < catchTo || content.contains(event.target as Node)) return;
+    const onMove = (event: PointerEvent) => {
+      if (reduced || event.pointerType === 'touch' || !sim || !started || tick < catchTo || content.contains(event.target as Node)) return;
       const rect = root.getBoundingClientRect();
       const x = ((event.clientX - rect.left) / rect.width) * gridW;
       const y = ((event.clientY - rect.top) / rect.height) * gridH;
-      sim.drop(x, y, big ? 0.07 : 0.032, big ? 1 : 0.55, 0, 0);
-      awakeUntil = tick + HOVER_WAKE_TICKS;
+      target = [x, y];
+      eased = eased ?? [x, y];
+      lastMove = performance.now();
       wake();
     };
-    const onMove = (event: PointerEvent) => touchPaper(event, false);
-    const onDown = (event: PointerEvent) => touchPaper(event, true);
     root.addEventListener('pointermove', onMove);
-    root.addEventListener('pointerdown', onDown);
 
     const onLost = (event: Event) => {
       event.preventDefault();
@@ -650,11 +741,11 @@ export default function WatercolourWashField({
       ro.disconnect();
       io.disconnect();
       root.removeEventListener('pointermove', onMove);
-      root.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('webglcontextlost', onLost);
       redrawRef.current = () => {};
       rebuildRef.current = () => {};
       gl.deleteTexture(texture);
+      gl.deleteTexture(tintTexture);
       gl.deleteBuffer(buffer);
       gl.deleteProgram(program);
       gl.deleteShader(vs);
