@@ -66,9 +66,9 @@
   cursor: grabbing;
 }
 
-.tape:focus-visible {
+.tape:focus-visible .thumb {
   outline: 2px solid var(--ps-ink);
-  outline-offset: 6px;
+  outline-offset: 3px;
 }
 
 .track,
