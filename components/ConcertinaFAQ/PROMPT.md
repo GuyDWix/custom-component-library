@@ -605,6 +605,7 @@ export default function ConcertinaFAQ({
   margin: 0;
   block-size: calc(var(--h) * var(--n) * var(--p));
   visibility: hidden;
+  opacity: clamp(0, calc(var(--p) * 10), 1);
   perspective: 820px;
   perspective-origin: 50% -3.5rem;
 }
