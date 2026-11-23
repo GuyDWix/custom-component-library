@@ -1,0 +1,41 @@
+{
+  "id": "c076",
+  "name": "SeatMapCapacity",
+  "display_name": "Seat Map Capacity",
+  "category": "data",
+  "tier": "everyday",
+  "job": "Show how full an event, class or tour is as a small seating plan where taken seats are filled and remaining ones glow, with \"12 seats left\" called out",
+  "visitor_action": "hover or tap a seat for its row label; arrow keys move between seats when the plan is focused; none required",
+  "owner_settings": [
+    "Total seats",
+    "Seats taken",
+    "Rows",
+    "Seat layout style (theatre, round tables, benches)",
+    "Call-out text (with the number of seats left) and sold-out text",
+    "Event title",
+    "Stage label",
+    "Labels for available, taken, row, table and seat"
+  ],
+  "site_types": [
+    "events",
+    "services",
+    "restaurant",
+    "business"
+  ],
+  "mobile": "plan scales to the container width; narrow containers use a tighter fan and larger seats, round tables wrap to at most 3 per row",
+  "motion": "taken seats pop in sequence (best seats first) with a soft spring, free brass seats breathe twice then settle, all under 5s and only once visible (reduced-motion: static fill)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (1 fix: round-tables layout was oversized and clipped; narrow fan tightened)",
+    "craft": "pass (3, after 1 polish pass on table spacing)"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Velvet stalls: oxblood and plum seats on warm cream plan paper, brass-gold available seats (restyled: flat seats with a soft brass glow instead of per-seat inner shadows)"
+}

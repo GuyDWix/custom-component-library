@@ -1,0 +1,38 @@
+{
+  "id": "c072",
+  "name": "GoalJarFill",
+  "display_name": "Goal Jar Fill",
+  "category": "data",
+  "tier": "showpiece",
+  "job": "Show progress to a sales, donation or booking goal as a glass jar filling with liquid whose surface sloshes, with the raised amount and goal printed on the glass",
+  "visitor_action": "none; moving the pointer across the jar sloshes the liquid, a tap makes a ripple, Enter swirls it when focused",
+  "owner_settings": [
+    "Amount reached",
+    "Goal amount",
+    "Label",
+    "Currency symbol",
+    "Liquid color"
+  ],
+  "site_types": [
+    "store",
+    "events",
+    "business",
+    "services"
+  ],
+  "mobile": "jar centred, slosh on device tilt is skipped, tap makes a ripple",
+  "motion": "liquid rises to its level with eased fill and a counting amount while a canvas wave rolls on the surface, then settles and stops (reduced-motion: filled jar, flat surface)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 2,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (1 fix: percent marker overlapped the goal text, moved into the printed stack; shorter fill)",
+    "craft": "pass (3, after 1 polish pass)"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Pantry jar: warm kraft-paper background, thick clear glass with a curved highlight, honey-amber liquid, chalk-white label print"
+}

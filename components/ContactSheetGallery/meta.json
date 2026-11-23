@@ -1,0 +1,39 @@
+{
+  "id": "c001",
+  "name": "ContactSheetGallery",
+  "display_name": "Contact Sheet Gallery",
+  "category": "media",
+  "tier": "everyday",
+  "job": "Show a photo set as a printed contact sheet; picking a frame circles it in grease pencil and lifts it into a large view",
+  "visitor_action": "click/tap a frame; arrow keys move between frames; Esc closes the large view; swipe between photos in the large view",
+  "owner_settings": [
+    "Photos (image, caption, picked mark)",
+    "Frame numbers on/off",
+    "Marker color",
+    "Paper tone",
+    "Title",
+    "Roll label"
+  ],
+  "site_types": [
+    "portfolio",
+    "events",
+    "blog",
+    "restaurant"
+  ],
+  "mobile": "3-column sheet, tap opens full-width view, swipe between photos",
+  "motion": "marker circle draws itself, picked frame lifts with spring and soft shadow (reduced-motion: static circle, instant open)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (1 fix: ring dash rendering + overlay fitted to visible area)",
+    "craft": "pass (1 polish pass: heading width, title size, header spacing)"
+  },
+  "status": "built",
+  "studio2_tested": true,
+  "art_direction": "Darkroom proof: warm off-white photo paper, carbon-black film borders with tiny edge numbers, china-marker red circle, fine paper grain"
+}

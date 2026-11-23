@@ -1,0 +1,40 @@
+{
+  "id": "c153",
+  "name": "MatBoardFrame",
+  "display_name": "Mat Board Frame",
+  "category": "ambient",
+  "tier": "everyday",
+  "job": "Frame a featured product, dish or artwork with a bevel-cut picture-framing mat and a small gallery plaque holding its name and price",
+  "visitor_action": "hover the piece or tap the plaque to lift it and reveal a longer note; Enter or Space on the focused plaque toggles it",
+  "owner_settings": [
+    "Image (or text shown when there is no image)",
+    "Plaque title",
+    "Price",
+    "Plaque note",
+    "Mat color",
+    "Frame finish (oak, walnut, ebony, white)"
+  ],
+  "site_types": [
+    "store",
+    "portfolio",
+    "restaurant",
+    "events",
+    "services"
+  ],
+  "mobile": "thinner mat and frame, plaque sits beneath the frame",
+  "motion": "wall shadow, picture-light glow, glass reflection and bevel highlight shift with scroll on a spring; plaque lifts and the note slides open on hover or tap (reduced-motion: static frame with the note always visible)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass",
+    "craft": "pass (3, after 1 polish pass)"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Gallery oak: warm oak frame, oatmeal mat with crisp cut bevel, brass plaque with engraved black text, soft wall shadow"
+}

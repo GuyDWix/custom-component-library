@@ -1,0 +1,41 @@
+{
+  "name": "WorldConnectionsMap",
+  "display_name": "World Connections Map",
+  "category": "data",
+  "tier": "showpiece",
+  "job": "Show where a business operates or ships to, as a dotted world map with glowing arcs linking locations",
+  "visitor_action": "hover/focus a location to highlight its connections and show its label; keyboard tab through locations",
+  "owner_settings": [
+    "Locations (name, latitude, longitude)",
+    "Connections (from location, to location)",
+    "Dot color",
+    "Arc color",
+    "Background style (dark | light)",
+    "Show labels"
+  ],
+  "site_types": [
+    "business",
+    "logistics",
+    "travel",
+    "agency",
+    "nonprofit"
+  ],
+  "mobile": "map scales to container width; collision-aware labels show only the active location plus up to 3 that fit",
+  "motion": "arcs draw in with travelling light pulses, subtle dot shimmer (reduced-motion: arcs drawn static, no pulses)",
+  "scores": {
+    "concept": null,
+    "usefulness": null,
+    "uniqueness": null,
+    "reach": null,
+    "craft": null
+  },
+  "checks": {
+    "tsc": "pass",
+    "portable_rules_lint": "self-checked: SSR-safe render, no dangerouslySetInnerHTML, flat single-class selectors, logical properties, no viewport @media, no transition: all",
+    "render": "self-checked 2026-11-23 at 1280px, 375px and ?worst=1 (no label overlaps)",
+    "craft": "pending"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Arctic night: midnight blue-black, cool slate dots, ice-cyan arcs with white-hot pulses, faint aurora-teal glow; light variant is frost-blue with deep-cyan arcs. Material: glass label chips over a dotted land layer, grain overlay."
+}

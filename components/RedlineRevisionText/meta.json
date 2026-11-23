@@ -1,0 +1,40 @@
+{
+  "id": "c032",
+  "name": "RedlineRevisionText",
+  "display_name": "Redline Revision Text",
+  "category": "text",
+  "tier": "everyday",
+  "job": "A sentence that edits itself in front of the visitor with proofreader marks: old words struck out, better words inserted in a second ink",
+  "visitor_action": "none (plays in view); hover replays the edit; replays on re-entering the viewport",
+  "owner_settings": [
+    "Sentence with edits (text, optional replacement word)",
+    "Strike color",
+    "Insert color",
+    "Text color",
+    "Paper color",
+    "Proof label",
+    "Handwritten note"
+  ],
+  "site_types": [
+    "business",
+    "services",
+    "blog",
+    "portfolio"
+  ],
+  "mobile": "same, edits happen one at a time",
+  "motion": "strike draws across old word, caret springs up, new word writes in, then the margin note (reduced-motion: final edited sentence with marks visible)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (1 fix used: preview grid column, long-text type scaling, caret depth)",
+    "craft": "3"
+  },
+  "status": "built",
+  "studio2_tested": true,
+  "art_direction": "Copy desk: bright white galley paper, graphite type, vermilion strike lines, ink-blue insertions in a handwriting face with caret marks"
+}

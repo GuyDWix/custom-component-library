@@ -1,0 +1,39 @@
+{
+  "id": "c027",
+  "name": "MarkerHighlightHeadline",
+  "display_name": "Marker Highlight Headline",
+  "category": "text",
+  "tier": "everyday",
+  "job": "A headline where chosen words get a hand-drawn marker highlight, underline or circle as it scrolls into view",
+  "visitor_action": "none (plays once in view)",
+  "owner_settings": [
+    "Headline text",
+    "Words to mark",
+    "Mark style (highlight, underline, circle)",
+    "Marker color",
+    "Small label above the headline"
+  ],
+  "site_types": [
+    "business",
+    "blog",
+    "portfolio",
+    "store",
+    "events"
+  ],
+  "mobile": "same, marks reflow with line breaks",
+  "motion": "marks draw in staggered left to right with eased stroke (reduced-motion: marks shown fully drawn)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "fail (fix used on brush-filter clipping; worst case still overflows: one unbreakable 58-letter word pushes the headline past the card edge)",
+    "craft": "not gated (render rejected); self-score 3 from default shots"
+  },
+  "status": "rejected:render",
+  "studio2_tested": false,
+  "art_direction": "Editorial notebook: ink-black serif on cream, one fluorescent marker (default lime), streaky brush texture inside the mark"
+}

@@ -1,0 +1,37 @@
+{
+  "id": "c019",
+  "name": "DrumRingCarousel",
+  "display_name": "Drum Ring Carousel",
+  "category": "media",
+  "tier": "showpiece",
+  "job": "Arrange photos around a rotating drum seen from inside-out so focus shifts naturally as it spins",
+  "visitor_action": "drag or swipe to spin; arrows step; tap front photo to open",
+  "owner_settings": [
+    "Photos (image, caption)",
+    "Drum radius",
+    "Spin speed",
+    "Background tone"
+  ],
+  "site_types": [
+    "portfolio",
+    "store",
+    "events",
+    "restaurant"
+  ],
+  "mobile": "smaller radius, larger panels, swipe spins",
+  "motion": "3D rotation with inertia and spring snap, slow idle drift with pause control, back photos dim and blur (reduced-motion: simple horizontal slider)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (1 fix: larger mobile panels, clean reduced-motion floor)",
+    "craft": "pass (3, no polish pass needed)"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Gallery rotunda: pale plaster ground, matte-white mounts, soft overhead light and floor reflection"
+}

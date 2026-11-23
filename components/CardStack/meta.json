@@ -1,0 +1,33 @@
+{
+  "name": "CardStack",
+  "display_name": "Card Stack",
+  "category": "cards",
+  "tier": "everyday",
+  "job": "Show a pile of cards (testimonials or highlights) where the front card moves to the back to reveal the next",
+  "visitor_action": "drag/swipe the front card away, or click it; arrow keys; auto-advances on a timer, pauses on hover/focus",
+  "owner_settings": [
+    "Cards (quote, person name, role, photo)",
+    "Auto-advance seconds",
+    "Accent color",
+    "Card surface style (glass | paper | solid)",
+    "Small heading",
+    "Hint text"
+  ],
+  "site_types": [
+    "business",
+    "portfolio",
+    "store",
+    "services"
+  ],
+  "mobile": "touch-swipe, full width, stack depth reduced",
+  "motion": "spring-driven card fly-off and re-stack with depth parallax (reduced-motion: crossfade only, static stack)",
+  "scores": null,
+  "checks": {
+    "tsc": "pass",
+    "render": "pending",
+    "craft": "pending"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Alpine morning: pale sky-to-porcelain stage with soft cloud light, frosted ice-glass cards with crisp top highlight and cool shadows, ink-navy type, one cobalt accent, subtle grain"
+}

@@ -1,0 +1,38 @@
+{
+  "id": "c138",
+  "name": "PortraitCallouts",
+  "display_name": "Portrait Callouts",
+  "category": "social",
+  "tier": "everyday",
+  "job": "Show one person (owner, chef, founder) with fine lines drawn from the portrait to short facts around it, such as years in trade, favourite tool and signature piece (twist: a personal introduction in one glance, like an annotated figure)",
+  "visitor_action": "hover or tap a callout to enlarge it; others quiet down",
+  "owner_settings": [
+    "Portrait photo",
+    "Name and role",
+    "Callouts (label and text, up to 5)",
+    "Line colour"
+  ],
+  "site_types": [
+    "portfolio",
+    "business",
+    "restaurant",
+    "services",
+    "blog"
+  ],
+  "mobile": "callouts stack under the portrait and lines shorten to ticks",
+  "motion": "leader lines draw outward from the portrait once, labels fade in (reduced-motion: lines and labels shown at once)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass",
+    "craft": "pass (3, no polish pass needed)"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Field guide: sage-green paper, sepia ink lines and small serif labels, brass number dots, matte print texture"
+}

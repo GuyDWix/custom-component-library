@@ -1,0 +1,37 @@
+{
+  "id": "c132",
+  "name": "TimeSlotTape",
+  "display_name": "Time Slot Tape",
+  "category": "controls",
+  "tier": "everyday",
+  "job": "Offer appointment or class times on a tape-measure strip the visitor flicks; the time under the centre mark enlarges and fills the booking button label",
+  "visitor_action": "drag or swipe the tape; arrow keys step by slot; tap a slot to snap; press the button to follow the booking link",
+  "owner_settings": [
+    "Times (list like 09:00 and 09:30)",
+    "Booked times (greyed)",
+    "Button label and link",
+    "Tape colour"
+  ],
+  "site_types": [
+    "services",
+    "restaurant",
+    "events",
+    "business"
+  ],
+  "mobile": "full-width tape with large touch targets, haptic-style snap",
+  "motion": "tape glides with inertia and snaps with a tiny overshoot, centre slot scales up (reduced-motion: slots highlight without gliding)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass",
+    "craft": "pass"
+  },
+  "status": "built",
+  "studio2_tested": "editor bug: canvas \"Something went wrong\", add-panel preview OK (2026-11-23)",
+  "art_direction": "Tailor's yellow: soft butter-yellow tape, ink-navy ticks and numerals, tiny brass centre pin, cream desk"
+}

@@ -1,0 +1,40 @@
+{
+  "id": "c049",
+  "name": "FoilTiltCard",
+  "display_name": "Foil Tilt Card",
+  "category": "cards",
+  "tier": "showpiece",
+  "job": "A product or team card whose holographic foil sheen and glare shift with the tilt of the card, like a collectible trading card",
+  "visitor_action": "move pointer over the card to tilt it; on touch, dragging tilts it; arrow keys tilt it when focused",
+  "owner_settings": [
+    "Image",
+    "Title",
+    "Subtitle",
+    "Small heading and card number",
+    "Detail rows (label, value)",
+    "Foil color",
+    "Tilt strength"
+  ],
+  "site_types": [
+    "store",
+    "portfolio",
+    "events",
+    "business"
+  ],
+  "mobile": "drag-to-tilt, gentle idle sheen sweep, no device-motion permission needed",
+  "motion": "card rotates in 3D with spring return, foil gradient and glare track the pointer, idle sheen sweep (reduced-motion: flat card with static soft sheen)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 2,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass",
+    "craft": "pass (3, after 1 polish pass)"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Prism foil: pearl-white card stock, rainbow-spectrum foil gradient bleeding to lilac and mint, matte ink type, crisp specular glare"
+}

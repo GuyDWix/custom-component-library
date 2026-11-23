@@ -1,0 +1,44 @@
+{
+  "id": "c135",
+  "name": "ShortlistSwipeDeck",
+  "display_name": "Shortlist Swipe Deck",
+  "category": "controls",
+  "tier": "showpiece",
+  "job": "Let visitors swipe through the owner's items (products, venues, portfolio pieces) keeping or skipping each, ending in a shortlist tray with a single enquire link",
+  "visitor_action": "swipe or drag cards right to keep and left to skip; keep and skip buttons and arrow keys work too; open the tray to review",
+  "owner_settings": [
+    "Items (photo, title, note)",
+    "Keep label",
+    "Skip label",
+    "Enquire link",
+    "Enquire button label",
+    "Small heading",
+    "Shortlist title and empty-shortlist text",
+    "End-of-deck title and restart label",
+    "Accent color",
+    "Card color"
+  ],
+  "site_types": [
+    "store",
+    "portfolio",
+    "events",
+    "restaurant",
+    "services"
+  ],
+  "mobile": "native swipe, buttons below for thumb reach, collapsible shortlist tray",
+  "motion": "card follows finger with tilt, flies off with spring, next card scales up (reduced-motion: buttons only, card fades out)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (no fix; 375 shot shows unloaded photos, a harness artifact seen on other image components too)",
+    "craft": "pass (3)"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Clay and cobalt: warm clay-pink cards on soft off-white, flat cobalt action buttons, soft low shadows (card gloss dropped per contemporary-polish rule)"
+}

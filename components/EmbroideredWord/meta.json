@@ -1,0 +1,38 @@
+{
+  "id": "c041",
+  "name": "EmbroideredWord",
+  "display_name": "Embroidered Word",
+  "category": "text",
+  "tier": "showpiece",
+  "job": "A word or short phrase that is sewn onto fabric stitch by stitch, with thread texture and a needle leading the line",
+  "visitor_action": "none (stitches itself when scrolled into view); hovering or tapping a letter sews it again",
+  "owner_settings": [
+    "Text",
+    "Thread color",
+    "Fabric color",
+    "Stitch style (satin or running)"
+  ],
+  "site_types": [
+    "store",
+    "portfolio",
+    "events",
+    "business",
+    "restaurant"
+  ],
+  "mobile": "same, wraps to more lines with larger stitches; tap a letter to re-sew it",
+  "motion": "a needle travels letter by letter while satin stitches appear thread by thread, the trailing thread tightens with a springy tug after each letter, needle lifts away at the end (reduced-motion: finished embroidery with frayed thread ends, no needle)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 2,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "pass (1 fix: stray space-column slivers + frame-starved progress; headless 1280/worst shots catch the run mid-stitch because virtual time barely fires rAF, finished state verified in a real browser and in the 375/reduced shots)",
+    "craft": "pass (3, after 1 polish pass)"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Linen sampler: oatmeal woven linen, madder-red satin thread with sheen, tiny frayed ends and soft stitch shadows"
+}
