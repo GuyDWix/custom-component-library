@@ -5,9 +5,9 @@
   "category": "media",
   "tier": "everyday",
   "job": "Show photos in an uneven tile layout where tiles trade sizes in turn so each photo gets a moment as the feature",
-  "visitor_action": "hover or tap a tile to make it the feature; otherwise the gallery rotates the feature by itself; arrow keys choose the feature",
+  "visitor_action": "tap a tile to make it the feature; tap the feature to open or close its glass detail panel; otherwise the gallery rotates the feature by itself; arrow keys choose the feature, Escape closes the panel",
   "owner_settings": [
-    "Photos (image, caption)",
+    "Photos (image, caption, description, meta)",
     "Shuffle speed",
     "Corner roundness",
     "Gap"
@@ -19,7 +19,7 @@
     "store",
     "events"
   ],
-  "mobile": "2-column grid, tap enlarges one tile",
+  "mobile": "2-column grid, tap enlarges one tile, tap the feature for details",
   "motion": "feature trade: outgoing tile lifts, winds up and sweeps on a bowed spring arc (tilt, deeper shadow) into the slot of the photo that grows into the 2x2 feature from the opposite bow; neighbours ripple away in its wake (reduced-motion: no auto shuffle, instant swap on tap)",
   "scores": {
     "concept": 2,

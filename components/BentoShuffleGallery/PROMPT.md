@@ -1,16 +1,18 @@
 Create a custom element called "Bento Shuffle Gallery". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: photos (image, caption), shuffle speed, corner roundness, gap. Add other settings if they help.
+The site owner must be able to change: photos (image, caption, description, meta), shuffle speed, corner roundness, gap. Add other settings if they help.
 
 ```tsx
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import type { CSSProperties, KeyboardEvent } from 'react';
 import styles from './Component.module.css';
 
 export interface BentoPhoto {
   image: string;
   caption?: string;
   alt?: string;
+  description?: string;
+  meta?: string[];
 }
 
 export interface BentoShuffleGalleryProps {
@@ -27,12 +29,12 @@ export interface BentoShuffleGalleryProps {
 const img = (id: string) => `https://images.unsplash.com/photo-${id}?q=80&w=1200&h=900&fit=crop&auto=format`;
 
 export const defaultPhotos: BentoPhoto[] = [
-  { image: img('1565958011703-44f9829ba187'), caption: 'Pistachio tart, spring menu' },
-  { image: img('1565299624946-b28f40a0ae38'), caption: 'Wood-fired flatbread' },
-  { image: img('1546069901-ba9599a7e63c'), caption: 'Roast squash grain bowl' },
-  { image: img('1473093295043-cdd812d0e601'), caption: 'Hand-cut tagliatelle' },
-  { image: img('1504674900247-0877df9cc836'), caption: 'The pass, Friday service' },
-  { image: img('1414235077428-338989a2e8c0'), caption: 'Long table, Saturday supper' },
+  { image: img('1565958011703-44f9829ba187'), caption: 'Pistachio tart, spring menu', description: 'Crisp shell, pistachio cream and seasonal fruit.', meta: ['Dessert', 'Serves 8', '25 min'] },
+  { image: img('1565299624946-b28f40a0ae38'), caption: 'Wood-fired flatbread', description: 'Blistered crust with charred greens and soft cheese.', meta: ['Starter', 'To share', '12 min'] },
+  { image: img('1546069901-ba9599a7e63c'), caption: 'Roast squash grain bowl', description: 'Warm grains, roast squash and a toasted seed crunch.', meta: ['Main', 'Vegan', '30 min'] },
+  { image: img('1473093295043-cdd812d0e601'), caption: 'Hand-cut tagliatelle', description: 'Fresh egg pasta folded through a slow-braised ragu.', meta: ['Main', 'Serves 2', '40 min'] },
+  { image: img('1504674900247-0877df9cc836'), caption: 'The pass, Friday service', description: 'Plates leave the pass hot, in order, one table at a time.', meta: ['Behind the scenes', '7 pm', '12 cooks'] },
+  { image: img('1414235077428-338989a2e8c0'), caption: 'Long table, Saturday supper', description: 'One long table, family-style plates and no rush.', meta: ['Event', 'Saturdays', '24 seats'] },
 ];
 
 /* ---------- deterministic bento packing (exact fill, no gaps) ---------- */
@@ -174,9 +176,6 @@ const SCALE_C = 15;
 const LIFT = 1.075;
 const WINDUP_MS = 130;
 const NARROW_MIN = 520;
-const HOVER_COOLDOWN = 450;
-/** px the pointer must travel after a trade before hovering can start another */
-const MOVE_INTENT = 24;
 const RING = 2 * Math.PI * 17;
 const EDGE = 12;
 /** the first frame is a trade caught mid-air; it completes this long after load (or on the first touch) */
@@ -225,7 +224,7 @@ export default function BentoShuffleGallery({
   const [assign, setAssign] = useState<number[]>(() => openingAssign(photos.length, photos.length > 1 && shuffleSeconds > 0));
   const [reduced, setReduced] = useState(false);
   const [playOn, setPlayOn] = useState(true);
-  const [hovered, setHovered] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
   const [focusWithin, setFocusWithin] = useState(false);
   const [inView, setInView] = useState(true);
 
@@ -245,14 +244,7 @@ export default function BentoShuffleGallery({
   const hold = useRef(false);
   const raf = useRef(0);
   const elapsed = useRef(0);
-  const lastHover = useRef(0);
-  /** hover intent: the tile the pointer rests on, promoted as soon as the cooldown allows (never dropped) */
-  const hoverTarget = useRef<number | null>(null);
-  const hoverTimer = useRef(0);
-  /** a deliberate pointer move since the last trade: layout shifting under a still (or jittering) cursor must not start a trade */
-  const pointerMoved = useRef(true);
-  const pointerAt = useRef({ x: 0, y: 0 });
-  const anchorAt = useRef({ x: 0, y: 0 });
+  const panelId = useId();
 
   reducedRef.current = reduced;
   autoRef.current = autoOn;
@@ -445,6 +437,11 @@ export default function BentoShuffleGallery({
     boxes.current = nextBoxes;
     bounds.current = { w: width, h: height };
     stage.style.height = `${Math.round(height)}px`;
+    const f = nextBoxes[0];
+    stage.style.setProperty('--bs-fx', `${f.x.toFixed(1)}px`);
+    stage.style.setProperty('--bs-fy', `${f.y.toFixed(1)}px`);
+    stage.style.setProperty('--bs-fw', `${f.w.toFixed(1)}px`);
+    stage.style.setProperty('--bs-fh', `${f.h.toFixed(1)}px`);
     if (!started.current) {
       hold.current = autoRef.current && count > 1 && !prefersReduced();
       if (hold.current) elapsed.current = Math.max(0, Math.max(shuffleSeconds, 2) * 1000 - HOLD_MS);
@@ -524,6 +521,7 @@ export default function BentoShuffleGallery({
       });
       assignRef.current = next;
       setAssign(next);
+      setPanelOpen(false);
       elapsed.current = 0;
       if (reducedRef.current) {
         settle();
@@ -607,15 +605,9 @@ export default function BentoShuffleGallery({
     return () => mq.removeEventListener('change', sync);
   }, [settle]);
 
-  useEffect(
-    () => () => {
-      cancelAnimationFrame(raf.current);
-      window.clearTimeout(hoverTimer.current);
-    },
-    [],
-  );
+  useEffect(() => () => cancelAnimationFrame(raf.current), []);
 
-  const playing = autoOn && playOn && !reduced && inView && !hovered && !focusWithin;
+  const playing = autoOn && playOn && !reduced && inView && !focusWithin && !panelOpen;
 
   useEffect(() => {
     if (!playing) return;
@@ -637,55 +629,23 @@ export default function BentoShuffleGallery({
     return () => cancelAnimationFrame(id);
   }, [playing, shuffleSeconds, advance]);
 
-  const scheduleHover = (photo: number) => {
-    window.clearTimeout(hoverTimer.current);
-    const wait = Math.max(0, HOVER_COOLDOWN - (performance.now() - lastHover.current));
-    const go = () => {
-      if (hoverTarget.current !== photo) return;
-      hoverTarget.current = null;
-      lastHover.current = performance.now();
-      pointerMoved.current = false;
-      anchorAt.current = { ...pointerAt.current };
-      promote(photo);
-    };
-    // a trade in flight is re-planned from where the tiles are, so a second hover queues instead of being dropped
-    if (wait === 0) go();
-    else hoverTimer.current = window.setTimeout(go, wait);
-  };
-
-  const onTileEnter = (e: PointerEvent<HTMLButtonElement>, photo: number) => {
-    if (e.pointerType !== 'mouse' || reducedRef.current) return;
-    hoverTarget.current = photo;
-    // layout shifting under a still cursor is not intent: wait for the pointer to actually move
-    if (pointerMoved.current) scheduleHover(photo);
-  };
-
-  const onTileLeave = (photo: number) => {
-    if (hoverTarget.current !== photo) return;
-    hoverTarget.current = null;
-    window.clearTimeout(hoverTimer.current);
-  };
-
-  const onRootMove = (e: PointerEvent<HTMLElement>) => {
-    if (e.pointerType !== 'mouse') return;
-    pointerAt.current = { x: e.clientX, y: e.clientY };
-    if (pointerMoved.current) return;
-    if (Math.hypot(e.clientX - anchorAt.current.x, e.clientY - anchorAt.current.y) < MOVE_INTENT) return;
-    pointerMoved.current = true;
-    if (hoverTarget.current !== null) scheduleHover(hoverTarget.current);
-  };
+  const hasDetail = (p?: BentoPhoto) => !!p && (!!p.description || !!p.meta?.length);
 
   const onTileActivate = (photo: number) => {
-    lastHover.current = performance.now();
-    hoverTarget.current = null;
-    pointerMoved.current = false;
-    anchorAt.current = { ...pointerAt.current };
-    window.clearTimeout(hoverTimer.current);
+    if (photo === assignRef.current[0]) {
+      if (hasDetail(photos[photo])) setPanelOpen((v) => !v);
+      return;
+    }
     promote(photo);
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const n = count;
+    if (e.key === 'Escape' && panelOpen) {
+      e.stopPropagation();
+      setPanelOpen(false);
+      return;
+    }
     if (n < 2) return;
     const feature = assignRef.current[0];
     const moves: Record<string, number> = {
@@ -719,13 +679,10 @@ export default function BentoShuffleGallery({
       style={rootStyle}
       aria-label={ariaLabel}
       data-live={inView && !reduced ? 'on' : 'off'}
-      onFocus={() => setFocusWithin(true)}
+      onFocus={(e) => setFocusWithin(e.target.matches(':focus-visible'))}
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocusWithin(false);
       }}
-      onPointerEnter={(e) => e.pointerType === 'mouse' && setHovered(true)}
-      onPointerLeave={() => setHovered(false)}
-      onPointerMove={onRootMove}
     >
       <div className={styles.inner}>
           <div className={styles.deck}>
@@ -733,7 +690,7 @@ export default function BentoShuffleGallery({
               ref={stageRef}
               className={styles.stage}
               tabIndex={0}
-              aria-description="Use the arrow keys to choose the featured photo; Enter makes the focused photo the feature."
+              aria-description="Use the arrow keys to choose the featured photo; Enter on a photo makes it the feature; Enter on the feature shows or hides its details; Escape closes the details."
               onKeyDown={onKeyDown}
             >
               {photos.map((photo, p) => {
@@ -741,6 +698,7 @@ export default function BentoShuffleGallery({
                 const isFeature = slot === 0;
                 const initial = photo.caption?.trim().charAt(0).toUpperCase() || '·';
                 const label = photo.caption || photo.alt;
+                const detail = isFeature && hasDetail(photo);
                 return (
                   <button
                     key={p}
@@ -750,8 +708,9 @@ export default function BentoShuffleGallery({
                     }}
                     className={styles.tile}
                     aria-label={`${photo.caption || photo.alt || 'Photo'}${isFeature ? ' — featured' : ''}`}
-                    onPointerEnter={(e) => onTileEnter(e, p)}
-                    onPointerLeave={() => onTileLeave(p)}
+                    aria-expanded={detail ? panelOpen : undefined}
+                    aria-controls={detail && panelOpen ? panelId : undefined}
+                    data-open={detail && panelOpen ? '1' : undefined}
                     onClick={() => onTileActivate(p)}
                   >
                     {photo.image ? (
@@ -765,11 +724,30 @@ export default function BentoShuffleGallery({
                       <span key={isFeature ? 'feature' : 'quiet'} className={isFeature ? styles.chipFeature : styles.chipQuiet}>
                         {isFeature && <i className={styles.chipDot} aria-hidden="true" />}
                         {label}
+                        {detail && <i className={styles.chipPlus} aria-hidden="true" />}
                       </span>
                     )}
                   </button>
                 );
               })}
+              {panelOpen && hasDetail(featured) && (
+                <div id={panelId} className={styles.panel} role="region" aria-label={`${featuredName} details`}>
+                  <button type="button" className={styles.panelClose} aria-label="Close details" onClick={() => setPanelOpen(false)}>
+                    <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
+                      <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" fill="none" />
+                    </svg>
+                  </button>
+                  <h3 className={styles.panelTitle}>{featuredName}</h3>
+                  {featured.description && <p className={styles.panelText}>{featured.description}</p>}
+                  {!!featured.meta?.length && (
+                    <ul className={styles.panelMeta}>
+                      {featured.meta.slice(0, 3).map((m, i) => (
+                        <li key={i}>{m}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
             </div>
 
             <span className={styles.srOnly} role="status" aria-live={playing ? 'off' : 'polite'}>
@@ -984,6 +962,129 @@ export default function BentoShuffleGallery({
   transition: opacity 200ms ease;
 }
 
+/* hover is a quiet affordance only: the photo eases in, nothing moves or reflows */
+.photo {
+  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tile:hover .photo {
+  transform: scale(1.04);
+}
+
+.chipPlus {
+  position: relative;
+  display: inline-block;
+  inline-size: 0.7em;
+  block-size: 0.7em;
+  margin-inline-start: 0.7em;
+  vertical-align: -0.02em;
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.chipPlus::before,
+.chipPlus::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 0;
+  inline-size: 100%;
+  block-size: 1.6px;
+  margin-block-start: -0.8px;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.chipPlus::after {
+  transform: rotate(90deg);
+}
+
+.tile[data-open="1"] .chipFeature {
+  opacity: 0;
+}
+
+/* glass detail panel over the foot of the featured tile */
+.panel {
+  position: absolute;
+  z-index: 5;
+  inset-inline-start: calc(var(--bs-fx, 0px) + 12px);
+  inset-block-start: calc(var(--bs-fy, 0px) + var(--bs-fh, 0px) - 12px);
+  inline-size: calc(var(--bs-fw, 0px) - 24px);
+  max-block-size: calc(var(--bs-fh, 0px) - 24px);
+  box-sizing: border-box;
+  overflow: auto;
+  transform: translateY(-100%);
+  padding: 16px 18px 16px 18px;
+  border-radius: max(calc(var(--bs-radius) - 6px), 6px);
+  background: rgba(22, 24, 34, 0.74);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  backdrop-filter: blur(18px) saturate(1.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 14px 30px -12px rgba(22, 24, 34, 0.5);
+  color: #ffffff;
+  animation: panelIn 420ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: clamp(15px, 2.4cqi, 20px);
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.panelText {
+  margin: 6px 0 0;
+  max-inline-size: 52ch;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.9);
+  overflow-wrap: anywhere;
+}
+
+.panelMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 0 34px 0 0;
+  list-style: none;
+}
+
+.panelMeta li {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.panelClose {
+  position: absolute;
+  inset-block-end: 10px;
+  inset-inline-end: 10px;
+  display: grid;
+  place-items: center;
+  inline-size: 28px;
+  block-size: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.panelClose:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.panelClose:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
 .pause {
   position: absolute;
   inset-block-start: 12px;
@@ -1062,6 +1163,17 @@ export default function BentoShuffleGallery({
   }
 }
 
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    translate: 0 10px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
 @keyframes chipIn {
   from {
     opacity: 0;
@@ -1080,8 +1192,18 @@ export default function BentoShuffleGallery({
     transition: none;
   }
 
-  .chipFeature {
+  .chipFeature,
+  .panel {
     animation: none;
+  }
+
+  .photo,
+  .chipPlus {
+    transition: none;
+  }
+
+  .tile:hover .photo {
+    transform: none;
   }
 }
 ```

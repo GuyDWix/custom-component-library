@@ -6,6 +6,8 @@ const worstPhotos: BentoPhoto[] = [
   {
     image: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?q=80&w=1200&h=900&fit=crop&auto=format',
     caption: 'The absolutely enormous sharing platter we only serve at the harvest supper club on the last Friday of every month',
+    description: 'An unreasonably long description that keeps going to prove the glass panel wraps, scrolls and never pushes outside its tile, even with Supercalifragilisticexpialidocious-style unbroken words.',
+    meta: ['A very long meta item that must wrap cleanly', 'Serves 12 hungry guests', 'Last Friday monthly, 7 pm'],
   },
   { image: '', caption: 'A photo that is missing its image' },
   {
