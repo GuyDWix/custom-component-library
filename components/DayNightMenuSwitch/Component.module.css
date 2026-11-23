@@ -41,7 +41,9 @@
   box-sizing: border-box;
   inline-size: 100%;
   direction: ltr;
-  border-radius: 28px;
+  --dn-card-r: 28px;
+  --dn-panel-r: calc(var(--dn-card-r) * 1.75);
+  border-radius: var(--dn-card-r);
   background: var(--dn-paper);
   color: var(--dn-ink);
   font-family: var(--dn-font-ui);
@@ -336,8 +338,8 @@
   inset-block-start: calc(380px - 56px);
   inset-block-end: 0;
   inset-inline: 0;
-  border-start-start-radius: 50% 56px;
-  border-start-end-radius: 50% 56px;
+  border-start-start-radius: var(--dn-panel-r);
+  border-start-end-radius: var(--dn-panel-r);
   transition: opacity 1400ms ease-in-out 80ms;
 }
 
@@ -354,6 +356,12 @@
     color-mix(in srgb, var(--dn-night) 56%, #000) 100%
   );
   box-shadow: inset 0 1.5px 0 color-mix(in srgb, var(--dn-glow) 46%, transparent);
+}
+
+.groundNight.fadeIn,
+.hillsNight.fadeIn {
+  /* the *Night layers start at opacity 0 further down the file, so .fadeIn alone loses the cascade */
+  opacity: 1;
 }
 
 .lamp {
@@ -770,9 +778,12 @@
   }
 
   .ground {
-    inset-block-start: 30%;
-    inset-inline-start: 36%;
-    border-start-start-radius: 70% 55%;
+    /* the panel starts where the title column ends, so the list sits exactly one gutter inside its left edge;
+       its top is set from the measured list (see Component.tsx) so the first row always clears the curve */
+    --dn-pad: 48px;
+    --dn-gap: 48px;
+    inset-block-start: var(--dn-panel-top, 30%);
+    inset-inline-start: calc(var(--dn-pad) + (100% - var(--dn-pad) * 2 - var(--dn-gap)) * 5 / 11);
     border-start-end-radius: 0;
   }
 
@@ -795,7 +806,7 @@
 
   .list {
     align-self: end;
-    margin-block-start: 0;
+    margin-block-start: 24px;
   }
 
   .word {

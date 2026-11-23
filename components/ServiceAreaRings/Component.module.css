@@ -306,7 +306,12 @@
   font-weight: 650;
   line-height: 1.25;
   letter-spacing: -0.01em;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
   pointer-events: none;
   animation: sar-fade 800ms var(--sar-ease) 600ms backwards;
   animation-play-state: var(--sar-play);
@@ -344,6 +349,9 @@
   cursor: pointer;
   pointer-events: auto;
   translate: -14px -50%;
+  /* sized by its own text, never by the room left to the right edge */
+  inline-size: max-content;
+  max-inline-size: 176px;
   transition:
     background-color 200ms var(--sar-ease),
     color 200ms var(--sar-ease),
@@ -372,7 +380,25 @@
 }
 
 .hoodText {
-  overflow-wrap: anywhere;
+  min-inline-size: 0;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
+/* hidden twin layer: the real label boxes are measured here so layout never guesses text width */
+.measure {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.measure .hood {
+  inset-inline-start: 0;
+  inset-block-start: 0;
+  translate: none;
+  animation: none;
 }
 
 .hood:hover,
@@ -435,7 +461,8 @@
   font-weight: 600;
   line-height: 1.25;
   text-align: center;
-  overflow-wrap: anywhere;
+  inline-size: max-content;
+  overflow-wrap: break-word;
   cursor: pointer;
   pointer-events: auto;
   translate: calc(-100% + 3px) 0;

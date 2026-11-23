@@ -46,7 +46,7 @@ export const defaultSizes: FrameSizeOption[] = [
 // Scene geometry, all in centimetres. The wall block maps SCENE_CM vertically.
 const SCENE_CM = 225;
 const SOFA_TOP_CM = 75; // sofa backrest height
-const GAP_CM = 13; // air between frame bottom and sofa back
+const GAP_CM = 16; // air between frame bottom and sofa back
 const TOP_MARGIN_CM = 11;
 const HANG_EYE_CM = 145; // gallery hanging height (centre, from floor)
 const MOULDING_CM = 2.7;
@@ -342,8 +342,8 @@ export default function FramePreviewPicker({
   --fpp-muted: #5f6455;
   --fpp-accent: #8a6a2f;
   --fpp-line: rgba(38, 43, 33, 0.16);
-  --fpp-dim: rgba(36, 42, 32, 0.55);
-  --fpp-dim-text: rgba(36, 42, 32, 0.68);
+  --fpp-dim: rgba(36, 42, 32, 0.66);
+  --fpp-dim-text: rgba(30, 36, 26, 0.88);
   --fpp-mat: #f5f2e9;
   --fpp-shadow-ink: rgba(44, 52, 38, 0.42);
   --fpp-font: 'Inter Tight', 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
@@ -483,17 +483,17 @@ export default function FramePreviewPicker({
 }
 
 .sofaPath {
-  fill: rgba(38, 44, 32, 0.05);
-  stroke: rgba(38, 44, 32, 0.52);
-  stroke-width: 1.1;
+  fill: rgba(38, 44, 32, 0.07);
+  stroke: rgba(38, 44, 32, 0.62);
+  stroke-width: 1.3;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .sofaSeam {
   fill: none;
-  stroke: rgba(38, 44, 32, 0.3);
-  stroke-width: 1;
+  stroke: rgba(38, 44, 32, 0.4);
+  stroke-width: 1.1;
   stroke-linecap: round;
 }
 
@@ -595,6 +595,18 @@ export default function FramePreviewPicker({
   box-shadow: inset 0 0 0 1px rgba(70, 64, 45, 0.09);
 }
 
+/* the cut edge of the mat: a mitred chamfer, lit from the top left */
+.matWrap::before {
+  content: '';
+  position: absolute;
+  inset: 4.6em;
+  box-sizing: border-box;
+  border: 0.8em solid;
+  border-color: #ffffff #e6e1d0 #d6d0bb #fbf9f1;
+  border-radius: 0.06em;
+  box-shadow: 0 0 0 1px rgba(70, 64, 45, 0.14);
+}
+
 .artBox {
   position: absolute;
   inset: 5.4em;
@@ -602,8 +614,8 @@ export default function FramePreviewPicker({
   overflow: clip;
   background: var(--fpp-mat);
   box-shadow:
-    0 0.2em 0.34em -0.14em rgba(43, 46, 35, 0.3),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+    0 0 0 1px rgba(70, 64, 45, 0.22),
+    inset 0.14em 0.2em 0.4em -0.1em rgba(30, 30, 22, 0.34);
 }
 
 .art {
@@ -632,14 +644,20 @@ export default function FramePreviewPicker({
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(
-    114deg,
-    transparent 32%,
-    rgba(255, 255, 255, 0.08) 44%,
-    rgba(255, 255, 255, 0.15) 49%,
-    rgba(255, 255, 255, 0.03) 56%,
-    transparent 64%
-  );
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 0.5em),
+    linear-gradient(
+      114deg,
+      transparent 31%,
+      rgba(255, 255, 255, 0.08) 31.4%,
+      rgba(255, 255, 255, 0.26) 42%,
+      rgba(255, 255, 255, 0.08) 48.6%,
+      transparent 49%,
+      transparent 53%,
+      rgba(255, 255, 255, 0.15) 53.3%,
+      rgba(255, 255, 255, 0.15) 56.2%,
+      transparent 56.5%
+    );
 }
 
 /* ---------- Dimension annotations ---------- */
@@ -649,7 +667,6 @@ export default function FramePreviewPicker({
   position: absolute;
   pointer-events: none;
   color: var(--fpp-dim-text);
-  font-size: 12px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
@@ -658,29 +675,38 @@ export default function FramePreviewPicker({
 
 .dimW {
   inset-inline: 8.1em;
-  inset-block-start: calc(100% + 2em);
+  inset-block-start: calc(100% + 1em + 8px);
 }
 
 .dimW::before {
   content: '';
   position: absolute;
   inset-inline: 0;
-  inset-block-start: 0;
-  block-size: 6px;
-  border-block-start: 1px solid var(--fpp-dim);
-  border-inline-start: 1px solid var(--fpp-dim);
-  border-inline-end: 1px solid var(--fpp-dim);
+  inset-block-start: -4px;
+  block-size: 9px;
+  /* end ticks plus a line that breaks around the label */
+  background:
+    linear-gradient(var(--fpp-dim), var(--fpp-dim)) 0 0 / 1.5px 100% no-repeat,
+    linear-gradient(var(--fpp-dim), var(--fpp-dim)) 100% 0 / 1.5px 100% no-repeat,
+    linear-gradient(var(--fpp-dim), var(--fpp-dim)) 0 50% / 100% 1.5px no-repeat;
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(50% - 30px), transparent calc(50% - 30px) calc(50% + 30px), #000 calc(50% + 30px));
+  mask-image: linear-gradient(90deg, #000 calc(50% - 30px), transparent calc(50% - 30px) calc(50% + 30px), #000 calc(50% + 30px));
 }
 
 .dimLabel {
-  display: block;
-  padding-block-start: 13px;
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  font-size: 12.5px;
+  font-weight: 600;
   text-align: center;
+  text-shadow: 0 0 4px var(--fpp-wall-lift), 0 0 2px var(--fpp-wall-lift);
 }
 
 .dimH {
   inset-block: 8.1em;
-  inset-inline-start: calc(100% + 2em);
+  inset-inline-start: calc(100% + 1em + 6px);
 }
 
 .dimH::before {
@@ -688,17 +714,21 @@ export default function FramePreviewPicker({
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
-  inline-size: 6px;
-  border-inline-start: 1px solid var(--fpp-dim);
-  border-block-start: 1px solid var(--fpp-dim);
-  border-block-end: 1px solid var(--fpp-dim);
+  inline-size: 7px;
+  background:
+    linear-gradient(var(--fpp-dim), var(--fpp-dim)) 0 0 / 100% 1.5px no-repeat,
+    linear-gradient(var(--fpp-dim), var(--fpp-dim)) 0 100% / 100% 1.5px no-repeat,
+    linear-gradient(var(--fpp-dim), var(--fpp-dim)) 0 0 / 1.5px 100% no-repeat;
 }
 
 .dimLabelH {
   position: absolute;
-  inset-inline-start: 12px;
+  inset-inline-start: 13px;
   inset-block-start: 50%;
   transform: translateY(-50%);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-shadow: 0 0 4px var(--fpp-wall-lift), 0 0 2px var(--fpp-wall-lift);
 }
 
 /* ---------- Chips ---------- */
@@ -771,9 +801,18 @@ export default function FramePreviewPicker({
   color: #f4f3ea;
 }
 
+.chip:hover:not(.chipOn) {
+  background: #ffffff;
+}
+
 .chip:has(.input:focus-visible) {
-  outline: 2px solid var(--fpp-accent);
-  outline-offset: 2px;
+  outline: 2px solid var(--fpp-ink);
+  outline-offset: 3px;
+  border-color: var(--fpp-ink);
+}
+
+.chip:not(.chipOn):has(.input:focus-visible) {
+  background: #ffffff;
 }
 
 .input {

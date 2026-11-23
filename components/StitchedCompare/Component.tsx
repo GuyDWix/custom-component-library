@@ -53,7 +53,6 @@ const PATH_KEYS = [
   'uBands',
   'uRidges',
   'uSheen',
-  'uGlint',
   'oShadowSoft',
   'oShadow',
   'oBase',
@@ -61,7 +60,6 @@ const PATH_KEYS = [
   'oBands',
   'oRidges',
   'oSheen',
-  'oGlint',
   'holes',
   'holeLip',
   'fray',
@@ -202,7 +200,6 @@ const buildSeam = (pos: number, w: number, h: number, n: number, tens: number[],
     }
     const hl = shifted(hx * W * 0.2, hy * W * 0.2);
     p[`${g}Sheen`] += hl;
-    p[`${g}Glint`] += hl;
 
     // Ply twist: oblique grooves and crests across the thread.
     const arcLen = len + (8 * sag * sag) / (3 * len);
@@ -333,7 +330,7 @@ const buildSeam = (pos: number, w: number, h: number, n: number, tens: number[],
     gap,
     cut: gap / 2 + hw - 8,
     tw: W * (1 - 0.14 * tg),
-    sheen: 0.55 + 0.4 * tg,
+    sheen: 0.22 + 0.2 * tg,
     pk: 0.45 + 0.55 * tg,
   };
 };
@@ -599,7 +596,6 @@ export default function StitchedCompare({
     <div ref={rootRef} className={cx(styles.root, className)} style={rootStyle}>
       <span className={styles.grain} aria-hidden="true" />
       <div className={styles.table}>
-        <span className={styles.chalkRule} aria-hidden="true" />
         <div
           ref={plateRef}
           className={styles.plate}
@@ -621,9 +617,6 @@ export default function StitchedCompare({
                 <span className={styles.ink}>{beforeLabel}</span>
               </span>
               <span className={cx(styles.pin, styles.pinBefore)} aria-hidden="true">
-                <span className={styles.pinHole} />
-                <span className={styles.pinCast} />
-                <span className={styles.pinNeedle} />
                 <span className={cx(styles.pinHead, styles.pinHeadRed)} />
               </span>
             </div>
@@ -640,9 +633,6 @@ export default function StitchedCompare({
                 <span className={styles.ink}>{afterLabel}</span>
               </span>
               <span className={cx(styles.pin, styles.pinAfter)} aria-hidden="true">
-                <span className={styles.pinHole} />
-                <span className={styles.pinCast} />
-                <span className={styles.pinNeedle} />
                 <span className={cx(styles.pinHead, styles.pinHeadPearl)} />
               </span>
             </div>

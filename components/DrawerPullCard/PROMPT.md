@@ -60,7 +60,7 @@ export default function DrawerPullCard({
   const rootRef = useRef<HTMLDivElement>(null);
   const trayRef = useRef<HTMLDivElement>(null);
   const interiorRef = useRef<HTMLDivElement>(null);
-  const rowsRef = useRef<HTMLDListElement>(null);
+  const rowsRef = useRef<HTMLDivElement>(null);
   const frontRef = useRef<HTMLButtonElement>(null);
   const glintRef = useRef<HTMLSpanElement>(null);
   const photoRef = useRef<HTMLImageElement>(null);
@@ -252,20 +252,22 @@ export default function DrawerPullCard({
               <span className={`${styles.wall} ${styles.wallStart}`} aria-hidden="true" />
               <span className={`${styles.wall} ${styles.wallEnd}`} aria-hidden="true" />
               {rows.length > 0 && (
-                <dl
+                <div
                   ref={rowsRef}
-                  className={styles.rows}
+                  className={styles.rowsScroll}
                   tabIndex={scrollable ? 0 : undefined}
                   role={scrollable ? 'region' : undefined}
-                  aria-label={scrollable ? 'Drawer contents' : undefined}
+                  aria-label={scrollable ? `${handleLabel} (scrollable)` : undefined}
                 >
-                  {rows.map((row, i) => (
-                    <div key={i} className={styles.row} style={{ '--dp-i': String(i) } as CSSProperties}>
-                      <dt className={styles.rowLabel}>{row.label}</dt>
-                      <dd className={styles.rowValue}>{row.value}</dd>
-                    </div>
-                  ))}
-                </dl>
+                  <dl className={styles.rows}>
+                    {rows.map((row, i) => (
+                      <div key={i} className={styles.row} style={{ '--dp-i': String(i) } as CSSProperties}>
+                        <dt className={styles.rowLabel}>{row.label}</dt>
+                        <dd className={styles.rowValue}>{row.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
               )}
             </div>
           </div>
@@ -360,7 +362,10 @@ export default function DrawerPullCard({
   --dp-img-h: var(--dp-pore-h), var(--dp-fine-h), var(--dp-fig-h), linear-gradient(180deg, var(--dp-wood-hi) 0%, var(--dp-wood) 55%, var(--dp-wood-lo) 100%);
   --dp-size-h: 300px 300px, 420px 420px, 760px 760px, 100% 100%;
   --dp-ink: #3b2a18;
-  --dp-ink-muted: rgba(46, 30, 14, 0.9);
+  --dp-ink-muted: #22150a;
+  --dp-halo: rgba(238, 216, 168, 0.9);
+  --dp-focus: #1b1006;
+  --dp-focus-gap: #f7ecd0;
   --dp-inlay-a: #170b03;
   --dp-inlay-b: #43270e;
   --dp-inlay-edge: rgba(255, 238, 205, 0.6);
@@ -407,7 +412,10 @@ export default function DrawerPullCard({
   --dp-wood-lo: #583a21;
   --dp-boards: linear-gradient(90deg, rgba(255, 210, 150, 0.1) 0 31%, rgba(20, 8, 0, 0.12) 31% 64%, rgba(255, 220, 170, 0.05) 64% 100%);
   --dp-ink: #f6ecd9;
-  --dp-ink-muted: rgba(246, 236, 217, 0.8);
+  --dp-ink-muted: #f6ecd9;
+  --dp-halo: rgba(40, 22, 8, 0.7);
+  --dp-focus: #fff3d6;
+  --dp-focus-gap: #1b1006;
   --dp-inlay-a: #f4dca2;
   --dp-inlay-b: #c79a55;
   --dp-inlay-edge: rgba(0, 0, 0, 0.55);
@@ -426,7 +434,10 @@ export default function DrawerPullCard({
   --dp-img-h: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0 1px, rgba(0, 0, 0, 0.05) 1px 2px, transparent 2px 5px), linear-gradient(180deg, var(--dp-wood-hi) 0%, var(--dp-wood) 55%, var(--dp-wood-lo) 100%);
   --dp-size-h: auto, 100% 100%;
   --dp-ink: #1c2128;
-  --dp-ink-muted: rgba(28, 33, 40, 0.8);
+  --dp-ink-muted: #12161b;
+  --dp-halo: rgba(200, 208, 218, 0.8);
+  --dp-focus: #0d1014;
+  --dp-focus-gap: #eef2f6;
   --dp-inlay-a: #12161b;
   --dp-inlay-b: #3a424c;
   --dp-brass: #5d6670;
@@ -581,6 +592,7 @@ export default function DrawerPullCard({
   padding-block-start: 10px;
   border-block-start: 1px solid color-mix(in srgb, var(--dp-ink) 38%, transparent);
   color: var(--dp-ink-muted);
+  text-shadow: 0 0 0.7em var(--dp-halo), 0 0 0.35em var(--dp-halo), 0 0 0.15em var(--dp-halo);
   font-size: 17px;
   line-height: 1.38;
   font-weight: 500;
@@ -867,6 +879,10 @@ export default function DrawerPullCard({
   grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: 40px;
   margin: 0;
+}
+
+.rowsScroll {
+  position: relative;
   max-block-size: calc(var(--dp-lowerH) + var(--dp-plinthH) - 16px - 2 * var(--dp-trayPadY));
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -874,8 +890,8 @@ export default function DrawerPullCard({
   scrollbar-color: rgba(240, 230, 205, 0.3) transparent;
 }
 
-.rows:focus-visible {
-  outline: 2px solid var(--dp-brass-hi);
+.rowsScroll:focus-visible {
+  outline: 3px solid var(--dp-brass-hi);
   outline-offset: 4px;
 }
 
@@ -943,8 +959,14 @@ export default function DrawerPullCard({
 }
 
 .front:focus-visible {
-  outline: 3px solid var(--dp-brass-hi);
-  outline-offset: 3px;
+  outline: 3px solid var(--dp-focus);
+  outline-offset: 4px;
+  /* two-tone ring: the gap colour keeps the ring legible on light and dark wood alike */
+  box-shadow:
+    0 0 0 3px var(--dp-focus-gap),
+    inset 0 -2px 0 rgba(60, 30, 8, 0.35),
+    0 0 0 1.5px rgba(34, 17, 5, 0.75),
+    0 calc(3px + var(--dp-pull) * 22px) calc(6px + var(--dp-pull) * 28px) calc(var(--dp-pull) * -5px) rgba(6, 3, 1, 0.62);
 }
 
 .front:hover {

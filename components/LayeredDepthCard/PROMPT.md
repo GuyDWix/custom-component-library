@@ -502,7 +502,7 @@ export default function LayeredDepthCard({
                   <span className={styles.string} />
                   <span className={styles.tag}>
                     <span className={styles.hole} />
-                    {label}
+                    <span className={styles.tagText}>{label}</span>
                   </span>
                 </div>
               </div>
@@ -912,9 +912,7 @@ export default function LayeredDepthCard({
 
 .tag {
   position: relative;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 5;
+  display: block;
   overflow: hidden;
   box-sizing: border-box;
   /* the string hangs at 13% of the card: keep half the tag width inside that, with room for the swing and parallax */
@@ -932,6 +930,14 @@ export default function LayeredDepthCard({
   text-wrap: balance;
   overflow-wrap: anywhere;
   clip-path: polygon(14% 0, 86% 0, 100% 14%, 100% 100%, 0 100%, 0 14%);
+}
+
+/* the clamp lives on the inner text so the tag's padding can never reveal a sixth line */
+.tagText {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  overflow: hidden;
 }
 
 .hole {
@@ -1043,7 +1049,8 @@ export default function LayeredDepthCard({
   .title {
     inset-inline-start: 8%;
     inset-block-end: 23%;
-    inline-size: 84%;
+    /* stop short of the right drape so long titles are never clipped by it */
+    inline-size: 76%;
   }
 
   .sizeL {

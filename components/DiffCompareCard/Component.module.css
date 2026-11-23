@@ -175,14 +175,14 @@
   --dc-mid: clamp(150px, 27cqi, 220px);
   --dc-half: calc(25cqi + var(--dc-mid) / 4);
   --dc-tmax: 7.5deg;
-  --dc-beamY: 70px;
+  --dc-beamY: 92px;
   --dc-tilt: 0;
   --dc-frac: 0;
   --dc-ang: calc(var(--dc-tilt) * var(--dc-tmax) * var(--dc-k) + var(--dc-sway));
   position: relative;
   isolation: isolate;
   direction: ltr;
-  padding-block: var(--dc-beamY) 76px;
+  padding-block: var(--dc-beamY) 88px;
   animation-name: dcSwing, dcDial;
   animation-duration: 1150ms, 1000ms;
   animation-timing-function: var(--dc-spring-a), var(--dc-ease);
@@ -217,17 +217,13 @@
 
 .beam {
   position: absolute;
-  inset-block-start: calc(var(--dc-beamY) - 8px);
+  inset-block-start: calc(var(--dc-beamY) - 6px);
   inset-inline-start: calc(50% - var(--dc-half));
   inline-size: calc(var(--dc-half) * 2);
-  block-size: 16px;
-  border-radius: 8px;
-  background:
-    repeating-linear-gradient(90deg, transparent 0 11px, rgba(255, 255, 255, 0.3) 11px 12px),
-    linear-gradient(180deg, color-mix(in srgb, var(--dc-ink) 88%, #fff) 0, var(--dc-ink) 55%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    0 12px 18px -10px rgba(18, 38, 63, 0.5);
+  block-size: 12px;
+  border-radius: 6px;
+  background: var(--dc-ink);
+  box-shadow: 0 10px 16px -12px rgba(18, 38, 63, 0.4);
   transform: rotate(var(--dc-ang));
 }
 
@@ -239,7 +235,7 @@
   margin-block-start: -14px;
   border-radius: 50%;
   background: radial-gradient(circle, var(--dc-mint) 0 4px, var(--dc-ink) 4.5px);
-  box-shadow: 0 0 0 3px var(--dc-sheet);
+  box-shadow: 0 0 0 5px var(--dc-sheet);
 }
 
 .capA {
@@ -301,8 +297,8 @@
   border-radius: 50%;
   background: var(--dc-ink);
   box-shadow:
-    0 0 0 5px var(--dc-sheet),
-    0 14px 22px -10px rgba(18, 38, 63, 0.55);
+    0 0 0 9px var(--dc-sheet),
+    0 14px 22px -12px rgba(18, 38, 63, 0.4);
   font-family: var(--dc-display);
   font-size: 27px;
   font-weight: 600;
@@ -316,7 +312,7 @@
 .hub::before {
   content: '';
   position: absolute;
-  inset: -11px;
+  inset: -13px;
   border-radius: 50%;
   background: conic-gradient(
     var(--dc-mint) calc(var(--dc-ring) * var(--dc-frac) * 360deg),
@@ -380,7 +376,7 @@
   display: block;
   flex: none;
   inline-size: 56%;
-  block-size: 50px;
+  block-size: 62px;
   fill: none;
   stroke: var(--dc-ink);
   stroke-width: 1.6;
@@ -401,20 +397,18 @@
   justify-content: center;
   inline-size: 84%;
   margin: 0;
-  padding: 26px 14px 20px;
+  padding: 24px 16px 22px;
   border-radius: 16px;
-  background:
-    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.035) 0 2px, transparent 2px 5px),
-    linear-gradient(180deg, color-mix(in srgb, var(--dc-ink) 92%, #fff), var(--dc-ink) 40%);
+  background: var(--dc-ink);
   box-shadow:
     inset 0 -4px 0 var(--dc-mint),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    0 22px 32px -20px rgba(18, 38, 63, 0.6);
+    0 18px 28px -22px rgba(18, 38, 63, 0.5);
   text-align: center;
   color: #fff;
 }
 
 .bolt {
+  display: none;
   position: absolute;
   inset-inline: 0;
   inset-block-start: 7px;
@@ -462,12 +456,12 @@
 .list {
   position: relative;
   z-index: 1;
-  padding-block: 8px 34px;
+  padding-block: 22px 40px;
 }
 
 .rod {
   position: absolute;
-  inset-block: -16px 8px;
+  inset-block: -30px 14px;
   inline-size: 3px;
   border-radius: 2px;
   background: linear-gradient(90deg, color-mix(in srgb, var(--dc-ink) 78%, #fff), var(--dc-ink));
@@ -553,7 +547,7 @@
   align-items: center;
   justify-content: center;
   min-inline-size: 0;
-  padding: 5px 12px;
+  padding: 10px 20px;
   /* each mass trails the plate a hair behind, so the stack settles like a chain */
   animation: dcSwing 1150ms var(--dc-spring-a) calc(460ms + min(var(--i), 12) * 9ms) backwards;
 }
@@ -600,19 +594,16 @@
 .slabHeavy,
 .slabLight,
 .slabText {
-  min-block-size: 64px;
-  font-size: clamp(24px, 5.2cqi, 40px);
+  min-block-size: 58px;
+  font-size: clamp(22px, 4.6cqi, 36px);
 }
 
 .slabHeavy {
-  background:
-    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.04) 0 2px, transparent 2px 5px),
-    linear-gradient(180deg, color-mix(in srgb, var(--dc-ink) 90%, #fff), var(--dc-ink) 45%);
+  background: var(--dc-ink);
   color: #fff;
   box-shadow:
     inset 0 -4px 0 var(--dc-mint),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    0 14px 20px -12px rgba(18, 38, 63, 0.62);
+    0 12px 18px -14px rgba(18, 38, 63, 0.5);
 }
 
 .slabLight,
@@ -626,8 +617,8 @@
 }
 
 .slabGhost {
-  min-block-size: 64px;
-  font-size: clamp(24px, 5.2cqi, 40px);
+  min-block-size: 58px;
+  font-size: clamp(22px, 4.6cqi, 36px);
   border: 1.5px dashed color-mix(in srgb, var(--dc-ink) 38%, transparent);
   background: transparent;
   color: var(--dc-ink-3);
@@ -648,8 +639,7 @@
 .row:focus-visible .slabHeavy {
   box-shadow:
     inset 0 -4px 0 var(--dc-mint),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    0 22px 28px -14px rgba(18, 38, 63, 0.6);
+    0 18px 24px -14px rgba(18, 38, 63, 0.5);
 }
 
 .row:hover .slabLight,
@@ -728,8 +718,7 @@
 }
 
 .rowMatch .tick {
-  background: transparent;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dc-ink) 40%, transparent);
+  display: none;
 }
 
 .row:hover .tick,
@@ -867,8 +856,8 @@
   .scale {
     --dc-mid: 0px;
     --dc-half: 25cqi;
-    --dc-tmax: 11deg;
-    --dc-beamY: 66px;
+    --dc-tmax: 9deg;
+    --dc-beamY: 88px;
   }
 
   .toolbar {
@@ -876,23 +865,23 @@
   }
 
   .hub {
-    inline-size: 64px;
-    block-size: 64px;
-    padding-block-start: 18px;
-    font-size: 23px;
+    inline-size: 56px;
+    block-size: 56px;
+    padding-block-start: 16px;
+    font-size: 21px;
   }
 
   .hub::before {
-    inset: -9px;
+    inset: -10px;
   }
 
   .stirrup {
-    block-size: 46px;
+    block-size: 54px;
   }
 
   .plate {
     inline-size: 92%;
-    padding: 22px 8px 16px;
+    padding: 20px 10px 18px;
     border-radius: 14px;
   }
 
@@ -920,11 +909,11 @@
   }
 
   .cellLabel {
-    padding-block: 6px 2px;
+    padding-block: 14px 0;
   }
 
   .cell {
-    padding: 4px 14px;
+    padding: 8px 14px;
   }
 
   .slab {

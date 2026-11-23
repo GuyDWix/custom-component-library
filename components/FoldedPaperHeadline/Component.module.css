@@ -69,10 +69,19 @@
 
 .strip {
   position: relative;
-  inline-size: 100%;
+  /* one facet wide; the creased chain hangs off its right edge and spans the scene when flat */
+  inline-size: calc(100% / var(--k, 1));
   transform-style: preserve-3d;
-  transform-origin: 50% 50%;
+  transform-origin: calc(var(--k, 1) * 50%) 50%;
   transform: translateX(var(--shift, 0px)) rotateY(var(--sway, -8deg)) rotateX(var(--tilt, -13deg));
+  will-change: transform;
+}
+
+.rig {
+  position: relative;
+  transform-style: preserve-3d;
+  transform-origin: 0 50%;
+  transform: rotateY(var(--d0, 0deg));
   will-change: transform;
 }
 
@@ -119,6 +128,7 @@
   pointer-events: none;
 }
 
+.sizer,
 .sliceText {
   font-family: var(--fph-font);
   font-size: var(--fph-size);
@@ -132,6 +142,13 @@
   text-wrap: balance;
   text-shadow: 0 0.015em 0 rgba(46, 14, 6, 0.28);
   pointer-events: none;
+}
+
+/* invisible twin of the headline: gives the strip the headline's real height so long text wraps, never clips */
+.sizer {
+  display: block;
+  inline-size: calc(var(--k, 1) * 100%);
+  visibility: hidden;
 }
 
 .facetSheen {

@@ -73,6 +73,7 @@ export default function GoalJarFill({
   const amountRef = useRef<HTMLSpanElement>(null);
   const percentRef = useRef<HTMLSpanElement>(null);
   const numeralRef = useRef<HTMLSpanElement>(null);
+  const numeralInRef = useRef<HTMLSpanElement>(null);
   const wake = useRef<() => void>(() => {});
   const bubblesRef = useRef<Bubble[]>([]);
   const poppedRef = useRef(false);
@@ -207,7 +208,8 @@ export default function GoalJarFill({
       if (amountRef.current) amountRef.current.textContent = done ? l.amountText : money(l.symbol, l.amount * shown);
       const pct = done ? l.percent : Math.round(l.percent * shown);
       if (percentRef.current) percentRef.current.textContent = `${pct}%`;
-      if (numeralRef.current) numeralRef.current.textContent = `${pct}%`;
+      if (numeralRef.current) numeralRef.current.textContent = String(pct);
+      if (numeralInRef.current) numeralInRef.current.textContent = String(pct);
       root.style.setProperty('--gj-fill', clamp(s.fill, 0, 1).toFixed(4));
     };
 
@@ -539,7 +541,14 @@ export default function GoalJarFill({
     disturb(0.3, -5);
   };
 
-  const rootStyle = { '--gj-liquid': liquidColor, '--gj-fill': clamp(ratio, 0, 1).toFixed(4) } as CSSProperties;
+  // the giant numeral scales with the jar, and shrinks as the digit count grows so it always fits
+  const digits = String(Math.max(0, percent)).length;
+  const numeralK = Math.min(1, 1.45 / (0.6 * digits + 0.4));
+  const rootStyle = {
+    '--gj-liquid': liquidColor,
+    '--gj-fill': clamp(ratio, 0, 1).toFixed(4),
+    '--gj-nk': numeralK.toFixed(3),
+  } as CSSProperties;
   const amountStyle = { '--gj-chars': Math.max(6, amountText.length) } as CSSProperties;
 
   return (
@@ -547,9 +556,6 @@ export default function GoalJarFill({
       <div className={styles.stage}>
         <span className={styles.lightGlow} aria-hidden="true" />
         <span className={styles.halo} aria-hidden="true" />
-        <span ref={numeralRef} className={styles.numeral} aria-hidden="true">
-          {percent}%
-        </span>
         <div className={styles.shelf} aria-hidden="true" />
         <canvas ref={causticRef} className={styles.caustics} aria-hidden="true" />
 
@@ -569,6 +575,10 @@ export default function GoalJarFill({
           onKeyDown={onKeyDown}
         >
           <span className={styles.shadow} aria-hidden="true" />
+          <span className={styles.numeral} aria-hidden="true">
+            <span ref={numeralRef}>{percent}</span>
+            <span className={styles.pct}>%</span>
+          </span>
           <span
             className={[styles.corkShadow, popped ? styles.corkShadowOpen : ''].filter(Boolean).join(' ')}
             aria-hidden="true"
@@ -583,6 +593,12 @@ export default function GoalJarFill({
           <span className={styles.neck} aria-hidden="true" />
           <div ref={glassRef} className={styles.glass}>
             <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
+            <span className={styles.liquidLayer} aria-hidden="true">
+              <span className={`${styles.numeral} ${styles.numeralIn}`}>
+                <span ref={numeralInRef}>{percent}</span>
+                <span className={styles.pct}>%</span>
+              </span>
+            </span>
             <span className={styles.ticks} aria-hidden="true" />
             <div className={styles.paper}>
               {label && <p id={labelId} className={styles.name}>{label}</p>}
@@ -667,8 +683,9 @@ export default function GoalJarFill({
 }
 
 .stage {
+  --gj-jw: min(58cqi, 250px);
   position: relative;
-  block-size: clamp(580px, 165cqi, 700px);
+  block-size: clamp(480px, 138cqi, 600px);
 }
 
 .lightGlow {
@@ -705,21 +722,53 @@ export default function GoalJarFill({
   background: linear-gradient(180deg, var(--gj-shelf-line) 0 2px, var(--gj-shelf-top) 2px 38%, var(--gj-shelf-face) 100%);
 }
 
+/* the percentage: one giant tabular numeral behind the glass, scaled to the jar.
+   The same numeral is repeated inside the liquid (see .liquidLayer) so it flips from ink to cream at the surface. */
 .numeral {
   position: absolute;
-  z-index: 4;
-  inset-block-start: 4%;
-  inset-inline: 0;
+  inset-inline-start: 50%;
+  inset-block-start: 43.4%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.03em;
   margin: 0;
-  text-align: center;
   font-family: var(--gj-font-display);
   font-weight: 700;
-  font-size: clamp(64px, 23cqi, 96px);
-  line-height: 0.82;
-  letter-spacing: -0.05em;
+  font-size: calc(var(--gj-jw) * var(--gj-nk, 0.9));
+  line-height: 0.8;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
   color: var(--gj-ink);
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
   pointer-events: none;
+  user-select: none;
+}
+
+.pct {
+  font-size: 0.4em;
+  line-height: 1;
+  margin-block-start: 0.12em;
+  letter-spacing: 0;
+  font-weight: 700;
+}
+
+/* inside the glass: the numeral again, lit from within, only where there is liquid */
+.liquidLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent calc((0.9 - var(--gj-fill) * 0.8) * 100%), #000 calc((0.9 - var(--gj-fill) * 0.8) * 100% + 10px));
+  mask-image: linear-gradient(180deg, transparent calc((0.9 - var(--gj-fill) * 0.8) * 100%), #000 calc((0.9 - var(--gj-fill) * 0.8) * 100% + 10px));
+}
+
+.numeralIn {
+  inset-block-start: 31%;
+  font-size: calc((100cqi + 10px) * var(--gj-nk, 0.9));
+  color: rgba(255, 246, 222, 0.82);
 }
 
 .caustics {
@@ -777,7 +826,7 @@ export default function GoalJarFill({
   z-index: 5;
   inset-block-end: 14%;
   inset-inline-start: 50%;
-  inline-size: min(58cqi, 250px);
+  inline-size: var(--gj-jw);
   aspect-ratio: 0.74;
   transform: translateX(-50%);
   display: grid;
@@ -944,9 +993,9 @@ export default function GoalJarFill({
   position: absolute;
   z-index: 2;
   inset-inline: 8%;
-  inset-block-start: 40%;
+  inset-block-end: 9%;
   box-sizing: border-box;
-  padding: 4cqi 3cqi 4.5cqi;
+  padding: 3.4cqi 3cqi 3.8cqi;
   display: grid;
   justify-items: center;
   text-align: center;
@@ -967,6 +1016,10 @@ export default function GoalJarFill({
   line-height: 1.35;
   overflow-wrap: anywhere;
   text-wrap: balance;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
 }
 
 .rule {
@@ -1067,34 +1120,11 @@ export default function GoalJarFill({
 
 @container (min-width: 560px) {
   .stage {
-    block-size: clamp(520px, 62cqi, 720px);
+    block-size: clamp(520px, 58cqi, 680px);
   }
 
-  .numeral {
-    inset-inline: auto;
-    inset-inline-start: 29%;
-    inset-block-start: 9%;
-    text-align: start;
-    font-size: clamp(88px, 15.5cqi, 200px);
-  }
-
-  .jar {
-    inset-inline-start: auto;
-    inset-inline-end: 11%;
-    transform: none;
-    inline-size: min(34cqi, 370px);
-  }
-
-  .halo {
-    inset-inline-start: auto;
-    inset-inline-end: 6%;
-    transform: none;
-  }
-
-  .caustics {
-    inset-inline-start: auto;
-    inset-inline-end: 3%;
-    inline-size: 48%;
+  .stage {
+    --gj-jw: min(34cqi, 370px);
   }
 }
 

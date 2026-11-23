@@ -321,37 +321,23 @@ export default function PullCordReveal({
       className={[styles.root, className].filter(Boolean).join(' ')}
       style={rootStyle}
     >
-      <span className={styles.wallGlow} aria-hidden="true" />
       <span className={styles.plaster} aria-hidden="true" />
 
       <svg className={styles.defs} width="0" height="0" aria-hidden="true" focusable="false">
         <defs>
           <linearGradient id={`${uid}b`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#6f4f21" />
-            <stop offset="0.16" stopColor="#ecd093" />
-            <stop offset="0.36" stopColor="#c59d58" />
-            <stop offset="0.6" stopColor="#97702f" />
-            <stop offset="0.82" stopColor="#d2ad6a" />
-            <stop offset="1" stopColor="#573a14" />
+            <stop offset="0" stopColor="#9a7940" />
+            <stop offset="0.45" stopColor="#c4a263" />
+            <stop offset="1" stopColor="#8a6a34" />
           </linearGradient>
           <linearGradient id={`${uid}d`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#fbe7b6" />
-            <stop offset="0.3" stopColor="#d4ac66" />
-            <stop offset="0.62" stopColor="#8f6a2e" />
-            <stop offset="0.82" stopColor="#c79a52" />
-            <stop offset="1" stopColor="#5a3d17" />
+            <stop offset="0" stopColor="#d9bb7e" />
+            <stop offset="1" stopColor="#94733a" />
           </linearGradient>
-          <radialGradient id={`${uid}h`} cx="0.36" cy="0.3" r="0.85">
-            <stop offset="0" stopColor="#f6e2b0" />
-            <stop offset="0.5" stopColor="#b98f4c" />
-            <stop offset="1" stopColor="#5e4119" />
-          </radialGradient>
           <linearGradient id={`${uid}w`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#3a2210" />
-            <stop offset="0.24" stopColor="#8d5c2c" />
-            <stop offset="0.4" stopColor="#c08a45" />
-            <stop offset="0.62" stopColor="#7a4a22" />
-            <stop offset="1" stopColor="#331e0e" />
+            <stop offset="0" stopColor="#6e4a26" />
+            <stop offset="0.45" stopColor="#a47339" />
+            <stop offset="1" stopColor="#5c3d1f" />
           </linearGradient>
         </defs>
       </svg>
@@ -412,10 +398,8 @@ export default function PullCordReveal({
                   )}
                 </div>
                 <span className={styles.shadeWeave} aria-hidden="true" />
-                <span className={styles.shadeSlub} aria-hidden="true" />
-                <span className={styles.shadeGlow} aria-hidden="true" />
-                <span className={styles.shadeGhost} aria-hidden="true" />
-                <span className={styles.shadeTop} aria-hidden="true" />
+                          <span className={styles.shadeGlow} aria-hidden="true" />
+                          <span className={styles.shadeTop} aria-hidden="true" />
                 <span className={styles.shadeEdge} aria-hidden="true" />
               </div>
 
@@ -430,72 +414,23 @@ export default function PullCordReveal({
                   aria-hidden="true"
                   focusable="false"
                 >
-                  <path
-                    d="M2.5 0H33.5V37.5Q33.5 49 18 49Q2.5 49 2.5 37.5Z"
-                    fill={ref('b')}
-                  />
-                  <path
-                    d="M2.5 0V37.5Q2.5 49 18 49"
-                    fill="none"
-                    stroke="rgba(255,240,200,0.6)"
-                    strokeWidth="0.9"
-                  />
-                  <path
-                    d="M33.5 0V37.5Q33.5 49 18 49"
-                    fill="none"
-                    stroke="rgba(40,22,4,0.6)"
-                    strokeWidth="0.9"
-                  />
-                  <path
-                    d="M6 3H30V37Q30 45.5 18 45.5Q6 45.5 6 37Z"
-                    fill="none"
-                    stroke="rgba(60,36,8,0.38)"
-                    strokeWidth="0.8"
-                  />
-                  <circle cx="18" cy="22.3" r="9.8" fill="rgba(30,16,3,0.8)" />
-                  <circle cx="18" cy="22.3" r="8.2" fill={ref('h')} />
-                  <circle cx="18" cy="22.3" r="3.4" fill="#3a2308" />
-                  <circle cx="17" cy="21.3" r="1.1" fill="rgba(255,236,190,0.75)" />
-                  <circle cx="18" cy="6.8" r="2.9" fill={ref('h')} stroke="rgba(40,22,4,0.7)" strokeWidth="0.6" />
-                  <path d="M16.2 7.6L19.8 6" stroke="rgba(40,22,4,0.85)" strokeWidth="0.8" />
-                  <circle cx="18" cy="41" r="2.5" fill={ref('h')} stroke="rgba(40,22,4,0.7)" strokeWidth="0.6" />
-                  <path d="M16.6 40.4L19.4 41.6" stroke="rgba(40,22,4,0.85)" strokeWidth="0.8" />
+                  <path d="M3 0H33V37.5Q33 48 18 48Q3 48 3 37.5Z" fill={ref('b')} />
+                  <circle cx="18" cy="22" r="7.6" fill="rgba(40,24,6,0.55)" />
+                  <circle cx="18" cy="22" r="6" fill={ref('b')} />
+                  <circle cx="18" cy="22" r="2.6" fill="#3a2a12" />
                 </svg>
               ))}
 
               <svg className={styles.arm} viewBox="0 0 30 66" aria-hidden="true" focusable="false">
-                <rect x="6" y="0" width="18" height="8.5" rx="1.6" fill={ref('b')} />
-                <circle cx="15" cy="4.2" r="2" fill={ref('h')} stroke="rgba(40,22,4,0.7)" strokeWidth="0.5" />
+                <rect x="6" y="0" width="18" height="8" rx="1.6" fill={ref('b')} />
                 <rect x="12.2" y="8" width="5.6" height="28" fill={ref('b')} />
-                <rect x="12.2" y="8" width="1.1" height="28" fill="rgba(255,244,214,0.5)" />
-                <circle cx="15" cy="46" r="12.6" fill="rgba(24,12,2,0.75)" />
                 <g className={styles.wheel}>
-                  <circle cx="15" cy="46" r="11.4" fill={ref('h')} />
-                  <circle cx="15" cy="46" r="8.4" fill="#2a1a08" />
-                  {NOTCHES.map((a) => (
-                    <path
-                      key={a}
-                      d="M15 35.6V37.6"
-                      stroke="rgba(50,28,6,0.7)"
-                      strokeWidth="0.9"
-                      transform={`rotate(${a} 15 46)`}
-                    />
-                  ))}
-                  <circle cx="15" cy="46" r="3" fill={ref('h')} />
+                  <circle cx="15" cy="46" r="11.4" fill={ref('b')} />
+                  <circle cx="15" cy="46" r="8" fill="#2a1a08" />
+                  <path d="M15 38.4V41.4" stroke="rgba(214,180,120,0.8)" strokeWidth="1.2" />
+                  <circle cx="15" cy="46" r="2.6" fill={ref('b')} />
                 </g>
-                <path
-                  d="M6.8 46A8.2 8.2 0 0 0 23.2 46"
-                  fill="none"
-                  stroke="#cdb27c"
-                  strokeWidth="2.6"
-                />
-                <path
-                  d="M6.8 46A8.2 8.2 0 0 0 23.2 46"
-                  fill="none"
-                  stroke="rgba(60,40,12,0.55)"
-                  strokeWidth="0.8"
-                  strokeDasharray="1.2 1.6"
-                />
+                <path d="M6.8 46A8.2 8.2 0 0 0 23.2 46" fill="none" stroke="#cdb88c" strokeWidth="2" />
               </svg>
 
               <div
@@ -522,52 +457,17 @@ export default function PullCordReveal({
                   onKeyDown={onKeyDown}
                 >
                   <svg viewBox="0 0 64 64" className={styles.ringSvg} aria-hidden="true" focusable="false">
-                    <circle cx="32" cy="32" r="24" fill="none" stroke={ref('d')} strokeWidth="9" />
-                    <circle cx="32" cy="32" r="19.4" fill="none" stroke="rgba(30,16,2,0.6)" strokeWidth="1.2" />
-                    <circle cx="32" cy="32" r="28.4" fill="none" stroke="rgba(40,22,4,0.45)" strokeWidth="1" />
-                    <circle
-                      cx="32"
-                      cy="32"
-                      r="25.6"
-                      fill="none"
-                      stroke="rgba(255,246,220,0.7)"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeDasharray="34 140"
-                      strokeDashoffset="-92"
-                    />
-                    <circle
-                      cx="32"
-                      cy="32"
-                      r="22.4"
-                      fill="none"
-                      stroke="rgba(30,16,2,0.4)"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                      strokeDasharray="36 106"
-                      strokeDashoffset="-8"
-                    />
-                    <ellipse cx="14.2" cy="22" rx="1.4" ry="2.6" fill="rgba(255,252,236,0.85)" transform="rotate(35 14.2 22)" />
+                    <circle cx="32" cy="32" r="25" fill="none" stroke={ref('d')} strokeWidth="6" />
                   </svg>
                 </div>
                 <div ref={dropRef} className={styles.drop}>
                   <svg viewBox="0 0 24 54" className={styles.acorn} aria-hidden="true" focusable="false">
                     <ellipse cx="12" cy="3" rx="3.4" ry="3" fill="none" stroke={ref('b')} strokeWidth="1.5" />
-                    <path d="M7.4 5.2H16.6V9L18.6 11.6H5.4L7.4 9Z" fill={ref('b')} />
-                    <path d="M7.6 5.6V9" stroke="rgba(255,244,214,0.7)" strokeWidth="0.7" />
-                    <path d="M5.8 11.2H18.2" stroke="rgba(40,22,4,0.6)" strokeWidth="0.7" />
-                    <ellipse cx="12" cy="13.4" rx="5.8" ry="2.3" fill={ref('w')} />
+                    <path d="M7 6H17L18.6 12H5.4Z" fill={ref('b')} />
                     <path
                       d="M9.4 15.2C4 18.4 2 27.2 5 34C7 38.6 10 41 10.8 44L10 47C10 49.6 11 52 12 52C13 52 14 49.6 14 47L13.2 44C14 41 17 38.6 19 34C22 27.2 20 18.4 14.6 15.2Z"
                       fill={ref('w')}
                     />
-                    <path d="M4.5 24.5Q12 27.6 19.5 24.5" fill="none" stroke="rgba(28,13,3,0.75)" strokeWidth="0.8" />
-                    <path d="M4.7 25.7Q12 28.8 19.3 25.7" fill="none" stroke="rgba(255,214,150,0.35)" strokeWidth="0.6" />
-                    <path d="M6.6 36.4Q12 39 17.4 36.4" fill="none" stroke="rgba(28,13,3,0.7)" strokeWidth="0.8" />
-                    <path d="M9 18C8 27 9 36 11.2 44" fill="none" stroke="rgba(40,20,6,0.28)" strokeWidth="0.6" />
-                    <path d="M14.6 19C15.6 27 15 35 13.2 43" fill="none" stroke="rgba(40,20,6,0.28)" strokeWidth="0.6" />
-                    <path d="M7.4 20C5.8 26 6.4 31 8.2 35" fill="none" stroke="rgba(255,232,184,0.6)" strokeWidth="1.5" strokeLinecap="round" />
-                    <circle cx="12" cy="52" r="0.9" fill="#2a1608" />
                   </svg>
                   {cordLabel && (
                     <div className={styles.tagSwing}>
@@ -588,7 +488,7 @@ export default function PullCordReveal({
 ```
 
 ```css
-/* Dusk window: painted sash window, linen roller shade, turned-brass hardware */
+/* Evening window: painted sash window, linen roller shade, plain brass hardware */
 
 @font-face {
   font-family: 'Cormorant Garamond';
@@ -614,12 +514,8 @@ export default function PullCordReveal({
   --pc-brass: #b48a4a;
   --pc-brass-hi: #e1be7e;
   --pc-ink: #2b1f14;
-  --pc-ember: 255, 176, 96;
   --pc-font-ui: 'Hanken Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --pc-font-display: 'Cormorant Garamond', 'Iowan Old Style', Palatino, Georgia, serif;
-  --pc-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  --pc-slub-h: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='s'><feTurbulence type='fractalNoise' baseFrequency='0.006 0.62' numOctaves='2' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.30  0 0 0 0 0.19  0 0 0 0 0.07  0 0 0 1.7 -0.6'/></filter><rect width='100%' height='100%' filter='url(%23s)'/></svg>");
-  --pc-slub-v: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='s'><feTurbulence type='fractalNoise' baseFrequency='0.5 0.008' numOctaves='2' seed='9' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.30  0 0 0 0 0.19  0 0 0 0 0.07  0 0 0 1.5 -0.55'/></filter><rect width='100%' height='100%' filter='url(%23s)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -627,9 +523,7 @@ export default function PullCordReveal({
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  background:
-    radial-gradient(60% 55% at 50% 42%, rgba(var(--pc-ember), 0.2), transparent 70%),
-    linear-gradient(172deg, #34261e 0%, var(--pc-wall) 55%, #1a1210 100%);
+  background: linear-gradient(172deg, #302621 0%, var(--pc-wall) 55%, #1c1613 100%);
   color: #f3e9d7;
   font-family: var(--pc-font-ui);
 }
@@ -647,41 +541,12 @@ export default function PullCordReveal({
   pointer-events: none;
 }
 
-.wallGlow {
-  position: absolute;
-  inset-block-start: 4%;
-  inset-inline: 6%;
-  block-size: 78%;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(var(--pc-ember), 0.34), rgba(var(--pc-ember), 0.1) 55%, transparent 80%);
-  filter: blur(34px);
-  z-index: 0;
-  animation: breathe 14s ease-in-out infinite alternate;
-  pointer-events: none;
-}
-
-@keyframes breathe {
-  from {
-    transform: scale(1);
-    opacity: 0.85;
-  }
-  to {
-    transform: scale(1.05);
-    opacity: 1;
-  }
-}
-
 .plaster {
   position: absolute;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background:
-    radial-gradient(130% 100% at 50% 38%, transparent 38%, rgba(6, 3, 2, 0.62) 100%),
-    var(--pc-noise);
-  background-size: auto, 160px 160px;
-  opacity: 0.9;
-  mix-blend-mode: multiply;
+  background: radial-gradient(130% 100% at 50% 38%, transparent 42%, rgba(6, 3, 2, 0.4) 100%);
 }
 
 .stage {
@@ -707,23 +572,9 @@ export default function PullCordReveal({
   border-bottom-color: color-mix(in srgb, var(--pc-frame) 52%, #000 48%);
   border-radius: 3px;
   box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.62),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.55),
-    34px 44px 70px -26px rgba(3, 1, 0, 0.85),
-    10px 16px 26px -12px rgba(3, 1, 0, 0.6),
-    0 0 110px -24px rgba(var(--pc-ember), 0.32);
+    0 0 0 1px rgba(0, 0, 0, 0.5),
+    24px 34px 56px -24px rgba(3, 1, 0, 0.7);
   cursor: pointer;
-}
-
-.window::before {
-  content: '';
-  position: absolute;
-  inset: calc(var(--cw) * -0.64);
-  border: 1px solid rgba(0, 0, 0, 0.42);
-  box-shadow:
-    0 0 0 1px rgba(255, 232, 196, 0.09),
-    inset 0 0 0 1px rgba(255, 232, 196, 0.05);
-  pointer-events: none;
 }
 
 /* ---- Reveal: the deep jambs the shade is hung inside ---- */
@@ -736,8 +587,8 @@ export default function PullCordReveal({
   border: var(--jd) solid var(--pc-frame);
   border-top-color: color-mix(in srgb, var(--pc-frame) 36%, #000 64%);
   border-left-color: color-mix(in srgb, var(--pc-frame) 58%, #000 42%);
-  border-right-color: color-mix(in srgb, var(--pc-frame) 60%, rgb(var(--pc-ember)) 40%);
-  border-bottom-color: color-mix(in srgb, var(--pc-frame) 44%, rgb(var(--pc-ember)) 56%);
+  border-right-color: color-mix(in srgb, var(--pc-frame) 60%, #000 20%);
+  border-bottom-color: color-mix(in srgb, var(--pc-frame) 44%, #000 30%);
 }
 
 .pane {
@@ -759,7 +610,7 @@ export default function PullCordReveal({
   --rad: calc(var(--rmin) + var(--u) * (var(--rmax) - var(--rmin)));
   --cx: clamp(68px, 10cqi, 104px);
   --cordw: 44px;
-  --rs: clamp(44px, 6.4cqi, 58px);
+  --rs: clamp(30px, 3.8cqi, 40px);
   --sw: clamp(6px, 1.15cqi, 13px);
   --bar: clamp(5px, 0.9cqi, 9px);
   --g1: calc(var(--sw) + (100% - var(--sw) * 2) * 0.335);
@@ -797,7 +648,7 @@ export default function PullCordReveal({
   inline-size: 100%;
   block-size: 100%;
   object-fit: cover;
-  filter: saturate(0.88) brightness(0.8) contrast(1.06);
+  filter: saturate(0.96) brightness(0.9);
   user-select: none;
 }
 
@@ -805,42 +656,21 @@ export default function PullCordReveal({
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(55% 45% at 70% 60%, rgba(255, 176, 90, 0.55), transparent 65%),
-    linear-gradient(190deg, #2a2447 0%, #4a2f3a 40%, #1e140c 100%);
+    linear-gradient(190deg, #3a3a44 0%, #4a3f3a 45%, #231a14 100%);
 }
 
 .viewDusk {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(34, 40, 96, 0.55) 0%,
-      rgba(84, 52, 84, 0.2) 36%,
-      rgba(255, 140, 60, 0.14) 74%,
-      rgba(22, 10, 4, 0.5) 100%
-    ),
-    radial-gradient(70% 55% at 22% 78%, rgba(255, 170, 90, 0.16), transparent 70%);
+  background: linear-gradient(180deg, rgba(40, 46, 70, 0.22) 0%, transparent 40%, rgba(22, 12, 6, 0.28) 100%);
 }
 
 .viewSheen {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    linear-gradient(
-      108deg,
-      transparent 14%,
-      rgba(255, 236, 205, 0.1) 22%,
-      transparent 27%,
-      rgba(255, 236, 205, 0.05) 33%,
-      rgba(255, 236, 205, 0.15) 41%,
-      transparent 49%,
-      rgba(255, 236, 205, 0.08) 63%,
-      transparent 70%
-    ),
-    radial-gradient(34% 26% at 82% 18%, rgba(255, 196, 130, 0.22), transparent 72%);
+  background: linear-gradient(108deg, transparent 18%, rgba(255, 244, 226, 0.07) 30%, transparent 42%);
 }
 
 .barV1,
@@ -861,8 +691,7 @@ export default function PullCordReveal({
     color-mix(in srgb, var(--pc-frame) 55%, #000 45%) calc(100% - 2px)
   );
   box-shadow:
-    -1px 0 0 rgba(0, 0, 0, 0.5),
-    4px 0 7px rgba(0, 0, 0, 0.4);
+    3px 0 5px rgba(0, 0, 0, 0.28);
 }
 
 .barV1 {
@@ -884,8 +713,7 @@ export default function PullCordReveal({
     color-mix(in srgb, var(--pc-frame) 52%, #000 48%) calc(100% - 2px)
   );
   box-shadow:
-    0 -1px 0 rgba(0, 0, 0, 0.5),
-    0 4px 7px rgba(0, 0, 0, 0.4);
+    0 3px 5px rgba(0, 0, 0, 0.28);
 }
 
 .viewEdge {
@@ -893,9 +721,8 @@ export default function PullCordReveal({
   inset: 0;
   pointer-events: none;
   box-shadow:
-    inset 0 0 0 1px rgba(0, 0, 0, 0.7),
-    inset 7px 9px 16px -3px rgba(0, 0, 0, 0.65),
-    inset -5px -6px 14px -5px rgba(0, 0, 0, 0.4);
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55),
+    inset 5px 6px 12px -4px rgba(0, 0, 0, 0.5);
 }
 
 /* ---- Linen shade ---- */
@@ -954,7 +781,7 @@ export default function PullCordReveal({
   color: #f8eedb;
   text-wrap: balance;
   overflow-wrap: anywhere;
-  text-shadow: 0 2px 20px rgba(10, 5, 1, 0.55);
+  text-shadow: 0 1px 12px rgba(10, 5, 1, 0.4);
 }
 
 .offerRule {
@@ -1003,62 +830,20 @@ export default function PullCordReveal({
   overflow-wrap: anywhere;
 }
 
-/* Woven linen: basket weave, thread lines, weft/warp slubs */
+/* Linen: a faint thread line */
 .shadeWeave {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    repeating-conic-gradient(rgba(70, 44, 16, 0.13) 0 25%, transparent 0 50%) 0 0 / 4px 4px,
-    repeating-linear-gradient(0deg, rgba(255, 248, 230, 0.14) 0 1px, transparent 1px 2px),
-    repeating-linear-gradient(90deg, rgba(70, 44, 16, 0.12) 0 1px, transparent 1px 2px);
+  background: repeating-linear-gradient(0deg, rgba(70, 44, 16, 0.06) 0 1px, transparent 1px 3px);
 }
 
-.shadeSlub {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: var(--pc-slub-h), var(--pc-slub-v);
-  background-size: 240px 240px;
-  opacity: 0.55;
-}
-
-/* Dusk light coming through the cloth */
+/* Soft daylight through the cloth */
 .shadeGlow {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    radial-gradient(90% 70% at 24% 6%, rgba(255, 226, 168, 0.42), transparent 70%),
-    linear-gradient(180deg, rgba(255, 214, 150, 0.14), rgba(255, 190, 120, 0.04) 60%, rgba(60, 30, 10, 0.18));
-}
-
-.shadeGhost {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(
-      90deg,
-      transparent calc(var(--g1) - var(--bar)),
-      rgba(30, 22, 14, 0.62) calc(var(--g1) - var(--bar) * 0.5) calc(var(--g1) + var(--bar) * 0.5),
-      transparent calc(var(--g1) + var(--bar))
-    ),
-    linear-gradient(
-      90deg,
-      transparent calc(var(--g2) - var(--bar)),
-      rgba(30, 22, 14, 0.62) calc(var(--g2) - var(--bar) * 0.5) calc(var(--g2) + var(--bar) * 0.5),
-      transparent calc(var(--g2) + var(--bar))
-    ),
-    linear-gradient(
-      180deg,
-      transparent calc(var(--g3) - var(--bar)),
-      rgba(30, 22, 14, 0.62) calc(var(--g3) - var(--bar) * 0.5) calc(var(--g3) + var(--bar) * 0.5),
-      transparent calc(var(--g3) + var(--bar))
-    );
-  box-shadow: inset 0 0 0 var(--sw) rgba(30, 22, 14, 0.5);
-  filter: blur(2.2px);
-  opacity: 0.4;
+  background: linear-gradient(180deg, rgba(255, 240, 215, 0.1), transparent 60%, rgba(60, 40, 20, 0.1));
 }
 
 /* Cloth turning up into the roll, and ambient occlusion from the jambs */
@@ -1068,7 +853,7 @@ export default function PullCordReveal({
   inset-block-start: calc(var(--ax) + var(--rad) - 3px);
   block-size: clamp(22px, 5cqi, 56px);
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(20, 10, 3, 0.6), rgba(20, 10, 3, 0.2) 45%, transparent);
+  background: linear-gradient(180deg, rgba(20, 10, 3, 0.4), rgba(20, 10, 3, 0.12) 45%, transparent);
 }
 
 .shadeEdge {
@@ -1077,10 +862,10 @@ export default function PullCordReveal({
   pointer-events: none;
   background: linear-gradient(
     90deg,
-    rgba(40, 24, 8, 0.34),
+    rgba(40, 24, 8, 0.2),
     transparent 6%,
     transparent 93%,
-    rgba(40, 24, 8, 0.4)
+    rgba(40, 24, 8, 0.24)
   );
 }
 
@@ -1097,7 +882,7 @@ export default function PullCordReveal({
   pointer-events: none;
   background:
     linear-gradient(90deg, transparent 30%, rgba(4, 2, 0, 0.22)),
-    linear-gradient(180deg, rgba(6, 3, 0, 0.7), rgba(6, 3, 0, 0.3) 34%, rgba(6, 3, 0, 0.09) 68%, transparent);
+    linear-gradient(180deg, rgba(6, 3, 0, 0.5), rgba(6, 3, 0, 0.2) 34%, rgba(6, 3, 0, 0.06) 68%, transparent);
 }
 
 .hem {
@@ -1105,32 +890,16 @@ export default function PullCordReveal({
   z-index: 30;
   inset-inline: 0;
   inset-block-start: calc(var(--t) * 100%);
-  block-size: clamp(14px, 2.3cqi, 24px);
-  background:
-    repeating-linear-gradient(90deg, rgba(70, 44, 16, 0.12) 0 1px, transparent 1px 2px),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--pc-shade) 70%, #fff 30%) 0%,
-      var(--pc-shade) 26%,
-      color-mix(in srgb, var(--pc-shade) 72%, #3a2008 28%) 74%,
-      color-mix(in srgb, var(--pc-shade) 44%, #1c0e04 56%) 100%
-    );
+  block-size: clamp(12px, 2cqi, 20px);
+  background: linear-gradient(
+    180deg,
+    var(--pc-shade) 0%,
+    color-mix(in srgb, var(--pc-shade) 80%, #3a2008 20%) 100%
+  );
   border-radius: 1px 1px 3px 3px;
-  box-shadow:
-    0 -1px 0 rgba(255, 236, 196, 0.35),
-    0 -16px 26px -10px rgba(24, 13, 4, 0.34),
-    0 1px 0 rgba(255, 206, 140, 0.4),
-    0 7px 12px -3px rgba(6, 3, 0, 0.6);
+  box-shadow: 0 6px 10px -4px rgba(6, 3, 0, 0.5);
   transform: translateY(-100%) rotate(var(--lean)) scaleY(calc(1 - var(--v) * 0.1));
   pointer-events: none;
-}
-
-.hem::before {
-  content: '';
-  position: absolute;
-  inset-inline: 2px;
-  inset-block-start: 3px;
-  border-block-start: 1px dashed rgba(70, 44, 16, 0.5);
 }
 
 /* Linen roll on a fixed axis; it thins as the shade unwinds */
@@ -1143,34 +912,15 @@ export default function PullCordReveal({
   background:
     linear-gradient(
       180deg,
-      rgba(22, 11, 3, 0.7) 0%,
-      rgba(22, 11, 3, 0.2) 15%,
-      rgba(255, 246, 224, 0.4) 33%,
-      transparent 54%,
-      rgba(36, 18, 5, 0.3) 78%,
-      rgba(22, 11, 3, 0.68) 100%
+      rgba(22, 11, 3, 0.5) 0%,
+      rgba(22, 11, 3, 0.12) 18%,
+      rgba(255, 246, 224, 0.26) 36%,
+      transparent 58%,
+      rgba(22, 11, 3, 0.4) 100%
     ),
-    repeating-linear-gradient(180deg, transparent 0 3px, rgba(70, 44, 16, 0.14) 3px 4px),
-    var(--pc-slub-h),
-    repeating-linear-gradient(90deg, rgba(70, 44, 16, 0.12) 0 1px, transparent 1px 2px),
     var(--pc-shade);
-  background-position:
-    0 0,
-    0 var(--roll),
-    0 var(--roll),
-    0 0,
-    0 0;
-  background-size:
-    auto,
-    auto,
-    240px 240px,
-    auto,
-    auto;
   border-radius: 2px;
-  box-shadow:
-    inset 12px 0 14px -9px rgba(0, 0, 0, 0.6),
-    inset -12px 0 14px -9px rgba(0, 0, 0, 0.55),
-    0 6px 12px -5px rgba(8, 4, 0, 0.6);
+  box-shadow: 0 5px 9px -5px rgba(8, 4, 0, 0.5);
   pointer-events: none;
 }
 
@@ -1180,7 +930,7 @@ export default function PullCordReveal({
   inset-block-start: 0;
   inline-size: var(--bw);
   block-size: auto;
-  filter: drop-shadow(4px 6px 3px rgba(6, 3, 0, 0.6));
+  filter: drop-shadow(2px 3px 2px rgba(6, 3, 0, 0.45));
   pointer-events: none;
 }
 
@@ -1199,7 +949,7 @@ export default function PullCordReveal({
   inset-inline-end: calc(var(--cx) - var(--bw) * 0.4);
   inline-size: calc(var(--bw) * 0.8);
   block-size: auto;
-  filter: drop-shadow(4px 6px 3px rgba(6, 3, 0, 0.55));
+  filter: drop-shadow(2px 3px 2px rgba(6, 3, 0, 0.4));
   pointer-events: none;
 }
 
@@ -1222,7 +972,7 @@ export default function PullCordReveal({
   align-items: center;
   transform-origin: 50% 0;
   transform: rotate(var(--sway));
-  filter: drop-shadow(5px 8px 5px rgba(5, 2, 0, 0.45));
+  filter: drop-shadow(2px 4px 3px rgba(5, 2, 0, 0.35));
   touch-action: none;
   cursor: grab;
   -webkit-tap-highlight-color: transparent;
@@ -1235,38 +985,13 @@ export default function PullCordReveal({
 .cordLine {
   position: relative;
   flex: none;
-  inline-size: clamp(4px, 0.55cqi, 6px);
+  inline-size: clamp(2px, 0.28cqi, 3px);
   block-size: calc(14% + var(--ring));
-  margin-block-end: -3px;
-  border-radius: 3px;
+  margin-block-end: -2px;
+  border-radius: 2px;
   background:
-    repeating-linear-gradient(-64deg, rgba(255, 246, 218, 0.6) 0 1.1px, transparent 1.1px 3.6px),
-    repeating-linear-gradient(-64deg, transparent 0 2px, rgba(40, 26, 10, 0.5) 2px 3.6px),
-    linear-gradient(90deg, #66502d 0%, #cdb27c 30%, #e8d6aa 48%, #b79b64 68%, #5a4322 100%);
-}
-
-.cordLine::before,
-.cordLine::after {
-  content: '';
-  position: absolute;
-  inline-size: 1px;
-  border-radius: 1px;
-  background: rgba(226, 208, 164, 0.85);
-  transform-origin: 50% 0;
-}
-
-.cordLine::before {
-  inset-block-start: 20%;
-  inset-inline-start: -2px;
-  block-size: 16px;
-  transform: rotate(14deg);
-}
-
-.cordLine::after {
-  inset-block-start: 58%;
-  inset-inline-end: -2px;
-  block-size: 12px;
-  transform: rotate(-17deg);
+    repeating-linear-gradient(-60deg, rgba(60, 42, 16, 0.4) 0 1px, transparent 1px 3px),
+    #cdb88c;
 }
 
 .cordHandle {
@@ -1297,12 +1022,12 @@ export default function PullCordReveal({
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-block-start: -9px;
+  margin-block-start: -5px;
 }
 
 .acorn {
   display: block;
-  inline-size: clamp(19px, 2.8cqi, 27px);
+  inline-size: clamp(12px, 1.5cqi, 16px);
   block-size: auto;
   overflow: visible;
 }
@@ -1319,9 +1044,9 @@ export default function PullCordReveal({
 .thread {
   display: block;
   flex: none;
-  inline-size: 1.5px;
+  inline-size: 1px;
   block-size: clamp(8px, 1.2cqi, 12px);
-  background: #cdb27c;
+  background: #cdb88c;
 }
 
 .tag {
@@ -1330,11 +1055,7 @@ export default function PullCordReveal({
   inline-size: max-content;
   max-inline-size: min(calc(var(--cx) * 2 - 14px), 190px);
   padding: 15px 11px 9px;
-  background:
-    var(--pc-noise),
-    linear-gradient(180deg, #f4e9d0, #e3d3ae);
-  background-size: 160px 160px, auto;
-  background-blend-mode: multiply, normal;
+  background: #efe4cb;
   color: var(--pc-ink);
   font-family: var(--pc-font-ui);
   font-size: clamp(12.5px, 1.2cqi, 14px);
@@ -1354,7 +1075,7 @@ export default function PullCordReveal({
   inline-size: 8px;
   block-size: 8px;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 50%, #2a1a0a 0 2px, #c69c58 2.4px 3px, #7a5726 4px);
+  background: #b8985c;
 }
 
 /* ---- Sill ---- */
@@ -1367,17 +1088,14 @@ export default function PullCordReveal({
   margin-block-start: -2px;
   border-radius: 2px 2px 6px 6px;
   background:
-    radial-gradient(60% 120% at 50% 0, rgba(var(--pc-ember), 0.34), transparent 70%),
     linear-gradient(
       180deg,
       color-mix(in srgb, var(--pc-frame) 60%, #e8c28c 40%) 0 36%,
       color-mix(in srgb, var(--pc-frame) 70%, #000 30%) 36% 100%
     );
   box-shadow:
-    inset 0 1px 0 rgba(255, 232, 196, 0.4),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
-    0 22px 30px -12px rgba(3, 1, 0, 0.8),
-    14px 8px 20px -10px rgba(3, 1, 0, 0.5);
+    inset 0 1px 0 rgba(255, 232, 196, 0.25),
+    0 18px 26px -12px rgba(3, 1, 0, 0.65);
 }
 
 @container (max-width: 560px) {
@@ -1386,9 +1104,4 @@ export default function PullCordReveal({
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .wallGlow {
-    animation: none;
-  }
-}
 ```

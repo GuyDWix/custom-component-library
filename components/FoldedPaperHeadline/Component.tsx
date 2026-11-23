@@ -48,6 +48,7 @@ export default function FoldedPaperHeadline({
   const probeRef = useRef<HTMLSpanElement>(null);
   const spring = useRef<Spring>({ p: 0, v: 0 });
   const sceneWidth = useRef(0);
+  const open = useRef(false);
 
   const folds = Math.max(1, Math.min(9, Math.round(foldCount)));
   const effFolds = narrow ? Math.min(folds, 2) : folds;
@@ -84,8 +85,10 @@ export default function FoldedPaperHeadline({
       if (w > 0 && pw > 0) {
         const avail = w * 0.92;
         const desired = Math.min(130, Math.max(36, w * 0.16));
-        const fitted = (100 * avail) / pw;
-        setFit(Math.max(MIN_FONT, Math.min(desired, fitted)));
+        // one line when it fits at a decent size, otherwise 2 or 3 balanced lines (the strip grows to match) before shrinking further
+        const sizeFor = (lines: number) => Math.min(desired, (100 * avail * lines) / (pw * (1 + 0.06 * lines)));
+        const size = [1, 2, 3].map(sizeFor).find((v, i) => v >= desired * (i === 0 ? 0.55 : 0.5)) ?? sizeFor(3);
+        setFit(Math.max(MIN_FONT, size));
       }
     };
     measure();
@@ -114,7 +117,8 @@ export default function FoldedPaperHeadline({
         set(`--lit${i}`, (clamp01((dot - 0.8) / 0.16) * 0.34).toFixed(4));
         set(`--shd${i}`, (clamp01((0.8 - dot) / 0.45) * 0.42).toFixed(4));
       }
-      for (let j = 1; j < k; j++) set(`--cx${j}`, (dirs[j] - dirs[j - 1]).toFixed(3));
+      set('--d0', `${dirs[0].toFixed(3)}deg`);
+      for (let j = 1; j < k; j++) set(`--cx${j}`, `${(dirs[j] - dirs[j - 1]).toFixed(3)}deg`);
       const root = backOut(clamp01(progress / 0.62));
       set('--tilt', `${(-13 * (1 - root)).toFixed(3)}deg`);
       set('--sway', `${(-8 * (1 - root)).toFixed(3)}deg`);
@@ -143,12 +147,12 @@ export default function FoldedPaperHeadline({
       if (root) {
         const vh = window.innerHeight;
         const rect = root.getBoundingClientRect();
-        let target: number;
-        if (narrow) {
-          target = rect.top < vh * 0.85 && rect.bottom > vh * 0.1 ? 1 : 0;
-        } else {
-          target = clamp01((vh * 0.9 - rect.top) / (vh * 0.58));
-        }
+        // In-view trigger (no scroll room needed): opens once the strip is comfortably on screen, or fully
+        // visible wherever the page ends; folds back only after it has left the screen.
+        const comfortable = rect.bottom > vh * 0.1 && (rect.top < vh * 0.8 || (rect.top >= 0 && rect.bottom <= vh));
+        if (!open.current && comfortable) open.current = true;
+        else if (open.current && (rect.top > vh * 0.98 || rect.bottom < vh * 0.02)) open.current = false;
+        const target = open.current ? 1 : 0;
         if (rect.bottom < -8 || rect.top > vh + 8) {
           state.p = target;
           state.v = 0;
@@ -167,7 +171,7 @@ export default function FoldedPaperHeadline({
     };
     id = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(id);
-  }, [reduced, inView, narrow, paint]);
+  }, [reduced, inView, paint]);
 
   const rootStyle = {
     '--fph-paper': paperColor,
@@ -187,6 +191,11 @@ export default function FoldedPaperHeadline({
         } as CSSProperties
       }
     >
+      {i === 0 && (
+        <span className={styles.sizer} aria-hidden="true">
+          {headline}
+        </span>
+      )}
       <span className={styles.slice} style={{ '--i': i } as CSSProperties}>
         <span className={styles.sliceText}>{headline}</span>
       </span>
@@ -225,8 +234,10 @@ export default function FoldedPaperHeadline({
       <div className={styles.scene} ref={sceneRef} aria-hidden="true">
         <span className={styles.castShadow} aria-hidden="true" />
         <div className={styles.strip} ref={stripRef}>
-          {renderFacet(0)}
-          {chain}
+          <div className={styles.rig}>
+            {renderFacet(0)}
+            {chain}
+          </div>
         </div>
       </div>
       <span ref={probeRef} className={styles.probe} aria-hidden="true">

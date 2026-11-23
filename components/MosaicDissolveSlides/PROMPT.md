@@ -3,7 +3,7 @@ Create a custom element called "Mosaic Dissolve Slides". Build it exactly as thi
 The site owner must be able to change: images (image, caption), tile size, auto-advance on/off, speed (seconds per slide). Add other settings if they help.
 
 ```tsx
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type {
   CSSProperties,
   FocusEvent as ReactFocusEvent,
@@ -68,20 +68,54 @@ const PLAY_LABEL = 'Play slideshow';
 const PAUSE_LABEL = 'Pause slideshow';
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+
+/* ---- flip driver: one rAF loop writes every tile's transform (no per-tile CSS transitions) ---- */
+
+const FLIP_GLINT_LEAD = 0.3; // the glint rides the wave front as each tile passes edge-on
+
+// cubic-bezier(0.3, 1.26, 0.42, 1) sampled once; looked up per tile per frame
+const EASE_STEPS = 64;
+const EASE_LUT = (() => {
+  const [x1, y1, x2, y2] = [0.3, 1.26, 0.42, 1];
+  const bez = (a: number, b: number, u: number) => 3 * a * u * (1 - u) * (1 - u) + 3 * b * u * u * (1 - u) + u * u * u;
+  const xs: number[] = [];
+  const ys: number[] = [];
+  for (let k = 0; k <= 200; k++) {
+    const u = k / 200;
+    xs.push(bez(x1, x2, u));
+    ys.push(bez(y1, y2, u));
+  }
+  const out: number[] = [];
+  let k = 0;
+  for (let s = 0; s <= EASE_STEPS; s++) {
+    const x = s / EASE_STEPS;
+    while (k < 199 && xs[k + 1] < x) k++;
+    const f = (x - xs[k]) / Math.max(1e-6, xs[k + 1] - xs[k]);
+    out.push(ys[k] + (ys[k + 1] - ys[k]) * clamp(f, 0, 1));
+  }
+  return out;
+})();
+const ease = (p: number) => {
+  const f = clamp(p, 0, 1) * EASE_STEPS;
+  const i = Math.min(EASE_STEPS - 1, Math.floor(f));
+  return EASE_LUT[i] + (EASE_LUT[i + 1] - EASE_LUT[i]) * (f - i);
+};
 const pad = (n: number) => String(n).padStart(2, '0');
 
 /** Pick a column/row count whose cells are as close to square as possible. */
 function fitGrid(w: number, target: number): { cols: number; rows: number } {
-  const h = w * ASPECT;
+  const h = w / ASPECT;
   let base = Math.round(w / target);
   if (w < 520) base = Math.min(base, 8);
   base = clamp(base, 3, 18);
   let cols = base;
-  let rows = Math.max(2, Math.round(base * ASPECT));
-  let err = Math.abs(w / cols - h / rows);
+  let rows = Math.max(2, Math.round(base / ASPECT));
+  // near-square cells, but never drifting far from the requested tile size
+  const cost = (c: number, r: number) => (Math.abs(w / c - h / r) + 0.6 * Math.abs(w / c - target)) / target;
+  let err = cost(cols, rows);
   for (let c = Math.max(3, base - 2); c <= Math.min(18, base + 2); c++) {
-    const r = Math.max(2, Math.round(c * ASPECT));
-    const e = Math.abs(w / c - h / r);
+    const r = Math.max(2, Math.round(c / ASPECT));
+    const e = cost(c, r);
     if (e < err) {
       err = e;
       cols = c;
@@ -116,6 +150,8 @@ export default function MosaicDissolveSlides({
   const rootRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const commitTimer = useRef(0);
+  const flipRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const ringRef = useRef<HTMLSpanElement>(null);
   const swipeStart = useRef<{ x: number; y: number } | null>(null);
   const suppressClick = useRef(false);
   const autoRemaining = useRef(holdMs);
@@ -182,6 +218,21 @@ export default function MosaicDissolveSlides({
     },
     [phase, count, safeIndex, reduced],
   );
+
+  // Warm the neighbouring slides so the first flip never waits on a download or decode.
+  useEffect(() => {
+    if (count < 2 || !inView) return;
+    const warm = (i: number) => {
+      const src = slides[((i % count) + count) % count]?.src;
+      if (!src) return;
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = src;
+      img.decode?.().catch(() => {});
+    };
+    warm(safeIndex + 1);
+    warm(safeIndex - 1);
+  }, [slides, count, safeIndex, inView]);
 
   const isPlaying =
     playOn && inView && !hover && !focusWithin && phase === 'idle' && count > 1;
@@ -252,12 +303,18 @@ export default function MosaicDissolveSlides({
 
   const tiles = useMemo(() => {
     const { cols, rows } = grid;
-    const maxDist = Math.hypot(1, ASPECT);
+    const iy = 1 / ASPECT; // height in width units
+    const maxDist = Math.max(
+      Math.hypot(origin.x, origin.y * iy),
+      Math.hypot(1 - origin.x, origin.y * iy),
+      Math.hypot(origin.x, (1 - origin.y) * iy),
+      Math.hypot(1 - origin.x, (1 - origin.y) * iy),
+    );
     const list: { i: number; j: number; pos: string; d: number }[] = [];
     for (let j = 0; j < rows; j++) {
       for (let i = 0; i < cols; i++) {
         const dx = (i + 0.5) / cols - origin.x;
-        const dy = ((j + 0.5) / rows - origin.y) * ASPECT;
+        const dy = ((j + 0.5) / rows - origin.y) * iy;
         list.push({
           i,
           j,
@@ -268,6 +325,89 @@ export default function MosaicDissolveSlides({
     }
     return list;
   }, [grid, origin]);
+  const tilesRef = useRef(tiles);
+  tilesRef.current = tiles;
+  const originRef = useRef(origin);
+  originRef.current = origin;
+
+  // One rAF loop drives the whole wave: every in-flight tile gets one transform write per frame,
+  // and the glint is a single ring scaled along the wave front instead of a per-tile animation.
+  useEffect(() => {
+    if (phase !== 'flip' || reduced) return;
+    const vp = viewportRef.current;
+    const ring = ringRef.current;
+    const list = tilesRef.current;
+    const els = flipRefs.current;
+    if (!vp || !ring) return;
+    const n = list.length;
+    const done = new Uint8Array(n);
+    const turned = new Uint8Array(n);
+    const W = vp.clientWidth;
+    const H = vp.clientHeight;
+    const o = originRef.current;
+    const reach = Math.max(
+      Math.hypot(o.x * W, o.y * H),
+      Math.hypot((1 - o.x) * W, o.y * H),
+      Math.hypot(o.x * W, (1 - o.y) * H),
+      Math.hypot((1 - o.x) * W, (1 - o.y) * H),
+    );
+    ring.style.width = `${reach * 2}px`;
+    ring.style.height = `${reach * 2}px`;
+    ring.style.left = `${o.x * W}px`;
+    ring.style.top = `${o.y * H}px`;
+    const total = WAVE_MS + FLIP_MS;
+    const t0 = performance.now();
+    let raf = 0;
+
+    const frame = (now: number) => {
+      const t = now - t0;
+      for (let k = 0; k < n; k++) {
+        if (done[k]) continue;
+        const el = els[k];
+        if (!el) continue;
+        const p = (t - list[k].d) / FLIP_MS;
+        if (p <= 0) continue;
+        if (p >= 1) {
+          el.style.transform = '';
+          if (!turned[k]) el.dataset.b = '1';
+          turned[k] = 1;
+          done[k] = 1;
+          continue;
+        }
+        const e = ease(p);
+        if (e > 0.5 && !turned[k]) {
+          turned[k] = 1;
+          el.dataset.b = '1';
+        }
+        const sx = Math.abs(Math.cos(Math.PI * e));
+        const lift = 1 + 0.09 * Math.sin(Math.PI * Math.pow(p, 0.85));
+        el.style.transform = `scale(${(sx * lift).toFixed(3)},${lift.toFixed(3)})`;
+      }
+      const front = clamp((t - FLIP_MS * FLIP_GLINT_LEAD) / WAVE_MS, 0, 1);
+      if (front > 0 && front < 1) {
+        ring.style.opacity = String(Math.sin(Math.PI * front) ** 0.6 * 0.9);
+        ring.style.transform = `translate(-50%, -50%) scale(${Math.pow(front, 1 / 0.85).toFixed(4)})`;
+      } else {
+        ring.style.opacity = '0';
+      }
+      if (t < total) raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(raf);
+      ring.style.opacity = '0';
+    };
+  }, [phase, reduced]);
+
+  // Back at rest (new slide committed in the same render): clear every tile before paint.
+  useLayoutEffect(() => {
+    if (phase !== 'idle') return;
+    for (const el of flipRefs.current) {
+      if (!el) continue;
+      el.style.transform = '';
+      delete el.dataset.b;
+    }
+  }, [phase, safeIndex, grid]);
 
   const bgSize = `${grid.cols * 100}% ${grid.rows * 100}%`;
   const face = (src: string, pos: string): CSSProperties => ({
@@ -276,6 +416,34 @@ export default function MosaicDissolveSlides({
     backgroundSize: bgSize,
     backgroundRepeat: 'no-repeat',
   });
+
+  const frontSrc = current?.src ?? '';
+  const backSrc = back?.src ?? '';
+  // Memoised so hover, focus and progress updates never re-diff hundreds of tiles.
+  const tileEls = useMemo(
+    () =>
+      tiles.map((tl, k) => (
+        <div key={`${tl.i}-${tl.j}`} className={styles.tile}>
+          <div
+            className={styles.flipper}
+            ref={(el) => {
+              flipRefs.current[k] = el;
+            }}
+          >
+            <span
+              className={[styles.face, styles.faceFront, frontSrc ? '' : styles.facePlaceholder].filter(Boolean).join(' ')}
+              style={face(frontSrc, tl.pos)}
+            />
+            <span
+              className={[styles.face, styles.faceBack, backSrc ? '' : styles.facePlaceholder].filter(Boolean).join(' ')}
+              style={face(backSrc, tl.pos)}
+            />
+          </div>
+        </div>
+      )),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [tiles, frontSrc, backSrc, bgSize],
+  );
 
   const rootStyle = {
     '--md-flip': `${FLIP_MS}ms`,
@@ -315,29 +483,14 @@ export default function MosaicDissolveSlides({
               gridTemplateRows: `repeat(${grid.rows}, 1fr)`,
             }}
           >
-            {tiles.map((t) => (
-              <div
-                key={`${t.i}-${t.j}`}
-                className={styles.tile}
-                style={{ '--d': `${t.d.toFixed(0)}ms` } as CSSProperties}
-              >
-                <div className={styles.flipper}>
-                  <span
-                    className={[styles.face, styles.faceFront, current?.src ? '' : styles.facePlaceholder]
-                      .filter(Boolean)
-                      .join(' ')}
-                    style={face(current?.src ?? '', t.pos)}
-                  />
-                  <span
-                    className={[styles.face, styles.faceBack, back?.src ? '' : styles.facePlaceholder]
-                      .filter(Boolean)
-                      .join(' ')}
-                    style={face(back?.src ?? '', t.pos)}
-                  />
-                </div>
-              </div>
-            ))}
+            {tileEls}
           </div>
+          <span
+            className={styles.gloss}
+            style={{ '--md-cols': grid.cols, '--md-rows': grid.rows } as CSSProperties}
+            aria-hidden="true"
+          />
+          <span className={styles.ring} ref={ringRef} aria-hidden="true" />
           <span className={styles.sheen} aria-hidden="true" />
         </div>
 
@@ -417,7 +570,7 @@ export default function MosaicDissolveSlides({
   --md-frame: #2c2924;
   --md-frame-deep: #242119;
   --md-frame-hi: rgba(255, 255, 255, 0.08);
-  --md-grout: #b5ada0;
+  --md-grout: #cdc6b8;
   --md-ink: #26231e;
   --md-light: #ece7dd;
   --md-light-muted: rgba(236, 231, 221, 0.64);
@@ -479,7 +632,7 @@ export default function MosaicDissolveSlides({
   aspect-ratio: 3 / 2;
   border-radius: 10px;
   overflow: hidden;
-  perspective: 1400px;
+  contain: paint;
   background: var(--md-grout);
   cursor: pointer;
   touch-action: pan-y;
@@ -502,95 +655,72 @@ export default function MosaicDissolveSlides({
 .flipper {
   position: absolute;
   inset: 0;
-  transform: rotateY(0deg);
-  transform-style: preserve-3d;
 }
 
+/* The flip is driven from one rAF loop (scaleX with a face swap at the edge-on point), so the layer is only
+   promoted while a flip is running and the idle page carries no per-tile compositor layers. */
 .root[data-motion='full'][data-phase='flip'] .flipper {
-  transform: rotateY(-180deg);
-  transition: transform var(--md-flip, 640ms) cubic-bezier(0.3, 1.26, 0.42, 1);
-  transition-delay: var(--d);
   will-change: transform;
 }
 
 .face {
   position: absolute;
   inset: 0;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
   background-repeat: no-repeat;
   background-color: #c9c2b4;
 }
 
-.faceBack {
-  transform: rotateY(180deg);
+/* the hidden face is never painted at rest */
+.root[data-motion='full'] .faceBack {
+  visibility: hidden;
+}
+
+.root[data-motion='full'] .flipper[data-b] .faceFront {
+  visibility: hidden;
+}
+
+.root[data-motion='full'] .flipper[data-b] .faceBack {
+  visibility: visible;
 }
 
 .facePlaceholder {
   background-image: linear-gradient(150deg, #d6cfc2 0%, #bab2a3 55%, #a89f8f 100%);
 }
 
-/* Resting per-tile gloss: each chip reads as a glazed ceramic square. */
-.tile::before {
-  content: '';
+/* Resting gloss: one overlay tiled to the grid, so every chip still reads as a glazed square. */
+.gloss {
   position: absolute;
   inset: 0;
   z-index: 2;
   pointer-events: none;
-  background: linear-gradient(168deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.05) 22%, transparent 40%);
+  /* gloss from the top left, a hairline of shade on the far edges so each chip sits in its grout */
+  background-image:
+    linear-gradient(to top, transparent 2px, rgba(30, 24, 14, 0.2) 2px, transparent 5px),
+    linear-gradient(to left, transparent 2px, rgba(30, 24, 14, 0.2) 2px, transparent 5px),
+    linear-gradient(168deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 22%, transparent 40%);
+  background-size: calc((100% - 2px) / var(--md-cols, 12)) calc((100% - 2px) / var(--md-rows, 8));
+  background-position: 2px 2px;
+  background-repeat: repeat;
 }
 
-/* Flip highlight: a specular glint sweeping each tile as it turns. */
-.tile::after {
-  content: '';
+/* Flip glint: a single soft ring that rides the wave front (scaled from JS, compositor only). */
+.ring {
   position: absolute;
-  inset: 0;
   z-index: 3;
+  inline-size: 0;
+  block-size: 0;
+  border-radius: 50%;
   pointer-events: none;
-  background: linear-gradient(
-    118deg,
-    transparent 22%,
-    rgba(255, 255, 255, 0.95) 47%,
-    rgba(255, 255, 255, 0.25) 56%,
-    transparent 80%
-  );
   opacity: 0;
-}
-
-.root[data-motion='full'][data-phase='flip'] .tile::after {
-  animation: tile-glint var(--md-flip, 640ms) cubic-bezier(0.3, 0.9, 0.2, 1) var(--d) both;
-}
-
-/* Secondary motion: each tile lifts as it flips and settles back. */
-.root[data-motion='full'][data-phase='flip'] .tile {
-  animation: tile-lift var(--md-flip, 640ms) cubic-bezier(0.3, 1.26, 0.42, 1) var(--d) both;
-}
-
-@keyframes tile-glint {
-  0% {
-    opacity: 0;
-  }
-  35% {
-    opacity: 0.85;
-  }
-  62% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes tile-lift {
-  0% {
-    transform: scale(1);
-  }
-  42% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
+  transform: translate(-50%, -50%) scale(0);
+  background: radial-gradient(
+    closest-side,
+    transparent 0 80%,
+    rgba(255, 255, 255, 0.1) 88%,
+    rgba(255, 255, 255, 0.5) 96%,
+    transparent 100%
+  );
+  will-change: transform, opacity;
 }
 
 /* Reduced motion: the whole surface crossfades, no ripple, no lift. */
@@ -615,44 +745,54 @@ export default function MosaicDissolveSlides({
   position: absolute;
   inset: 0;
   z-index: 4;
+  overflow: hidden;
   pointer-events: none;
-  background: linear-gradient(
-    112deg,
-    transparent 34%,
-    rgba(255, 255, 255, 0.12) 46%,
-    rgba(255, 255, 255, 0.26) 50%,
-    rgba(255, 255, 255, 0.12) 54%,
-    transparent 66%
-  );
-  background-size: 300% 100%;
-  background-repeat: no-repeat;
-  opacity: 0;
-  animation: sheen-sweep 9s ease-in-out infinite;
 }
 
-.root[data-inview='out'] .sheen,
-.root[data-motion='reduced'] .sheen {
+.sheen::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 60%;
+  background: linear-gradient(
+    112deg,
+    transparent 22%,
+    rgba(255, 255, 255, 0.1) 42%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(255, 255, 255, 0.1) 58%,
+    transparent 78%
+  );
+  opacity: 0;
+  transform: translateX(-100%);
+  animation: sheen-sweep 9s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.root[data-inview='out'] .sheen::before,
+.root[data-phase='flip'] .sheen::before,
+.root[data-motion='reduced'] .sheen::before {
   animation-play-state: paused;
 }
 
 @keyframes sheen-sweep {
   0% {
-    background-position: 140% 0;
+    transform: translateX(-100%);
     opacity: 0;
   }
   5% {
     opacity: 0.6;
   }
   24% {
-    background-position: -40% 0;
+    transform: translateX(180%);
     opacity: 0.6;
   }
   32% {
-    background-position: -40% 0;
+    transform: translateX(180%);
     opacity: 0;
   }
   100% {
-    background-position: -40% 0;
+    transform: translateX(180%);
     opacity: 0;
   }
 }

@@ -146,12 +146,11 @@ export default function ExpandInPlaceCard({
       className={cls(styles.root, hasMore && styles.rootInteractive, open && styles.rootOpen, className)}
       style={rootStyle}
       aria-labelledby={titleId}
-      onClick={hasMore ? onRootClick : undefined}
       onKeyDown={onRootKeyDown}
     >
+      <div className={styles.card} onClick={hasMore ? onRootClick : undefined}>
       <div className={styles.stage}>
-        <span className={cls(styles.contours, !inView && styles.contoursPaused, open && styles.contoursHidden)} aria-hidden="true" />
-        <span className={cls(styles.ticks, open && styles.ticksHidden)} aria-hidden="true" />
+        <span className={cls(styles.contours, open && styles.contoursHidden)} aria-hidden="true" />
 
         <div className={styles.photoWrap}>
           <div className={cls(styles.photoFrame, open && styles.photoFrameOpen)}>
@@ -182,7 +181,7 @@ export default function ExpandInPlaceCard({
         {hasMore && (
           <button
             type="button"
-            className={cls(styles.toggle, open && styles.toggleOn)}
+            className={styles.toggle}
             aria-expanded={open}
             aria-controls={moreId}
             aria-label={open ? COLLAPSE_LABEL : EXPAND_LABEL}
@@ -195,7 +194,7 @@ export default function ExpandInPlaceCard({
                 aria-hidden="true"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.9"
+                strokeWidth="1.5"
                 strokeLinecap="round"
               >
                 <path d="M8 2.9v10.2" />
@@ -248,8 +247,7 @@ export default function ExpandInPlaceCard({
           </div>
         </div>
       )}
-
-      <span className={styles.grain} aria-hidden="true" />
+      </div>
     </article>
   );
 }

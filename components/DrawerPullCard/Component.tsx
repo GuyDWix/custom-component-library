@@ -55,7 +55,7 @@ export default function DrawerPullCard({
   const rootRef = useRef<HTMLDivElement>(null);
   const trayRef = useRef<HTMLDivElement>(null);
   const interiorRef = useRef<HTMLDivElement>(null);
-  const rowsRef = useRef<HTMLDListElement>(null);
+  const rowsRef = useRef<HTMLDivElement>(null);
   const frontRef = useRef<HTMLButtonElement>(null);
   const glintRef = useRef<HTMLSpanElement>(null);
   const photoRef = useRef<HTMLImageElement>(null);
@@ -247,20 +247,22 @@ export default function DrawerPullCard({
               <span className={`${styles.wall} ${styles.wallStart}`} aria-hidden="true" />
               <span className={`${styles.wall} ${styles.wallEnd}`} aria-hidden="true" />
               {rows.length > 0 && (
-                <dl
+                <div
                   ref={rowsRef}
-                  className={styles.rows}
+                  className={styles.rowsScroll}
                   tabIndex={scrollable ? 0 : undefined}
                   role={scrollable ? 'region' : undefined}
-                  aria-label={scrollable ? 'Drawer contents' : undefined}
+                  aria-label={scrollable ? `${handleLabel} (scrollable)` : undefined}
                 >
-                  {rows.map((row, i) => (
-                    <div key={i} className={styles.row} style={{ '--dp-i': String(i) } as CSSProperties}>
-                      <dt className={styles.rowLabel}>{row.label}</dt>
-                      <dd className={styles.rowValue}>{row.value}</dd>
-                    </div>
-                  ))}
-                </dl>
+                  <dl className={styles.rows}>
+                    {rows.map((row, i) => (
+                      <div key={i} className={styles.row} style={{ '--dp-i': String(i) } as CSSProperties}>
+                        <dt className={styles.rowLabel}>{row.label}</dt>
+                        <dd className={styles.rowValue}>{row.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
               )}
             </div>
           </div>

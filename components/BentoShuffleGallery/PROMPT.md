@@ -174,11 +174,13 @@ const SCALE_C = 15;
 const LIFT = 1.075;
 const WINDUP_MS = 130;
 const NARROW_MIN = 520;
-const HOVER_COOLDOWN = 650;
+const HOVER_COOLDOWN = 450;
+/** px the pointer must travel after a trade before hovering can start another */
+const MOVE_INTENT = 24;
 const RING = 2 * Math.PI * 17;
 const EDGE = 12;
-/** the first frame is a trade caught mid-air; it completes after this much extra time (or on the first touch) */
-const HOLD_EXTRA_MS = 3500;
+/** the first frame is a trade caught mid-air; it completes this long after load (or on the first touch) */
+const HOLD_MS = 2500;
 const STAGE_T = 0.68;
 const STAGE_SIZE_T = 0.9;
 
@@ -244,6 +246,13 @@ export default function BentoShuffleGallery({
   const raf = useRef(0);
   const elapsed = useRef(0);
   const lastHover = useRef(0);
+  /** hover intent: the tile the pointer rests on, promoted as soon as the cooldown allows (never dropped) */
+  const hoverTarget = useRef<number | null>(null);
+  const hoverTimer = useRef(0);
+  /** a deliberate pointer move since the last trade: layout shifting under a still (or jittering) cursor must not start a trade */
+  const pointerMoved = useRef(true);
+  const pointerAt = useRef({ x: 0, y: 0 });
+  const anchorAt = useRef({ x: 0, y: 0 });
 
   reducedRef.current = reduced;
   autoRef.current = autoOn;
@@ -438,7 +447,7 @@ export default function BentoShuffleGallery({
     stage.style.height = `${Math.round(height)}px`;
     if (!started.current) {
       hold.current = autoRef.current && count > 1 && !prefersReduced();
-      if (hold.current) elapsed.current = -HOLD_EXTRA_MS;
+      if (hold.current) elapsed.current = Math.max(0, Math.max(shuffleSeconds, 2) * 1000 - HOLD_MS);
     }
     if (hold.current) {
       stagePose(nextBoxes);
@@ -457,7 +466,7 @@ export default function BentoShuffleGallery({
     } else {
       kick();
     }
-  }, [count, gapPx, kick, paint, stagePose]);
+  }, [count, gapPx, shuffleSeconds, kick, paint, stagePose]);
 
   /** Trade the feature slot with another photo's slot: one choreographed swap. */
   const commit = useCallback(
@@ -598,7 +607,13 @@ export default function BentoShuffleGallery({
     return () => mq.removeEventListener('change', sync);
   }, [settle]);
 
-  useEffect(() => () => cancelAnimationFrame(raf.current), []);
+  useEffect(
+    () => () => {
+      cancelAnimationFrame(raf.current);
+      window.clearTimeout(hoverTimer.current);
+    },
+    [],
+  );
 
   const playing = autoOn && playOn && !reduced && inView && !hovered && !focusWithin;
 
@@ -622,16 +637,50 @@ export default function BentoShuffleGallery({
     return () => cancelAnimationFrame(id);
   }, [playing, shuffleSeconds, advance]);
 
+  const scheduleHover = (photo: number) => {
+    window.clearTimeout(hoverTimer.current);
+    const wait = Math.max(0, HOVER_COOLDOWN - (performance.now() - lastHover.current));
+    const go = () => {
+      if (hoverTarget.current !== photo) return;
+      hoverTarget.current = null;
+      lastHover.current = performance.now();
+      pointerMoved.current = false;
+      anchorAt.current = { ...pointerAt.current };
+      promote(photo);
+    };
+    // a trade in flight is re-planned from where the tiles are, so a second hover queues instead of being dropped
+    if (wait === 0) go();
+    else hoverTimer.current = window.setTimeout(go, wait);
+  };
+
   const onTileEnter = (e: PointerEvent<HTMLButtonElement>, photo: number) => {
-    if (e.pointerType !== 'mouse' || reducedRef.current || raf.current) return;
-    const now = performance.now();
-    if (now - lastHover.current < HOVER_COOLDOWN) return;
-    lastHover.current = now;
-    promote(photo);
+    if (e.pointerType !== 'mouse' || reducedRef.current) return;
+    hoverTarget.current = photo;
+    // layout shifting under a still cursor is not intent: wait for the pointer to actually move
+    if (pointerMoved.current) scheduleHover(photo);
+  };
+
+  const onTileLeave = (photo: number) => {
+    if (hoverTarget.current !== photo) return;
+    hoverTarget.current = null;
+    window.clearTimeout(hoverTimer.current);
+  };
+
+  const onRootMove = (e: PointerEvent<HTMLElement>) => {
+    if (e.pointerType !== 'mouse') return;
+    pointerAt.current = { x: e.clientX, y: e.clientY };
+    if (pointerMoved.current) return;
+    if (Math.hypot(e.clientX - anchorAt.current.x, e.clientY - anchorAt.current.y) < MOVE_INTENT) return;
+    pointerMoved.current = true;
+    if (hoverTarget.current !== null) scheduleHover(hoverTarget.current);
   };
 
   const onTileActivate = (photo: number) => {
     lastHover.current = performance.now();
+    hoverTarget.current = null;
+    pointerMoved.current = false;
+    anchorAt.current = { ...pointerAt.current };
+    window.clearTimeout(hoverTimer.current);
     promote(photo);
   };
 
@@ -676,6 +725,7 @@ export default function BentoShuffleGallery({
       }}
       onPointerEnter={(e) => e.pointerType === 'mouse' && setHovered(true)}
       onPointerLeave={() => setHovered(false)}
+      onPointerMove={onRootMove}
     >
       <div className={styles.inner}>
         <div className={styles.table}>
@@ -702,6 +752,7 @@ export default function BentoShuffleGallery({
                     className={styles.tile}
                     aria-label={`${photo.caption || photo.alt || 'Photo'}${isFeature ? ' — featured' : ''}`}
                     onPointerEnter={(e) => onTileEnter(e, p)}
+                    onPointerLeave={() => onTileLeave(p)}
                     onClick={() => onTileActivate(p)}
                   >
                     {photo.image ? (

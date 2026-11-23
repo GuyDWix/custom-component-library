@@ -189,7 +189,6 @@ export default function PeelCornerCard({
   const cardRef = useRef<HTMLElement>(null);
   const stickerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const patternRef = useRef<{ grain: CanvasPattern | null }>({ grain: null });
   const suppressClickRef = useRef(false);
 
   const sizeRef = useRef({ cw: 0, ch: 0, sw: 0, sh: 0, dpr: 1, bleed: 0 });
@@ -281,27 +280,6 @@ export default function PeelCornerCard({
     [dMax],
   );
 
-  const makePatterns = useCallback((ctx: CanvasRenderingContext2D) => {
-    // Adhesive back: fine dust and fibre speckle.
-    const grain = document.createElement('canvas');
-    grain.width = 96;
-    grain.height = 96;
-    const gctx = grain.getContext('2d');
-    if (gctx) {
-      let seed = 7;
-      const rnd = () => {
-        seed = (seed * 16807) % 2147483647;
-        return seed / 2147483647;
-      };
-      for (let i = 0; i < 380; i++) {
-        const a = 0.04 + rnd() * 0.09;
-        gctx.fillStyle = rnd() > 0.5 ? `rgba(70, 60, 36, ${a})` : `rgba(255, 255, 250, ${a * 1.6})`;
-        gctx.fillRect(rnd() * 96, rnd() * 96, 1 + rnd() * 1.4, 1);
-      }
-      patternRef.current.grain = ctx.createPattern(grain, 'repeat');
-    }
-  }, []);
-
   const drawFrame = useCallback(() => {
     const sticker = stickerRef.current;
     const canvas = canvasRef.current;
@@ -326,7 +304,6 @@ export default function PeelCornerCard({
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, cw + bleed * 2, ch);
     if (g.d < 1.2 || g.flap.length < 3) return;
-    if (!patternRef.current.grain) makePatterns(ctx);
 
     const ox = bleed + STICKER_INSET;
     const oy = STICKER_INSET;
@@ -418,17 +395,6 @@ export default function PeelCornerCard({
     }
     ctx.restore();
 
-    // 3b2. Tacky adhesive haze left on the card right where the vinyl let go.
-    ctx.save();
-    ctx.clip(cutPath);
-    ctx.translate(-bisX * 1.5, -bisY * 1.5);
-    ctx.globalAlpha = 0.34;
-    ctx.strokeStyle = 'rgb(255, 238, 168)';
-    ctx.lineWidth = 2.4;
-    ctx.lineJoin = 'round';
-    ctx.stroke(creasePath);
-    ctx.restore();
-
     // 3c. The back of the vinyl: frosted clear adhesive tinted by the ink on the
     // other side. Dark where it rolls away at the crease, a bright cylinder
     // highlight just behind it, then softening toward the tip.
@@ -453,10 +419,10 @@ export default function PeelCornerCard({
     ctx.globalCompositeOperation = 'source-over';
     // The printed sunburst, mirrored: it fans out of the tip, which is where the corner went.
     ctx.globalAlpha = 1;
-    ctx.fillStyle = 'rgba(140, 92, 0, 0.14)';
+    ctx.fillStyle = 'rgba(140, 92, 0, 0.07)';
     const rays0 = Math.atan2(-bisY, -bisX);
-    const rayStep = Math.PI / 24;
-    for (let i = -14; i <= 14; i++) {
+    const rayStep = Math.PI / 12;
+    for (let i = -7; i <= 7; i++) {
       const a1 = rays0 + i * rayStep;
       const a2 = a1 + rayStep * 0.5;
       ctx.beginPath();
@@ -476,16 +442,6 @@ export default function PeelCornerCard({
     roll.addColorStop(1, 'rgba(60, 50, 26, 0.22)');
     ctx.fillStyle = roll;
     ctx.fillRect(0, 0, cw + bleed * 2, ch);
-    if (patternRef.current.grain) {
-      ctx.fillStyle = patternRef.current.grain;
-      ctx.fillRect(0, 0, cw + bleed * 2, ch);
-    }
-    // Adhesive tint creeping in from the vinyl edges.
-    ctx.globalAlpha = 0.22;
-    ctx.strokeStyle = colorRef.current;
-    ctx.lineWidth = 12;
-    ctx.lineJoin = 'round';
-    ctx.stroke(flap);
     ctx.restore();
 
     // 3d. Vinyl thickness on the flap's outline (the sticker's own sides, rounded corners included).
@@ -517,22 +473,18 @@ export default function PeelCornerCard({
     ctx.save();
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    ctx.globalAlpha = 0.3;
-    ctx.strokeStyle = 'rgb(255, 255, 246)';
-    ctx.lineWidth = 6;
-    ctx.stroke(creasePath);
     ctx.globalAlpha = 1;
     const shine = ctx.createLinearGradient(ox + aX, oy + aY, ox + bX, oy + bY);
     shine.addColorStop(0, 'rgba(255, 255, 248, 0)');
-    shine.addColorStop(0.18, 'rgba(255, 255, 248, 0.7)');
-    shine.addColorStop(0.5, 'rgba(255, 255, 250, 1)');
-    shine.addColorStop(0.82, 'rgba(255, 255, 248, 0.7)');
+    shine.addColorStop(0.2, 'rgba(255, 255, 248, 0.45)');
+    shine.addColorStop(0.5, 'rgba(255, 255, 250, 0.75)');
+    shine.addColorStop(0.8, 'rgba(255, 255, 248, 0.45)');
     shine.addColorStop(1, 'rgba(255, 255, 248, 0)');
     ctx.strokeStyle = shine;
     ctx.lineWidth = 1.7;
     ctx.stroke(creasePath);
     ctx.restore();
-  }, [geometry, makePatterns]);
+  }, [geometry]);
 
   // Sizes, canvas backing store, and the off-screen pause.
   useEffect(() => {
@@ -557,7 +509,6 @@ export default function PeelCornerCard({
       canvas.style.height = `${rect.height}px`;
       canvas.width = Math.round((rect.width + bleed * 2) * dpr);
       canvas.height = Math.round(rect.height * dpr);
-      patternRef.current = { grain: null }; // patterns are per-context
       drawFrame();
     };
     measure();
@@ -779,9 +730,6 @@ export default function PeelCornerCard({
 
         <div ref={stickerRef} className={styles.sticker}>
           <span className={styles.vinylRays} aria-hidden="true" />
-          <span className={styles.vinylDots} aria-hidden="true" />
-          <span className={styles.vinylBubbles} aria-hidden="true" />
-          <span className={styles.vinylGrain} aria-hidden="true" />
           <span className={styles.vinylGloss} aria-hidden="true" />
           <div className={styles.print}>
             <div className={styles.copy}>
@@ -850,7 +798,6 @@ export default function PeelCornerCard({
   --pc-title-wide: 11cqi;
   --pc-body-tall: 4cqi;
   --pc-body-wide: 1.5cqi;
-  --pc-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -917,11 +864,6 @@ export default function PeelCornerCard({
       color-mix(in srgb, var(--pc-peel) 9%, var(--pc-well)) 46%,
       transparent 78%
     ),
-    repeating-radial-gradient(
-      circle at var(--pc-corner-x) var(--pc-corner-y),
-      transparent 0 46px,
-      color-mix(in srgb, var(--pc-peel) 15%, transparent) 46px 47.5px
-    ),
     linear-gradient(172deg, #21180d 0%, var(--pc-well) 100%);
   pointer-events: none;
 }
@@ -933,8 +875,8 @@ export default function PeelCornerCard({
   inset: -75%;
   background: repeating-conic-gradient(
     from 0deg at calc((0.75 + var(--pc-cx)) * 40%) calc((0.75 + var(--pc-cy)) * 40%),
-    color-mix(in srgb, var(--pc-peel) 20%, transparent) 0deg 3.2deg,
-    transparent 3.2deg 7deg
+    color-mix(in srgb, var(--pc-peel) 12%, transparent) 0deg 5deg,
+    transparent 5deg 10deg
   );
   -webkit-mask-image: radial-gradient(
     42% 42% at calc((0.75 + var(--pc-cx)) * 40%) calc((0.75 + var(--pc-cy)) * 40%),
@@ -950,28 +892,6 @@ export default function PeelCornerCard({
   );
   transform-origin: calc((0.75 + var(--pc-cx)) * 40%) calc((0.75 + var(--pc-cy)) * 40%);
   transform: rotate(calc(var(--pc-p) * 18deg));
-}
-
-/* Halftone dots and ink grain. */
-.well::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--pc-peel) 42%, transparent) 0 1.4px, transparent 2px) 0 0 / 9px 9px,
-    var(--pc-noise);
-  background-blend-mode: normal, screen;
-  -webkit-mask-image: radial-gradient(
-    70% 85% at var(--pc-corner-x) var(--pc-corner-y),
-    rgba(0, 0, 0, 0.9) 0%,
-    transparent 85%
-  );
-  mask-image: radial-gradient(
-    70% 85% at var(--pc-corner-x) var(--pc-corner-y),
-    rgba(0, 0, 0, 0.9) 0%,
-    transparent 85%
-  );
-  opacity: 0.55;
 }
 
 /* The hidden offer: three staggered beats as the crease sweeps past. */
@@ -1114,9 +1034,7 @@ export default function PeelCornerCard({
       var(--pc-peel-shade) 100%
     );
   box-shadow:
-    inset 0 2px 0 rgba(255, 255, 248, 0.55),
-    inset 0 0 0 1px color-mix(in srgb, var(--pc-peel-deep) 45%, transparent),
-    inset 0 -4px 6px -3px color-mix(in srgb, var(--pc-peel-deep) 70%, transparent);
+    inset 0 0 0 1px color-mix(in srgb, var(--pc-peel-deep) 35%, transparent);
 }
 
 /* Print stress: the vinyl bends darker toward the lifting crease. */
@@ -1140,8 +1058,8 @@ export default function PeelCornerCard({
   inset: 0;
   background: repeating-conic-gradient(
     from 0deg at var(--pc-corner-x) var(--pc-corner-y),
-    rgba(255, 249, 196, 0.3) 0deg 3.75deg,
-    rgba(150, 98, 0, 0.1) 3.75deg 7.5deg
+    rgba(255, 249, 196, 0.16) 0deg 7.5deg,
+    rgba(150, 98, 0, 0.05) 7.5deg 15deg
   );
   -webkit-mask-image: radial-gradient(
     130% 130% at var(--pc-corner-x) var(--pc-corner-y),
@@ -1158,68 +1076,17 @@ export default function PeelCornerCard({
   pointer-events: none;
 }
 
-/* Halftone screen, heavier away from the peel. */
-.vinylDots {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% 50%, rgba(140, 90, 0, 0.55) 0 1.5px, transparent 2.1px) 0 0 / 10px 10px;
-  -webkit-mask-image: radial-gradient(
-    85% 85% at var(--pc-opp-x) var(--pc-opp-y),
-    rgba(0, 0, 0, 0.55) 0%,
-    transparent 100%
-  );
-  mask-image: radial-gradient(
-    85% 85% at var(--pc-opp-x) var(--pc-opp-y),
-    rgba(0, 0, 0, 0.55) 0%,
-    transparent 100%
-  );
-  pointer-events: none;
-}
-
-/* Air-bubble pinpricks and two small blisters trapped under the film. */
-.vinylBubbles {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle 4px at 31% 14%, rgba(110, 70, 0, 0.7) 0 0.9px, rgba(255, 255, 240, 0.8) 1.3px 2px, transparent 3.4px),
-    radial-gradient(circle 4px at 52% 38%, rgba(110, 70, 0, 0.7) 0 0.9px, rgba(255, 255, 240, 0.8) 1.3px 2px, transparent 3.4px),
-    radial-gradient(circle 4px at 9% 47%, rgba(110, 70, 0, 0.7) 0 0.9px, rgba(255, 255, 240, 0.8) 1.3px 2px, transparent 3.4px),
-    radial-gradient(circle 4px at 71% 63%, rgba(110, 70, 0, 0.7) 0 0.9px, rgba(255, 255, 240, 0.8) 1.3px 2px, transparent 3.4px),
-    radial-gradient(circle 4px at 88% 52%, rgba(110, 70, 0, 0.7) 0 0.9px, rgba(255, 255, 240, 0.8) 1.3px 2px, transparent 3.4px),
-    radial-gradient(circle 4px at 44% 8%, rgba(110, 70, 0, 0.7) 0 0.9px, rgba(255, 255, 240, 0.8) 1.3px 2px, transparent 3.4px),
-    radial-gradient(circle 4px at 17% 22%, rgba(110, 70, 0, 0.7) 0 0.9px, rgba(255, 255, 240, 0.8) 1.3px 2px, transparent 3.4px),
-    radial-gradient(circle 5px at calc(64% - 5px) calc(30% - 5px), rgba(255, 255, 250, 0.9) 0 1.5px, transparent 2.6px),
-    radial-gradient(circle 17px at 64% 30%, rgba(255, 255, 230, 0.2) 0 11px, rgba(255, 255, 255, 0.5) 12px 13px, rgba(120, 78, 0, 0.3) 14px 15px, transparent 16.5px),
-    radial-gradient(circle 4px at calc(37% - 3px) calc(45% - 3px), rgba(255, 255, 250, 0.9) 0 1px, transparent 2px),
-    radial-gradient(circle 11px at 37% 45%, rgba(255, 255, 230, 0.2) 0 7px, rgba(255, 255, 255, 0.5) 8px 8.8px, rgba(120, 78, 0, 0.3) 9.4px 10px, transparent 10.8px);
-  pointer-events: none;
-}
-
-.vinylGrain {
-  position: absolute;
-  inset: 0;
-  background-image: var(--pc-noise);
-  opacity: 0.14;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-}
-
-/* Clear gloss laminate: a window reflection that slides as the sticker bends. */
+/* Clear gloss laminate: one soft window reflection that slides as the sticker bends. */
 .vinylGloss {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background:
-    linear-gradient(
-      116deg,
-      transparent 14%,
-      rgba(255, 255, 250, 0.1) 22%,
-      rgba(255, 255, 250, 0.36) 31%,
-      rgba(255, 255, 250, 0.05) 39%,
-      transparent 46%
-    ),
-    linear-gradient(116deg, transparent 52%, rgba(255, 255, 250, 0.16) 55%, transparent 59%),
-    linear-gradient(180deg, rgba(255, 255, 250, 0.3) 0%, transparent 16%);
+  background: linear-gradient(
+    116deg,
+    transparent 22%,
+    rgba(255, 255, 250, 0.12) 32%,
+    transparent 44%
+  );
   transform: translateX(calc(var(--pc-p) * 6%));
   pointer-events: none;
 }

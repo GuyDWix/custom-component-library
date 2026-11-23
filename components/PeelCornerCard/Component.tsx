@@ -184,7 +184,6 @@ export default function PeelCornerCard({
   const cardRef = useRef<HTMLElement>(null);
   const stickerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const patternRef = useRef<{ grain: CanvasPattern | null }>({ grain: null });
   const suppressClickRef = useRef(false);
 
   const sizeRef = useRef({ cw: 0, ch: 0, sw: 0, sh: 0, dpr: 1, bleed: 0 });
@@ -276,27 +275,6 @@ export default function PeelCornerCard({
     [dMax],
   );
 
-  const makePatterns = useCallback((ctx: CanvasRenderingContext2D) => {
-    // Adhesive back: fine dust and fibre speckle.
-    const grain = document.createElement('canvas');
-    grain.width = 96;
-    grain.height = 96;
-    const gctx = grain.getContext('2d');
-    if (gctx) {
-      let seed = 7;
-      const rnd = () => {
-        seed = (seed * 16807) % 2147483647;
-        return seed / 2147483647;
-      };
-      for (let i = 0; i < 380; i++) {
-        const a = 0.04 + rnd() * 0.09;
-        gctx.fillStyle = rnd() > 0.5 ? `rgba(70, 60, 36, ${a})` : `rgba(255, 255, 250, ${a * 1.6})`;
-        gctx.fillRect(rnd() * 96, rnd() * 96, 1 + rnd() * 1.4, 1);
-      }
-      patternRef.current.grain = ctx.createPattern(grain, 'repeat');
-    }
-  }, []);
-
   const drawFrame = useCallback(() => {
     const sticker = stickerRef.current;
     const canvas = canvasRef.current;
@@ -321,7 +299,6 @@ export default function PeelCornerCard({
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, cw + bleed * 2, ch);
     if (g.d < 1.2 || g.flap.length < 3) return;
-    if (!patternRef.current.grain) makePatterns(ctx);
 
     const ox = bleed + STICKER_INSET;
     const oy = STICKER_INSET;
@@ -413,17 +390,6 @@ export default function PeelCornerCard({
     }
     ctx.restore();
 
-    // 3b2. Tacky adhesive haze left on the card right where the vinyl let go.
-    ctx.save();
-    ctx.clip(cutPath);
-    ctx.translate(-bisX * 1.5, -bisY * 1.5);
-    ctx.globalAlpha = 0.34;
-    ctx.strokeStyle = 'rgb(255, 238, 168)';
-    ctx.lineWidth = 2.4;
-    ctx.lineJoin = 'round';
-    ctx.stroke(creasePath);
-    ctx.restore();
-
     // 3c. The back of the vinyl: frosted clear adhesive tinted by the ink on the
     // other side. Dark where it rolls away at the crease, a bright cylinder
     // highlight just behind it, then softening toward the tip.
@@ -448,10 +414,10 @@ export default function PeelCornerCard({
     ctx.globalCompositeOperation = 'source-over';
     // The printed sunburst, mirrored: it fans out of the tip, which is where the corner went.
     ctx.globalAlpha = 1;
-    ctx.fillStyle = 'rgba(140, 92, 0, 0.14)';
+    ctx.fillStyle = 'rgba(140, 92, 0, 0.07)';
     const rays0 = Math.atan2(-bisY, -bisX);
-    const rayStep = Math.PI / 24;
-    for (let i = -14; i <= 14; i++) {
+    const rayStep = Math.PI / 12;
+    for (let i = -7; i <= 7; i++) {
       const a1 = rays0 + i * rayStep;
       const a2 = a1 + rayStep * 0.5;
       ctx.beginPath();
@@ -471,16 +437,6 @@ export default function PeelCornerCard({
     roll.addColorStop(1, 'rgba(60, 50, 26, 0.22)');
     ctx.fillStyle = roll;
     ctx.fillRect(0, 0, cw + bleed * 2, ch);
-    if (patternRef.current.grain) {
-      ctx.fillStyle = patternRef.current.grain;
-      ctx.fillRect(0, 0, cw + bleed * 2, ch);
-    }
-    // Adhesive tint creeping in from the vinyl edges.
-    ctx.globalAlpha = 0.22;
-    ctx.strokeStyle = colorRef.current;
-    ctx.lineWidth = 12;
-    ctx.lineJoin = 'round';
-    ctx.stroke(flap);
     ctx.restore();
 
     // 3d. Vinyl thickness on the flap's outline (the sticker's own sides, rounded corners included).
@@ -512,22 +468,18 @@ export default function PeelCornerCard({
     ctx.save();
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    ctx.globalAlpha = 0.3;
-    ctx.strokeStyle = 'rgb(255, 255, 246)';
-    ctx.lineWidth = 6;
-    ctx.stroke(creasePath);
     ctx.globalAlpha = 1;
     const shine = ctx.createLinearGradient(ox + aX, oy + aY, ox + bX, oy + bY);
     shine.addColorStop(0, 'rgba(255, 255, 248, 0)');
-    shine.addColorStop(0.18, 'rgba(255, 255, 248, 0.7)');
-    shine.addColorStop(0.5, 'rgba(255, 255, 250, 1)');
-    shine.addColorStop(0.82, 'rgba(255, 255, 248, 0.7)');
+    shine.addColorStop(0.2, 'rgba(255, 255, 248, 0.45)');
+    shine.addColorStop(0.5, 'rgba(255, 255, 250, 0.75)');
+    shine.addColorStop(0.8, 'rgba(255, 255, 248, 0.45)');
     shine.addColorStop(1, 'rgba(255, 255, 248, 0)');
     ctx.strokeStyle = shine;
     ctx.lineWidth = 1.7;
     ctx.stroke(creasePath);
     ctx.restore();
-  }, [geometry, makePatterns]);
+  }, [geometry]);
 
   // Sizes, canvas backing store, and the off-screen pause.
   useEffect(() => {
@@ -552,7 +504,6 @@ export default function PeelCornerCard({
       canvas.style.height = `${rect.height}px`;
       canvas.width = Math.round((rect.width + bleed * 2) * dpr);
       canvas.height = Math.round(rect.height * dpr);
-      patternRef.current = { grain: null }; // patterns are per-context
       drawFrame();
     };
     measure();
@@ -774,9 +725,6 @@ export default function PeelCornerCard({
 
         <div ref={stickerRef} className={styles.sticker}>
           <span className={styles.vinylRays} aria-hidden="true" />
-          <span className={styles.vinylDots} aria-hidden="true" />
-          <span className={styles.vinylBubbles} aria-hidden="true" />
-          <span className={styles.vinylGrain} aria-hidden="true" />
           <span className={styles.vinylGloss} aria-hidden="true" />
           <div className={styles.print}>
             <div className={styles.copy}>
