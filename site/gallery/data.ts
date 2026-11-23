@@ -65,7 +65,18 @@ function toEntry(name: string, meta: RawMeta = {}): Entry {
 
 const metaByName = Object.fromEntries(Object.entries(metas).map(([p, m]) => [folderOf(p), m]));
 const shuffleKey = (name: string) => [...name].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 2654435761) >>> 0, 41);
-const names = [...new Set([...previewPaths.map(folderOf), ...Object.keys(metaByName)])].sort((a, b) => shuffleKey(a) - shuffleKey(b));
+// Pinned showpieces land at fixed slots (0-based) inside the top 5; everything else keeps the stable shuffle
+const PINNED = ['SundialShadowHeadline', 'FoilTiltCard'];
+const PIN_SLOTS = [1, 3];
+const shuffled = [...new Set([...previewPaths.map(folderOf), ...Object.keys(metaByName)])].sort((a, b) => shuffleKey(a) - shuffleKey(b));
+const names = shuffled.filter((n) => !PINNED.includes(n));
+PINNED.forEach((n, i) => shuffled.includes(n) && names.splice(PIN_SLOTS[i], 0, n));
+// Pushed down the page on purpose
+const LATER: Record<string, number> = { WaxSealInvite: 20 };
+Object.entries(LATER).forEach(([n, slot]) => {
+  const at = names.indexOf(n);
+  if (at >= 0) names.splice(slot, 0, ...names.splice(at, 1));
+});
 
 export const entries: Entry[] = names.map((n) => toEntry(n, metaByName[n]));
 
