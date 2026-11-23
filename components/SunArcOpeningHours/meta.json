@@ -13,7 +13,8 @@
     "Sky tint",
     "Time zone",
     "12-hour or 24-hour clock",
-    "Title and badge wording"
+    "Title and badge wording",
+    "Day selection trigger: click (default) or hover (selectTrigger)"
   ],
   "site_types": [
     "restaurant",

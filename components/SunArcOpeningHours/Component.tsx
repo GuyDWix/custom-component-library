@@ -21,6 +21,8 @@ export interface SunArcOpeningHoursProps {
   closesAtLabel?: string;
   opensLabel?: string;
   closedLabel?: string;
+  /** what selects a weekday: a click/tap on the strip (default), or hovering it */
+  selectTrigger?: 'click' | 'hover';
   className?: string;
 }
 
@@ -234,6 +236,7 @@ export default function SunArcOpeningHours({
   closesAtLabel = 'closes at',
   opensLabel = 'opens',
   closedLabel = 'Closed',
+  selectTrigger = 'click',
   className,
 }: SunArcOpeningHoursProps) {
   const [W, setW] = useState(960);
@@ -348,7 +351,7 @@ export default function SunArcOpeningHours({
     const lift1 = Math.min(lift, 1);
     const amt = clamp(e.amt.x, 0, 1);
     const p = pt(g, sx);
-    const sy = p.y + (1 - lift) * g.R * 2.6;
+    const sy = p.y + (1 - lift) * Math.max(g.R * 2.6, g.stageH - p.y + 120);
 
     box.style.setProperty('--sx', `${p.x.toFixed(1)}px`);
     box.style.setProperty('--sb', `${(g.stageH - sy).toFixed(1)}px`);
@@ -510,7 +513,7 @@ export default function SunArcOpeningHours({
         aim(e.lift, 1);
       } else if (isToday) {
         aim(e.sun, S(nowT), intro ? 34 : 60, intro ? 8.5 : 11, intro ? 260 : 0);
-        aim(e.lift, nowT >= model.start && nowT <= model.end ? 1 : 0, 120, 14, intro ? 120 : 0);
+        aim(e.lift, nowT >= dm.o && nowT <= dm.c ? 1 : 0, 120, 14, intro ? 120 : 0);
       } else {
         aim(e.lift, 1, 120, 14, intro ? 120 : 0);
         aim(e.sun, S(dm.o), 120, 16, intro ? 260 : 0);
@@ -518,13 +521,17 @@ export default function SunArcOpeningHours({
           () => {
             aim(e.sun, S(dm.c), 34, 8.5);
             kick();
+            e.timer = window.setTimeout(() => {
+              aim(e.lift, 0, 70, 12);
+              kick();
+            }, 2200);
           },
           intro ? 1100 : 460,
         );
       }
     } else {
       aim(e.amt, 0, 90, 15);
-      aim(e.lift, isToday && nowT >= model.start && nowT <= model.end && !reduced ? 1 : 0, 120, 14);
+      aim(e.lift, isToday && nowT >= dm.o && nowT <= dm.c && !reduced ? 1 : 0, 120, 14);
       if (isToday && !reduced) aim(e.sun, S(nowT), 60, 11);
     }
 
@@ -769,7 +776,7 @@ export default function SunArcOpeningHours({
                   .join(' ')}
                 onClick={() => choose(i)}
                 onPointerEnter={(e) => {
-                  if (e.pointerType === 'mouse') setHov(i);
+                  if (e.pointerType === 'mouse' && selectTrigger === 'hover') setHov(i);
                 }}
                 onFocus={() => setHov(null)}
               >

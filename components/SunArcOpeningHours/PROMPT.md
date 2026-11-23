@@ -1,6 +1,6 @@
 Create a custom element called "Sun Arc Opening Hours". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: hours per weekday (day, opens, closes), closed days, open-now badge on/off, sky tint, time zone, 12-hour or 24-hour clock, title and badge wording. Add other settings if they help.
+The site owner must be able to change: hours per weekday (day, opens, closes), closed days, open-now badge on/off, sky tint, time zone, 12-hour or 24-hour clock, title and badge wording, day selection trigger: click (default) or hover (selectTrigger). Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -26,6 +26,8 @@ export interface SunArcOpeningHoursProps {
   closesAtLabel?: string;
   opensLabel?: string;
   closedLabel?: string;
+  /** what selects a weekday: a click/tap on the strip (default), or hovering it */
+  selectTrigger?: 'click' | 'hover';
   className?: string;
 }
 
@@ -239,6 +241,7 @@ export default function SunArcOpeningHours({
   closesAtLabel = 'closes at',
   opensLabel = 'opens',
   closedLabel = 'Closed',
+  selectTrigger = 'click',
   className,
 }: SunArcOpeningHoursProps) {
   const [W, setW] = useState(960);
@@ -515,7 +518,7 @@ export default function SunArcOpeningHours({
         aim(e.lift, 1);
       } else if (isToday) {
         aim(e.sun, S(nowT), intro ? 34 : 60, intro ? 8.5 : 11, intro ? 260 : 0);
-        aim(e.lift, nowT >= model.start && nowT <= model.end ? 1 : 0, 120, 14, intro ? 120 : 0);
+        aim(e.lift, nowT >= dm.o && nowT <= dm.c ? 1 : 0, 120, 14, intro ? 120 : 0);
       } else {
         aim(e.lift, 1, 120, 14, intro ? 120 : 0);
         aim(e.sun, S(dm.o), 120, 16, intro ? 260 : 0);
@@ -529,7 +532,7 @@ export default function SunArcOpeningHours({
       }
     } else {
       aim(e.amt, 0, 90, 15);
-      aim(e.lift, isToday && nowT >= model.start && nowT <= model.end && !reduced ? 1 : 0, 120, 14);
+      aim(e.lift, isToday && nowT >= dm.o && nowT <= dm.c && !reduced ? 1 : 0, 120, 14);
       if (isToday && !reduced) aim(e.sun, S(nowT), 60, 11);
     }
 
@@ -774,7 +777,7 @@ export default function SunArcOpeningHours({
                   .join(' ')}
                 onClick={() => choose(i)}
                 onPointerEnter={(e) => {
-                  if (e.pointerType === 'mouse') setHov(i);
+                  if (e.pointerType === 'mouse' && selectTrigger === 'hover') setHov(i);
                 }}
                 onFocus={() => setHov(null)}
               >
