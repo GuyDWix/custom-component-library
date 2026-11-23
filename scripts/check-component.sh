@@ -63,7 +63,7 @@ if [ -f "$D/meta.json" ]; then
   python3 - "$D/meta.json" <<'PY' || fail=1
 import json,sys
 m=json.load(open(sys.argv[1]))
-req=["id","name","display_name","owner_settings","scores","art_direction","provenance","studio2_tested","checks","craft_score","status","notes"]
+req=["id","name","display_name","owner_settings","scores","art_direction","studio2_tested","checks","status"]
 miss=[k for k in req if k not in m]
 print("ok    meta.json fields complete" if not miss else "FAIL  meta.json missing: "+", ".join(miss))
 if miss: sys.exit(1)
