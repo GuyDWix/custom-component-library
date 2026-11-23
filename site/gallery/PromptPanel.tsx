@@ -1,71 +1,30 @@
-import { useEffect, useRef, useState } from 'react';
-import { loadPrompt } from './data';
+import { useEffect, useState } from 'react';
+import { loadCode, loadPrompt, type SourceFile } from './data';
+import CodeBlock from './CodeBlock';
 
-type CopyState = 'idle' | 'copied' | 'failed';
-
-async function copyText(text: string) {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    const ta = Object.assign(document.createElement('textarea'), { value: text });
-    ta.style.cssText = 'position:fixed;opacity:0';
-    document.body.append(ta);
-    ta.select();
-    const ok = document.execCommand('copy');
-    ta.remove();
-    return ok;
-  }
+function useLoaded<T>(load: () => Promise<T>, deps: unknown[]) {
+  const [value, setValue] = useState<T | null | undefined>(undefined);
+  useEffect(() => {
+    setValue(undefined);
+    load().then((v) => setValue(v ?? null), () => setValue(null));
+  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
+  return value;
 }
 
-const formatSize = (text: string) => `${Math.max(1, Math.round(new Blob([text]).size / 1024))} KB`;
+export function PromptPanel({ name }: { name: string }) {
+  const prompt = useLoaded(() => loadPrompt(name), [name]);
+  if (prompt === undefined) return <p className="g-muted">Loading prompt…</p>;
+  if (!prompt) return <p className="g-muted">No prompt for this component yet.</p>;
+  return <CodeBlock text={prompt} copyLabel="Copy prompt" />;
+}
 
-export default function PromptPanel({ name }: { name: string }) {
-  const [prompt, setPrompt] = useState<string | null | undefined>(undefined);
-  const [expanded, setExpanded] = useState(false);
-  const [copy, setCopy] = useState<CopyState>('idle');
-  const timer = useRef<number>();
-
-  useEffect(() => {
-    loadPrompt(name).then((p) => setPrompt(p ?? null), () => setPrompt(null));
-    return () => clearTimeout(timer.current);
-  }, [name]);
-
-  const onCopy = async () => {
-    if (!prompt) return;
-    const ok = await copyText(prompt);
-    setCopy(ok ? 'copied' : 'failed');
-    if (!ok) setExpanded(true);
-    clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => setCopy('idle'), ok ? 1500 : 4000);
-  };
-
-  if (prompt === null) return <p className="g-muted">No prompt for this component yet.</p>;
-
+export function CodePanel({ name }: { name: string }) {
+  const files = useLoaded<SourceFile[]>(() => loadCode(name), [name]);
+  if (files === undefined) return <p className="g-muted">Loading code…</p>;
+  if (!files?.length) return <p className="g-muted">No code for this component yet.</p>;
   return (
-    <div className="g-prompt">
-      <div className="g-prompt__bar">
-        <button type="button" className="g-btn g-btn--primary" onClick={onCopy} disabled={!prompt} aria-live="polite">
-          {copy === 'copied' ? 'Copied ✓' : copy === 'failed' ? 'Copy failed: select manually' : 'Copy prompt'}
-        </button>
-        {prompt && <span className="g-muted">{formatSize(prompt)}</span>}
-      </div>
-      {prompt === undefined ? (
-        <p className="g-muted">Loading prompt…</p>
-      ) : (
-        <>
-          <pre id="g-prompt-body" className={`g-prompt__body${expanded ? '' : ' is-collapsed'}`}>{prompt}</pre>
-          <button
-            type="button"
-            className="g-btn g-btn--ghost"
-            aria-expanded={expanded}
-            aria-controls="g-prompt-body"
-            onClick={() => setExpanded((x) => !x)}
-          >
-            {expanded ? 'Collapse prompt' : 'Show full prompt'}
-          </button>
-        </>
-      )}
+    <div className="g-code">
+      {files.map((f) => <CodeBlock key={f.file} text={f.text} copyLabel="Copy" caption={f.file} />)}
     </div>
   );
 }

@@ -1,4 +1,6 @@
-type Option<T extends string> = { value: T; label: string };
+import type { ReactNode } from 'react';
+
+type Option<T extends string> = { value: T; label: string; icon?: ReactNode };
 
 export default function Segmented<T extends string>({ label, value, options, onChange }: {
   label: string;
@@ -16,6 +18,7 @@ export default function Segmented<T extends string>({ label, value, options, onC
           aria-pressed={o.value === value}
           onClick={() => onChange(o.value)}
         >
+          {o.icon}
           {o.label}
         </button>
       ))}
