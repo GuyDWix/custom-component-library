@@ -3,7 +3,7 @@ Create a custom element called "Sun Arc Opening Hours". Build it exactly as this
 The site owner must be able to change: hours per weekday (day, opens, closes), closed days, open-now badge on/off, sky tint, time zone, 12-hour or 24-hour clock, title and badge wording. Add other settings if they help.
 
 ```tsx
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import styles from './Component.module.css';
 
@@ -168,7 +168,7 @@ function makeGeo(W: number, labelW: number): Geo {
     R,
     stageH,
     hy: stageH,
-    ref: compact ? 46 : Math.round(clamp(W * 0.07, 60, 96)),
+    ref: compact ? 20 : 28,
     hoursFs,
     dayFs,
     textLeft,
@@ -226,7 +226,6 @@ interface Engine {
   intro: boolean;
 }
 
-const BARS = 9;
 const SWIPE = 44;
 
 export default function SunArcOpeningHours({
@@ -242,7 +241,6 @@ export default function SunArcOpeningHours({
   closedLabel = 'Closed',
   className,
 }: SunArcOpeningHoursProps) {
-  const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const [W, setW] = useState(960);
   const [reduced, setReduced] = useState(false);
   const [inView, setInView] = useState(true);
@@ -254,12 +252,9 @@ export default function SunArcOpeningHours({
   const rootRef = useRef<HTMLDivElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
   const sunRef = useRef<HTMLDivElement>(null);
-  const haloAllRef = useRef<SVGPathElement>(null);
-  const haloBrightRef = useRef<SVGPathElement>(null);
   const coreRemainRef = useRef<SVGPathElement>(null);
   const coreBrightRef = useRef<SVGPathElement>(null);
   const dotRefs = useRef<(SVGCircleElement | null)[]>([]);
-  const barRefs = useRef<(SVGRectElement | null)[]>([]);
   const endARef = useRef<HTMLSpanElement>(null);
   const endBRef = useRef<HTMLSpanElement>(null);
   const chipRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -375,10 +370,8 @@ export default function SunArcOpeningHours({
       node.setAttribute('opacity', (opacity * amt).toFixed(3));
       node.setAttribute('stroke-width', (width * (0.25 + 0.75 * amt)).toFixed(2));
     };
-    setPath(haloAllRef.current, sa, sb, 0.34, 20);
-    setPath(haloBrightRef.current, sa, el, 0.95, 22);
-    setPath(coreRemainRef.current, el, sb, 0.6, 3);
-    setPath(coreBrightRef.current, sa, el, 1, 6);
+    setPath(coreRemainRef.current, el, sb, 0.55, 1.5);
+    setPath(coreBrightRef.current, sa, el, 1, 2.25);
 
     const marks = modelRef.current;
     const span = marks.end - marks.start;
@@ -388,18 +381,8 @@ export default function SunArcOpeningHours({
       if (h === undefined) return;
       const s = (h - marks.start) / span;
       const lit = amt > 0.05 && s >= sa - 0.002 && s <= el + 0.002;
-      c.setAttribute('fill', lit ? '#fff7cf' : 'currentColor');
-      c.setAttribute('fill-opacity', lit ? '1' : '0.5');
-    });
-
-    const shift = sx * 24;
-    barRefs.current.forEach((r, i) => {
-      if (!r) return;
-      const w = g.R * 2.4 * (1 - i / (BARS + 2)) * (0.7 + 0.3 * Math.sin(i * 2.3 + shift));
-      const c = p.x + Math.sin(i * 1.9 + shift * 0.7) * (2 + i * 1.5);
-      r.setAttribute('x', (c - w / 2).toFixed(1));
-      r.setAttribute('width', Math.max(2, w).toFixed(1));
-      r.setAttribute('opacity', (lift1 * (0.92 - i * 0.085)).toFixed(3));
+      c.setAttribute('fill', lit ? '#fff4d6' : 'currentColor');
+      c.setAttribute('fill-opacity', lit ? '1' : '0.4');
     });
 
     const lw = labelW.current;
@@ -708,18 +691,9 @@ export default function SunArcOpeningHours({
             aria-hidden="true"
             focusable="false"
           >
-            <defs>
-              <filter id={`${uid}-blur`} x="-20%" y="-60%" width="140%" height="220%">
-                <feGaussianBlur stdDeviation={g.compact ? 6 : 9} />
-              </filter>
-            </defs>
             <path className={styles.track} d={arcD(g, 0, 1)} />
-            <g filter={`url(#${uid}-blur)`} stroke="#ffe27a" fill="none" strokeLinecap="round">
-              <path ref={haloAllRef} opacity="0" />
-              <path ref={haloBrightRef} opacity="0" stroke="#fff3b8" />
-            </g>
-            <path ref={coreRemainRef} fill="none" stroke="#ffeaa0" strokeLinecap="round" opacity="0" />
-            <path ref={coreBrightRef} fill="none" stroke="#fffbe4" strokeLinecap="round" opacity="0" />
+            <path ref={coreRemainRef} fill="none" stroke="#f3d9b0" strokeLinecap="round" opacity="0" />
+            <path ref={coreBrightRef} fill="none" stroke="#fff6e0" strokeLinecap="round" opacity="0" />
             <g className={styles.dots}>
               {model.hourMarks.map((h, i) => {
                 const p = pt(g, (h - model.start) / span);
@@ -731,7 +705,7 @@ export default function SunArcOpeningHours({
                     }}
                     cx={p.x}
                     cy={p.y}
-                    r={h % 3 === 0 ? 3.2 : 1.9}
+                    r={h % 3 === 0 ? 2.6 : 1.5}
                     fill="currentColor"
                     fillOpacity="0.5"
                   />
@@ -742,8 +716,6 @@ export default function SunArcOpeningHours({
 
           <div className={styles.sunLayer} aria-hidden="true">
             <div ref={sunRef} className={styles.sunPos}>
-              <span className={styles.bloom} />
-              <span className={styles.ring} />
               <span className={styles.disc} />
             </div>
           </div>
@@ -760,31 +732,6 @@ export default function SunArcOpeningHours({
       </div>
 
       <div className={styles.water}>
-        <svg
-          className={styles.waterSvg}
-          width={g.W}
-          height={g.ref}
-          viewBox={`0 0 ${g.W} ${g.ref}`}
-          aria-hidden="true"
-          focusable="false"
-        >
-          <path className={styles.ropePeach} d={`M0 ${g.ref * 0.46}H${g.W}`} />
-          <path className={styles.ropeFoam} d={`M0 ${g.ref * 0.46}H${g.W}`} />
-          {Array.from({ length: BARS }, (_, i) => (
-            <rect
-              key={i}
-              ref={(el) => {
-                barRefs.current[i] = el;
-              }}
-              className={styles.bar}
-              y={4 + i * ((g.ref - 10) / BARS)}
-              height={g.compact ? 2.4 : 3}
-              rx={1.5}
-              opacity="0"
-            />
-          ))}
-        </svg>
-
         {g.compact && readout}
 
         <div
@@ -859,12 +806,12 @@ export default function SunArcOpeningHours({
 }
 
 .root {
-  --sa-ink: #1c1a57;
+  --sa-ink: #171a3d;
   --sa-tint: #9ba7f5;
-  --sa-peach: #ffd2b0;
-  --sa-dusk: #ffae9e;
-  --sa-butter: #ffe27a;
-  --sa-foam: #f6f2ff;
+  --sa-peach: #f4cfb4;
+  --sa-dusk: #e9a79a;
+  --sa-butter: #f6dca2;
+  --sa-foam: #f4f1fa;
   --sa-gap: 6px;
   --sa-font: 'Instrument Sans', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --sa-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.11  0 0 0 0 0.10  0 0 0 0 0.34  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
@@ -875,13 +822,13 @@ export default function SunArcOpeningHours({
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  border-radius: 28px;
+  border-radius: 24px;
   background: var(--sa-ink);
   color: var(--sa-ink);
   font-family: var(--sa-font);
   box-shadow:
-    0 34px 70px -38px rgba(32, 28, 110, 0.6),
-    0 2px 6px rgba(32, 28, 110, 0.12);
+    0 30px 60px -34px rgba(23, 26, 61, 0.55),
+    0 1px 2px rgba(23, 26, 61, 0.18);
 }
 
 .root::selection {
@@ -890,7 +837,7 @@ export default function SunArcOpeningHours({
 }
 
 .rootCompact {
-  border-radius: 22px;
+  border-radius: 20px;
 }
 
 .box {
@@ -907,16 +854,16 @@ export default function SunArcOpeningHours({
     180deg,
     color-mix(
         in oklab,
-        var(--sa-tint) calc((1 - var(--phase, 0.3)) * 100%),
-        color-mix(in oklab, var(--sa-tint) 78%, #2d2a8a)
+        color-mix(in oklab, var(--sa-tint) 70%, #fff) calc((1 - var(--phase, 0.3)) * 100%),
+        color-mix(in oklab, var(--sa-tint) 55%, #1d2052)
       )
       0%,
     color-mix(
         in oklab,
-        color-mix(in oklab, var(--sa-tint) 52%, #ffdcc8) calc((1 - var(--phase, 0.3)) * 100%),
-        color-mix(in oklab, var(--sa-tint) 66%, #f3b9d8)
+        color-mix(in oklab, var(--sa-tint) 45%, var(--sa-peach)) calc((1 - var(--phase, 0.3)) * 100%),
+        color-mix(in oklab, var(--sa-tint) 50%, var(--sa-dusk))
       )
-      58%,
+      62%,
     color-mix(in oklab, var(--sa-peach) calc((1 - var(--phase, 0.3)) * 100%), var(--sa-dusk)) 100%
   );
 }
@@ -925,13 +872,12 @@ export default function SunArcOpeningHours({
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: calc(0.3 + 0.7 * var(--lift, 0));
+  opacity: calc(0.25 + 0.55 * var(--lift, 0));
   background: radial-gradient(
-    ellipse 48% 66% at var(--sx, 20%) calc(100% - var(--sb, 0px)),
-    rgba(255, 241, 182, 0.95) 0,
-    rgba(255, 226, 160, 0.52) 17%,
-    rgba(255, 207, 170, 0.24) 42%,
-    transparent 74%
+    ellipse 42% 60% at var(--sx, 20%) calc(100% - var(--sb, 0px)),
+    rgba(255, 238, 205, 0.7) 0,
+    rgba(255, 224, 190, 0.28) 30%,
+    transparent 70%
   );
 }
 
@@ -953,8 +899,8 @@ export default function SunArcOpeningHours({
   margin: 0;
   max-inline-size: 100%;
   font-size: clamp(1.0625rem, 1.7cqi, 1.375rem);
-  font-weight: 620;
-  letter-spacing: -0.015em;
+  font-weight: 650;
+  letter-spacing: -0.02em;
   line-height: 1.2;
   text-wrap: balance;
 }
@@ -962,20 +908,18 @@ export default function SunArcOpeningHours({
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
   margin: 0;
   max-inline-size: 100%;
   box-sizing: border-box;
-  padding-block: 9px;
-  padding-inline: 13px 17px;
-  border: 1px solid rgba(28, 26, 87, 0.16);
+  padding-block: 7px;
+  padding-inline: 12px 15px;
+  border: 1px solid rgba(23, 26, 61, 0.2);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.55);
-  box-shadow: 0 8px 20px -12px rgba(28, 26, 87, 0.45);
-  font-size: 0.9375rem;
+  background: rgba(255, 255, 255, 0.4);
+  font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.25;
-  letter-spacing: -0.005em;
   font-variant-numeric: tabular-nums;
   transition: opacity 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
 }
@@ -983,20 +927,18 @@ export default function SunArcOpeningHours({
 .dotOpen,
 .dotClosed {
   flex: none;
-  inline-size: 10px;
-  block-size: 10px;
+  inline-size: 8px;
+  block-size: 8px;
   border-radius: 50%;
 }
 
 .dotOpen {
-  background: var(--sa-butter);
-  box-shadow:
-    0 0 0 2px var(--sa-ink),
-    0 0 0 6px rgba(255, 226, 122, 0.55);
+  background: var(--sa-ink);
+  box-shadow: 0 0 0 3px rgba(23, 26, 61, 0.16);
 }
 
 .dotClosed {
-  box-shadow: inset 0 0 0 2px var(--sa-ink);
+  box-shadow: inset 0 0 0 1.5px var(--sa-ink);
 }
 
 /* ---------- stage (the arc) ---------- */
@@ -1019,10 +961,8 @@ export default function SunArcOpeningHours({
 .track {
   fill: none;
   stroke: var(--sa-ink);
-  stroke-opacity: 0.42;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-dasharray: 0.1 8;
+  stroke-opacity: 0.3;
+  stroke-width: 1;
 }
 
 .dots {
@@ -1045,33 +985,6 @@ export default function SunArcOpeningHours({
   will-change: transform;
 }
 
-.bloom {
-  position: absolute;
-  inset-block-start: calc(var(--sa-R) * -3.6);
-  inset-inline-start: calc(var(--sa-R) * -3.6);
-  inline-size: calc(var(--sa-R) * 7.2);
-  block-size: calc(var(--sa-R) * 7.2);
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 244, 190, 0.95) 0,
-    rgba(255, 230, 140, 0.55) 17%,
-    rgba(255, 214, 160, 0.2) 40%,
-    transparent 68%
-  );
-}
-
-.ring {
-  position: absolute;
-  inset-block-start: calc(var(--sa-R) * -1.62);
-  inset-inline-start: calc(var(--sa-R) * -1.62);
-  inline-size: calc(var(--sa-R) * 3.24);
-  block-size: calc(var(--sa-R) * 3.24);
-  box-sizing: border-box;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 50%;
-}
-
 .disc {
   position: absolute;
   inset-block-start: calc(var(--sa-R) * -1);
@@ -1079,10 +992,8 @@ export default function SunArcOpeningHours({
   inline-size: calc(var(--sa-R) * 2);
   block-size: calc(var(--sa-R) * 2);
   border-radius: 50%;
-  background: radial-gradient(circle at 38% 32%, #fffbe3 0, #fff2ad 30%, var(--sa-butter) 62%, #ffd257 100%);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.55),
-    0 0 34px 6px rgba(255, 230, 130, 0.75);
+  background: radial-gradient(circle at 40% 34%, #fffaf0 0, #fbe9bf 55%, #f2d08e 100%);
+  box-shadow: 0 0 calc(var(--sa-R) * 1.6) calc(var(--sa-R) * 0.2) rgba(255, 232, 190, 0.5);
 }
 
 .endLabel {
@@ -1091,9 +1002,9 @@ export default function SunArcOpeningHours({
   inset-inline-start: 0;
   z-index: 3;
   padding-block: 2px;
-  font-size: 0.9375rem;
-  font-weight: 650;
-  letter-spacing: -0.005em;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   pointer-events: none;
@@ -1122,18 +1033,19 @@ export default function SunArcOpeningHours({
 
 .dayName {
   margin: 0;
-  font-size: var(--sa-day-fs);
-  font-weight: 620;
-  letter-spacing: -0.012em;
+  font-size: calc(var(--sa-day-fs) * 0.72);
+  font-weight: 650;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   line-height: 1.3;
-  opacity: 0.82;
+  opacity: 0.72;
 }
 
 .hours {
   margin: 0;
   font-size: var(--sa-hours-fs);
-  font-weight: 540;
-  letter-spacing: -0.048em;
+  font-weight: 400;
+  letter-spacing: -0.045em;
   line-height: 1.02;
   font-variant-numeric: tabular-nums;
   text-wrap: balance;
@@ -1141,9 +1053,9 @@ export default function SunArcOpeningHours({
 }
 
 .hoursDash {
-  margin-inline: 0.14em;
-  font-weight: 380;
-  opacity: 0.5;
+  margin-inline: 0.12em;
+  font-weight: 300;
+  opacity: 0.45;
 }
 
 .rise {
@@ -1168,46 +1080,15 @@ export default function SunArcOpeningHours({
   position: relative;
   z-index: 2;
   box-sizing: border-box;
-  padding-block: var(--sa-ref) clamp(16px, 2.6cqi, 28px);
+  padding-block: var(--sa-ref) clamp(16px, 2.6cqi, 26px);
   padding-inline: var(--sa-pad);
-  border-block-start: 1px solid rgba(255, 255, 255, 0.6);
+  border-block-start: 1px solid rgba(255, 255, 255, 0.28);
   background: linear-gradient(
     180deg,
-    color-mix(in oklab, var(--sa-tint) 60%, var(--sa-ink)) 0%,
-    color-mix(in oklab, var(--sa-tint) 22%, var(--sa-ink)) 48%,
+    color-mix(in oklab, var(--sa-tint) 28%, var(--sa-ink)) 0%,
     var(--sa-ink) 100%
   );
   color: var(--sa-foam);
-}
-
-.waterSvg {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline-start: 0;
-  pointer-events: none;
-}
-
-.ropePeach,
-.ropeFoam {
-  fill: none;
-  stroke-width: 5;
-  stroke-linecap: round;
-  stroke-dasharray: 0.1 24;
-}
-
-.ropePeach {
-  stroke: var(--sa-peach);
-  stroke-opacity: 0.8;
-}
-
-.ropeFoam {
-  stroke: var(--sa-foam);
-  stroke-opacity: 0.7;
-  stroke-dashoffset: -12;
-}
-
-.bar {
-  fill: #fff0a6;
 }
 
 /* ---------- weekday chips ---------- */
@@ -1224,11 +1105,11 @@ export default function SunArcOpeningHours({
   inset-block: 0;
   inset-inline-start: 0;
   inline-size: calc((100% - (var(--n, 7) - 1) * var(--sa-gap)) / var(--n, 7));
-  border-radius: 16px;
-  background: var(--sa-butter);
-  box-shadow: 0 10px 24px -12px rgba(255, 226, 122, 0.85);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #fffaf0, var(--sa-butter));
+  box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.5);
   transform: translateX(calc(var(--i, 0) * (100% + var(--sa-gap))));
-  transition: transform 640ms cubic-bezier(0.3, 1.32, 0.45, 1);
+  transition: transform 560ms cubic-bezier(0.3, 1.15, 0.45, 1);
 }
 
 .chip {
@@ -1240,13 +1121,13 @@ export default function SunArcOpeningHours({
   justify-content: center;
   gap: 3px;
   min-inline-size: 0;
-  min-block-size: 74px;
+  min-block-size: 68px;
   box-sizing: border-box;
   padding-block: 8px;
   padding-inline: 4px;
-  border: 1px solid rgba(246, 242, 255, 0.22);
-  border-radius: 16px;
-  background: rgba(246, 242, 255, 0.07);
+  border: 1px solid rgba(244, 241, 250, 0.2);
+  border-radius: 10px;
+  background: transparent;
   color: var(--sa-foam);
   font: inherit;
   cursor: pointer;
@@ -1258,7 +1139,8 @@ export default function SunArcOpeningHours({
 }
 
 .chip:hover {
-  background: rgba(246, 242, 255, 0.16);
+  background: rgba(244, 241, 250, 0.1);
+  border-color: rgba(244, 241, 250, 0.4);
 }
 
 .chip:focus-visible {
@@ -1268,8 +1150,8 @@ export default function SunArcOpeningHours({
 
 .chipCompact {
   padding-inline: 2px;
-  min-block-size: 48px;
-  border-radius: 13px;
+  min-block-size: 46px;
+  border-radius: 9px;
 }
 
 .chipOn {
@@ -1285,9 +1167,10 @@ export default function SunArcOpeningHours({
 .chipLabel {
   max-inline-size: 100%;
   overflow: hidden;
-  font-size: 0.9375rem;
-  font-weight: 640;
-  letter-spacing: -0.005em;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1296,11 +1179,11 @@ export default function SunArcOpeningHours({
 .chipHours {
   max-inline-size: 100%;
   overflow: hidden;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 450;
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
-  opacity: 0.86;
+  opacity: 0.8;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1333,7 +1216,7 @@ export default function SunArcOpeningHours({
   background-image: var(--sa-noise);
   background-size: 180px 180px;
   mix-blend-mode: multiply;
-  opacity: 0.17;
+  opacity: 0.06;
 }
 
 .srOnly {

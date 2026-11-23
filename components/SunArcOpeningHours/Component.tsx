@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import styles from './Component.module.css';
 
@@ -163,7 +163,7 @@ function makeGeo(W: number, labelW: number): Geo {
     R,
     stageH,
     hy: stageH,
-    ref: compact ? 46 : Math.round(clamp(W * 0.07, 60, 96)),
+    ref: compact ? 20 : 28,
     hoursFs,
     dayFs,
     textLeft,
@@ -221,7 +221,6 @@ interface Engine {
   intro: boolean;
 }
 
-const BARS = 9;
 const SWIPE = 44;
 
 export default function SunArcOpeningHours({
@@ -237,7 +236,6 @@ export default function SunArcOpeningHours({
   closedLabel = 'Closed',
   className,
 }: SunArcOpeningHoursProps) {
-  const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const [W, setW] = useState(960);
   const [reduced, setReduced] = useState(false);
   const [inView, setInView] = useState(true);
@@ -249,12 +247,9 @@ export default function SunArcOpeningHours({
   const rootRef = useRef<HTMLDivElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
   const sunRef = useRef<HTMLDivElement>(null);
-  const haloAllRef = useRef<SVGPathElement>(null);
-  const haloBrightRef = useRef<SVGPathElement>(null);
   const coreRemainRef = useRef<SVGPathElement>(null);
   const coreBrightRef = useRef<SVGPathElement>(null);
   const dotRefs = useRef<(SVGCircleElement | null)[]>([]);
-  const barRefs = useRef<(SVGRectElement | null)[]>([]);
   const endARef = useRef<HTMLSpanElement>(null);
   const endBRef = useRef<HTMLSpanElement>(null);
   const chipRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -370,10 +365,8 @@ export default function SunArcOpeningHours({
       node.setAttribute('opacity', (opacity * amt).toFixed(3));
       node.setAttribute('stroke-width', (width * (0.25 + 0.75 * amt)).toFixed(2));
     };
-    setPath(haloAllRef.current, sa, sb, 0.34, 20);
-    setPath(haloBrightRef.current, sa, el, 0.95, 22);
-    setPath(coreRemainRef.current, el, sb, 0.6, 3);
-    setPath(coreBrightRef.current, sa, el, 1, 6);
+    setPath(coreRemainRef.current, el, sb, 0.55, 1.5);
+    setPath(coreBrightRef.current, sa, el, 1, 2.25);
 
     const marks = modelRef.current;
     const span = marks.end - marks.start;
@@ -383,18 +376,8 @@ export default function SunArcOpeningHours({
       if (h === undefined) return;
       const s = (h - marks.start) / span;
       const lit = amt > 0.05 && s >= sa - 0.002 && s <= el + 0.002;
-      c.setAttribute('fill', lit ? '#fff7cf' : 'currentColor');
-      c.setAttribute('fill-opacity', lit ? '1' : '0.5');
-    });
-
-    const shift = sx * 24;
-    barRefs.current.forEach((r, i) => {
-      if (!r) return;
-      const w = g.R * 2.4 * (1 - i / (BARS + 2)) * (0.7 + 0.3 * Math.sin(i * 2.3 + shift));
-      const c = p.x + Math.sin(i * 1.9 + shift * 0.7) * (2 + i * 1.5);
-      r.setAttribute('x', (c - w / 2).toFixed(1));
-      r.setAttribute('width', Math.max(2, w).toFixed(1));
-      r.setAttribute('opacity', (lift1 * (0.92 - i * 0.085)).toFixed(3));
+      c.setAttribute('fill', lit ? '#fff4d6' : 'currentColor');
+      c.setAttribute('fill-opacity', lit ? '1' : '0.4');
     });
 
     const lw = labelW.current;
@@ -703,18 +686,9 @@ export default function SunArcOpeningHours({
             aria-hidden="true"
             focusable="false"
           >
-            <defs>
-              <filter id={`${uid}-blur`} x="-20%" y="-60%" width="140%" height="220%">
-                <feGaussianBlur stdDeviation={g.compact ? 6 : 9} />
-              </filter>
-            </defs>
             <path className={styles.track} d={arcD(g, 0, 1)} />
-            <g filter={`url(#${uid}-blur)`} stroke="#ffe27a" fill="none" strokeLinecap="round">
-              <path ref={haloAllRef} opacity="0" />
-              <path ref={haloBrightRef} opacity="0" stroke="#fff3b8" />
-            </g>
-            <path ref={coreRemainRef} fill="none" stroke="#ffeaa0" strokeLinecap="round" opacity="0" />
-            <path ref={coreBrightRef} fill="none" stroke="#fffbe4" strokeLinecap="round" opacity="0" />
+            <path ref={coreRemainRef} fill="none" stroke="#f3d9b0" strokeLinecap="round" opacity="0" />
+            <path ref={coreBrightRef} fill="none" stroke="#fff6e0" strokeLinecap="round" opacity="0" />
             <g className={styles.dots}>
               {model.hourMarks.map((h, i) => {
                 const p = pt(g, (h - model.start) / span);
@@ -726,7 +700,7 @@ export default function SunArcOpeningHours({
                     }}
                     cx={p.x}
                     cy={p.y}
-                    r={h % 3 === 0 ? 3.2 : 1.9}
+                    r={h % 3 === 0 ? 2.6 : 1.5}
                     fill="currentColor"
                     fillOpacity="0.5"
                   />
@@ -737,8 +711,6 @@ export default function SunArcOpeningHours({
 
           <div className={styles.sunLayer} aria-hidden="true">
             <div ref={sunRef} className={styles.sunPos}>
-              <span className={styles.bloom} />
-              <span className={styles.ring} />
               <span className={styles.disc} />
             </div>
           </div>
@@ -755,31 +727,6 @@ export default function SunArcOpeningHours({
       </div>
 
       <div className={styles.water}>
-        <svg
-          className={styles.waterSvg}
-          width={g.W}
-          height={g.ref}
-          viewBox={`0 0 ${g.W} ${g.ref}`}
-          aria-hidden="true"
-          focusable="false"
-        >
-          <path className={styles.ropePeach} d={`M0 ${g.ref * 0.46}H${g.W}`} />
-          <path className={styles.ropeFoam} d={`M0 ${g.ref * 0.46}H${g.W}`} />
-          {Array.from({ length: BARS }, (_, i) => (
-            <rect
-              key={i}
-              ref={(el) => {
-                barRefs.current[i] = el;
-              }}
-              className={styles.bar}
-              y={4 + i * ((g.ref - 10) / BARS)}
-              height={g.compact ? 2.4 : 3}
-              rx={1.5}
-              opacity="0"
-            />
-          ))}
-        </svg>
-
         {g.compact && readout}
 
         <div
