@@ -1,86 +1,71 @@
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url('./fonts/space-grotesk-500.woff2') format('woff2');
+}
+
 .root {
-  --md-wall: #ebe8e2;
-  --md-wall-hi: #f7f5f1;
-  --md-wall-lo: #dcd7cd;
-  --md-frame: #2c2924;
-  --md-frame-deep: #242119;
-  --md-frame-hi: rgba(255, 255, 255, 0.08);
-  --md-grout: #cdc6b8;
-  --md-ink: #26231e;
-  --md-light: #ece7dd;
-  --md-light-muted: rgba(236, 231, 221, 0.64);
-  --md-hairline: rgba(255, 255, 255, 0.14);
-  --md-focus: #f0eadf;
-  --md-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --md-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.42  0 0 0 0 0.36  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --md-ink: #0c0d0f;
+  --md-paper: #ecebe6;
+  --md-dim: #9a9b98;
+  --md-line: #2a2c2f;
+  --md-signal: #c8ff3a;
+  --md-font: 'Space Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
 
   position: relative;
-  isolation: isolate;
-  overflow: clip;
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  display: grid;
-  justify-items: center;
-  padding-block: clamp(36px, 6cqi, 68px);
-  padding-inline: clamp(14px, 3cqi, 28px);
-  background:
-    radial-gradient(75% 55% at 50% 0%, var(--md-wall-hi) 0%, transparent 72%),
-    linear-gradient(180deg, var(--md-wall) 0%, var(--md-wall-lo) 100%);
-  color: var(--md-ink);
-  font-family: var(--md-font-ui);
-}
-
-.root ::selection {
-  background: #cfc7b8;
-  color: #211e18;
-}
-
-.grain {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image: var(--md-noise);
-  opacity: 0.3;
-  mix-blend-mode: multiply;
-}
-
-.frame {
-  position: relative;
-  z-index: 1;
-  inline-size: min(100%, 1020px);
-  box-sizing: border-box;
-  padding-block: clamp(10px, 1.8cqi, 16px) clamp(20px, 3cqi, 28px);
-  padding-inline: clamp(10px, 1.8cqi, 16px);
-  border-radius: 22px;
-  background: linear-gradient(168deg, #343028 0%, var(--md-frame) 52%, var(--md-frame-deep) 100%);
-  box-shadow:
-    inset 0 1px 0 var(--md-frame-hi),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.22),
-    0 54px 100px -48px rgba(44, 37, 26, 0.55),
-    0 18px 38px -20px rgba(44, 37, 26, 0.42);
+  overflow: clip;
+  background: var(--md-ink);
+  color: var(--md-paper);
+  font-family: var(--md-font);
+  font-weight: 500;
+  font-synthesis: none;
+  font-variant-numeric: tabular-nums;
 }
 
 .viewport {
   position: relative;
   aspect-ratio: 3 / 2;
-  border-radius: 10px;
   overflow: hidden;
-  contain: paint;
-  background: var(--md-grout);
   cursor: pointer;
   touch-action: pan-y;
-  -webkit-tap-highlight-color: transparent;
+  background: var(--md-ink);
+}
+
+.base,
+.face {
+  background-repeat: no-repeat;
+}
+
+.base {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+}
+
+.facePlaceholder {
+  background-color: #1a1c1f;
 }
 
 .grid {
   position: absolute;
   inset: 0;
   display: grid;
-  gap: 2px;
-  padding: 2px;
-  background: var(--md-grout);
+  gap: 0;
+  visibility: hidden;
+}
+
+.root[data-phase='flip'] .grid {
+  visibility: visible;
+}
+
+.root[data-phase='flip'][data-motion='full'] .base {
+  visibility: hidden;
 }
 
 .tile {
@@ -89,245 +74,132 @@
 
 .flipper {
   position: absolute;
-  inset: 0;
-}
-
-/* The flip is driven from one rAF loop (scaleX with a face swap at the edge-on point), so the layer is only
-   promoted while a flip is running and the idle page carries no per-tile compositor layers. */
-.root[data-motion='full'][data-phase='flip'] .flipper {
+  inset: -0.5px;
   will-change: transform;
 }
 
 .face {
   position: absolute;
   inset: 0;
-  background-repeat: no-repeat;
-  background-color: #c9c2b4;
 }
 
-/* the hidden face is never painted at rest */
-.root[data-motion='full'] .faceBack {
+.faceBack {
   visibility: hidden;
 }
 
-.root[data-motion='full'] .flipper[data-b] .faceFront {
+.flipper[data-b] .faceFront {
   visibility: hidden;
 }
 
-.root[data-motion='full'] .flipper[data-b] .faceBack {
+.flipper[data-b] .faceBack {
   visibility: visible;
 }
 
-.facePlaceholder {
-  background-image: linear-gradient(150deg, #d6cfc2 0%, #bab2a3 55%, #a89f8f 100%);
+.root[data-motion='reduced'][data-phase='flip'] .grid {
+  animation: md-fade var(--md-fade) linear both;
 }
 
-/* Resting gloss: one overlay tiled to the grid, so every chip still reads as a glazed square. */
-.gloss {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  /* gloss from the top left, a hairline of shade on the far edges so each chip sits in its grout */
-  background-image:
-    linear-gradient(to top, transparent 2px, rgba(30, 24, 14, 0.2) 2px, transparent 5px),
-    linear-gradient(to left, transparent 2px, rgba(30, 24, 14, 0.2) 2px, transparent 5px),
-    linear-gradient(168deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 22%, transparent 40%);
-  background-size: calc((100% - 2px) / var(--md-cols, 12)) calc((100% - 2px) / var(--md-rows, 8));
-  background-position: 2px 2px;
-  background-repeat: repeat;
-}
-
-/* Flip glint: a single soft ring that rides the wave front (scaled from JS, compositor only). */
-.ring {
-  position: absolute;
-  z-index: 3;
-  inline-size: 0;
-  block-size: 0;
-  border-radius: 50%;
-  pointer-events: none;
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0);
-  background: radial-gradient(
-    closest-side,
-    transparent 0 80%,
-    rgba(255, 255, 255, 0.1) 88%,
-    rgba(255, 255, 255, 0.5) 96%,
-    transparent 100%
-  );
-  will-change: transform, opacity;
-}
-
-/* Reduced motion: the whole surface crossfades, no ripple, no lift. */
-.root[data-motion='reduced'] .face {
-  transition: opacity var(--md-fade, 200ms) ease;
+.root[data-motion='reduced'] .faceFront {
+  visibility: hidden;
 }
 
 .root[data-motion='reduced'] .faceBack {
-  opacity: 0;
+  visibility: visible;
 }
 
-.root[data-motion='reduced'][data-phase='flip'] .faceFront {
-  opacity: 0;
-}
-
-.root[data-motion='reduced'][data-phase='flip'] .faceBack {
-  opacity: 1;
-}
-
-/* Idle life: a slow showroom glint drifting across the tile field. */
-.sheen {
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.sheen::before {
-  content: '';
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  inline-size: 60%;
-  background: linear-gradient(
-    112deg,
-    transparent 22%,
-    rgba(255, 255, 255, 0.1) 42%,
-    rgba(255, 255, 255, 0.22) 50%,
-    rgba(255, 255, 255, 0.1) 58%,
-    transparent 78%
-  );
-  opacity: 0;
-  transform: translateX(-100%);
-  animation: sheen-sweep 9s ease-in-out infinite;
-  will-change: transform, opacity;
-}
-
-.root[data-inview='out'] .sheen::before,
-.root[data-phase='flip'] .sheen::before,
-.root[data-motion='reduced'] .sheen::before {
-  animation-play-state: paused;
-}
-
-@keyframes sheen-sweep {
-  0% {
-    transform: translateX(-100%);
+@keyframes md-fade {
+  from {
     opacity: 0;
   }
-  5% {
-    opacity: 0.6;
-  }
-  24% {
-    transform: translateX(180%);
-    opacity: 0.6;
-  }
-  32% {
-    transform: translateX(180%);
-    opacity: 0;
-  }
-  100% {
-    transform: translateX(180%);
-    opacity: 0;
+  to {
+    opacity: 1;
   }
 }
 
-.placard {
-  display: flex;
-  align-items: center;
-  gap: clamp(10px, 2cqi, 22px);
-  margin-block-start: clamp(10px, 1.8cqi, 16px);
-  padding-block-start: clamp(10px, 1.8cqi, 14px);
-  border-block-start: 1px solid rgba(255, 255, 255, 0.09);
+.meta {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: end;
+  column-gap: clamp(16px, 4cqi, 40px);
+  padding: clamp(16px, 3cqi, 28px) clamp(16px, 3cqi, 28px) clamp(14px, 2.4cqi, 22px);
+}
+
+.counter {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.15em;
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+}
+
+.counterNow {
+  font-size: clamp(56px, 15cqi, 144px);
+}
+
+.counterTotal {
+  font-size: clamp(14px, 1.8cqi, 18px);
+  letter-spacing: 0;
+  color: var(--md-dim);
 }
 
 .caption {
-  flex: 1 1 12em;
-  min-inline-size: 0;
   margin: 0;
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 1.5;
-  letter-spacing: 0.002em;
-  color: var(--md-light);
-}
-
-.captionText {
+  align-self: end;
+  font-size: clamp(14px, 1.9cqi, 17px);
+  line-height: 1.35;
+  color: var(--md-paper);
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
   overflow-wrap: anywhere;
 }
 
-.root[data-motion='full'] .captionText {
-  animation: caption-in 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+.captionText {
+  animation: md-caption 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-@keyframes caption-in {
+@keyframes md-caption {
   from {
     opacity: 0;
-    transform: translateY(7px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
-}
-
-.counter {
-  flex: none;
-  min-inline-size: 6ch;
-  font-size: 12.5px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  font-variant-numeric: tabular-nums;
-  color: var(--md-light-muted);
 }
 
 .controls {
   display: flex;
-  align-items: center;
   gap: 8px;
-  margin-inline-start: auto;
 }
 
 .ctrl {
-  display: grid;
+  appearance: none;
+  display: inline-grid;
   place-items: center;
-  inline-size: 44px;
+  box-sizing: border-box;
+  min-inline-size: 44px;
   block-size: 44px;
   padding: 0;
-  border: 1px solid var(--md-hairline);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--md-light);
-  cursor: pointer;
-  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
-}
-
-.ctrl:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.32);
-}
-
-.ctrl:active {
-  transform: scale(0.93);
-}
-
-.ctrl:focus-visible {
-  outline: 2px solid var(--md-focus);
-  outline-offset: 2px;
-}
-
-.ctrlQuiet {
-  border-color: transparent;
+  border: 1px solid var(--md-line);
+  border-radius: 0;
   background: transparent;
+  color: var(--md-paper);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
 }
 
-.ctrlQuiet:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.18);
+.ctrlText {
+  padding-inline: 14px;
+  color: var(--md-dim);
 }
 
 .ctrlIcon {
@@ -335,29 +207,59 @@
   block-size: 16px;
 }
 
-.progressTrack {
-  position: absolute;
-  inset-inline: clamp(10px, 1.8cqi, 16px);
-  inset-block-end: 8px;
+@media (hover: hover) {
+  .ctrl:hover {
+    background: var(--md-paper);
+    border-color: var(--md-paper);
+    color: var(--md-ink);
+  }
+}
+
+.ctrl:active {
+  background: var(--md-paper);
+  color: var(--md-ink);
+}
+
+.ctrl:focus-visible {
+  outline: 2px solid var(--md-signal);
+  outline-offset: 2px;
+}
+
+.progress {
+  display: flex;
+  gap: 4px;
+  padding: 0 clamp(16px, 3cqi, 28px) clamp(16px, 3cqi, 28px);
+}
+
+.seg {
+  position: relative;
+  flex: 1 1 0;
   block-size: 2px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--md-line);
   overflow: hidden;
-  pointer-events: none;
 }
 
-.progressFill {
-  display: block;
-  block-size: 100%;
+.segDone,
+.segFill {
+  background: var(--md-paper);
+}
+
+.segDone {
   inline-size: 100%;
-  transform-origin: 0 50%;
-  background: linear-gradient(90deg, rgba(236, 231, 221, 0.35), rgba(236, 231, 221, 0.95));
-  animation-name: progress-grow;
-  animation-timing-function: linear;
-  animation-fill-mode: forwards;
 }
 
-@keyframes progress-grow {
+.segFill {
+  position: absolute;
+  inset: 0;
+}
+
+.segFillRun {
+  background: var(--md-signal);
+  transform-origin: left center;
+  animation: md-progress linear both;
+}
+
+@keyframes md-progress {
   from {
     transform: scaleX(0);
   }
@@ -366,19 +268,25 @@
   }
 }
 
-@container (width < 560px) {
-  .placard {
-    flex-wrap: wrap;
-    row-gap: 12px;
+@container (max-width: 560px) {
+  .meta {
+    grid-template-columns: auto 1fr;
+    row-gap: 14px;
   }
-
   .caption {
-    flex-basis: 100%;
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .controls {
+    justify-self: end;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sheen {
-    display: none;
+  .captionText {
+    animation: none;
+  }
+  .ctrl {
+    transition: none;
   }
 }

@@ -61,6 +61,7 @@ const WAVE_MS = 720;
 const FADE_MS = 200;
 const ASPECT = 3 / 2;
 const SWIPE_MIN = 44;
+const PROGRESS_MIN_SEGMENTS = 2;
 
 const PREV_LABEL = 'Previous slide';
 const NEXT_LABEL = 'Next slide';
@@ -69,14 +70,12 @@ const PAUSE_LABEL = 'Pause slideshow';
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
-/* ---- flip driver: one rAF loop writes every tile's transform (no per-tile CSS transitions) ---- */
+/* ---- flip driver: one rAF loop writes every tile's transform ---- */
 
-const FLIP_GLINT_LEAD = 0.3; // the glint rides the wave front as each tile passes edge-on
-
-// cubic-bezier(0.3, 1.26, 0.42, 1) sampled once; looked up per tile per frame
+// cubic-bezier(0.22, 0.9, 0.25, 1) sampled once; looked up per tile per frame
 const EASE_STEPS = 64;
 const EASE_LUT = (() => {
-  const [x1, y1, x2, y2] = [0.3, 1.26, 0.42, 1];
+  const [x1, y1, x2, y2] = [0.22, 0.9, 0.25, 1];
   const bez = (a: number, b: number, u: number) => 3 * a * u * (1 - u) * (1 - u) + 3 * b * u * u * (1 - u) + u * u * u;
   const xs: number[] = [];
   const ys: number[] = [];
@@ -151,7 +150,6 @@ export default function MosaicDissolveSlides({
   const viewportRef = useRef<HTMLDivElement>(null);
   const commitTimer = useRef(0);
   const flipRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const ringRef = useRef<HTMLSpanElement>(null);
   const swipeStart = useRef<{ x: number; y: number } | null>(null);
   const suppressClick = useRef(false);
   const autoRemaining = useRef(holdMs);
@@ -327,34 +325,15 @@ export default function MosaicDissolveSlides({
   }, [grid, origin]);
   const tilesRef = useRef(tiles);
   tilesRef.current = tiles;
-  const originRef = useRef(origin);
-  originRef.current = origin;
 
-  // One rAF loop drives the whole wave: every in-flight tile gets one transform write per frame,
-  // and the glint is a single ring scaled along the wave front instead of a per-tile animation.
+  // One rAF loop drives the whole wave: every in-flight tile gets one transform write per frame.
   useEffect(() => {
     if (phase !== 'flip' || reduced) return;
-    const vp = viewportRef.current;
-    const ring = ringRef.current;
     const list = tilesRef.current;
     const els = flipRefs.current;
-    if (!vp || !ring) return;
     const n = list.length;
     const done = new Uint8Array(n);
     const turned = new Uint8Array(n);
-    const W = vp.clientWidth;
-    const H = vp.clientHeight;
-    const o = originRef.current;
-    const reach = Math.max(
-      Math.hypot(o.x * W, o.y * H),
-      Math.hypot((1 - o.x) * W, o.y * H),
-      Math.hypot(o.x * W, (1 - o.y) * H),
-      Math.hypot((1 - o.x) * W, (1 - o.y) * H),
-    );
-    ring.style.width = `${reach * 2}px`;
-    ring.style.height = `${reach * 2}px`;
-    ring.style.left = `${o.x * W}px`;
-    ring.style.top = `${o.y * H}px`;
     const total = WAVE_MS + FLIP_MS;
     const t0 = performance.now();
     let raf = 0;
@@ -369,8 +348,7 @@ export default function MosaicDissolveSlides({
         if (p <= 0) continue;
         if (p >= 1) {
           el.style.transform = '';
-          if (!turned[k]) el.dataset.b = '1';
-          turned[k] = 1;
+          el.dataset.b = '1';
           done[k] = 1;
           continue;
         }
@@ -379,24 +357,12 @@ export default function MosaicDissolveSlides({
           turned[k] = 1;
           el.dataset.b = '1';
         }
-        const sx = Math.abs(Math.cos(Math.PI * e));
-        const lift = 1 + 0.09 * Math.sin(Math.PI * Math.pow(p, 0.85));
-        el.style.transform = `scale(${(sx * lift).toFixed(3)},${lift.toFixed(3)})`;
-      }
-      const front = clamp((t - FLIP_MS * FLIP_GLINT_LEAD) / WAVE_MS, 0, 1);
-      if (front > 0 && front < 1) {
-        ring.style.opacity = String(Math.sin(Math.PI * front) ** 0.6 * 0.9);
-        ring.style.transform = `translate(-50%, -50%) scale(${Math.pow(front, 1 / 0.85).toFixed(4)})`;
-      } else {
-        ring.style.opacity = '0';
+        el.style.transform = `scaleX(${Math.abs(Math.cos(Math.PI * e)).toFixed(3)})`;
       }
       if (t < total) raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
-    return () => {
-      cancelAnimationFrame(raf);
-      ring.style.opacity = '0';
-    };
+    return () => cancelAnimationFrame(raf);
   }, [phase, reduced]);
 
   // Back at rest (new slide committed in the same render): clear every tile before paint.
@@ -445,10 +411,7 @@ export default function MosaicDissolveSlides({
     [tiles, frontSrc, backSrc, bgSize],
   );
 
-  const rootStyle = {
-    '--md-flip': `${FLIP_MS}ms`,
-    '--md-fade': `${FADE_MS}ms`,
-  } as CSSProperties;
+  const rootStyle = { '--md-fade': `${FADE_MS}ms` } as CSSProperties;
 
   return (
     <div
@@ -463,189 +426,158 @@ export default function MosaicDissolveSlides({
       onFocus={onRootFocus}
       onBlur={onRootBlur}
     >
-      <span className={styles.grain} aria-hidden="true" />
-
-      <div className={styles.frame}>
+      <div
+        ref={viewportRef}
+        className={styles.viewport}
+        onClick={onViewportClick}
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
+        onPointerCancel={() => {
+          swipeStart.current = null;
+        }}
+      >
+        <span
+          className={[styles.base, frontSrc ? '' : styles.facePlaceholder].filter(Boolean).join(' ')}
+          style={{ backgroundImage: frontSrc ? `url("${frontSrc}")` : undefined }}
+          role="img"
+          aria-label={current?.alt ?? ''}
+        />
         <div
-          ref={viewportRef}
-          className={styles.viewport}
-          onClick={onViewportClick}
-          onPointerDown={onPointerDown}
-          onPointerUp={onPointerUp}
-          onPointerCancel={() => {
-            swipeStart.current = null;
+          className={styles.grid}
+          aria-hidden="true"
+          style={{
+            gridTemplateColumns: `repeat(${grid.cols}, 1fr)`,
+            gridTemplateRows: `repeat(${grid.rows}, 1fr)`,
           }}
         >
-          <div
-            className={styles.grid}
-            style={{
-              gridTemplateColumns: `repeat(${grid.cols}, 1fr)`,
-              gridTemplateRows: `repeat(${grid.rows}, 1fr)`,
-            }}
-          >
-            {tileEls}
-          </div>
-          <span
-            className={styles.gloss}
-            style={{ '--md-cols': grid.cols, '--md-rows': grid.rows } as CSSProperties}
-            aria-hidden="true"
-          />
-          <span className={styles.ring} ref={ringRef} aria-hidden="true" />
-          <span className={styles.sheen} aria-hidden="true" />
+          {tileEls}
         </div>
-
-        <div className={styles.placard}>
-          <p className={styles.caption} aria-live={isPlaying ? 'off' : 'polite'} aria-atomic="true">
-            <span className={styles.captionText} key={safeIndex}>
-              {captionText}
-            </span>
-          </p>
-          <span className={styles.counter} aria-hidden="true">
-            {pad(safeIndex + 1)} / {pad(Math.max(count, 1))}
-          </span>
-          <div className={styles.controls}>
-            <button
-              type="button"
-              className={[styles.ctrl, styles.ctrlQuiet].join(' ')}
-              aria-label={playOn ? PAUSE_LABEL : PLAY_LABEL}
-              onClick={() => setPlayOn((p) => !p)}
-            >
-              {playOn ? (
-                <svg className={styles.ctrlIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                  <path d="M5.75 3.5v9M10.25 3.5v9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              ) : (
-                <svg className={styles.ctrlIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                  <path d="M5.5 3.2v9.6L12.4 8z" fill="currentColor" />
-                </svg>
-              )}
-            </button>
-            <button type="button" className={styles.ctrl} aria-label={PREV_LABEL} onClick={onPrev}>
-              <svg className={styles.ctrlIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                <path
-                  d="M10.5 3 5.5 8l5 5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-            <button type="button" className={styles.ctrl} aria-label={NEXT_LABEL} onClick={onNext}>
-              <svg className={styles.ctrlIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                <path
-                  d="M5.5 3l5 5-5 5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {playOn && count > 1 && (
-          <span className={styles.progressTrack}>
-            <span
-              className={styles.progressFill}
-              key={`fill-${safeIndex}`}
-              style={{ animationDuration: `${holdMs}ms`, animationPlayState: isPlaying ? 'running' : 'paused' }}
-            />
-          </span>
-        )}
       </div>
+
+      <div className={styles.meta}>
+        <span className={styles.counter} aria-hidden="true">
+          <span className={styles.counterNow}>{pad(safeIndex + 1)}</span>
+          <span className={styles.counterTotal}>/{pad(Math.max(count, 1))}</span>
+        </span>
+        <p className={styles.caption} aria-live={isPlaying ? 'off' : 'polite'} aria-atomic="true">
+          <span className={styles.captionText} key={safeIndex}>
+            {captionText}
+          </span>
+        </p>
+        <div className={styles.controls}>
+          <button
+            type="button"
+            className={[styles.ctrl, styles.ctrlText].join(' ')}
+            aria-label={playOn ? PAUSE_LABEL : PLAY_LABEL}
+            onClick={() => setPlayOn((p) => !p)}
+          >
+            {playOn ? 'Pause' : 'Play'}
+          </button>
+          <button type="button" className={styles.ctrl} aria-label={PREV_LABEL} onClick={onPrev}>
+            <svg className={styles.ctrlIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path d="M13 8H3M7 4 3 8l4 4" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+          </button>
+          <button type="button" className={styles.ctrl} aria-label={NEXT_LABEL} onClick={onNext}>
+            <svg className={styles.ctrlIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {count >= PROGRESS_MIN_SEGMENTS && (
+        <div className={styles.progress} aria-hidden="true">
+          {slides.map((_, k) => (
+            <span
+              key={k}
+              className={[styles.seg, k < safeIndex ? styles.segDone : ''].filter(Boolean).join(' ')}
+            >
+              {k === safeIndex && (
+                <span
+                  className={[styles.segFill, playOn ? styles.segFillRun : ''].filter(Boolean).join(' ')}
+                  key={`fill-${safeIndex}-${playOn}`}
+                  style={{ animationDuration: `${holdMs}ms`, animationPlayState: isPlaying ? 'running' : 'paused' }}
+                />
+              )}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 ```
 
 ```css
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url('./fonts/space-grotesk-500.woff2') format('woff2');
+}
+
 .root {
-  --md-wall: #ebe8e2;
-  --md-wall-hi: #f7f5f1;
-  --md-wall-lo: #dcd7cd;
-  --md-frame: #2c2924;
-  --md-frame-deep: #242119;
-  --md-frame-hi: rgba(255, 255, 255, 0.08);
-  --md-grout: #cdc6b8;
-  --md-ink: #26231e;
-  --md-light: #ece7dd;
-  --md-light-muted: rgba(236, 231, 221, 0.64);
-  --md-hairline: rgba(255, 255, 255, 0.14);
-  --md-focus: #f0eadf;
-  --md-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --md-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.42  0 0 0 0 0.36  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --md-ink: #0c0d0f;
+  --md-paper: #ecebe6;
+  --md-dim: #9a9b98;
+  --md-line: #2a2c2f;
+  --md-signal: #c8ff3a;
+  --md-font: 'Space Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
 
   position: relative;
-  isolation: isolate;
-  overflow: clip;
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  display: grid;
-  justify-items: center;
-  padding-block: clamp(36px, 6cqi, 68px);
-  padding-inline: clamp(14px, 3cqi, 28px);
-  background:
-    radial-gradient(75% 55% at 50% 0%, var(--md-wall-hi) 0%, transparent 72%),
-    linear-gradient(180deg, var(--md-wall) 0%, var(--md-wall-lo) 100%);
-  color: var(--md-ink);
-  font-family: var(--md-font-ui);
-}
-
-.root ::selection {
-  background: #cfc7b8;
-  color: #211e18;
-}
-
-.grain {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image: var(--md-noise);
-  opacity: 0.3;
-  mix-blend-mode: multiply;
-}
-
-.frame {
-  position: relative;
-  z-index: 1;
-  inline-size: min(100%, 1020px);
-  box-sizing: border-box;
-  padding-block: clamp(10px, 1.8cqi, 16px) clamp(20px, 3cqi, 28px);
-  padding-inline: clamp(10px, 1.8cqi, 16px);
-  border-radius: 22px;
-  background: linear-gradient(168deg, #343028 0%, var(--md-frame) 52%, var(--md-frame-deep) 100%);
-  box-shadow:
-    inset 0 1px 0 var(--md-frame-hi),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.22),
-    0 54px 100px -48px rgba(44, 37, 26, 0.55),
-    0 18px 38px -20px rgba(44, 37, 26, 0.42);
+  overflow: clip;
+  background: var(--md-ink);
+  color: var(--md-paper);
+  font-family: var(--md-font);
+  font-weight: 500;
+  font-synthesis: none;
+  font-variant-numeric: tabular-nums;
 }
 
 .viewport {
   position: relative;
   aspect-ratio: 3 / 2;
-  border-radius: 10px;
   overflow: hidden;
-  contain: paint;
-  background: var(--md-grout);
   cursor: pointer;
   touch-action: pan-y;
-  -webkit-tap-highlight-color: transparent;
+  background: var(--md-ink);
+}
+
+.base,
+.face {
+  background-repeat: no-repeat;
+}
+
+.base {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+}
+
+.facePlaceholder {
+  background-color: #1a1c1f;
 }
 
 .grid {
   position: absolute;
   inset: 0;
   display: grid;
-  gap: 2px;
-  padding: 2px;
-  background: var(--md-grout);
+  gap: 0;
+  visibility: hidden;
+}
+
+.root[data-phase='flip'] .grid {
+  visibility: visible;
+}
+
+.root[data-phase='flip'][data-motion='full'] .base {
+  visibility: hidden;
 }
 
 .tile {
@@ -654,245 +586,132 @@ export default function MosaicDissolveSlides({
 
 .flipper {
   position: absolute;
-  inset: 0;
-}
-
-/* The flip is driven from one rAF loop (scaleX with a face swap at the edge-on point), so the layer is only
-   promoted while a flip is running and the idle page carries no per-tile compositor layers. */
-.root[data-motion='full'][data-phase='flip'] .flipper {
+  inset: -0.5px;
   will-change: transform;
 }
 
 .face {
   position: absolute;
   inset: 0;
-  background-repeat: no-repeat;
-  background-color: #c9c2b4;
 }
 
-/* the hidden face is never painted at rest */
-.root[data-motion='full'] .faceBack {
+.faceBack {
   visibility: hidden;
 }
 
-.root[data-motion='full'] .flipper[data-b] .faceFront {
+.flipper[data-b] .faceFront {
   visibility: hidden;
 }
 
-.root[data-motion='full'] .flipper[data-b] .faceBack {
+.flipper[data-b] .faceBack {
   visibility: visible;
 }
 
-.facePlaceholder {
-  background-image: linear-gradient(150deg, #d6cfc2 0%, #bab2a3 55%, #a89f8f 100%);
+.root[data-motion='reduced'][data-phase='flip'] .grid {
+  animation: md-fade var(--md-fade) linear both;
 }
 
-/* Resting gloss: one overlay tiled to the grid, so every chip still reads as a glazed square. */
-.gloss {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  /* gloss from the top left, a hairline of shade on the far edges so each chip sits in its grout */
-  background-image:
-    linear-gradient(to top, transparent 2px, rgba(30, 24, 14, 0.2) 2px, transparent 5px),
-    linear-gradient(to left, transparent 2px, rgba(30, 24, 14, 0.2) 2px, transparent 5px),
-    linear-gradient(168deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 22%, transparent 40%);
-  background-size: calc((100% - 2px) / var(--md-cols, 12)) calc((100% - 2px) / var(--md-rows, 8));
-  background-position: 2px 2px;
-  background-repeat: repeat;
-}
-
-/* Flip glint: a single soft ring that rides the wave front (scaled from JS, compositor only). */
-.ring {
-  position: absolute;
-  z-index: 3;
-  inline-size: 0;
-  block-size: 0;
-  border-radius: 50%;
-  pointer-events: none;
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0);
-  background: radial-gradient(
-    closest-side,
-    transparent 0 80%,
-    rgba(255, 255, 255, 0.1) 88%,
-    rgba(255, 255, 255, 0.5) 96%,
-    transparent 100%
-  );
-  will-change: transform, opacity;
-}
-
-/* Reduced motion: the whole surface crossfades, no ripple, no lift. */
-.root[data-motion='reduced'] .face {
-  transition: opacity var(--md-fade, 200ms) ease;
+.root[data-motion='reduced'] .faceFront {
+  visibility: hidden;
 }
 
 .root[data-motion='reduced'] .faceBack {
-  opacity: 0;
+  visibility: visible;
 }
 
-.root[data-motion='reduced'][data-phase='flip'] .faceFront {
-  opacity: 0;
-}
-
-.root[data-motion='reduced'][data-phase='flip'] .faceBack {
-  opacity: 1;
-}
-
-/* Idle life: a slow showroom glint drifting across the tile field. */
-.sheen {
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.sheen::before {
-  content: '';
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  inline-size: 60%;
-  background: linear-gradient(
-    112deg,
-    transparent 22%,
-    rgba(255, 255, 255, 0.1) 42%,
-    rgba(255, 255, 255, 0.22) 50%,
-    rgba(255, 255, 255, 0.1) 58%,
-    transparent 78%
-  );
-  opacity: 0;
-  transform: translateX(-100%);
-  animation: sheen-sweep 9s ease-in-out infinite;
-  will-change: transform, opacity;
-}
-
-.root[data-inview='out'] .sheen::before,
-.root[data-phase='flip'] .sheen::before,
-.root[data-motion='reduced'] .sheen::before {
-  animation-play-state: paused;
-}
-
-@keyframes sheen-sweep {
-  0% {
-    transform: translateX(-100%);
+@keyframes md-fade {
+  from {
     opacity: 0;
   }
-  5% {
-    opacity: 0.6;
-  }
-  24% {
-    transform: translateX(180%);
-    opacity: 0.6;
-  }
-  32% {
-    transform: translateX(180%);
-    opacity: 0;
-  }
-  100% {
-    transform: translateX(180%);
-    opacity: 0;
+  to {
+    opacity: 1;
   }
 }
 
-.placard {
-  display: flex;
-  align-items: center;
-  gap: clamp(10px, 2cqi, 22px);
-  margin-block-start: clamp(10px, 1.8cqi, 16px);
-  padding-block-start: clamp(10px, 1.8cqi, 14px);
-  border-block-start: 1px solid rgba(255, 255, 255, 0.09);
+.meta {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: end;
+  column-gap: clamp(16px, 4cqi, 40px);
+  padding: clamp(16px, 3cqi, 28px) clamp(16px, 3cqi, 28px) clamp(14px, 2.4cqi, 22px);
+}
+
+.counter {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.15em;
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+}
+
+.counterNow {
+  font-size: clamp(56px, 15cqi, 144px);
+}
+
+.counterTotal {
+  font-size: clamp(14px, 1.8cqi, 18px);
+  letter-spacing: 0;
+  color: var(--md-dim);
 }
 
 .caption {
-  flex: 1 1 12em;
-  min-inline-size: 0;
   margin: 0;
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 1.5;
-  letter-spacing: 0.002em;
-  color: var(--md-light);
-}
-
-.captionText {
+  align-self: end;
+  font-size: clamp(14px, 1.9cqi, 17px);
+  line-height: 1.35;
+  color: var(--md-paper);
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
   overflow-wrap: anywhere;
 }
 
-.root[data-motion='full'] .captionText {
-  animation: caption-in 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+.captionText {
+  animation: md-caption 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-@keyframes caption-in {
+@keyframes md-caption {
   from {
     opacity: 0;
-    transform: translateY(7px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
-}
-
-.counter {
-  flex: none;
-  min-inline-size: 6ch;
-  font-size: 12.5px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  font-variant-numeric: tabular-nums;
-  color: var(--md-light-muted);
 }
 
 .controls {
   display: flex;
-  align-items: center;
   gap: 8px;
-  margin-inline-start: auto;
 }
 
 .ctrl {
-  display: grid;
+  appearance: none;
+  display: inline-grid;
   place-items: center;
-  inline-size: 44px;
+  box-sizing: border-box;
+  min-inline-size: 44px;
   block-size: 44px;
   padding: 0;
-  border: 1px solid var(--md-hairline);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--md-light);
-  cursor: pointer;
-  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
-}
-
-.ctrl:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.32);
-}
-
-.ctrl:active {
-  transform: scale(0.93);
-}
-
-.ctrl:focus-visible {
-  outline: 2px solid var(--md-focus);
-  outline-offset: 2px;
-}
-
-.ctrlQuiet {
-  border-color: transparent;
+  border: 1px solid var(--md-line);
+  border-radius: 0;
   background: transparent;
+  color: var(--md-paper);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
 }
 
-.ctrlQuiet:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.18);
+.ctrlText {
+  padding-inline: 14px;
+  color: var(--md-dim);
 }
 
 .ctrlIcon {
@@ -900,29 +719,59 @@ export default function MosaicDissolveSlides({
   block-size: 16px;
 }
 
-.progressTrack {
-  position: absolute;
-  inset-inline: clamp(10px, 1.8cqi, 16px);
-  inset-block-end: 8px;
+@media (hover: hover) {
+  .ctrl:hover {
+    background: var(--md-paper);
+    border-color: var(--md-paper);
+    color: var(--md-ink);
+  }
+}
+
+.ctrl:active {
+  background: var(--md-paper);
+  color: var(--md-ink);
+}
+
+.ctrl:focus-visible {
+  outline: 2px solid var(--md-signal);
+  outline-offset: 2px;
+}
+
+.progress {
+  display: flex;
+  gap: 4px;
+  padding: 0 clamp(16px, 3cqi, 28px) clamp(16px, 3cqi, 28px);
+}
+
+.seg {
+  position: relative;
+  flex: 1 1 0;
   block-size: 2px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--md-line);
   overflow: hidden;
-  pointer-events: none;
 }
 
-.progressFill {
-  display: block;
-  block-size: 100%;
+.segDone,
+.segFill {
+  background: var(--md-paper);
+}
+
+.segDone {
   inline-size: 100%;
-  transform-origin: 0 50%;
-  background: linear-gradient(90deg, rgba(236, 231, 221, 0.35), rgba(236, 231, 221, 0.95));
-  animation-name: progress-grow;
-  animation-timing-function: linear;
-  animation-fill-mode: forwards;
 }
 
-@keyframes progress-grow {
+.segFill {
+  position: absolute;
+  inset: 0;
+}
+
+.segFillRun {
+  background: var(--md-signal);
+  transform-origin: left center;
+  animation: md-progress linear both;
+}
+
+@keyframes md-progress {
   from {
     transform: scaleX(0);
   }
@@ -931,20 +780,26 @@ export default function MosaicDissolveSlides({
   }
 }
 
-@container (width < 560px) {
-  .placard {
-    flex-wrap: wrap;
-    row-gap: 12px;
+@container (max-width: 560px) {
+  .meta {
+    grid-template-columns: auto 1fr;
+    row-gap: 14px;
   }
-
   .caption {
-    flex-basis: 100%;
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .controls {
+    justify-self: end;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sheen {
-    display: none;
+  .captionText {
+    animation: none;
+  }
+  .ctrl {
+    transition: none;
   }
 }
 ```

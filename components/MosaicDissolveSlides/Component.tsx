@@ -56,6 +56,7 @@ const WAVE_MS = 720;
 const FADE_MS = 200;
 const ASPECT = 3 / 2;
 const SWIPE_MIN = 44;
+const PROGRESS_MIN_SEGMENTS = 2;
 
 const PREV_LABEL = 'Previous slide';
 const NEXT_LABEL = 'Next slide';
@@ -64,14 +65,12 @@ const PAUSE_LABEL = 'Pause slideshow';
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
-/* ---- flip driver: one rAF loop writes every tile's transform (no per-tile CSS transitions) ---- */
+/* ---- flip driver: one rAF loop writes every tile's transform ---- */
 
-const FLIP_GLINT_LEAD = 0.3; // the glint rides the wave front as each tile passes edge-on
-
-// cubic-bezier(0.3, 1.26, 0.42, 1) sampled once; looked up per tile per frame
+// cubic-bezier(0.22, 0.9, 0.25, 1) sampled once; looked up per tile per frame
 const EASE_STEPS = 64;
 const EASE_LUT = (() => {
-  const [x1, y1, x2, y2] = [0.3, 1.26, 0.42, 1];
+  const [x1, y1, x2, y2] = [0.22, 0.9, 0.25, 1];
   const bez = (a: number, b: number, u: number) => 3 * a * u * (1 - u) * (1 - u) + 3 * b * u * u * (1 - u) + u * u * u;
   const xs: number[] = [];
   const ys: number[] = [];
@@ -146,7 +145,6 @@ export default function MosaicDissolveSlides({
   const viewportRef = useRef<HTMLDivElement>(null);
   const commitTimer = useRef(0);
   const flipRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const ringRef = useRef<HTMLSpanElement>(null);
   const swipeStart = useRef<{ x: number; y: number } | null>(null);
   const suppressClick = useRef(false);
   const autoRemaining = useRef(holdMs);
@@ -322,34 +320,15 @@ export default function MosaicDissolveSlides({
   }, [grid, origin]);
   const tilesRef = useRef(tiles);
   tilesRef.current = tiles;
-  const originRef = useRef(origin);
-  originRef.current = origin;
 
-  // One rAF loop drives the whole wave: every in-flight tile gets one transform write per frame,
-  // and the glint is a single ring scaled along the wave front instead of a per-tile animation.
+  // One rAF loop drives the whole wave: every in-flight tile gets one transform write per frame.
   useEffect(() => {
     if (phase !== 'flip' || reduced) return;
-    const vp = viewportRef.current;
-    const ring = ringRef.current;
     const list = tilesRef.current;
     const els = flipRefs.current;
-    if (!vp || !ring) return;
     const n = list.length;
     const done = new Uint8Array(n);
     const turned = new Uint8Array(n);
-    const W = vp.clientWidth;
-    const H = vp.clientHeight;
-    const o = originRef.current;
-    const reach = Math.max(
-      Math.hypot(o.x * W, o.y * H),
-      Math.hypot((1 - o.x) * W, o.y * H),
-      Math.hypot(o.x * W, (1 - o.y) * H),
-      Math.hypot((1 - o.x) * W, (1 - o.y) * H),
-    );
-    ring.style.width = `${reach * 2}px`;
-    ring.style.height = `${reach * 2}px`;
-    ring.style.left = `${o.x * W}px`;
-    ring.style.top = `${o.y * H}px`;
     const total = WAVE_MS + FLIP_MS;
     const t0 = performance.now();
     let raf = 0;
@@ -364,8 +343,7 @@ export default function MosaicDissolveSlides({
         if (p <= 0) continue;
         if (p >= 1) {
           el.style.transform = '';
-          if (!turned[k]) el.dataset.b = '1';
-          turned[k] = 1;
+          el.dataset.b = '1';
           done[k] = 1;
           continue;
         }
@@ -374,24 +352,12 @@ export default function MosaicDissolveSlides({
           turned[k] = 1;
           el.dataset.b = '1';
         }
-        const sx = Math.abs(Math.cos(Math.PI * e));
-        const lift = 1 + 0.09 * Math.sin(Math.PI * Math.pow(p, 0.85));
-        el.style.transform = `scale(${(sx * lift).toFixed(3)},${lift.toFixed(3)})`;
-      }
-      const front = clamp((t - FLIP_MS * FLIP_GLINT_LEAD) / WAVE_MS, 0, 1);
-      if (front > 0 && front < 1) {
-        ring.style.opacity = String(Math.sin(Math.PI * front) ** 0.6 * 0.9);
-        ring.style.transform = `translate(-50%, -50%) scale(${Math.pow(front, 1 / 0.85).toFixed(4)})`;
-      } else {
-        ring.style.opacity = '0';
+        el.style.transform = `scaleX(${Math.abs(Math.cos(Math.PI * e)).toFixed(3)})`;
       }
       if (t < total) raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
-    return () => {
-      cancelAnimationFrame(raf);
-      ring.style.opacity = '0';
-    };
+    return () => cancelAnimationFrame(raf);
   }, [phase, reduced]);
 
   // Back at rest (new slide committed in the same render): clear every tile before paint.
@@ -440,10 +406,7 @@ export default function MosaicDissolveSlides({
     [tiles, frontSrc, backSrc, bgSize],
   );
 
-  const rootStyle = {
-    '--md-flip': `${FLIP_MS}ms`,
-    '--md-fade': `${FADE_MS}ms`,
-  } as CSSProperties;
+  const rootStyle = { '--md-fade': `${FADE_MS}ms` } as CSSProperties;
 
   return (
     <div
@@ -458,100 +421,84 @@ export default function MosaicDissolveSlides({
       onFocus={onRootFocus}
       onBlur={onRootBlur}
     >
-      <span className={styles.grain} aria-hidden="true" />
-
-      <div className={styles.frame}>
+      <div
+        ref={viewportRef}
+        className={styles.viewport}
+        onClick={onViewportClick}
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
+        onPointerCancel={() => {
+          swipeStart.current = null;
+        }}
+      >
+        <span
+          className={[styles.base, frontSrc ? '' : styles.facePlaceholder].filter(Boolean).join(' ')}
+          style={{ backgroundImage: frontSrc ? `url("${frontSrc}")` : undefined }}
+          role="img"
+          aria-label={current?.alt ?? ''}
+        />
         <div
-          ref={viewportRef}
-          className={styles.viewport}
-          onClick={onViewportClick}
-          onPointerDown={onPointerDown}
-          onPointerUp={onPointerUp}
-          onPointerCancel={() => {
-            swipeStart.current = null;
+          className={styles.grid}
+          aria-hidden="true"
+          style={{
+            gridTemplateColumns: `repeat(${grid.cols}, 1fr)`,
+            gridTemplateRows: `repeat(${grid.rows}, 1fr)`,
           }}
         >
-          <div
-            className={styles.grid}
-            style={{
-              gridTemplateColumns: `repeat(${grid.cols}, 1fr)`,
-              gridTemplateRows: `repeat(${grid.rows}, 1fr)`,
-            }}
-          >
-            {tileEls}
-          </div>
-          <span
-            className={styles.gloss}
-            style={{ '--md-cols': grid.cols, '--md-rows': grid.rows } as CSSProperties}
-            aria-hidden="true"
-          />
-          <span className={styles.ring} ref={ringRef} aria-hidden="true" />
-          <span className={styles.sheen} aria-hidden="true" />
+          {tileEls}
         </div>
-
-        <div className={styles.placard}>
-          <p className={styles.caption} aria-live={isPlaying ? 'off' : 'polite'} aria-atomic="true">
-            <span className={styles.captionText} key={safeIndex}>
-              {captionText}
-            </span>
-          </p>
-          <span className={styles.counter} aria-hidden="true">
-            {pad(safeIndex + 1)} / {pad(Math.max(count, 1))}
-          </span>
-          <div className={styles.controls}>
-            <button
-              type="button"
-              className={[styles.ctrl, styles.ctrlQuiet].join(' ')}
-              aria-label={playOn ? PAUSE_LABEL : PLAY_LABEL}
-              onClick={() => setPlayOn((p) => !p)}
-            >
-              {playOn ? (
-                <svg className={styles.ctrlIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                  <path d="M5.75 3.5v9M10.25 3.5v9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              ) : (
-                <svg className={styles.ctrlIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                  <path d="M5.5 3.2v9.6L12.4 8z" fill="currentColor" />
-                </svg>
-              )}
-            </button>
-            <button type="button" className={styles.ctrl} aria-label={PREV_LABEL} onClick={onPrev}>
-              <svg className={styles.ctrlIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                <path
-                  d="M10.5 3 5.5 8l5 5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-            <button type="button" className={styles.ctrl} aria-label={NEXT_LABEL} onClick={onNext}>
-              <svg className={styles.ctrlIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                <path
-                  d="M5.5 3l5 5-5 5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {playOn && count > 1 && (
-          <span className={styles.progressTrack}>
-            <span
-              className={styles.progressFill}
-              key={`fill-${safeIndex}`}
-              style={{ animationDuration: `${holdMs}ms`, animationPlayState: isPlaying ? 'running' : 'paused' }}
-            />
-          </span>
-        )}
       </div>
+
+      <div className={styles.meta}>
+        <span className={styles.counter} aria-hidden="true">
+          <span className={styles.counterNow}>{pad(safeIndex + 1)}</span>
+          <span className={styles.counterTotal}>/{pad(Math.max(count, 1))}</span>
+        </span>
+        <p className={styles.caption} aria-live={isPlaying ? 'off' : 'polite'} aria-atomic="true">
+          <span className={styles.captionText} key={safeIndex}>
+            {captionText}
+          </span>
+        </p>
+        <div className={styles.controls}>
+          <button
+            type="button"
+            className={[styles.ctrl, styles.ctrlText].join(' ')}
+            aria-label={playOn ? PAUSE_LABEL : PLAY_LABEL}
+            onClick={() => setPlayOn((p) => !p)}
+          >
+            {playOn ? 'Pause' : 'Play'}
+          </button>
+          <button type="button" className={styles.ctrl} aria-label={PREV_LABEL} onClick={onPrev}>
+            <svg className={styles.ctrlIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path d="M13 8H3M7 4 3 8l4 4" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+          </button>
+          <button type="button" className={styles.ctrl} aria-label={NEXT_LABEL} onClick={onNext}>
+            <svg className={styles.ctrlIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {count >= PROGRESS_MIN_SEGMENTS && (
+        <div className={styles.progress} aria-hidden="true">
+          {slides.map((_, k) => (
+            <span
+              key={k}
+              className={[styles.seg, k < safeIndex ? styles.segDone : ''].filter(Boolean).join(' ')}
+            >
+              {k === safeIndex && (
+                <span
+                  className={[styles.segFill, playOn ? styles.segFillRun : ''].filter(Boolean).join(' ')}
+                  key={`fill-${safeIndex}-${playOn}`}
+                  style={{ animationDuration: `${holdMs}ms`, animationPlayState: isPlaying ? 'running' : 'paused' }}
+                />
+              )}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
