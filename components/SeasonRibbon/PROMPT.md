@@ -280,13 +280,13 @@ export default function SeasonRibbon({
 }
 
 .root {
-  --sr-linen: #f6f7f1;
-  --sr-ink: #17261c;
-  --sr-muted: rgba(23, 38, 28, 0.64);
-  --sr-hair: rgba(23, 38, 28, 0.13);
-  --sr-leaf: #2f8a4d;
-  --sr-orange: #e2531c;
-  --sr-plum: #6a2a5b;
+  --sr-linen: #f5f4ef;
+  --sr-ink: #1b2620;
+  --sr-muted: rgba(27, 38, 32, 0.66);
+  --sr-hair: rgba(27, 38, 32, 0.09);
+  --sr-leaf: #3f7a5c;
+  --sr-orange: #b4673d;
+  --sr-plum: #5f4b78;
   --sr-font: 'Familjen Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --sr-ac: var(--sr-ink);
 
@@ -296,18 +296,16 @@ export default function SeasonRibbon({
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  border-radius: 28px;
+  border-radius: 20px;
   color: var(--sr-ink);
   font-family: var(--sr-font);
   font-variant-numeric: tabular-nums;
   background:
-    repeating-linear-gradient(0deg, rgba(23, 60, 36, 0.035) 0 1px, transparent 1px 3px),
-    repeating-linear-gradient(90deg, rgba(23, 60, 36, 0.03) 0 1px, transparent 1px 3px),
-    radial-gradient(80% 60% at 8% 0%, rgba(255, 255, 255, 0.9) 0%, transparent 70%),
-    var(--sr-linen);
+    linear-gradient(180deg, #fbfaf6 0%, var(--sr-linen) 100%);
   box-shadow:
-    0 0 0 1px rgba(23, 38, 28, 0.08),
-    0 36px 70px -36px rgba(8, 24, 14, 0.55);
+    0 0 0 1px rgba(27, 38, 32, 0.08),
+    0 1px 2px rgba(27, 38, 32, 0.05),
+    0 24px 48px -28px rgba(27, 38, 32, 0.28);
 }
 
 .root::selection {
@@ -316,11 +314,11 @@ export default function SeasonRibbon({
 }
 
 .sheet {
-  --sr-h: 48px;
-  --sr-rad: 18px;
+  --sr-h: 34px;
+  --sr-rad: 9px;
   box-sizing: border-box;
-  padding-block: 22px 14px;
-  padding-inline: 44px;
+  padding-block: 28px 16px;
+  padding-inline: 48px;
 }
 
 .plot {
@@ -350,14 +348,14 @@ export default function SeasonRibbon({
 }
 
 .colOn {
-  background-color: color-mix(in srgb, var(--sr-ac) 11%, transparent);
+  background-color: color-mix(in srgb, var(--sr-ac) 7%, transparent);
 }
 
 .colNow::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, var(--sr-ink) 5.5%, transparent);
+  background: color-mix(in srgb, var(--sr-ink) 4%, transparent);
   transform-origin: top;
 }
 
@@ -365,9 +363,9 @@ export default function SeasonRibbon({
   content: '';
   position: absolute;
   inset-block: 46px 0;
-  inset-inline-start: calc(50% - 1px);
-  inline-size: 2px;
-  background: repeating-linear-gradient(180deg, color-mix(in srgb, var(--sr-ink) 55%, transparent) 0 6px, transparent 6px 11px);
+  inset-inline-start: calc(50% - 0.5px);
+  inline-size: 1px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sr-ink) 45%, transparent), color-mix(in srgb, var(--sr-ink) 8%, transparent));
   transform-origin: top;
 }
 
@@ -380,10 +378,11 @@ export default function SeasonRibbon({
   grid-template-columns: repeat(12, 1fr);
   align-items: center;
   block-size: 46px;
-  border-block-end: 3px double color-mix(in srgb, var(--sr-ink) 40%, transparent);
-  font-size: 15px;
+  border-block-end: 1px solid color-mix(in srgb, var(--sr-ink) 22%, transparent);
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--sr-muted);
   text-align: center;
 }
@@ -393,15 +392,15 @@ export default function SeasonRibbon({
   place-items: center;
   block-size: 34px;
   margin-inline: 3px;
-  border-radius: 11px;
+  border-radius: 8px;
   transition:
     color 0.3s ease,
     background-color 0.3s ease;
 }
 
 .monthOn {
-  color: color-mix(in srgb, var(--sr-ac) 62%, #000);
-  background-color: color-mix(in srgb, var(--sr-ac) 16%, transparent);
+  color: color-mix(in srgb, var(--sr-ac) 70%, #000);
+  background-color: color-mix(in srgb, var(--sr-ac) 10%, transparent);
 }
 
 .monthInit {
@@ -417,21 +416,21 @@ export default function SeasonRibbon({
   display: grid;
   place-items: center;
   box-sizing: border-box;
-  border-radius: 11px;
-  background: var(--sr-ink);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #2b3a31, var(--sr-ink));
   color: var(--sr-linen);
   font-weight: 700;
-  box-shadow: 0 6px 10px -4px rgba(8, 24, 14, 0.5);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.14) inset, 0 6px 12px -6px rgba(27, 38, 32, 0.5);
   transform-origin: 50% 100%;
 }
 
 .pin::after {
   content: '';
   position: absolute;
-  inset-block-end: -7px;
-  inset-inline-start: calc(50% - 5px);
-  border-inline: 5px solid transparent;
-  border-block-start: 7px solid var(--sr-ink);
+  inset-block-end: -5px;
+  inset-inline-start: calc(50% - 4px);
+  border-inline: 4px solid transparent;
+  border-block-start: 5px solid var(--sr-ink);
 }
 
 /* rows ----------------------------------------------------------------- */
@@ -464,7 +463,7 @@ export default function SeasonRibbon({
   box-sizing: border-box;
   inline-size: 100%;
   margin: 0;
-  padding-block: 16px 20px;
+  padding-block: 18px 22px;
   padding-inline: 0;
   border: 0;
   background: none;
@@ -478,7 +477,7 @@ export default function SeasonRibbon({
 .hit:focus-visible {
   outline: 2px solid var(--sr-ink);
   outline-offset: -2px;
-  border-radius: 14px;
+  border-radius: 10px;
 }
 
 .label {
@@ -491,7 +490,7 @@ export default function SeasonRibbon({
   max-inline-size: var(--sr-lw);
   margin-inline-start: var(--sr-lx);
   margin-block-end: 12px;
-  padding-inline: 2px;
+  padding-inline: 1px;
 }
 
 .labelEnd {
@@ -502,21 +501,21 @@ export default function SeasonRibbon({
 }
 
 .name {
-  font-size: clamp(24px, 4.2cqi, 46px);
-  font-weight: 700;
-  line-height: 1.02;
-  letter-spacing: -0.035em;
+  font-size: clamp(20px, 3cqi, 30px);
+  font-weight: 650;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
   text-wrap: balance;
   overflow-wrap: break-word;
   min-inline-size: 0;
 }
 
 .range {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   line-height: 1.2;
   letter-spacing: 0.01em;
-  color: color-mix(in srgb, var(--sr-c) 68%, #000);
+  color: color-mix(in srgb, var(--sr-c) 72%, #000);
   transition: color 0.3s ease;
 }
 
@@ -525,22 +524,24 @@ export default function SeasonRibbon({
   align-items: center;
   gap: 7px;
   padding-block: 3px;
-  padding-inline: 10px 11px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--sr-c) 14%, transparent);
-  color: color-mix(in srgb, var(--sr-c) 62%, #000);
-  font-size: 13px;
-  font-weight: 700;
+  padding-inline: 9px 10px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--sr-c) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sr-c) 22%, transparent);
+  color: color-mix(in srgb, var(--sr-c) 70%, #000);
+  font-size: 12px;
+  font-weight: 600;
   line-height: 1.25;
   letter-spacing: 0.01em;
 }
 
 .badge::before {
   content: '';
-  inline-size: 7px;
-  block-size: 7px;
+  inline-size: 6px;
+  block-size: 6px;
   border-radius: 50%;
   background: var(--sr-c);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sr-c) 20%, transparent);
 }
 
 /* the ribbon ----------------------------------------------------------- */
@@ -556,15 +557,15 @@ export default function SeasonRibbon({
   inset-block: 0;
   inset-inline-start: calc(var(--sr-a) / 12 * 100%);
   inline-size: calc(var(--sr-w) / 12 * 100%);
-  filter: drop-shadow(0 6px 7px color-mix(in srgb, var(--sr-c) 30%, transparent));
+  filter: drop-shadow(0 4px 6px color-mix(in srgb, var(--sr-c) 22%, transparent));
   transition:
-    transform 0.45s cubic-bezier(0.3, 1.5, 0.5, 1),
+    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
     filter 0.3s ease;
 }
 
 .rowOn .seg {
-  transform: translateY(-3px);
-  filter: drop-shadow(0 12px 10px color-mix(in srgb, var(--sr-c) 36%, transparent));
+  transform: translateY(-2px);
+  filter: drop-shadow(0 9px 10px color-mix(in srgb, var(--sr-c) 28%, transparent));
 }
 
 .band {
@@ -572,11 +573,11 @@ export default function SeasonRibbon({
   inset: 0;
   border-radius: var(--sr-rad);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 44%, rgba(0, 0, 0, 0.12) 100%),
-    var(--sr-c);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 55%, rgba(0, 0, 0, 0.08) 100%),
+    linear-gradient(90deg, color-mix(in srgb, var(--sr-c) 88%, #000), var(--sr-c) 60%, color-mix(in srgb, var(--sr-c) 90%, #fff));
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.16);
+    inset 0 0 0 1px color-mix(in srgb, var(--sr-c) 70%, #000),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 .flatStart .band {
@@ -589,28 +590,6 @@ export default function SeasonRibbon({
   border-end-end-radius: 0;
 }
 
-/* month seams pressed into the ribbon */
-.band::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.4) 0 1px, transparent 1px);
-  background-size: calc(100% / var(--sr-w)) 100%;
-}
-
-/* sewn hems */
-.band::before {
-  content: '';
-  position: absolute;
-  inset-block: 8px;
-  inset-inline: 12px;
-  z-index: 1;
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.62) 0 5px, transparent 5px 10px) left top / 10px 2px repeat-x,
-    linear-gradient(90deg, rgba(255, 255, 255, 0.62) 0 5px, transparent 5px 10px) left bottom / 10px 2px repeat-x;
-}
-
 .track {
   position: absolute;
   inset: 0;
@@ -618,35 +597,22 @@ export default function SeasonRibbon({
 }
 
 .curl {
-  position: absolute;
-  inset-block: -1px;
-  inset-inline-end: 0;
-  inline-size: 26px;
-  border-radius: 13px;
-  opacity: 0;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--sr-c) 52%, #000) 0%,
-    color-mix(in srgb, var(--sr-c) 70%, #fff) 34%,
-    var(--sr-c) 58%,
-    color-mix(in srgb, var(--sr-c) 62%, #000) 100%
-  );
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  display: none;
 }
 
 .dot {
   position: absolute;
   inset-block-start: 50%;
   inset-inline-start: calc((var(--sr-now) + 0.5) / 12 * 100%);
-  inline-size: 18px;
-  block-size: 18px;
-  margin-block-start: -9px;
-  margin-inline-start: -9px;
+  inline-size: 14px;
+  block-size: 14px;
+  margin-block-start: -7px;
+  margin-inline-start: -7px;
   box-sizing: border-box;
-  border: 4px solid var(--sr-ink);
+  border: 3px solid var(--sr-linen);
   border-radius: 50%;
-  background: var(--sr-linen);
-  box-shadow: 0 3px 6px rgba(8, 24, 14, 0.35);
+  background: var(--sr-ink);
+  box-shadow: 0 0 0 1px rgba(27, 38, 32, 0.4), 0 3px 6px rgba(27, 38, 32, 0.3);
 }
 
 /* motion --------------------------------------------------------------- */
@@ -716,7 +682,7 @@ export default function SeasonRibbon({
 }
 
 .play .dot {
-  animation: dotPop 0.55s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+  animation: dotPop 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   animation-delay: calc(var(--sr-pin) + 620ms + var(--sr-i) * 70ms);
 }
 
@@ -781,23 +747,14 @@ export default function SeasonRibbon({
 @keyframes pinDrop {
   0% {
     opacity: 0;
-    transform: translateY(-64px) scale(1, 1);
+    transform: translateY(-24px);
   }
   30% {
     opacity: 1;
   }
-  52% {
-    transform: translateY(0) scale(1.1, 0.84);
-  }
-  72% {
-    transform: translateY(-9px) scale(0.97, 1.05);
-  }
-  88% {
-    transform: translateY(0) scale(1.02, 0.97);
-  }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1, 1);
+    transform: translateY(0);
   }
 }
 
@@ -835,21 +792,21 @@ export default function SeasonRibbon({
 
 @container (max-width: 640px) {
   .sheet {
-    --sr-h: 40px;
-    --sr-rad: 14px;
-    padding-block: 16px 10px;
+    --sr-h: 28px;
+    --sr-rad: 8px;
+    padding-block: 18px 10px;
     padding-inline: 14px;
   }
 
   .ruler {
     block-size: 40px;
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .month {
     block-size: 30px;
     margin-inline: 2px;
-    border-radius: 9px;
+    border-radius: 7px;
   }
 
   .pin {
@@ -857,7 +814,7 @@ export default function SeasonRibbon({
     inset-inline-start: calc(var(--sr-now) / 12 * 100% + 2px);
     inline-size: calc(100% / 12 - 4px);
     block-size: 30px;
-    border-radius: 9px;
+    border-radius: 7px;
   }
 
   .colNow::after {
@@ -886,29 +843,19 @@ export default function SeasonRibbon({
   }
 
   .name {
-    font-size: 24px;
+    font-size: 20px;
   }
 
   .range {
     font-size: 14px;
   }
 
-  .band::before {
-    inset-block: 6px;
-    inset-inline: 8px;
-  }
-
-  .curl {
-    inline-size: 18px;
-    border-radius: 9px;
-  }
-
   .dot {
-    inline-size: 16px;
-    block-size: 16px;
-    margin-block-start: -8px;
-    margin-inline-start: -8px;
-    border-width: 3px;
+    inline-size: 12px;
+    block-size: 12px;
+    margin-block-start: -6px;
+    margin-inline-start: -6px;
+    border-width: 2px;
   }
 }
 ```
