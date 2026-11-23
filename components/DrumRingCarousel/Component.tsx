@@ -58,7 +58,7 @@ function panelStyle(offset: number, g: Geo): CSSProperties {
     transform: `translateZ(${g.r.toFixed(1)}px) rotateY(${(-offset * g.step).toFixed(4)}rad) translateZ(${(-g.r).toFixed(1)}px)`,
     opacity: fade.toFixed(3),
     visibility: fade > 0 ? 'visible' : 'hidden',
-    filter: `brightness(${(1.05 - Math.min(d, 2.4) * 0.27).toFixed(3)}) blur(${(Math.min(d, 2.4) * 1.7).toFixed(2)}px) saturate(${(1.05 - Math.min(d, 2) * 0.26).toFixed(3)})`,
+    filter: `brightness(${(1 - Math.min(d, 2.4) * 0.24).toFixed(3)}) saturate(${(1 - Math.min(d, 2) * 0.22).toFixed(3)})`,
     zIndex: 10 - Math.round(d),
   } as CSSProperties;
 }
@@ -335,11 +335,9 @@ export default function DrumRingCarousel({
       onBlur={onBlur}
       onKeyDown={onRootKeyDown}
     >
-      <span className={styles.stars} aria-hidden="true" />
       <span className={styles.wall} aria-hidden="true" />
       <span className={styles.lamp} aria-hidden="true" />
       <span className={styles.floor} aria-hidden="true" />
-      <span className={styles.plaster} aria-hidden="true" />
 
       {reduced ? (
         <div
@@ -402,9 +400,6 @@ export default function DrumRingCarousel({
                 <span className={styles.shadow} />
                 <span className={styles.mount}>
                   <Mount item={p} eager={Math.abs(offsetOf(i, 0, n)) < 3} />
-                </span>
-                <span className={styles.reflect}>
-                  <Mount item={p} />
                 </span>
                 <span className={styles.pool} aria-hidden="true" />
               </div>
