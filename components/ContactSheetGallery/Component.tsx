@@ -59,7 +59,7 @@ const BULGE_SCALE = 30;
 const SHEET_HELP =
   'Move over the sheet to inspect frames with the loupe. Pick a frame to see it large. Arrow keys move between frames; Escape closes.';
 const TILT = [-0.5, 0.4, -0.3, 0.55, -0.42];
-const RING = 'M78 10C52 0 14 6 6 34C0 58 16 90 50 94C82 97 99 74 96 46C93 20 70 6 44 9C36 10 30 13 26 17';
+const RING = 'M50 3C77 3 97 23 97 50C97 77 77 97 50 97C23 97 3 77 3 50C3 23 23 3 50 3';
 
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 const pad2 = (n: number) => String(n).padStart(2, '0');
@@ -130,7 +130,6 @@ export default function ContactSheetGallery({
   restIdx.current = firstPicked >= 0 ? firstPicked : 0;
 
   const uid = useId().replace(/:/g, '');
-  const ringFilterId = `csg-wax-${uid}`;
   const bulgeFilterId = `csg-lens-${uid}`;
 
   useEffect(() => {
@@ -604,10 +603,7 @@ export default function ContactSheetGallery({
               focusable="false"
               style={{ '--delay': photo.picked ? `${300 + introRank(i) * 260}ms` : '0ms' } as CSSProperties}
             >
-              <g filter={`url(#${ringFilterId})`}>
-                <path className={on(styles.ringCore, styles.ringDrawn, drawn)} d={RING} pathLength={1} />
-                <path className={on(styles.ringWax, styles.ringDrawn, drawn)} d={RING} pathLength={1} />
-              </g>
+              <path className={on(styles.ringCore, styles.ringDrawn, drawn)} d={RING} pathLength={1} />
             </svg>
           );
           if (clone) {
@@ -657,10 +653,6 @@ export default function ContactSheetGallery({
     <section ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle} aria-label={ariaLabel}>
       <span className={styles.grain} aria-hidden="true" />
       <svg className={styles.defs} aria-hidden="true" focusable="false">
-        <filter id={ringFilterId} x="-10%" y="-10%" width="120%" height="120%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" />
-          <feDisplacementMap in="SourceGraphic" scale="1.2" />
-        </filter>
         {bulge && (
           <filter id={bulgeFilterId} x="-8%" y="-8%" width="116%" height="116%">
             <feImage href={bulge.url} x="0" y="0" width={bulge.size} height={bulge.size} result="map" preserveAspectRatio="none" />
