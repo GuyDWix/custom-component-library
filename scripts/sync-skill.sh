@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# Writes ONLY into .skill/ (git-ignored, read-only upstream copy). This repo's own skill lives in skills/component-craft/ and is never touched here.
 REPO=wix-private/editor-react-component-creation-skills
 SHA=517e0bb45ac50c7300b3e156a7c5855c1a843d15
 SRC=packages/editor-component-creation
