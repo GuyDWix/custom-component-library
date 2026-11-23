@@ -48,7 +48,6 @@ export const defaultStops: PackageSliderStop[] = [
 
 const STIFFNESS = 320;
 const DAMPING = 24;
-const PRICE_MS = 520;
 const STAGGER_MS = 70;
 
 const splitItems = (raw: string) =>
@@ -66,6 +65,31 @@ const formatPrice = (value: number, decimals: number) =>
   value.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 
 const pad = (n: number) => String(n).padStart(2, '0');
+
+const FACES = Array.from({ length: 10 }, (_, d) => d);
+
+function OdometerColumn({ index, char }: { index: number; char: string | undefined }) {
+  const last = useRef(0);
+  const isDigit = char !== undefined && /\d/.test(char);
+  if (isDigit) last.current = Number(char);
+  const kind = char === undefined ? 'off' : isDigit ? 'digit' : 'sep';
+  return (
+    <span
+      className={styles.col}
+      data-kind={kind}
+      style={{ '--v': last.current, '--col': index } as CSSProperties}
+    >
+      <span className={styles.drum}>
+        {FACES.map((d) => (
+          <span key={d} className={styles.face} style={{ '--i': d } as CSSProperties}>
+            {d}
+          </span>
+        ))}
+      </span>
+      <span className={styles.sep}>{kind === 'sep' ? char : ','}</span>
+    </span>
+  );
+}
 
 export default function PackageSliderCard({
   stops = defaultStops,
@@ -170,27 +194,14 @@ export default function PackageSliderCard({
 
   const target = toNumber(stop?.price ?? '');
   const decimals = target !== null && !Number.isInteger(target) ? 2 : 0;
-  const [shown, setShown] = useState<number | null>(target);
-  const shownRef = useRef(shown);
-  shownRef.current = shown;
-
-  useEffect(() => {
-    const from = shownRef.current;
-    if (target === null || from === null || reduced || from === target) {
-      setShown(target);
-      return;
-    }
-    const start = performance.now();
-    let id = 0;
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / PRICE_MS);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setShown(from + (target - from) * eased);
-      if (t < 1) id = requestAnimationFrame(tick);
-    };
-    id = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(id);
-  }, [target, reduced]);
+  const maxCols = useMemo(
+    () =>
+      stops.reduce((m, st) => {
+        const n = toNumber(st.price);
+        return n === null ? m : Math.max(m, formatPrice(n, Number.isInteger(n) ? 0 : 2).length);
+      }, 1),
+    [stops],
+  );
 
   const allItems = useMemo(() => {
     const seen = new Set<string>();
@@ -278,12 +289,11 @@ export default function PackageSliderCard({
 
   if (!stop) return null;
 
-  const priceText =
-    target === null ? stop.price : formatPrice(shown ?? target, decimals);
-  const fitLength = target === null ? stop.price.length : formatPrice(target, decimals).length;
+  const priceText = target === null ? stop.price : formatPrice(target, decimals);
+  const fitLength = target === null ? stop.price.length : priceText.length;
   const rootStyle = { '--ps-accent': accentColor } as CSSProperties;
   const tapeStyle = { '--pos': stopPos(active) } as CSSProperties;
-  const valueText = `${stop.name}, ${target === null ? stop.price : `${currencySymbol}${formatPrice(target, decimals)}`}`;
+  const valueText = `${stop.name}, ${target === null ? stop.price : `${currencySymbol}${priceText}`}`;
 
   return (
     <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
@@ -346,9 +356,27 @@ export default function PackageSliderCard({
         </div>
 
         <article id={`${uid}-card`} className={styles.card}>
-          <p className={styles.priceRow} style={{ '--len': fitLength } as CSSProperties}>
-            {target !== null && <span className={styles.currency}>{currencySymbol}</span>}
-            <span className={styles.price}>{priceText}</span>
+          <p
+            className={styles.priceRow}
+            style={{ '--len': fitLength, '--cur': currencySymbol.length } as CSSProperties}
+          >
+            <span className={styles.well}>
+              {target !== null && (
+                <span className={styles.currency} aria-hidden="true">
+                  {currencySymbol}
+                </span>
+              )}
+              {target === null ? (
+                <span className={styles.price}>{priceText}</span>
+              ) : (
+                <span className={styles.odometer} aria-hidden="true">
+                  {Array.from({ length: maxCols }, (_, k) => maxCols - 1 - k).map((j) => (
+                    <OdometerColumn key={j} index={j} char={priceText[priceText.length - 1 - j]} />
+                  ))}
+                </span>
+              )}
+            </span>
+            {target !== null && <span className={styles.srOnly}>{`${currencySymbol}${priceText}`}</span>}
             {target !== null && priceNote && <span className={styles.priceNote}>{priceNote}</span>}
           </p>
 

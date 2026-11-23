@@ -4,7 +4,7 @@
   "display_name": "Package Slider Card",
   "category": "controls",
   "tier": "everyday",
-  "job": "A single slider with named stops that morphs one package card (name, price, included items) as the visitor drags between tiers",
+  "job": "A single slider with named stops that sets one package card (name, price, included items) as the visitor drags between tiers; the price is an odometer that rolls to the new value",
   "visitor_action": "drag the thumb or press arrow keys; tap a stop label",
   "owner_settings": [
     "Packages (name, price, short tagline, included items one per line)",
@@ -19,7 +19,7 @@
     "store"
   ],
   "mobile": "slider above card, thumb snaps to stops",
-  "motion": "thumb snaps with spring, price counts to the new value, included items check in one by one (reduced-motion: instant card swap)",
+  "motion": "thumb snaps with spring, price digits roll as 3D drums (units fastest), included items check in one by one (reduced-motion: instant swap, no roll)",
   "scores": {
     "concept": 2,
     "usefulness": 3,
@@ -33,5 +33,5 @@
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Swiss minimal: flat paper #f2f1ed, ink #111110, one signal vermilion #e2411c; Inter Tight only. One big move: a price numeral up to 26% of the width with tight tracking. Hairline slider with square stops, plain ruled rows with square markers, no card, frame, ruler or texture."
+  "art_direction": "Swiss paper #f2f1ed and ink #111110 with vermilion #e2411c accents, Inter Tight only. One big move: the price is a real 3D odometer, ten-face CSS drums in a recessed dark soft-UI well; each digit drum rolls to the new value, units fastest. Hairline slider with square stops and ruled rows around it."
 }

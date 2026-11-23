@@ -53,7 +53,6 @@ export const defaultStops: PackageSliderStop[] = [
 
 const STIFFNESS = 320;
 const DAMPING = 24;
-const PRICE_MS = 520;
 const STAGGER_MS = 70;
 
 const splitItems = (raw: string) =>
@@ -71,6 +70,31 @@ const formatPrice = (value: number, decimals: number) =>
   value.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 
 const pad = (n: number) => String(n).padStart(2, '0');
+
+const FACES = Array.from({ length: 10 }, (_, d) => d);
+
+function OdometerColumn({ index, char }: { index: number; char: string | undefined }) {
+  const last = useRef(0);
+  const isDigit = char !== undefined && /\d/.test(char);
+  if (isDigit) last.current = Number(char);
+  const kind = char === undefined ? 'off' : isDigit ? 'digit' : 'sep';
+  return (
+    <span
+      className={styles.col}
+      data-kind={kind}
+      style={{ '--v': last.current, '--col': index } as CSSProperties}
+    >
+      <span className={styles.drum}>
+        {FACES.map((d) => (
+          <span key={d} className={styles.face} style={{ '--i': d } as CSSProperties}>
+            {d}
+          </span>
+        ))}
+      </span>
+      <span className={styles.sep}>{kind === 'sep' ? char : ','}</span>
+    </span>
+  );
+}
 
 export default function PackageSliderCard({
   stops = defaultStops,
@@ -175,27 +199,14 @@ export default function PackageSliderCard({
 
   const target = toNumber(stop?.price ?? '');
   const decimals = target !== null && !Number.isInteger(target) ? 2 : 0;
-  const [shown, setShown] = useState<number | null>(target);
-  const shownRef = useRef(shown);
-  shownRef.current = shown;
-
-  useEffect(() => {
-    const from = shownRef.current;
-    if (target === null || from === null || reduced || from === target) {
-      setShown(target);
-      return;
-    }
-    const start = performance.now();
-    let id = 0;
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / PRICE_MS);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setShown(from + (target - from) * eased);
-      if (t < 1) id = requestAnimationFrame(tick);
-    };
-    id = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(id);
-  }, [target, reduced]);
+  const maxCols = useMemo(
+    () =>
+      stops.reduce((m, st) => {
+        const n = toNumber(st.price);
+        return n === null ? m : Math.max(m, formatPrice(n, Number.isInteger(n) ? 0 : 2).length);
+      }, 1),
+    [stops],
+  );
 
   const allItems = useMemo(() => {
     const seen = new Set<string>();
@@ -283,12 +294,11 @@ export default function PackageSliderCard({
 
   if (!stop) return null;
 
-  const priceText =
-    target === null ? stop.price : formatPrice(shown ?? target, decimals);
-  const fitLength = target === null ? stop.price.length : formatPrice(target, decimals).length;
+  const priceText = target === null ? stop.price : formatPrice(target, decimals);
+  const fitLength = target === null ? stop.price.length : priceText.length;
   const rootStyle = { '--ps-accent': accentColor } as CSSProperties;
   const tapeStyle = { '--pos': stopPos(active) } as CSSProperties;
-  const valueText = `${stop.name}, ${target === null ? stop.price : `${currencySymbol}${formatPrice(target, decimals)}`}`;
+  const valueText = `${stop.name}, ${target === null ? stop.price : `${currencySymbol}${priceText}`}`;
 
   return (
     <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
@@ -351,9 +361,27 @@ export default function PackageSliderCard({
         </div>
 
         <article id={`${uid}-card`} className={styles.card}>
-          <p className={styles.priceRow} style={{ '--len': fitLength } as CSSProperties}>
-            {target !== null && <span className={styles.currency}>{currencySymbol}</span>}
-            <span className={styles.price}>{priceText}</span>
+          <p
+            className={styles.priceRow}
+            style={{ '--len': fitLength, '--cur': currencySymbol.length } as CSSProperties}
+          >
+            <span className={styles.well}>
+              {target !== null && (
+                <span className={styles.currency} aria-hidden="true">
+                  {currencySymbol}
+                </span>
+              )}
+              {target === null ? (
+                <span className={styles.price}>{priceText}</span>
+              ) : (
+                <span className={styles.odometer} aria-hidden="true">
+                  {Array.from({ length: maxCols }, (_, k) => maxCols - 1 - k).map((j) => (
+                    <OdometerColumn key={j} index={j} char={priceText[priceText.length - 1 - j]} />
+                  ))}
+                </span>
+              )}
+            </span>
+            {target !== null && <span className={styles.srOnly}>{`${currencySymbol}${priceText}`}</span>}
             {target !== null && priceNote && <span className={styles.priceNote}>{priceNote}</span>}
           </p>
 
@@ -576,35 +604,123 @@ export default function PackageSliderCard({
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  column-gap: 0.12em;
   margin: 0;
   min-inline-size: 0;
-  --fit: min(26cqw, 100cqw / (var(--len) * 0.62 + 0.4));
+  --fit: min(20cqw, 100cqw / (var(--len) * 0.6 + var(--cur) * 0.2 + 0.9));
   font-size: max(30px, var(--fit));
-  line-height: 0.82;
+  line-height: 1;
+}
+
+.well {
+  --r: 1.539em;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  max-inline-size: 100%;
+  padding: 0.07em 0.14em;
+  border-radius: 0.16em;
+  background: linear-gradient(180deg, #1d1d1b, #0f0f0e);
+  color: var(--ps-paper);
+  box-shadow:
+    inset 0 0.03em 0.07em rgb(0 0 0 / 0.7),
+    0 0.025em 0 rgb(255 255 255 / 0.85),
+    0 0.14em 0.3em -0.06em rgb(17 17 16 / 0.28);
+}
+
+.well::after {
+  content: '';
+  position: absolute;
+  inset: 0.07em 0.14em;
+  border-radius: 0.08em;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgb(0 0 0 / 0.6), transparent 24%, transparent 76%, rgb(0 0 0 / 0.6));
 }
 
 .currency {
+  padding-inline: 0.05em 0.08em;
   font-size: 0.34em;
   font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.02em;
-  padding-block-start: 0.06em;
   white-space: pre;
+  color: color-mix(in srgb, var(--ps-paper) 75%, transparent);
 }
 
 .price {
-  font-size: 1em;
+  padding-inline: 0.04em;
+  font-size: 0.5em;
   font-weight: 700;
-  letter-spacing: -0.055em;
-  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
   overflow-wrap: anywhere;
   min-inline-size: 0;
 }
 
+.odometer {
+  display: inline-flex;
+  font-variant-numeric: tabular-nums;
+}
+
+.col {
+  position: relative;
+  display: block;
+  block-size: 1em;
+  inline-size: 0.6em;
+  overflow: hidden;
+  perspective: 3.2em;
+  transition: inline-size 0.45s cubic-bezier(0.3, 0.8, 0.3, 1);
+}
+
+.col[data-kind='sep'] {
+  inline-size: 0.3em;
+}
+
+.col[data-kind='off'] {
+  inline-size: 0;
+}
+
+.drum {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: translateZ(calc(var(--r) * -1)) rotateX(calc(var(--v) * 36deg));
+  transition: transform calc(0.55s + var(--col) * 0.09s) cubic-bezier(0.22, 0.85, 0.25, 1);
+}
+
+.col[data-kind='sep'] .drum,
+.col[data-kind='off'] .drum {
+  visibility: hidden;
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  backface-visibility: hidden;
+  font-size: 1em;
+  font-weight: 700;
+  line-height: 1;
+  transform: rotateX(calc(var(--i) * -36deg)) translateZ(var(--r));
+}
+
+.sep {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: end center;
+  padding-block-end: 0.04em;
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0;
+  color: color-mix(in srgb, var(--ps-paper) 80%, transparent);
+}
+
+.col[data-kind='sep'] .sep {
+  opacity: 1;
+}
+
 .priceNote {
   flex-basis: 100%;
-  margin-block-start: clamp(10px, 1.6cqw, 18px);
+  margin-block-start: clamp(12px, 1.8cqw, 20px);
   font-size: 15px;
   font-weight: 500;
   line-height: 1.3;
@@ -730,7 +846,9 @@ export default function PackageSliderCard({
   .mark,
   .stopMark,
   .thumb,
-  .label {
+  .label,
+  .col,
+  .drum {
     transition: none;
   }
 }
