@@ -19,7 +19,7 @@
     "business"
   ],
   "mobile": "fewer folds, unfolds on view instead of scroll",
-  "motion": "facets rotate to flat with perspective and eased settle (reduced-motion: flat open strip)",
+  "motion": "anticipation lift, then facets unfold crease by crease on underdamped springs with a paper flutter, shadow trailing the last facet; replays each time the strip re-enters view (reduced-motion: flat open strip, no replay)",
   "scores": {
     "concept": 3,
     "usefulness": 2,
@@ -36,5 +36,5 @@
   "provenance": "original, built from a concept description",
   "studio2_tested": false,
   "art_direction": "Origami studio: coral-red folded stock, cream type, sharp light and shadow planes on each facet, matte paper grain",
-  "notes": "2026-11-24: broken-fix pass. Replaced the scroll-mapped unfold with an in-view trigger (opens when comfortably on screen or fully visible at page end, folds back after leaving). Also fixed: strip had no height (text clipped to a ~50px bar) - an invisible sizer now gives the real headline height so long text wraps to 2-3 lines, then shrinks, never clips; facets are now one facet wide each (the chain was k times too wide); lead facet rotation was missing, and the --cx crease angles lacked the deg unit so every mid-unfold frame lost its crease transforms. Checked headless folded / unfolded at 1280, 375, worst."
+  "notes": "2026-11-24: broken-fix pass. Replaced the scroll-mapped unfold with an in-view trigger (opens when comfortably on screen or fully visible at page end, folds back after leaving). Also fixed: strip had no height (text clipped to a ~50px bar) - an invisible sizer now gives the real headline height so long text wraps to 2-3 lines, then shrinks, never clips; facets are now one facet wide each (the chain was k times too wide); lead facet rotation was missing, and the --cx crease angles lacked the deg unit so every mid-unfold frame lost its crease transforms. Checked headless folded / unfolded at 1280, 375, worst. 2026-11-23: composition rescue + replay (Guy review). Strip fills the frame on the dark studio ground with a vignette; unfold now replays (re-folds silently once fully out of view and settled, then unfolds again on re-entry; reduced-motion stays flat); unfold choreography is four overlapping spring beats (anticipation lift and squeeze, crease-by-crease cascade with per-facet overshoot and flutter, root tilt settle, trailing cast shadow); stage tightened. Checked headless folded / mid-unfold / flat at 1280 and 375, worst, reduced, replay."
 }
