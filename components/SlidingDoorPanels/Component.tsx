@@ -233,8 +233,6 @@ export default function SlidingDoorPanels({
 
   const kLeft = Math.ceil(panelN / 2);
   const kRight = panelN - kLeft;
-  const cols = narrow ? 2 : panelN <= 2 ? 6 : panelN === 3 ? 4 : panelN <= 5 ? 3 : 2;
-  const rows = narrow ? 6 : 5;
 
   const dataPhase = count === 0 ? 'closed' : phase;
   const current = count > 0 ? images[Math.min(index, count - 1)] : undefined;
@@ -251,10 +249,6 @@ export default function SlidingDoorPanels({
         {
           '--sd-dwell': `${dwellMs}ms`,
           '--sd-n': panelN,
-          '--sd-kl': kLeft,
-          '--sd-kr': kRight,
-          '--sd-cols': cols,
-          '--sd-rows': rows,
         } as CSSProperties
       }
       data-phase={dataPhase}
@@ -270,7 +264,6 @@ export default function SlidingDoorPanels({
       onFocusCapture={() => setFocusWithin(true)}
       onBlurCapture={onRootBlur}
     >
-      <div className={styles.frame}>
         <div
           className={styles.window}
           onPointerDown={onPointerDown}
@@ -296,23 +289,12 @@ export default function SlidingDoorPanels({
 
           <span className={styles.light} aria-hidden="true" />
 
-          {current && current.caption && (
-            <div className={styles.caption}>
-              <p className={styles.captionText} dir="auto">
-                {current.caption}
-              </p>
-            </div>
-          )}
-
-          <span className={styles.railBottom} aria-hidden="true" />
-
           <span className={styles.deck} aria-hidden="true">
             {Array.from({ length: panelN }, (_, i) => {
               const isLeft = i < kLeft;
-              const sideCount = isLeft ? kLeft : kRight;
-              /* depth in its rear track: 1 = outermost leaf, on top of the stack */
-              const depth = isLeft ? i + 1 : panelN - i;
-              const dur = Math.round(SLIDE_MS * (0.72 + (0.28 * depth) / sideCount));
+              /* travel distance to clear the window, in own widths */
+              const off = isLeft ? i + 1 : panelN - i;
+              const dur = Math.round(SLIDE_MS * (0.8 + (0.2 * off) / panelN));
               return (
                 <span
                   key={`p${i}`}
@@ -321,26 +303,26 @@ export default function SlidingDoorPanels({
                     {
                       insetInlineStart: `${(i * 100) / panelN}%`,
                       inlineSize: `${100 / panelN}%`,
-                      zIndex: 4 + (sideCount - depth),
-                      '--sd-k': depth,
-                      '--sd-i': i,
+                      '--sd-off': off,
                       '--sd-sign': isLeft ? -1 : 1,
                       '--sd-d': `${delayOf(i)}ms`,
                       '--sd-dur': `${dur}ms`,
                     } as CSSProperties
                   }
-                >
-                  <span className={styles.paper} />
-                  <span className={styles.lattice} />
-                </span>
+                />
               );
             })}
           </span>
-          <span className={styles.railTop} aria-hidden="true" />
-          <span className={styles.sheen} aria-hidden="true" />
-
         </div>
-        <div className={styles.bar}>
+        <div className={styles.hud}>
+          <div className={styles.caption}>
+            {current && current.caption && (
+              <p key={index} className={styles.captionText} dir="auto">
+                {current.caption}
+              </p>
+            )}
+          </div>
+          <div className={styles.controls}>
         {count > 1 && (
           <span className={styles.count} aria-hidden="true">
             {String(index + 1).padStart(2, '0')}
@@ -412,7 +394,7 @@ export default function SlidingDoorPanels({
         )}
 
         </div>
-      </div>
+        </div>
 
       <p className={styles.srOnly} aria-live={isPlaying ? 'off' : 'polite'}>
         {liveText}

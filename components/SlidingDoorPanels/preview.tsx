@@ -11,7 +11,7 @@ const worstImages: SlidingDoorImage[] = [
   {
     image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1600&auto=format&fit=crop',
     caption:
-      'A remarkably long caption written for the worst case, the sort of line a zealous copywriter produces when nobody sets a character limit, and it keeps running well past the width of the plaque and forcing several wrapped lines of sumi ink on rice paper',
+      'A remarkably long caption written for the worst case, the sort of line a zealous copywriter produces when nobody sets a character limit, and it keeps running well past the width of the headline and forcing several wrapped lines',
     alt: 'Sunlight falling through a green forest',
   },
   {
@@ -51,8 +51,7 @@ const stage = {
   boxSizing: 'border-box' as const,
   display: 'grid',
   placeItems: 'center',
-  padding: 'clamp(16px, 4vw, 56px)',
-  background: 'linear-gradient(180deg, #f4f2ec 0%, #eae6dc 100%)',
+  background: '#07080a',
 };
 
 export default function Preview() {
@@ -61,7 +60,7 @@ export default function Preview() {
 
   return (
     <div style={stage}>
-      <div style={{ width: '100%', maxWidth: 1200 }}>
+      <div style={{ width: '100%' }}>
         <SlidingDoorPanels
           {...(isWorst ? { images: worstImages, panelCount: 10 } : {})}
         />
