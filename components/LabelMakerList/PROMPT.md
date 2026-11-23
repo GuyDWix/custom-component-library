@@ -27,43 +27,39 @@ export const defaultLabels: string[] = [
 ];
 
 const COLUMN_GAP = 16;
-const CREAM = '#efeadd';
+const TICK_MS = 34;
+const STAGGER_TICKS = 7;
+const START_TICKS = 4;
 
-const isLightTape = (color: string): boolean => {
-  const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color.trim());
-  if (!match) return false;
-  const raw = match[1].length === 3 ? match[1].split('').map((c) => c + c).join('') : match[1];
-  const r = parseInt(raw.slice(0, 2), 16);
-  const g = parseInt(raw.slice(2, 4), 16);
-  const b = parseInt(raw.slice(4, 6), 16);
-  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.6;
+const pad = (n: number) => String(n).padStart(2, '0');
+
+const usePrefersReducedMotion = () => {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduced(mq.matches);
+    const onChange = () => setReduced(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return reduced;
 };
-
-const stripVars = (index: number, tape: string, textStyle: LabelTextStyle, perRow: number): CSSProperties =>
-  ({
-    '--tape': tape,
-    '--ink-on-tape': isLightTape(tape) ? '#2a2a2e' : '#ffffff',
-    '--emboss':
-      textStyle === 'printed'
-        ? 'none'
-        : isLightTape(tape)
-          ? '0 1px 0 rgba(255, 255, 255, 0.6), 0 -0.5px 0 rgba(0, 0, 0, 0.16)'
-          : '0 -0.5px 0 rgba(0, 0, 0, 0.32), 0 0.5px 0 rgba(255, 255, 255, 0.2)',
-    '--i': `${index}`,
-    '--max-w': `calc((100% - ${(perRow - 1) * COLUMN_GAP}px) / ${perRow})`,
-  }) as CSSProperties;
 
 export default function LabelMakerList({
   labels = defaultLabels,
-  tapeColor = '#2547d8',
+  tapeColor = '#c2410c',
   textStyle = 'raised',
   stripsPerRow = 3,
   className,
 }: LabelMakerListProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
+  const [tick, setTick] = useState(0);
+  const reduced = usePrefersReducedMotion();
   const perRow = Math.min(6, Math.max(1, Math.round(stripsPerRow)));
   const items = labels.map((label) => label.trim()).filter(Boolean);
+  const lastTick = START_TICKS + (items.length - 1) * STAGGER_TICKS + Math.max(0, ...items.map((t) => t.length)) + 1;
+  const done = reduced || tick >= lastTick;
 
   useEffect(() => {
     const root = rootRef.current;
@@ -81,10 +77,22 @@ export default function LabelMakerList({
     return () => io.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (!inView || reduced) return;
+    const id = window.setInterval(() => {
+      setTick((t) => {
+        if (t + 1 >= lastTick) window.clearInterval(id);
+        return t + 1;
+      });
+    }, TICK_MS);
+    return () => window.clearInterval(id);
+  }, [inView, reduced, lastTick]);
+
   const rootVars = {
-    '--lm-tape': tapeColor,
-    '--lm-ls': textStyle === 'printed' ? '0.08em' : '0.12em',
-    '--lm-fw': textStyle === 'printed' ? '500' : '600',
+    '--lm-accent': tapeColor,
+    '--lm-fw': textStyle === 'printed' ? '400' : '600',
+    '--lm-rule': textStyle === 'printed' ? 'rgba(17, 17, 17, 0.55)' : '#111111',
+    '--lm-max-w': `calc((100% - ${(perRow - 1) * COLUMN_GAP}px) / ${perRow})`,
   } as CSSProperties;
 
   return (
@@ -94,19 +102,33 @@ export default function LabelMakerList({
       style={rootVars}
     >
       {items.length > 0 && (
-        <ul className={styles.list} aria-label="Labels">
-          {items.map((text, i) => (
-            <li
-              key={i}
-              className={[styles.strip, inView ? styles.stripRun : ''].filter(Boolean).join(' ')}
-              style={stripVars(i, i % 2 === 0 ? tapeColor : CREAM, textStyle, perRow)}
-            >
-              <div className={[styles.tilt, inView ? styles.tiltRun : ''].filter(Boolean).join(' ')}>
-                <span className={styles.text}>{text}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <>
+          <div className={styles.meta} aria-hidden="true">
+            <span>Index</span>
+            <span>{pad(items.length)} entries</span>
+          </div>
+          <ul className={styles.list} aria-label="Labels">
+            {items.map((text, i) => {
+              const typed = done ? text.length : Math.max(0, Math.min(text.length, tick - START_TICKS - i * STAGGER_TICKS));
+              const started = done || tick >= START_TICKS + i * STAGGER_TICKS;
+              const typing = !done && started && typed < text.length;
+              return (
+                <li
+                  key={i}
+                  className={[styles.tag, started ? styles.tagOn : ''].filter(Boolean).join(' ')}
+                  aria-label={text}
+                >
+                  <span className={styles.index} aria-hidden="true">{pad(i + 1)}</span>
+                  <span className={styles.text} aria-hidden="true">
+                    <span>{text.slice(0, typed)}</span>
+                    {typing && <span className={styles.caret} />}
+                    <span className={styles.rest}>{text.slice(typed)}</span>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )}
     </div>
   );
@@ -115,161 +137,146 @@ export default function LabelMakerList({
 
 ```css
 @font-face {
-  font-family: 'Inter Tight';
+  font-family: 'JetBrains Mono';
   font-style: normal;
-  font-weight: 100 900;
+  font-weight: 100 800;
   font-display: swap;
-  src: url('./fonts/inter-tight-latin.woff2') format('woff2');
+  src: url('./fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2');
 }
 
 .root {
-  --lm-tape: #2547d8;
-  --lm-ground: #eceef1;
-  --lm-ink: #262a31;
-  --lm-font: 'Inter Tight', 'Helvetica Neue', 'Segoe UI', system-ui, Arial, sans-serif;
-  --lm-ls: 0.12em;
+  --lm-accent: #c2410c;
+  --lm-ground: #f2f1ec;
+  --lm-ink: #111111;
+  --lm-mute: #5f5e59;
+  --lm-rule: #111111;
   --lm-fw: 600;
+  --lm-max-w: 100%;
+  --lm-font: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   --lm-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
   position: relative;
-  isolation: isolate;
-  overflow: clip;
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  padding: clamp(36px, 8cqi, 72px) clamp(22px, 6cqi, 64px);
-  border-radius: 16px;
+  padding: clamp(28px, 6cqi, 64px) clamp(20px, 5cqi, 56px) clamp(32px, 7cqi, 72px);
   background: var(--lm-ground);
   color: var(--lm-ink);
   font-family: var(--lm-font);
+  font-synthesis: none;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-block-end: clamp(20px, 4cqi, 40px);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lm-mute);
 }
 
 .list {
-  position: relative;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 14px 16px;
+  align-items: flex-start;
+  gap: clamp(10px, 1.6cqi, 16px);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.strip {
+.tag {
   position: relative;
-  max-inline-size: var(--max-w, 100%);
-}
-
-.strip:hover {
-  z-index: 3;
-}
-
-/* the strip prints out left to right, then settles */
-.stripRun .tilt {
-  animation: lmPrint 640ms var(--lm-ease) both;
-  animation-delay: calc(120ms + var(--i, 0) * 120ms);
-}
-
-@keyframes lmPrint {
-  from {
-    opacity: 0;
-    clip-path: inset(0 100% 0 0);
-    translate: -14px 0;
-  }
-  25% {
-    opacity: 1;
-  }
-  to {
-    opacity: 1;
-    clip-path: inset(0 0 0 0);
-    translate: 0 0;
-  }
-}
-
-.tilt {
-  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 0.9em;
   box-sizing: border-box;
-  inline-size: 100%;
-  padding: 9px 22px 10px 18px;
-  border-radius: 2px;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--tape, #2547d8) 94%, #fff) 0%,
-    var(--tape, #2547d8) 40%,
-    color-mix(in srgb, var(--tape, #2547d8) 94%, #000) 100%
-  );
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--tape, #2547d8) 82%, #000),
-    0 1px 1px rgba(23, 27, 36, 0.12),
-    0 6px 12px -8px rgba(23, 27, 36, 0.3);
+  max-inline-size: var(--lm-max-w);
+  padding: 0.7em 1.1em 0.75em 0.9em;
+  border: 1px solid var(--lm-rule);
+  font-size: clamp(14px, 2.8cqi, 26px);
+  line-height: 1.25;
+  opacity: 0;
   transition:
-    translate 320ms var(--lm-ease),
-    box-shadow 320ms var(--lm-ease);
+    border-color 200ms var(--lm-ease),
+    translate 280ms var(--lm-ease);
 }
 
-/* squared cut at the print end: a hairline of the tape's edge, no curl */
-.tilt::after {
-  content: '';
-  position: absolute;
-  inset-block: 0;
-  inset-inline-end: 0;
-  inline-size: 1px;
-  background: color-mix(in srgb, var(--tape, #2547d8) 70%, #000);
-  opacity: 0.45;
-  pointer-events: none;
+.tagOn {
+  opacity: 1;
 }
 
-.tilt:hover {
+.tag:hover {
+  border-color: var(--lm-accent);
   translate: 0 -2px;
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--tape, #2547d8) 82%, #000),
-    0 1px 1px rgba(23, 27, 36, 0.12),
-    0 12px 18px -10px rgba(23, 27, 36, 0.34);
+}
+
+.index {
+  flex: none;
+  font-size: 0.5em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--lm-accent);
+  font-variant-numeric: tabular-nums;
 }
 
 .text {
-  position: relative;
-  display: block;
-  font-size: clamp(13px, 2.4cqi, 16px);
-  font-weight: var(--lm-fw, 600);
-  line-height: 1.2;
-  letter-spacing: var(--lm-ls, 0.12em);
+  min-inline-size: 0;
+  font-weight: var(--lm-fw);
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: var(--ink-on-tape, #fff);
-  text-shadow: var(--emboss, none);
-  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.rest {
+  visibility: hidden;
+}
+
+.caret {
+  display: inline-block;
+  inline-size: 0.6ch;
+  block-size: 1em;
+  margin-inline: 1px -0.6ch;
+  vertical-align: text-bottom;
+  background: var(--lm-accent);
+  animation: lmBlink 520ms steps(1) infinite;
+}
+
+@keyframes lmBlink {
+  50% {
+    opacity: 0;
+  }
 }
 
 .text::selection {
-  background: color-mix(in srgb, var(--lm-tape, #2547d8) 62%, #000);
-  color: #fff;
+  background: var(--lm-ink);
+  color: var(--lm-ground);
 }
 
 @container (max-width: 540px) {
-  .list {
-    gap: 12px;
-  }
-
-  .strip {
+  .tag {
     max-inline-size: 100%;
-  }
-
-  .tilt {
-    padding: 11px 20px 12px 16px;
+    inline-size: 100%;
+    font-size: 15px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .stripRun .tilt {
-    animation: none;
-  }
-
-  .tilt {
+  .tag {
+    opacity: 1;
     transition: none;
   }
 
-  .tilt:hover {
+  .tag:hover {
     translate: none;
+  }
+
+  .caret {
+    display: none;
   }
 }
 ```

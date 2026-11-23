@@ -22,43 +22,39 @@ export const defaultLabels: string[] = [
 ];
 
 const COLUMN_GAP = 16;
-const CREAM = '#efeadd';
+const TICK_MS = 34;
+const STAGGER_TICKS = 7;
+const START_TICKS = 4;
 
-const isLightTape = (color: string): boolean => {
-  const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color.trim());
-  if (!match) return false;
-  const raw = match[1].length === 3 ? match[1].split('').map((c) => c + c).join('') : match[1];
-  const r = parseInt(raw.slice(0, 2), 16);
-  const g = parseInt(raw.slice(2, 4), 16);
-  const b = parseInt(raw.slice(4, 6), 16);
-  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.6;
+const pad = (n: number) => String(n).padStart(2, '0');
+
+const usePrefersReducedMotion = () => {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduced(mq.matches);
+    const onChange = () => setReduced(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return reduced;
 };
-
-const stripVars = (index: number, tape: string, textStyle: LabelTextStyle, perRow: number): CSSProperties =>
-  ({
-    '--tape': tape,
-    '--ink-on-tape': isLightTape(tape) ? '#2a2a2e' : '#ffffff',
-    '--emboss':
-      textStyle === 'printed'
-        ? 'none'
-        : isLightTape(tape)
-          ? '0 1px 0 rgba(255, 255, 255, 0.6), 0 -0.5px 0 rgba(0, 0, 0, 0.16)'
-          : '0 -0.5px 0 rgba(0, 0, 0, 0.32), 0 0.5px 0 rgba(255, 255, 255, 0.2)',
-    '--i': `${index}`,
-    '--max-w': `calc((100% - ${(perRow - 1) * COLUMN_GAP}px) / ${perRow})`,
-  }) as CSSProperties;
 
 export default function LabelMakerList({
   labels = defaultLabels,
-  tapeColor = '#2547d8',
+  tapeColor = '#c2410c',
   textStyle = 'raised',
   stripsPerRow = 3,
   className,
 }: LabelMakerListProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
+  const [tick, setTick] = useState(0);
+  const reduced = usePrefersReducedMotion();
   const perRow = Math.min(6, Math.max(1, Math.round(stripsPerRow)));
   const items = labels.map((label) => label.trim()).filter(Boolean);
+  const lastTick = START_TICKS + (items.length - 1) * STAGGER_TICKS + Math.max(0, ...items.map((t) => t.length)) + 1;
+  const done = reduced || tick >= lastTick;
 
   useEffect(() => {
     const root = rootRef.current;
@@ -76,10 +72,22 @@ export default function LabelMakerList({
     return () => io.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (!inView || reduced) return;
+    const id = window.setInterval(() => {
+      setTick((t) => {
+        if (t + 1 >= lastTick) window.clearInterval(id);
+        return t + 1;
+      });
+    }, TICK_MS);
+    return () => window.clearInterval(id);
+  }, [inView, reduced, lastTick]);
+
   const rootVars = {
-    '--lm-tape': tapeColor,
-    '--lm-ls': textStyle === 'printed' ? '0.08em' : '0.12em',
-    '--lm-fw': textStyle === 'printed' ? '500' : '600',
+    '--lm-accent': tapeColor,
+    '--lm-fw': textStyle === 'printed' ? '400' : '600',
+    '--lm-rule': textStyle === 'printed' ? 'rgba(17, 17, 17, 0.55)' : '#111111',
+    '--lm-max-w': `calc((100% - ${(perRow - 1) * COLUMN_GAP}px) / ${perRow})`,
   } as CSSProperties;
 
   return (
@@ -89,19 +97,33 @@ export default function LabelMakerList({
       style={rootVars}
     >
       {items.length > 0 && (
-        <ul className={styles.list} aria-label="Labels">
-          {items.map((text, i) => (
-            <li
-              key={i}
-              className={[styles.strip, inView ? styles.stripRun : ''].filter(Boolean).join(' ')}
-              style={stripVars(i, i % 2 === 0 ? tapeColor : CREAM, textStyle, perRow)}
-            >
-              <div className={[styles.tilt, inView ? styles.tiltRun : ''].filter(Boolean).join(' ')}>
-                <span className={styles.text}>{text}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <>
+          <div className={styles.meta} aria-hidden="true">
+            <span>Index</span>
+            <span>{pad(items.length)} entries</span>
+          </div>
+          <ul className={styles.list} aria-label="Labels">
+            {items.map((text, i) => {
+              const typed = done ? text.length : Math.max(0, Math.min(text.length, tick - START_TICKS - i * STAGGER_TICKS));
+              const started = done || tick >= START_TICKS + i * STAGGER_TICKS;
+              const typing = !done && started && typed < text.length;
+              return (
+                <li
+                  key={i}
+                  className={[styles.tag, started ? styles.tagOn : ''].filter(Boolean).join(' ')}
+                  aria-label={text}
+                >
+                  <span className={styles.index} aria-hidden="true">{pad(i + 1)}</span>
+                  <span className={styles.text} aria-hidden="true">
+                    <span>{text.slice(0, typed)}</span>
+                    {typing && <span className={styles.caret} />}
+                    <span className={styles.rest}>{text.slice(typed)}</span>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )}
     </div>
   );

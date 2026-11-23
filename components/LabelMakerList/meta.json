@@ -4,7 +4,7 @@
   "display_name": "Label Maker List",
   "category": "text",
   "tier": "everyday",
-  "job": "Present tags, services or ingredients as embossed label-maker strips that print out one after another with a tiny cut",
+  "job": "Present tags, services or ingredients as outlined mono tags that type themselves in one after another",
   "visitor_action": "none (prints in view); hover tilts a strip",
   "owner_settings": [
     "Labels (text)",
@@ -20,7 +20,7 @@
     "portfolio"
   ],
   "mobile": "strips stack full width",
-  "motion": "strips feed out and clip with a small snap, staggered (reduced-motion: all strips in place)",
+  "motion": "tags type in character by character with a blinking caret, staggered (reduced-motion: all tags in place)",
   "scores": {
     "concept": 2,
     "usefulness": 2,
@@ -34,5 +34,5 @@
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Quiet label strips: matte cobalt and cream tape, fine tracked caps, squared cut end, light neutral ground"
+  "art_direction": "Technical mono: 1px ink-outlined tags on warm paper (#f2f1ec / #111), one accent (#c2410c) for index numbers and caret, JetBrains Mono uppercase"
 }
