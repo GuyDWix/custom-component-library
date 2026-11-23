@@ -52,7 +52,6 @@ type Slot = { col: number; row: number; cs: number; rs: number };
 type Pose = { x: number; y: number; w: number; h: number; s: number; o: number };
 type Body = Pose & { vx: number; vy: number; vw: number; vh: number; vs: number; vo: number; delay: number; t: Pose };
 
-const TINTS = ['#F6D5C8', '#F7E2A6', '#D9E6C3', '#EBD3E0', '#CFE3E6'];
 const KP = 210;
 const DP = 22;
 const KS = 300;
@@ -104,7 +103,7 @@ const makeBody = (t: Pose): Body => ({ ...t, vx: 0, vy: 0, vw: 0, vh: 0, vs: 0, 
 export default function FlipFilterGrid({
   items = defaultItems,
   categories = defaultCategories,
-  chipColor = '#DB3A22',
+  chipColor = '#C2381B',
   columns = 4,
   allLabel = 'All',
   className,
@@ -112,7 +111,6 @@ export default function FlipFilterGrid({
   const [selected, setSelected] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
   const [broken, setBroken] = useState<Record<number, boolean>>({});
-  const [bump, setBump] = useState(0);
 
   const rootRef = useRef<HTMLElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
@@ -368,12 +366,10 @@ export default function FlipFilterGrid({
 
   /* ----- interaction ----- */
   const toggle = (name: string) => {
-    setBump((b) => b + 1);
     setSelected((cur) => (cur.includes(name) ? cur.filter((c) => c !== name) : [...cur, name]));
   };
   const clear = () => {
     if (picked.length === 0) return;
-    setBump((b) => b + 1);
     setSelected([]);
   };
   const onKeyDown = (e: KeyboardEvent<HTMLElement>) => {
@@ -385,24 +381,22 @@ export default function FlipFilterGrid({
 
   const rootStyle = { '--ffg-chip': chipColor, '--ffg-cols': clamp(Math.round(columns) || 3, 2, 5) } as CSSProperties;
 
-  const caption = (it: FlipFilterItem, featured: boolean, probe?: (el: HTMLDivElement | null) => void) => (
+  const caption = (it: FlipFilterItem, index: number, featured: boolean, probe?: (el: HTMLDivElement | null) => void) => (
     <div
       ref={probe}
       className={[styles.caption, featured && styles.captionFeatured, probe && styles.probe].filter(Boolean).join(' ')}
       aria-hidden={probe ? true : undefined}
     >
       <p className={featured ? `${styles.title} ${styles.titleFeatured}` : styles.title}>{it.title}</p>
-      {(it.category || it.detail) && (
-        <p className={styles.meta}>
-          {it.category && (
-            <span className={styles.category}>
-              <span className={styles.dot} aria-hidden="true" />
-              {it.category}
-            </span>
-          )}
-          {it.detail && <span className={styles.detail}>{it.detail}</span>}
-        </p>
-      )}
+      <p className={styles.meta}>
+        <span className={styles.category}>
+          <span className={styles.index} aria-hidden="true">
+            {String(index + 1).padStart(2, '0')}
+          </span>
+          {it.category}
+        </span>
+        {it.detail && <span className={styles.detail}>{it.detail}</span>}
+      </p>
     </div>
   );
 
@@ -414,10 +408,6 @@ export default function FlipFilterGrid({
       aria-label="Filterable gallery"
       onKeyDown={onKeyDown}
     >
-      <div className={styles.awningWrap} aria-hidden="true">
-        <div key={bump} className={bump > 0 ? `${styles.awning} ${styles.awningBump}` : styles.awning} />
-      </div>
-
       <div className={styles.stall}>
         <div className={styles.chips} role="group" aria-label="Filter by category">
           <button type="button" className={picked.length === 0 ? `${styles.chip} ${styles.chipOn}` : styles.chip} aria-pressed={picked.length === 0} onClick={clear}>
@@ -440,6 +430,10 @@ export default function FlipFilterGrid({
           )}
         </div>
 
+        <span className={styles.tally} aria-hidden="true">
+          {`${String(visible.length).padStart(2, '0')} / ${String(total).padStart(2, '0')} items`}
+        </span>
+
         <p className={styles.srOnly} aria-live="polite">
           {`Showing ${visible.length} of ${total}`}
         </p>
@@ -449,7 +443,6 @@ export default function FlipFilterGrid({
             {items.map((it, i) => {
               const shown = visible.includes(i);
               const featured = i === featuredIndex;
-              const tint = TINTS[(Math.max(categories.findIndex((c) => c.name === it.category), 0) + (i % 2)) % TINTS.length];
               return (
                 <li
                   key={i}
@@ -457,7 +450,6 @@ export default function FlipFilterGrid({
                     cardEls.current[i] = el;
                   }}
                   className={ready ? `${styles.card} ${styles.cardLive}` : styles.card}
-                  style={{ '--ffg-tint': tint } as CSSProperties}
                   aria-hidden={!shown}
                 >
                   <div className={styles.cardBody}>
@@ -476,7 +468,7 @@ export default function FlipFilterGrid({
                         />
                       )}
                     </div>
-                    {caption(it, featured)}
+                    {caption(it, i, featured)}
                   </div>
                 </li>
               );
@@ -485,7 +477,7 @@ export default function FlipFilterGrid({
           {ready &&
             items.map((it, i) => (
               <Fragment key={i}>
-                {caption(it, false, (el) => {
+                {caption(it, i, false, (el) => {
                   probeEls.current[i] = el;
                 })}
               </Fragment>

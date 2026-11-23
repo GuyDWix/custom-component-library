@@ -57,7 +57,6 @@ type Slot = { col: number; row: number; cs: number; rs: number };
 type Pose = { x: number; y: number; w: number; h: number; s: number; o: number };
 type Body = Pose & { vx: number; vy: number; vw: number; vh: number; vs: number; vo: number; delay: number; t: Pose };
 
-const TINTS = ['#F6D5C8', '#F7E2A6', '#D9E6C3', '#EBD3E0', '#CFE3E6'];
 const KP = 210;
 const DP = 22;
 const KS = 300;
@@ -109,7 +108,7 @@ const makeBody = (t: Pose): Body => ({ ...t, vx: 0, vy: 0, vw: 0, vh: 0, vs: 0, 
 export default function FlipFilterGrid({
   items = defaultItems,
   categories = defaultCategories,
-  chipColor = '#DB3A22',
+  chipColor = '#C2381B',
   columns = 4,
   allLabel = 'All',
   className,
@@ -117,7 +116,6 @@ export default function FlipFilterGrid({
   const [selected, setSelected] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
   const [broken, setBroken] = useState<Record<number, boolean>>({});
-  const [bump, setBump] = useState(0);
 
   const rootRef = useRef<HTMLElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
@@ -373,12 +371,10 @@ export default function FlipFilterGrid({
 
   /* ----- interaction ----- */
   const toggle = (name: string) => {
-    setBump((b) => b + 1);
     setSelected((cur) => (cur.includes(name) ? cur.filter((c) => c !== name) : [...cur, name]));
   };
   const clear = () => {
     if (picked.length === 0) return;
-    setBump((b) => b + 1);
     setSelected([]);
   };
   const onKeyDown = (e: KeyboardEvent<HTMLElement>) => {
@@ -390,24 +386,22 @@ export default function FlipFilterGrid({
 
   const rootStyle = { '--ffg-chip': chipColor, '--ffg-cols': clamp(Math.round(columns) || 3, 2, 5) } as CSSProperties;
 
-  const caption = (it: FlipFilterItem, featured: boolean, probe?: (el: HTMLDivElement | null) => void) => (
+  const caption = (it: FlipFilterItem, index: number, featured: boolean, probe?: (el: HTMLDivElement | null) => void) => (
     <div
       ref={probe}
       className={[styles.caption, featured && styles.captionFeatured, probe && styles.probe].filter(Boolean).join(' ')}
       aria-hidden={probe ? true : undefined}
     >
       <p className={featured ? `${styles.title} ${styles.titleFeatured}` : styles.title}>{it.title}</p>
-      {(it.category || it.detail) && (
-        <p className={styles.meta}>
-          {it.category && (
-            <span className={styles.category}>
-              <span className={styles.dot} aria-hidden="true" />
-              {it.category}
-            </span>
-          )}
-          {it.detail && <span className={styles.detail}>{it.detail}</span>}
-        </p>
-      )}
+      <p className={styles.meta}>
+        <span className={styles.category}>
+          <span className={styles.index} aria-hidden="true">
+            {String(index + 1).padStart(2, '0')}
+          </span>
+          {it.category}
+        </span>
+        {it.detail && <span className={styles.detail}>{it.detail}</span>}
+      </p>
     </div>
   );
 
@@ -419,10 +413,6 @@ export default function FlipFilterGrid({
       aria-label="Filterable gallery"
       onKeyDown={onKeyDown}
     >
-      <div className={styles.awningWrap} aria-hidden="true">
-        <div key={bump} className={bump > 0 ? `${styles.awning} ${styles.awningBump}` : styles.awning} />
-      </div>
-
       <div className={styles.stall}>
         <div className={styles.chips} role="group" aria-label="Filter by category">
           <button type="button" className={picked.length === 0 ? `${styles.chip} ${styles.chipOn}` : styles.chip} aria-pressed={picked.length === 0} onClick={clear}>
@@ -445,6 +435,10 @@ export default function FlipFilterGrid({
           )}
         </div>
 
+        <span className={styles.tally} aria-hidden="true">
+          {`${String(visible.length).padStart(2, '0')} / ${String(total).padStart(2, '0')} items`}
+        </span>
+
         <p className={styles.srOnly} aria-live="polite">
           {`Showing ${visible.length} of ${total}`}
         </p>
@@ -454,7 +448,6 @@ export default function FlipFilterGrid({
             {items.map((it, i) => {
               const shown = visible.includes(i);
               const featured = i === featuredIndex;
-              const tint = TINTS[(Math.max(categories.findIndex((c) => c.name === it.category), 0) + (i % 2)) % TINTS.length];
               return (
                 <li
                   key={i}
@@ -462,7 +455,6 @@ export default function FlipFilterGrid({
                     cardEls.current[i] = el;
                   }}
                   className={ready ? `${styles.card} ${styles.cardLive}` : styles.card}
-                  style={{ '--ffg-tint': tint } as CSSProperties}
                   aria-hidden={!shown}
                 >
                   <div className={styles.cardBody}>
@@ -481,7 +473,7 @@ export default function FlipFilterGrid({
                         />
                       )}
                     </div>
-                    {caption(it, featured)}
+                    {caption(it, i, featured)}
                   </div>
                 </li>
               );
@@ -490,7 +482,7 @@ export default function FlipFilterGrid({
           {ready &&
             items.map((it, i) => (
               <Fragment key={i}>
-                {caption(it, false, (el) => {
+                {caption(it, i, false, (el) => {
                   probeEls.current[i] = el;
                 })}
               </Fragment>
@@ -504,32 +496,32 @@ export default function FlipFilterGrid({
 
 ```css
 @font-face {
-  font-family: 'FFG Fredoka';
-  src: url('./fonts/fredoka-latin-wght-normal.woff2') format('woff2');
-  font-weight: 300 700;
+  font-family: 'FFG Fraunces';
+  src: url('./fonts/fraunces-latin-variable.woff2') format('woff2');
+  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'FFG Nunito';
-  src: url('./fonts/nunito-latin-wght-normal.woff2') format('woff2');
-  font-weight: 200 1000;
+  font-family: 'FFG Mono';
+  src: url('./fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2');
+  font-weight: 100 800;
   font-style: normal;
   font-display: swap;
 }
 
+/* Editorial index: paper, ink, one accent (chipColor). */
 .root {
-  --ffg-ground: #fcf0c8;
-  --ffg-chip: #db3a22;
+  --ffg-ground: #f4f0e7;
+  --ffg-chip: #c2381b;
   --ffg-chip-ink: #ffffff;
-  --ffg-stripe: #fff8e1;
-  --ffg-card: #ffffff;
-  --ffg-ink: #2b1b12;
-  --ffg-ink-soft: #66543f;
-  --ffg-line: rgba(43, 27, 18, 0.14);
-  --ffg-font-display: 'FFG Fredoka', ui-rounded, 'Nunito', system-ui, sans-serif;
-  --ffg-font-body: 'FFG Nunito', ui-rounded, system-ui, sans-serif;
+  --ffg-ink: #16140f;
+  --ffg-ink-soft: #5e5a50;
+  --ffg-line: rgba(22, 20, 15, 0.22);
+  --ffg-plate: #e4dece;
+  --ffg-font-display: 'FFG Fraunces', 'Iowan Old Style', 'Georgia', 'Times New Roman', serif;
+  --ffg-font-mono: 'FFG Mono', ui-monospace, 'SF Mono', 'Menlo', 'Consolas', monospace;
   --ffg-cols: 4;
   --ffg-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 
@@ -538,15 +530,12 @@ export default function FlipFilterGrid({
   inline-size: 100%;
   container-type: inline-size;
   container-name: ffg;
-  isolation: isolate;
   overflow: hidden;
-  border-radius: 28px;
   color: var(--ffg-ink);
-  font-family: var(--ffg-font-body);
+  font-family: var(--ffg-font-mono);
+  font-synthesis: none;
   background-color: var(--ffg-ground);
-  background-image: radial-gradient(rgba(43, 27, 18, 0.075) 1px, transparent 1.5px);
-  background-size: 22px 22px;
-  background-position: 11px 11px;
+  -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -555,81 +544,21 @@ export default function FlipFilterGrid({
   color: var(--ffg-chip-ink);
 }
 
-/* ---------- awning ---------- */
-
-.awningWrap {
-  position: relative;
-  z-index: 3;
-  filter: drop-shadow(0 6px 5px rgba(43, 27, 18, 0.2));
-}
-
-.awning {
-  --stripe: 64px;
-  --scallop: calc(var(--stripe) / 2);
-  box-sizing: border-box;
-  inline-size: 100%;
-  block-size: 78px;
-  transform-origin: 50% 0;
-  background:
-    linear-gradient(180deg, rgba(43, 27, 18, 0) 58%, rgba(43, 27, 18, 0.16) 100%),
-    repeating-linear-gradient(90deg, var(--ffg-chip) 0 var(--stripe), var(--ffg-stripe) var(--stripe) calc(var(--stripe) * 2));
-  -webkit-mask:
-    linear-gradient(#000 0 0) 0 0 / 100% calc(100% - var(--scallop)) no-repeat,
-    radial-gradient(var(--scallop) var(--scallop) at 50% 0, #000 98%, transparent 100%) 0 100% / var(--stripe) var(--scallop) repeat-x;
-  mask:
-    linear-gradient(#000 0 0) 0 0 / 100% calc(100% - var(--scallop)) no-repeat,
-    radial-gradient(var(--scallop) var(--scallop) at 50% 0, #000 98%, transparent 100%) 0 100% / var(--stripe) var(--scallop) repeat-x;
-}
-
-.awningBump {
-  animation: awning-bump 640ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
-}
-
-@keyframes awning-bump {
-  0% {
-    transform: scaleY(1);
-  }
-  22% {
-    transform: scaleY(1.09);
-  }
-  55% {
-    transform: scaleY(0.985);
-  }
-  100% {
-    transform: scaleY(1);
-  }
-}
-
-@container ffg (max-width: 519px) {
-  .awning {
-    --stripe: 40px;
-    block-size: 54px;
-  }
-}
-
-/* ---------- stall ---------- */
-
 .stall {
-  --ffg-pad: 28px;
+  --ffg-pad: clamp(16px, 3.4cqw, 40px);
   box-sizing: border-box;
-  padding: 26px var(--ffg-pad) 30px;
+  padding: clamp(18px, 3cqw, 36px) var(--ffg-pad) clamp(24px, 3.4cqw, 44px);
 }
 
-@container ffg (max-width: 519px) {
-  .stall {
-    --ffg-pad: 16px;
-    padding-block: 20px;
-  }
-}
-
-/* ---------- chips ---------- */
+/* ---------- index (chips) ---------- */
 
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin: -8px -8px 14px;
-  padding: 8px;
+  gap: 0 clamp(16px, 2.4cqw, 32px);
+  margin: 0 0 clamp(20px, 2.6cqw, 32px);
+  padding: 0;
+  border-block-end: 1px solid var(--ffg-ink);
 }
 
 @container ffg (max-width: 719px) {
@@ -640,8 +569,6 @@ export default function FlipFilterGrid({
     scrollbar-width: none;
     margin-inline: calc(var(--ffg-pad) * -1);
     padding-inline: var(--ffg-pad);
-    scroll-padding-inline: var(--ffg-pad);
-    scroll-snap-type: x proximity;
   }
 
   .chips::-webkit-scrollbar {
@@ -650,90 +577,81 @@ export default function FlipFilterGrid({
 }
 
 .chip {
+  position: relative;
   flex: none;
   display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-block-size: 46px;
+  align-items: baseline;
+  gap: 6px;
+  min-block-size: 44px;
   box-sizing: border-box;
-  padding-block: 0;
-  padding-inline: 18px 8px;
-  border: 1px solid var(--ffg-line);
-  border-radius: 999px;
-  background: var(--ffg-card);
-  color: var(--ffg-ink);
-  font: 500 17px/1 var(--ffg-font-display);
-  letter-spacing: 0.002em;
+  margin: 0;
+  padding: 14px 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--ffg-ink-soft);
+  font: 500 12px/1 var(--ffg-font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   white-space: nowrap;
   cursor: pointer;
-  scroll-snap-align: start;
-  touch-action: manipulation;
-  transition:
-    background-color 220ms var(--ffg-ease),
-    color 220ms var(--ffg-ease),
-    border-color 220ms var(--ffg-ease),
-    transform 140ms var(--ffg-ease);
+  -webkit-appearance: none;
+  appearance: none;
+  transition: color 200ms var(--ffg-ease);
+}
+
+.chip::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: -1px;
+  block-size: 3px;
+  background: var(--ffg-chip);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 320ms var(--ffg-ease);
 }
 
 .chip:hover {
-  border-color: rgba(43, 27, 18, 0.4);
-}
-
-.chip:active {
-  transform: scale(0.96);
+  color: var(--ffg-ink);
 }
 
 .chip:focus-visible {
   outline: 2px solid var(--ffg-ink);
-  outline-offset: 3px;
+  outline-offset: 2px;
 }
 
 .chipOn {
-  border-color: var(--ffg-chip);
-  background: var(--ffg-chip);
-  color: var(--ffg-chip-ink);
-  animation: chip-pop 420ms cubic-bezier(0.3, 1.6, 0.5, 1);
+  color: var(--ffg-ink);
 }
 
-.chipOn:hover {
-  border-color: var(--ffg-chip);
-}
-
-@keyframes chip-pop {
-  0% {
-    transform: scale(0.94);
-  }
-  60% {
-    transform: scale(1.04);
-  }
-  100% {
-    transform: scale(1);
-  }
+.chipOn::after {
+  transform: scaleX(1);
 }
 
 .chipLabel {
-  display: block;
+  overflow-wrap: normal;
 }
 
 .chipCount {
-  display: grid;
-  place-items: center;
-  min-inline-size: 30px;
-  block-size: 30px;
-  box-sizing: border-box;
-  padding-inline: 8px;
-  border-radius: 999px;
-  background: rgba(43, 27, 18, 0.07);
-  font: 700 14px/1 var(--ffg-font-body);
+  color: var(--ffg-chip);
+  font-size: 10px;
   font-variant-numeric: tabular-nums;
-  transition: background-color 220ms var(--ffg-ease);
+  letter-spacing: 0.02em;
+  transform: translateY(-4px);
 }
 
-.chipOn .chipCount {
-  background: rgba(255, 255, 255, 0.24);
+.tally {
+  display: block;
+  margin: 0 0 clamp(14px, 2cqw, 22px);
+  color: var(--ffg-ink-soft);
+  font: 400 11px/1 var(--ffg-font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
 }
 
-/* ---------- board and cards ---------- */
+/* ---------- board ---------- */
 
 .board {
   position: relative;
@@ -775,22 +693,15 @@ export default function FlipFilterGrid({
   box-sizing: border-box;
   block-size: 100%;
   overflow: hidden;
-  border: 1px solid var(--ffg-line);
-  border-radius: 20px;
-  background: var(--ffg-card);
-  box-shadow:
-    0 1px 2px rgba(43, 27, 18, 0.06),
-    0 12px 24px -16px rgba(43, 27, 18, 0.28);
 }
 
 .media {
   position: relative;
   flex: 1 1 auto;
   min-block-size: 0;
-  margin: 8px 8px 0;
+  margin-block-end: 10px;
   overflow: hidden;
-  border-radius: 13px;
-  background: var(--ffg-tint);
+  background: var(--ffg-plate);
 }
 
 .mediaStatic {
@@ -803,8 +714,9 @@ export default function FlipFilterGrid({
   inset: 0;
   display: grid;
   place-items: center;
-  color: rgba(43, 27, 18, 0.3);
-  font: 600 64px/1 var(--ffg-font-display);
+  color: rgba(22, 20, 15, 0.22);
+  font: 300 italic 72px/1 var(--ffg-font-display);
+  font-style: italic;
 }
 
 .image {
@@ -813,24 +725,23 @@ export default function FlipFilterGrid({
   inline-size: 100%;
   block-size: 100%;
   object-fit: cover;
-  transition: transform 800ms var(--ffg-ease);
+  transition: transform 900ms var(--ffg-ease);
 }
 
 .image:hover {
-  transform: scale(1.05);
+  transform: scale(1.03);
 }
 
 .caption {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   box-sizing: border-box;
-  padding: 14px 16px 16px;
+  padding: 0;
 }
 
 .captionFeatured {
   gap: 8px;
-  padding: 18px 20px 20px;
 }
 
 .probe {
@@ -844,26 +755,30 @@ export default function FlipFilterGrid({
 .title {
   margin: 0;
   color: var(--ffg-ink);
-  font: 500 18px/1.18 var(--ffg-font-display);
-  letter-spacing: -0.004em;
+  font: 400 21px/1.1 var(--ffg-font-display);
+  font-variation-settings: 'opsz' 48;
+  letter-spacing: -0.012em;
   text-wrap: balance;
   overflow-wrap: break-word;
-  transition: font-size 420ms var(--ffg-ease);
+  hyphens: auto;
 }
 
 .titleFeatured {
-  font-size: 30px;
-  line-height: 1.1;
-  letter-spacing: -0.012em;
+  font-size: clamp(28px, 4.2cqw, 56px);
+  font-weight: 300;
+  font-style: italic;
+  font-variation-settings: 'opsz' 144;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
 }
 
 @container ffg (max-width: 519px) {
   .title {
-    font-size: 17px;
+    font-size: 18px;
   }
 
   .titleFeatured {
-    font-size: 24px;
+    font-size: 26px;
   }
 }
 
@@ -872,29 +787,30 @@ export default function FlipFilterGrid({
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 2px 14px;
+  gap: 2px 12px;
   margin: 0;
+  color: var(--ffg-ink-soft);
+  font: 400 11px/1.4 var(--ffg-font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .category {
   display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--ffg-ink-soft);
-  font: 600 14px/1.3 var(--ffg-font-body);
+  align-items: baseline;
+  gap: 8px;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
 }
 
-.dot {
+.index {
   flex: none;
-  inline-size: 7px;
-  block-size: 7px;
-  border-radius: 50%;
-  background: var(--ffg-chip);
+  color: var(--ffg-chip);
+  font-variant-numeric: tabular-nums;
 }
 
 .detail {
   color: var(--ffg-ink);
-  font: 600 15px/1.3 var(--ffg-font-display);
   font-variant-numeric: tabular-nums;
 }
 
@@ -911,15 +827,9 @@ export default function FlipFilterGrid({
 
 @media (prefers-reduced-motion: reduce) {
   .chip,
-  .chipCount,
-  .image,
-  .title {
+  .chip::after,
+  .image {
     transition: none;
-  }
-
-  .chipOn,
-  .awningBump {
-    animation: none;
   }
 
   .image:hover {
