@@ -64,7 +64,6 @@ export default function GoalJarFill({
   const rootRef = useRef<HTMLDivElement>(null);
   const glassRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const causticRef = useRef<HTMLCanvasElement>(null);
   const amountRef = useRef<HTMLSpanElement>(null);
   const numeralRef = useRef<HTMLSpanElement>(null);
   const wake = useRef<() => void>(() => {});
@@ -124,21 +123,16 @@ export default function GoalJarFill({
     const root = rootRef.current;
     const glass = glassRef.current;
     const canvas = canvasRef.current;
-    const caustic = causticRef.current;
-    if (!root || !glass || !canvas || !caustic) return;
+    if (!root || !glass || !canvas) return;
     const ctx = canvas.getContext('2d');
-    const cctx = caustic.getContext('2d');
-    if (!ctx || !cctx) return;
+    if (!ctx) return;
 
     let w = 0;
     let hgt = 0;
-    let cw = 0;
-    let ch = 0;
     let raf = 0;
     let running = false;
     let last = 0;
     let time = 0;
-    let flare = 0;
     let idle = 2;
     let liquid: Rgb = [201, 120, 15];
     const s = sim.current;
@@ -163,35 +157,6 @@ export default function GoalJarFill({
         wob: 4 + Math.random() * 4,
         ph: Math.random() * Math.PI * 2,
       });
-    };
-
-    const drawCaustic = (fill: number, energy: number) => {
-      if (!cw || !ch) return;
-      cctx.clearRect(0, 0, cw, ch);
-      const a = 0.04 + clamp(fill) * 0.34 + flare * 0.5 + Math.min(0.14, energy * 0.5);
-      const cx = cw * 0.56;
-      const cy = ch * 0.42;
-      const pool = cctx.createRadialGradient(cx, cy, 0, cx, cy, cw * 0.32);
-      pool.addColorStop(0, `rgba(255, 206, 120, ${a * 0.85})`);
-      pool.addColorStop(1, 'rgba(255, 206, 120, 0)');
-      cctx.fillStyle = pool;
-      cctx.fillRect(0, 0, cw, ch);
-      cctx.lineCap = 'round';
-      for (let k = 0; k < 3; k++) {
-        cctx.beginPath();
-        const yy = ch * (0.34 + k * 0.16);
-        for (let px = cw * 0.24; px <= cw * 0.8; px += 6) {
-          const y =
-            yy +
-            Math.sin(px * 0.02 + time * (0.5 + k * 0.22) + k * 2.1) * ch * 0.07 +
-            Math.sin(px * 0.05 - time * 0.7 + k) * ch * 0.02;
-          if (px === cw * 0.24) cctx.moveTo(px, y);
-          else cctx.lineTo(px, y);
-        }
-        cctx.strokeStyle = `rgba(255, 218, 140, ${a * (0.55 - k * 0.13)})`;
-        cctx.lineWidth = 5 + k * 3;
-        cctx.stroke();
-      }
     };
 
     const writeText = () => {
@@ -319,7 +284,6 @@ export default function GoalJarFill({
 
     const resize = () => {
       const r = glass.getBoundingClientRect();
-      const cr = caustic.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       if (r.width && r.height) {
         w = r.width;
@@ -328,15 +292,7 @@ export default function GoalJarFill({
         canvas.height = Math.round(hgt * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
-      if (cr.width && cr.height) {
-        cw = cr.width;
-        ch = cr.height;
-        caustic.width = Math.round(cw * dpr);
-        caustic.height = Math.round(ch * dpr);
-        cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      }
       draw();
-      drawCaustic(clamp(s.fill), 0);
     };
 
     const step = (dt: number) => {
@@ -361,7 +317,6 @@ export default function GoalJarFill({
         bubbles[bi].y += bubbles[bi].vy * dt;
         if (bubbles[bi].y >= 1) bubbles.splice(bi, 1);
       }
-      flare *= Math.exp(-1.6 * dt);
     };
 
     const loop = (now: number) => {
@@ -384,7 +339,6 @@ export default function GoalJarFill({
               for (let i = 0; i < 22; i++) spawnBubble(0.25 + Math.random() * 0.5, 0.6 + Math.random() * 0.32, 0.8, 2);
               s.v[Math.floor(COLUMNS * 0.5)] += -3.2;
               s.tiltV += 0.5;
-              flare = 1;
             }
           } else {
             syncPopped(false);
@@ -399,8 +353,6 @@ export default function GoalJarFill({
       }
       step(dt);
       draw();
-      const energy = s.h.reduce((a, x) => a + Math.abs(x), 0) / COLUMNS;
-      drawCaustic(clamp(s.fill), energy);
       writeText();
       raf = requestAnimationFrame(loop);
     };
@@ -433,7 +385,6 @@ export default function GoalJarFill({
       }
       syncPopped(s.to >= 1);
       draw();
-      drawCaustic(clamp(s.fill), 0);
       writeText();
     };
 
@@ -452,7 +403,6 @@ export default function GoalJarFill({
 
     const ro = new ResizeObserver(resize);
     ro.observe(glass);
-    ro.observe(caustic);
     resize();
     writeText();
     start();
@@ -529,10 +479,6 @@ export default function GoalJarFill({
       </div>
 
       <div className={styles.stage}>
-        <span className={styles.halo} aria-hidden="true" />
-        <div className={styles.shelf} aria-hidden="true" />
-        <canvas ref={causticRef} className={styles.caustics} aria-hidden="true" />
-
         <div
           className={styles.jar}
           role="progressbar"
@@ -567,8 +513,6 @@ export default function GoalJarFill({
               <span className={styles.goalLine}>of {goalText}</span>
             </div>
             <span className={styles.highlight} aria-hidden="true" />
-            <span className={styles.highlightThin} aria-hidden="true" />
-            <span className={styles.lens} aria-hidden="true" />
           </div>
         </div>
       </div>

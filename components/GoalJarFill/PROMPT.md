@@ -69,7 +69,6 @@ export default function GoalJarFill({
   const rootRef = useRef<HTMLDivElement>(null);
   const glassRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const causticRef = useRef<HTMLCanvasElement>(null);
   const amountRef = useRef<HTMLSpanElement>(null);
   const numeralRef = useRef<HTMLSpanElement>(null);
   const wake = useRef<() => void>(() => {});
@@ -129,21 +128,16 @@ export default function GoalJarFill({
     const root = rootRef.current;
     const glass = glassRef.current;
     const canvas = canvasRef.current;
-    const caustic = causticRef.current;
-    if (!root || !glass || !canvas || !caustic) return;
+    if (!root || !glass || !canvas) return;
     const ctx = canvas.getContext('2d');
-    const cctx = caustic.getContext('2d');
-    if (!ctx || !cctx) return;
+    if (!ctx) return;
 
     let w = 0;
     let hgt = 0;
-    let cw = 0;
-    let ch = 0;
     let raf = 0;
     let running = false;
     let last = 0;
     let time = 0;
-    let flare = 0;
     let idle = 2;
     let liquid: Rgb = [201, 120, 15];
     const s = sim.current;
@@ -168,35 +162,6 @@ export default function GoalJarFill({
         wob: 4 + Math.random() * 4,
         ph: Math.random() * Math.PI * 2,
       });
-    };
-
-    const drawCaustic = (fill: number, energy: number) => {
-      if (!cw || !ch) return;
-      cctx.clearRect(0, 0, cw, ch);
-      const a = 0.04 + clamp(fill) * 0.34 + flare * 0.5 + Math.min(0.14, energy * 0.5);
-      const cx = cw * 0.56;
-      const cy = ch * 0.42;
-      const pool = cctx.createRadialGradient(cx, cy, 0, cx, cy, cw * 0.32);
-      pool.addColorStop(0, `rgba(255, 206, 120, ${a * 0.85})`);
-      pool.addColorStop(1, 'rgba(255, 206, 120, 0)');
-      cctx.fillStyle = pool;
-      cctx.fillRect(0, 0, cw, ch);
-      cctx.lineCap = 'round';
-      for (let k = 0; k < 3; k++) {
-        cctx.beginPath();
-        const yy = ch * (0.34 + k * 0.16);
-        for (let px = cw * 0.24; px <= cw * 0.8; px += 6) {
-          const y =
-            yy +
-            Math.sin(px * 0.02 + time * (0.5 + k * 0.22) + k * 2.1) * ch * 0.07 +
-            Math.sin(px * 0.05 - time * 0.7 + k) * ch * 0.02;
-          if (px === cw * 0.24) cctx.moveTo(px, y);
-          else cctx.lineTo(px, y);
-        }
-        cctx.strokeStyle = `rgba(255, 218, 140, ${a * (0.55 - k * 0.13)})`;
-        cctx.lineWidth = 5 + k * 3;
-        cctx.stroke();
-      }
     };
 
     const writeText = () => {
@@ -324,7 +289,6 @@ export default function GoalJarFill({
 
     const resize = () => {
       const r = glass.getBoundingClientRect();
-      const cr = caustic.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       if (r.width && r.height) {
         w = r.width;
@@ -333,15 +297,7 @@ export default function GoalJarFill({
         canvas.height = Math.round(hgt * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
-      if (cr.width && cr.height) {
-        cw = cr.width;
-        ch = cr.height;
-        caustic.width = Math.round(cw * dpr);
-        caustic.height = Math.round(ch * dpr);
-        cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      }
       draw();
-      drawCaustic(clamp(s.fill), 0);
     };
 
     const step = (dt: number) => {
@@ -366,7 +322,6 @@ export default function GoalJarFill({
         bubbles[bi].y += bubbles[bi].vy * dt;
         if (bubbles[bi].y >= 1) bubbles.splice(bi, 1);
       }
-      flare *= Math.exp(-1.6 * dt);
     };
 
     const loop = (now: number) => {
@@ -389,7 +344,6 @@ export default function GoalJarFill({
               for (let i = 0; i < 22; i++) spawnBubble(0.25 + Math.random() * 0.5, 0.6 + Math.random() * 0.32, 0.8, 2);
               s.v[Math.floor(COLUMNS * 0.5)] += -3.2;
               s.tiltV += 0.5;
-              flare = 1;
             }
           } else {
             syncPopped(false);
@@ -404,8 +358,6 @@ export default function GoalJarFill({
       }
       step(dt);
       draw();
-      const energy = s.h.reduce((a, x) => a + Math.abs(x), 0) / COLUMNS;
-      drawCaustic(clamp(s.fill), energy);
       writeText();
       raf = requestAnimationFrame(loop);
     };
@@ -438,7 +390,6 @@ export default function GoalJarFill({
       }
       syncPopped(s.to >= 1);
       draw();
-      drawCaustic(clamp(s.fill), 0);
       writeText();
     };
 
@@ -457,7 +408,6 @@ export default function GoalJarFill({
 
     const ro = new ResizeObserver(resize);
     ro.observe(glass);
-    ro.observe(caustic);
     resize();
     writeText();
     start();
@@ -534,10 +484,6 @@ export default function GoalJarFill({
       </div>
 
       <div className={styles.stage}>
-        <span className={styles.halo} aria-hidden="true" />
-        <div className={styles.shelf} aria-hidden="true" />
-        <canvas ref={causticRef} className={styles.caustics} aria-hidden="true" />
-
         <div
           className={styles.jar}
           role="progressbar"
@@ -572,8 +518,6 @@ export default function GoalJarFill({
               <span className={styles.goalLine}>of {goalText}</span>
             </div>
             <span className={styles.highlight} aria-hidden="true" />
-            <span className={styles.highlightThin} aria-hidden="true" />
-            <span className={styles.lens} aria-hidden="true" />
           </div>
         </div>
       </div>
@@ -604,13 +548,10 @@ export default function GoalJarFill({
   --gj-liquid: #c9780f;
   --gj-ink: #34210f;
   --gj-ink-soft: rgba(52, 33, 15, 0.72);
-  --gj-cream: #f7f0e1;
-  --gj-ground-1: #f8f1e3;
+  --gj-cream: #fbf9f4;
+  --gj-ground-1: #f6f3ee;
   --gj-ground-2: #ecdfc6;
-  --gj-shelf-top: #e6d3ad;
-  --gj-shelf-face: #d3bb8e;
-  --gj-shelf-line: rgba(120, 88, 48, 0.55);
-  --gj-glass-tint: rgba(110, 70, 26, 0.12);
+  --gj-glass-tint: rgba(60, 50, 40, 0.05);
   --gj-font-display: 'Schibsted Grotesk', 'Avenir Next', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --gj-font-ui: 'Schibsted Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --gj-fill: 0.62;
@@ -622,9 +563,7 @@ export default function GoalJarFill({
   box-sizing: border-box;
   inline-size: 100%;
   border-radius: 24px;
-  background:
-    radial-gradient(60% 50% at 18% 0%, #fffaf0 0%, rgba(255, 250, 240, 0) 70%),
-    linear-gradient(180deg, var(--gj-ground-1) 0%, var(--gj-ground-2) 100%);
+  background: var(--gj-ground-1);
   color: var(--gj-ink);
   font-family: var(--gj-font-ui);
   font-weight: 500;
@@ -659,7 +598,7 @@ export default function GoalJarFill({
   align-items: flex-start;
   gap: 0.04em;
   font-family: var(--gj-font-display);
-  font-weight: 700;
+  font-weight: 500;
   font-size: clamp(56px, 17cqi, 92px);
   line-height: 0.9;
   letter-spacing: -0.05em;
@@ -709,48 +648,13 @@ export default function GoalJarFill({
   --gj-jw: min(54cqi, 240px);
   position: relative;
   inline-size: 100%;
-  block-size: calc(var(--gj-jw) / 0.7 + 118px);
-}
-
-.halo {
-  position: absolute;
-  z-index: 2;
-  inset-block-end: 4%;
-  inset-inline-start: 50%;
-  inline-size: min(70%, 380px);
-  aspect-ratio: 1;
-  transform: translateX(-50%);
-  background: radial-gradient(closest-side, rgba(255, 213, 148, 0.3), rgba(255, 213, 148, 0) 70%);
-  filter: blur(22px);
-  mix-blend-mode: screen;
-  pointer-events: none;
-}
-
-.shelf {
-  position: absolute;
-  z-index: 2;
-  inset-block-end: 0;
-  inset-inline: 0;
-  block-size: 54px;
-  background: linear-gradient(180deg, var(--gj-shelf-line) 0 1px, var(--gj-shelf-top) 1px 36%, var(--gj-shelf-face) 100%);
-}
-
-.caustics {
-  position: absolute;
-  z-index: 3;
-  inset-block-end: 0;
-  inset-inline: 0;
-  inline-size: 100%;
-  block-size: 54px;
-  filter: blur(6px);
-  mix-blend-mode: screen;
-  pointer-events: none;
+  block-size: calc(var(--gj-jw) / 0.7 + 64px);
 }
 
 .jar {
   position: absolute;
   z-index: 5;
-  inset-block-end: 34px;
+  inset-block-end: 28px;
   inset-inline-start: 50%;
   inline-size: var(--gj-jw);
   aspect-ratio: 0.7;
@@ -775,8 +679,8 @@ export default function GoalJarFill({
   inset-block-end: -3%;
   block-size: 6%;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(52, 28, 8, 0.38), transparent);
-  filter: blur(5px);
+  background: radial-gradient(closest-side, rgba(40, 30, 20, 0.22), transparent);
+  filter: blur(6px);
   pointer-events: none;
 }
 
@@ -786,19 +690,15 @@ export default function GoalJarFill({
   inline-size: 50%;
   block-size: 60%;
   border-radius: 3px 3px 1px 1px;
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.04) 30%, rgba(255, 255, 255, 0.04) 74%, rgba(255, 255, 255, 0.22)),
-    var(--gj-glass-tint);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.38);
+  background: var(--gj-glass-tint);
+  box-shadow: inset 0 0 0 1.5px rgba(52, 33, 15, 0.22);
 }
 
 .neck {
   grid-row: 2;
   inline-size: 52%;
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.04) 28%, rgba(255, 255, 255, 0.04) 76%, rgba(255, 255, 255, 0.2)),
-    var(--gj-glass-tint);
-  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.34), inset -1px 0 0 rgba(255, 255, 255, 0.2);
+  background: var(--gj-glass-tint);
+  box-shadow: inset 1.5px 0 0 rgba(52, 33, 15, 0.22), inset -1.5px 0 0 rgba(52, 33, 15, 0.22);
 }
 
 .lid {
@@ -809,20 +709,14 @@ export default function GoalJarFill({
   inline-size: 56%;
   block-size: 8.4%;
   transform: translateX(-50%);
-  border-radius: 6px 6px 3px 3px / 8px 8px 3px 3px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0, rgba(255, 255, 255, 0) 38%),
-    linear-gradient(90deg, #8a7048 0%, #c6ac80 26%, #e0cca3 40%, #b79c6f 66%, #7a6240 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 246, 224, 0.7),
-    inset 0 -1px 0 rgba(60, 40, 14, 0.45),
-    0 2px 4px -1px rgba(56, 28, 6, 0.35);
+  border-radius: 3px;
+  background: var(--gj-ink);
   transition: transform 600ms cubic-bezier(0.2, 0.9, 0.3, 1);
   pointer-events: none;
 }
 
 .lidPopped {
-  transform: translateX(-50%) translateY(-10px) rotate(4deg);
+  transform: translateX(-50%) translateY(-8px) rotate(2deg);
   animation: gjPop 900ms cubic-bezier(0.3, 1.1, 0.34, 1) both;
 }
 
@@ -831,13 +725,13 @@ export default function GoalJarFill({
     transform: translateX(-50%);
   }
   40% {
-    transform: translateX(-50%) translateY(-34px) rotate(-5deg);
+    transform: translateX(-50%) translateY(-22px) rotate(-3deg);
   }
   66% {
-    transform: translateX(-50%) translateY(-18px) rotate(3deg);
+    transform: translateX(-50%) translateY(-12px) rotate(2deg);
   }
   100% {
-    transform: translateX(-50%) translateY(-10px) rotate(4deg);
+    transform: translateX(-50%) translateY(-8px) rotate(2deg);
   }
 }
 
@@ -868,16 +762,10 @@ export default function GoalJarFill({
   block-size: 100%;
   box-sizing: border-box;
   overflow: hidden;
-  border: 2px solid rgba(255, 249, 238, 0.5);
-  border-radius: 26% 26% 7% 7% / 12% 12% 3.5% 3.5%;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 30%),
-    var(--gj-glass-tint);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
-    inset 10px 0 18px rgba(255, 246, 226, 0.1),
-    inset -12px 0 20px rgba(34, 16, 2, 0.16),
-    0 18px 28px -18px rgba(52, 26, 8, 0.5);
+  border: 1.5px solid rgba(52, 33, 15, 0.22);
+  border-radius: 18% 18% 6% 6% / 9% 9% 3% 3%;
+  background: var(--gj-glass-tint);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
 }
 
 .canvas {
@@ -898,11 +786,8 @@ export default function GoalJarFill({
   display: grid;
   justify-items: center;
   text-align: center;
-  background: linear-gradient(180deg, #fbf6ea, var(--gj-cream));
-  border-radius: 3px;
-  box-shadow:
-    inset 0 0 0 1px rgba(52, 33, 15, 0.14),
-    0 6px 12px -8px rgba(52, 28, 8, 0.45);
+  background: var(--gj-cream);
+  border-radius: 2px;
   color: var(--gj-ink);
 }
 
@@ -961,46 +846,29 @@ export default function GoalJarFill({
   pointer-events: none;
 }
 
-.highlightThin {
-  position: absolute;
-  inset-inline-end: 6%;
-  inset-block: 18% 20%;
-  inline-size: 1.6%;
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.34) 40%, rgba(255, 255, 255, 0));
-  mix-blend-mode: screen;
-  pointer-events: none;
-}
-
-.lens {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent 36%, rgba(255, 250, 238, 0.09) 46%, transparent 58%);
-  mix-blend-mode: screen;
-  pointer-events: none;
-}
-
 @container (min-width: 600px) {
   .layout {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: auto auto;
+    justify-content: center;
     align-items: center;
+    column-gap: clamp(56px, 10cqi, 140px);
+    padding-block: 24px;
   }
 
   .readout {
     flex-direction: column;
     align-items: flex-start;
-    justify-content: center;
-    padding: 32px 0 32px 8%;
-    justify-self: stretch;
+    padding: 0;
     text-align: start;
   }
 
   .figure {
-    font-size: clamp(88px, 14cqi, 140px);
+    font-size: clamp(80px, 11cqi, 120px);
   }
 
   .stage {
-    --gj-jw: min(28cqi, 300px);
+    inline-size: var(--gj-jw);
+    --gj-jw: min(26cqi, 280px);
   }
 }
 
