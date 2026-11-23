@@ -1,0 +1,404 @@
+const n=`@font-face {
+  font-family: 'Archivo';
+  src: url('./fonts/archivo-latin.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/*
+ * The component IS the sticker: one full-bleed warm-vinyl sheet that fills its
+ * frame edge to edge. Under it, an equally composed ink field waits for the peel.
+ * Positions are physical (left/right/top/bottom) on purpose: the peel geometry is.
+ */
+.root {
+  --pc-radius: 20px;
+  --pc-peel: #e6b85c;
+  --pc-peel-lift: color-mix(in srgb, var(--pc-peel) 70%, #fff6e2);
+  --pc-peel-deep: color-mix(in srgb, var(--pc-peel) 78%, #5a3d10);
+  --pc-peel-shade: color-mix(in srgb, var(--pc-peel) 86%, #b8782a);
+  --pc-ink: #2a1d10;
+  --pc-well: #1b1510;
+  --pc-well-text: #f6eedd;
+  --pc-font: 'Archivo', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --pc-title-tall: 16cqi;
+  --pc-title-square: 12cqi;
+  --pc-title-wide: 11cqi;
+  --pc-body-tall: 4cqi;
+  --pc-body-wide: 1.5cqi;
+
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  container-type: inline-size;
+  box-sizing: border-box;
+  inline-size: 100%;
+  border-radius: var(--pc-radius);
+  background: var(--pc-well);
+  color: var(--pc-ink);
+  font-family: var(--pc-font);
+}
+
+.root ::selection {
+  background: var(--pc-ink);
+  color: var(--pc-peel);
+}
+
+.card {
+  --pc-p: 0;
+  --pc-m: 0;
+  --pc-pad: clamp(18px, 4.6cqi, 64px);
+
+  position: relative;
+  display: block;
+  inline-size: 100%;
+  aspect-ratio: 4 / 5;
+  container-type: inline-size;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: var(--pc-radius);
+  cursor: pointer;
+}
+
+@container (min-width: 460px) {
+  .card {
+    aspect-ratio: 1 / 1;
+  }
+}
+
+@container (min-width: 700px) {
+  .card {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+.card:focus-visible {
+  outline: 3px solid var(--pc-ink);
+  outline-offset: -8px;
+}
+
+/* ---------- The ink field under the sticker ---------- */
+
+.well {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: clip;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      80% 100% at var(--pc-corner-x) var(--pc-corner-y),
+      color-mix(in srgb, var(--pc-peel) 20%, var(--pc-well)) 0%,
+      color-mix(in srgb, var(--pc-peel) 6%, var(--pc-well)) 50%,
+      transparent 80%
+    ),
+    linear-gradient(172deg, #221a13 0%, var(--pc-well) 100%);
+  pointer-events: none;
+}
+
+/* The hidden offer: three staggered beats as the crease sweeps past. */
+.message {
+  --pc-dir: 1;
+
+  position: absolute;
+  z-index: 0;
+  box-sizing: border-box;
+  inline-size: 46cqi;
+  color: var(--pc-well-text);
+  pointer-events: none;
+}
+
+@container (min-width: 460px) {
+  .message {
+    inline-size: 40cqi;
+  }
+}
+
+@container (min-width: 700px) {
+  .message {
+    inline-size: 25cqi;
+  }
+}
+
+.messageTopRight {
+  top: calc(var(--pc-pad) * 0.9);
+  right: calc(var(--pc-pad) * 0.9);
+}
+
+.messageTopLeft {
+  top: calc(var(--pc-pad) * 0.9);
+  left: calc(var(--pc-pad) * 0.9);
+}
+
+.messageBottomRight {
+  --pc-dir: -1;
+
+  bottom: calc(var(--pc-pad) * 0.9);
+  right: calc(var(--pc-pad) * 0.9);
+}
+
+.messageBottomLeft {
+  --pc-dir: -1;
+
+  bottom: calc(var(--pc-pad) * 0.9);
+  left: calc(var(--pc-pad) * 0.9);
+}
+
+.hiddenTitle {
+  --pc-beat: clamp(0, calc(var(--pc-m) * 3), 1);
+
+  margin: 0;
+  font-size: clamp(20px, 6cqi, 34px);
+  font-weight: 650;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  color: var(--pc-peel);
+  overflow-wrap: break-word;
+  opacity: var(--pc-beat);
+  transform: translateY(calc((1 - var(--pc-beat)) * 12px * var(--pc-dir)));
+}
+
+@container (min-width: 700px) {
+  .hiddenTitle {
+    font-size: clamp(28px, 2.9cqi, 52px);
+  }
+}
+
+.hiddenBody {
+  --pc-beat: clamp(0, calc(var(--pc-m) * 3 - 0.8), 1);
+
+  margin: 8px 0 0;
+  font-size: clamp(12px, 3.2cqi, 15px);
+  font-weight: 500;
+  line-height: 1.4;
+  color: rgba(246, 238, 221, 0.78);
+  overflow-wrap: break-word;
+  opacity: var(--pc-beat);
+  transform: translateY(calc((1 - var(--pc-beat)) * 12px * var(--pc-dir)));
+}
+
+@container (min-width: 700px) {
+  .hiddenBody {
+    margin-block-start: 12px;
+    font-size: clamp(15px, 1.25cqi, 22px);
+  }
+}
+
+.hiddenCode {
+  --pc-beat: clamp(0, calc(var(--pc-m) * 3 - 1.6), 1);
+
+  display: inline-block;
+  max-inline-size: 100%;
+  box-sizing: border-box;
+  margin-block-start: 14px;
+  padding: 7px 14px;
+  border: 1px solid color-mix(in srgb, var(--pc-peel) 55%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pc-peel) 12%, transparent);
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+  color: var(--pc-peel);
+  overflow-wrap: break-word;
+  opacity: var(--pc-beat);
+  transform: translateY(calc((1 - var(--pc-beat)) * 12px * var(--pc-dir)));
+}
+
+@container (min-width: 700px) {
+  .hiddenCode {
+    margin-block-start: 18px;
+    padding: 8px 18px;
+    font-size: clamp(14px, 1.1cqi, 18px);
+  }
+}
+
+/* ---------- The warm vinyl ---------- */
+
+.sticker {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: clip;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      155deg,
+      var(--pc-peel-lift) 0%,
+      var(--pc-peel) 48%,
+      var(--pc-peel-shade) 100%
+    );
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--pc-peel-deep) 35%, transparent);
+}
+
+/* Print stress: the vinyl bends darker toward the lifting crease. */
+.sticker::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    64% 80% at var(--pc-corner-x) var(--pc-corner-y),
+    rgba(92, 60, 10, 0.14),
+    transparent 72%
+  );
+  opacity: calc(0.4 + var(--pc-p) * 0.6);
+  pointer-events: none;
+}
+
+/* Clear gloss laminate: one soft window reflection that slides as the sticker bends. */
+.vinylGloss {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    116deg,
+    transparent 22%,
+    rgba(255, 255, 250, 0.1) 32%,
+    transparent 44%
+  );
+  transform: translateX(calc(var(--pc-p) * 6%));
+  pointer-events: none;
+}
+
+/* ---------- Printed copy ---------- */
+
+.print {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 3.4cqi, 34px);
+  box-sizing: border-box;
+  min-inline-size: 0;
+  padding-inline: var(--pc-pad);
+}
+
+/* The copy hangs on the edge away from the peel; the brand strip closes the opposite edge. */
+.layoutTopRight .copy,
+.layoutTopLeft .copy {
+  margin-block-start: auto;
+  padding-block-end: calc(var(--pc-pad) * 0.9);
+}
+
+.layoutBottomRight .copy,
+.layoutBottomLeft .copy {
+  margin-block-end: auto;
+  padding-block-start: calc(var(--pc-pad) * 0.9);
+}
+
+.layoutBottomRight .strip,
+.layoutBottomLeft .strip {
+  order: -1;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--pc-title-tall);
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  color: var(--pc-ink);
+  overflow-wrap: break-word;
+  hyphens: manual;
+  text-wrap: balance;
+}
+
+.body {
+  margin: 0;
+  max-inline-size: 34ch;
+  font-size: clamp(13px, var(--pc-body-tall), 17px);
+  font-weight: 450;
+  line-height: 1.5;
+  color: rgba(42, 29, 16, 0.84);
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  overflow: hidden;
+}
+
+@container (min-width: 460px) {
+  .title {
+    font-size: var(--pc-title-square);
+  }
+}
+
+@container (min-width: 700px) {
+  .copy {
+    inline-size: calc(58cqi + var(--pc-pad) * 2);
+    max-inline-size: 100%;
+    gap: clamp(16px, 2.2cqi, 40px);
+  }
+
+  .layoutTopLeft .copy,
+  .layoutBottomLeft .copy {
+    margin-inline-start: auto;
+  }
+
+  .title {
+    font-size: var(--pc-title-wide);
+  }
+
+  .body {
+    max-inline-size: 38cqi;
+    font-size: clamp(15px, var(--pc-body-wide), 26px);
+  }
+}
+
+/* Quiet footer: a hairline rule and a small uppercase line. */
+.strip {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 2cqi, 24px);
+  box-sizing: border-box;
+  margin: 0 var(--pc-pad);
+  padding: clamp(12px, 2.4cqi, 26px) 0 clamp(14px, 3cqi, 30px);
+  border-block-start: 1px solid rgba(42, 29, 16, 0.22);
+  font-size: clamp(12px, 2.9cqi, 15px);
+  letter-spacing: 0.1em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--pc-ink);
+  hyphens: none;
+}
+
+@container (min-width: 700px) {
+  .strip {
+    font-size: clamp(13px, 1.05cqi, 17px);
+  }
+}
+
+.stripLead {
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  font-weight: 700;
+}
+
+.stripLine {
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  font-weight: 500;
+  color: rgba(42, 29, 16, 0.72);
+}
+
+.peelCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+}
+`;export{n as default};

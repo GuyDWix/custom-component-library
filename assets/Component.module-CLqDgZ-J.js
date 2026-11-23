@@ -1,0 +1,142 @@
+const n=`@font-face {
+  font-family: 'Hanken Grotesk';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url('./fonts/hanken-grotesk-latin-500-normal.woff2') format('woff2');
+}
+
+.root {
+  --bh-ink: #06070b;
+  --bh-star: #cfd8ff;
+  --bh-accent: #ff8a4c;
+  --bh-text: #f2f4ff;
+  --bh-muted: #aab0c8;
+  --bh-core: 132px;
+  --bh-font: 'Hanken Grotesk', system-ui, sans-serif;
+  position: relative;
+  isolation: isolate;
+  container-type: inline-size;
+  display: grid;
+  place-items: center;
+  inline-size: 100%;
+  block-size: 100%;
+  min-block-size: 34rem;
+  overflow: hidden;
+  background: #0b0d14;
+  color: var(--bh-text);
+  font-family: var(--bh-font);
+  font-weight: 500;
+}
+
+.cover {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--bh-ink);
+  pointer-events: none;
+  transition: opacity 1.1s ease 0.2s;
+}
+
+.root[data-open='true'] .cover {
+  opacity: 0;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+}
+
+.root[data-static='true'][data-open='true'] .canvas {
+  opacity: 0;
+}
+
+.horizon {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: radial-gradient(circle at 50% 50%, var(--bh-ink) 0, var(--bh-ink) calc(var(--bh-core) * 0.3), transparent calc(var(--bh-core) * 0.75));
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+.root[data-open='true'] .horizon {
+  opacity: 0;
+}
+
+.root[data-static='true'] .horizon {
+  background: none;
+}
+
+.core {
+  position: relative;
+  z-index: 5;
+  grid-area: 1 / 1;
+  inline-size: var(--bh-core);
+  block-size: var(--bh-core);
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--bh-text);
+  font: inherit;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: opacity 0.5s ease, visibility 0s linear 0.5s;
+}
+
+.core:focus-visible {
+  outline: 2px solid var(--bh-accent);
+  outline-offset: 4px;
+}
+
+.label {
+  font-size: 0.8125rem;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
+  text-transform: uppercase;
+  transition: letter-spacing 0.5s cubic-bezier(0.2, 0.7, 0.2, 1), color 0.4s ease;
+}
+
+.core:hover .label,
+.core:focus-visible .label {
+  letter-spacing: 0.4em;
+  text-indent: 0.4em;
+  color: var(--bh-accent);
+}
+
+.root[data-open='true'] .core {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  grid-area: 1 / 1;
+  box-sizing: border-box;
+  inline-size: 100%;
+  block-size: 100%;
+  min-block-size: 0;
+  outline: none;
+  visibility: hidden;
+  transition: visibility 0s linear 1s;
+}
+
+.root[data-open='true'] .page {
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.root[data-static='true'] .page,
+.root[data-static='true'] .core,
+.root[data-static='true'] .label,
+.root[data-static='true'] .cover {
+  transition: none;
+}
+`;export{n as default};

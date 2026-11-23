@@ -1,0 +1,257 @@
+const n=`/* Neutral print table — a handleless glass loupe with a thin ring and soft shadow */
+
+@font-face {
+  font-family: 'Schibsted Grotesk';
+  src: url('./fonts/schibsted-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Schibsted Grotesk';
+  src: url('./fonts/schibsted-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+.root {
+  --lz-rim: #b08a3c;
+  --lz-size: 320px;
+  --lz-zoom: 2.6;
+  --lz-linen: #f4f3f1;
+  --lz-linen-deep: #eceae6;
+  --lz-ink: #1d1d1f;
+  --lz-muted: #55555a;
+  --lz-font-display: 'Schibsted Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --lz-font-ui: 'Schibsted Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  container-type: inline-size;
+  box-sizing: border-box;
+  inline-size: 100%;
+  display: grid;
+  border-radius: 22px;
+  background: linear-gradient(180deg, var(--lz-linen) 0%, var(--lz-linen-deep) 100%);
+  color: var(--lz-ink);
+  font-family: var(--lz-font-ui);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--lz-ink) 10%, transparent),
+    0 24px 48px -30px rgba(20, 20, 24, 0.4);
+}
+
+.stage {
+  position: relative;
+  z-index: 2;
+  outline: none;
+  user-select: none;
+  touch-action: pan-y pinch-zoom;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+.stage:focus-visible {
+  box-shadow: inset 0 0 0 3px var(--lz-linen), inset 0 0 0 5px var(--lz-rim);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stage {
+    cursor: none;
+  }
+}
+
+.frame {
+  --lz-tx: 0px;
+  --lz-ty: 0px;
+  --lz-scale: 0.94;
+  --lz-tilt: -9deg;
+  --lz-gx: 0px;
+  --lz-gy: 0px;
+  --lz-drag: 0px;
+  --lz-mx: 0px;
+  --lz-my: 0px;
+
+  position: relative;
+  min-block-size: 220px;
+  background: #c9c8c3;
+  box-shadow: 0 1px 0 rgba(20, 20, 24, 0.08);
+}
+
+.photo {
+  position: absolute;
+  inset: 0;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* ---------- the loupe ---------- */
+
+.lensShadow {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  z-index: 2;
+  inline-size: calc(var(--lz-size) * 0.98);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(closest-side, rgba(16, 16, 20, 0.3) 0%, rgba(16, 16, 20, 0.12) 66%, transparent 100%);
+  filter: blur(13px);
+  transform:
+    translate3d(calc(var(--lz-tx) + var(--lz-drag)), calc(var(--lz-ty) + var(--lz-size) * 0.07), 0)
+    translate(-50%, -50%)
+    scale(var(--lz-scale));
+}
+
+.lens {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  z-index: 3;
+  inline-size: var(--lz-size);
+  aspect-ratio: 1;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform;
+  transform:
+    translate3d(var(--lz-tx), var(--lz-ty), 0)
+    translate(-50%, -50%)
+    rotate(var(--lz-tilt))
+    scale(var(--lz-scale));
+}
+
+/* thin glass ring with a single edge highlight */
+.rim {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.28) 45%, rgba(255, 255, 255, 0.6) 100%);
+  box-shadow:
+    0 0 0 1px rgba(20, 20, 24, 0.22),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+}
+
+.view {
+  position: absolute;
+  inset: calc(var(--lz-size) * 0.022);
+  border-radius: 50%;
+  overflow: hidden;
+  background: #1d1d1f;
+  box-shadow:
+    0 0 0 1px rgba(20, 20, 24, 0.3),
+    inset 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.lensImage {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: calc(var(--lz-zoom) * 100%);
+  block-size: calc(var(--lz-zoom) * 100%);
+  max-inline-size: none;
+  object-fit: cover;
+  user-select: none;
+  will-change: transform;
+  transform: translate3d(var(--lz-mx), var(--lz-my), 0);
+}
+
+/* glass edge: a faint darkening toward the rim */
+.depth {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(closest-side, transparent 72%, rgba(10, 10, 14, 0.08) 92%, rgba(10, 10, 14, 0.22) 100%);
+}
+
+/* a whisper of dispersion at the glass edge */
+.fringe {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow:
+    inset 1px 0 3px rgba(255, 70, 70, 0.1),
+    inset -1px 0 3px rgba(70, 120, 255, 0.12);
+  mix-blend-mode: screen;
+}
+
+/* one restrained glare, drifting with velocity */
+.curved {
+  position: absolute;
+  inset: 3%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: linear-gradient(142deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.08) 34%, transparent 52%);
+  -webkit-mask-image: radial-gradient(ellipse 54% 54% at 60% 62%, transparent 95%, #000 100%);
+  mask-image: radial-gradient(ellipse 54% 54% at 60% 62%, transparent 95%, #000 100%);
+  transform: translate3d(var(--lz-gx), var(--lz-gy), 0);
+  mix-blend-mode: screen;
+}
+
+/* ---------- caption ---------- */
+
+.caption {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: clamp(18px, 3.4cqi, 34px) clamp(20px, 4cqi, 40px) clamp(20px, 3.6cqi, 36px);
+}
+
+.captionText {
+  min-inline-size: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.captionTitle {
+  margin: 0;
+  font-family: var(--lz-font-display);
+  font-size: clamp(20px, 3.3cqi, 30px);
+  font-weight: 700;
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+  color: var(--lz-ink);
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.captionDetail {
+  margin: 0;
+  max-inline-size: 52ch;
+  font-size: clamp(14px, 1.9cqi, 16px);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--lz-muted);
+  overflow-wrap: anywhere;
+}
+
+.mag {
+  flex: none;
+  padding: 5px 12px;
+  border: 1px solid rgba(20, 20, 24, 0.16);
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--lz-ink);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  white-space: nowrap;
+}
+
+.captionTitle::selection,
+.captionDetail::selection {
+  background: color-mix(in srgb, var(--lz-rim) 30%, transparent);
+}
+`;export{n as default};

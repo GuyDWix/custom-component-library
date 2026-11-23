@@ -1,0 +1,418 @@
+const n=`@font-face {
+  font-family: 'InkBricolage';
+  src: url('./fonts/bricolage.woff2') format('woff2');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'InkHanken';
+  src: url('./fonts/hanken.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+.root {
+  --stage: #efeae0;
+  --ink: #1f1b16;
+  --muted: #5c5444;
+  --hairline: rgba(31, 27, 22, 0.16);
+  --pig-active: #c8321f;
+  --focus: color-mix(in srgb, var(--pig-active) 60%, var(--ink));
+  --font-display: 'InkBricolage', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --font-ui: 'InkHanken', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --edge-wide: polygon(100% 0, 100% 100%, 9.62% 100.0%, 10.44% 96.4%, 10.94% 92.9%, 12.2% 89.3%, 12.28% 85.7%, 9.77% 82.1%, 6.99% 78.6%, 6.18% 75.0%, 6.01% 71.4%, 5.04% 67.9%, 4.71% 64.3%, 5.83% 60.7%, 6.06% 57.1%, 4.11% 53.6%, 2.35% 50.0%, 2.63% 46.4%, 3.43% 42.9%, 3.76% 39.3%, 5.34% 35.7%, 8.52% 32.1%, 10.49% 28.6%, 9.98% 25.0%, 9.27% 21.4%, 9.69% 17.9%, 9.62% 14.3%, 8.68% 10.7%, 9.04% 7.1%, 10.86% 3.6%, 11.25% 0.0%);
+  --edge-narrow: polygon(0 0, 100% 0, 100.0% 97.44%, 96.4% 97.89%, 92.9% 98.17%, 89.3% 98.86%, 85.7% 98.9%, 82.1% 97.52%, 78.6% 95.99%, 75.0% 95.55%, 71.4% 95.46%, 67.9% 94.92%, 64.3% 94.74%, 60.7% 95.36%, 57.1% 95.48%, 53.6% 94.41%, 50.0% 93.44%, 46.4% 93.6%, 42.9% 94.04%, 39.3% 94.22%, 35.7% 95.09%, 32.1% 96.84%, 28.6% 97.92%, 25.0% 97.64%, 21.4% 97.25%, 17.9% 97.48%, 14.3% 97.44%, 10.7% 96.93%, 7.1% 97.12%, 3.6% 98.12%, 0.0% 98.34%);
+  --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+
+  container-type: inline-size;
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  inline-size: 100%;
+  border-radius: 20px;
+  overflow: clip;
+  background: var(--stage);
+  color: var(--ink);
+  font-family: var(--font-ui);
+}
+
+.tint {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: var(--pig-active);
+  opacity: 0.2;
+  -webkit-mask-image: radial-gradient(70% 90% at 0% 100%, #000 0%, transparent 100%);
+  mask-image: radial-gradient(70% 90% at 0% 100%, #000 0%, transparent 100%);
+  transition: background-color 900ms cubic-bezier(0.22, 1, 0.36, 1) 120ms;
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background-image: var(--noise);
+  opacity: 0.07;
+  mix-blend-mode: multiply;
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.figure {
+  position: relative;
+  margin: 0;
+  display: grid;
+  aspect-ratio: 5 / 6;
+}
+
+.halo {
+  position: absolute;
+  inset: 0;
+  filter: blur(18px);
+  opacity: 0.55;
+  transform: translateY(10px);
+}
+
+.haloShape {
+  position: absolute;
+  inset: 0;
+  background-color: var(--pig-active);
+  clip-path: var(--edge-narrow);
+  transition: background-color 700ms cubic-bezier(0.22, 1, 0.36, 1) 100ms;
+}
+
+.frame {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--pig-active) 30%, var(--stage));
+  clip-path: var(--edge-narrow);
+}
+
+.photo {
+  position: absolute;
+  inset: 0;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.pigment {
+  position: absolute;
+  inset: 0;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.fadeImg {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.fadeImgOn {
+  opacity: 1;
+}
+
+.bloom {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+}
+
+.meta {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding: 24px clamp(20px, 5cqw, 36px) 30px;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(44px, 14cqw, 64px);
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.titleMid {
+  font-size: clamp(32px, 10cqw, 46px);
+  line-height: 0.96;
+}
+
+.titleLong {
+  font-size: clamp(24px, 7cqw, 32px);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+}
+
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.colorRow {
+  margin: 0;
+  min-block-size: 1.2em;
+}
+
+.colorName {
+  position: relative;
+  display: inline-block;
+  padding-block-end: 7px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(22px, 6cqw, 30px);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  overflow-wrap: anywhere;
+  animation: nameRise 520ms cubic-bezier(0.22, 1, 0.36, 1) 160ms both;
+}
+
+.colorName::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: 4px;
+  border-radius: 999px;
+  background: var(--pig-active);
+  transform-origin: left center;
+  animation: barWipe 760ms cubic-bezier(0.2, 0.8, 0.2, 1) 120ms both;
+}
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.swatch {
+  appearance: none;
+  border: 0;
+  margin: 0;
+  padding: 6px 4px 2px;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.swatch:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 14px;
+}
+
+.chip {
+  position: relative;
+  display: block;
+  inline-size: 48px;
+  block-size: 48px;
+  border-radius: 999px;
+  background: var(--pig);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.14),
+    0 0 0 0 var(--stage),
+    0 0 0 0 var(--ink);
+  transition:
+    transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 260ms ease;
+}
+
+.chipSquare {
+  border-radius: 13px;
+}
+
+.swatch:hover .chip {
+  transform: scale(1.07);
+}
+
+.swatch:active .chip {
+  transform: scale(0.9);
+}
+
+.chipChecked {
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.14),
+    0 0 0 3px var(--stage),
+    0 0 0 5px var(--ink);
+}
+
+.ripple {
+  position: absolute;
+  inset: -9px;
+  border-radius: 999px;
+  border: 2px solid var(--pig);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rippleSquare {
+  border-radius: 20px;
+}
+
+.rippleOn {
+  animation: rippleOut 760ms cubic-bezier(0.22, 1, 0.36, 1) 40ms both;
+}
+
+.swatchName {
+  max-inline-size: 76px;
+  overflow-wrap: anywhere;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--muted);
+  transition: color 200ms ease;
+}
+
+.swatchNameChecked {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+@container (min-width: 760px) {
+  .layout {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 8fr);
+    align-items: stretch;
+  }
+
+  .figure {
+    grid-column: 2;
+    grid-row: 1;
+    aspect-ratio: 6 / 5;
+    /* A tall meta column (long title, many swatches) must not stretch the figure: the aspect ratio
+       would then widen it past its grid track and clip the artwork off the right edge. */
+    align-self: center;
+    min-inline-size: 0;
+  }
+
+  .halo {
+    transform: translateX(-12px);
+  }
+
+  .haloShape,
+  .frame {
+    clip-path: var(--edge-wide);
+  }
+
+  .frame {
+    border-start-end-radius: 20px;
+    border-end-end-radius: 20px;
+  }
+
+  .meta {
+    grid-column: 1;
+    grid-row: 1;
+    justify-content: space-between;
+    gap: 32px;
+    padding: clamp(28px, 3.6cqw, 48px) 0 clamp(28px, 3.6cqw, 48px) clamp(28px, 3.8cqw, 52px);
+    padding-inline-end: clamp(8px, 1cqw, 16px);
+  }
+
+  .title {
+    font-size: clamp(56px, 8.4cqw, 104px);
+  }
+
+  .titleMid {
+    font-size: clamp(42px, 6cqw, 68px);
+  }
+
+  .titleLong {
+    font-size: clamp(28px, 3.4cqw, 40px);
+  }
+
+  .colorName {
+    font-size: clamp(26px, 3cqw, 38px);
+  }
+
+  .picker {
+    gap: 18px;
+  }
+}
+
+@keyframes nameRise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes barWipe {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes rippleOut {
+  from {
+    opacity: 0.9;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tint,
+  .haloShape {
+    transition: none;
+  }
+
+  .colorName,
+  .colorName::after,
+  .rippleOn {
+    animation: none;
+  }
+
+  .ripple {
+    display: none;
+  }
+
+  .chip {
+    transition: none;
+  }
+
+  .swatch:hover .chip,
+  .swatch:active .chip {
+    transform: none;
+  }
+}
+`;export{n as default};

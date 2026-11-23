@@ -1,0 +1,1253 @@
+const n=`Create a custom element called "Hanging Tag Card". Build it exactly as this React reference (same look, behavior and defaults).
+
+The site owner must be able to change: title, price or label, short note, string color, ink color, tag shape. Add other settings if they help.
+
+\`\`\`tsx
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
+import styles from './Component.module.css';
+
+export type HangingTagShape = 'classic' | 'round' | 'arch';
+
+export interface HangingTagCardProps {
+  title?: string;
+  price?: string;
+  note?: string;
+  stringColor?: string;
+  inkColor?: string;
+  tagShape?: HangingTagShape;
+  className?: string;
+}
+
+/* Resting angle of the tag around its eyelet (center of mass under the hole). */
+const SHAPE_REST: Record<HangingTagShape, number> = { classic: 0.14, round: 0, arch: 0 };
+
+const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+const SHAPE_CLASS: Record<HangingTagShape, string> = {
+  classic: styles.shapeClassic,
+  round: styles.shapeRound,
+  arch: styles.shapeArch,
+};
+
+/* String pendulum (around the nail) and tag pendulum (around the eyelet). */
+const WS = 2.5; // string natural frequency, rad/s (a heavy tag on a long cord: slow, lazy swing)
+const CS = 0.36; // string damping
+const WT = 5.0; // tag natural frequency, rad/s
+const CT = 1.5; // tag damping
+const KC = 1.0; // coupling: nail acceleration felt by the tag
+const DRAG_STIFF = 380;
+const DRAG_DAMP = 30;
+const VEL_MAX = 3;
+const DRAG_LIMIT = 1.15;
+
+/* Direction the wall light travels (towards lower right): shadows fall this way. */
+const LX = 0.78;
+const LY = 0.62;
+
+const clamp = (v: number, max: number) => Math.max(-max, Math.min(max, v));
+
+const TAG_HELP =
+  'A tag hanging from string. Brush, drag or tap it to swing; arrow keys push it, Escape settles it.';
+
+type Motion = { th: number; w: number; ph: number; pw: number };
+type Drag = { on: boolean; target: number; settle: boolean; pivotX: number; pivotY: number; t: number; x: number; y: number };
+
+export default function HangingTagCard({
+  title = 'Atelier Mug No. 12',
+  price = '$38',
+  note = 'Small-batch stoneware, thrown on the wheel and glazed in a soft sage green. Limited run of forty.',
+  stringColor = '#a87c4e',
+  inkColor = '#2c4a38',
+  tagShape = 'classic',
+  className,
+}: HangingTagCardProps) {
+  const [reduced, setReduced] = useState(false);
+  const [inView, setInView] = useState(true);
+  const uid = useId();
+  const titleId = \`\${uid}-title\`;
+
+  const rootRef = useRef<HTMLDivElement>(null);
+  const rigRef = useRef<HTMLDivElement>(null);
+  const nailRef = useRef<HTMLSpanElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const noteBoxRef = useRef<HTMLDivElement>(null);
+  const noteRef = useRef<HTMLParagraphElement>(null);
+  const motion = useRef<Motion>({ th: 0.07, w: 0, ph: SHAPE_REST[tagShape] + 0.07, pw: 0 });
+  const drag = useRef<Drag>({ on: false, target: 0, settle: false, pivotX: 0, pivotY: 0, t: 0, x: 0, y: 0 });
+
+  const paint = useCallback(() => {
+    const rig = rigRef.current;
+    if (!rig) return;
+    const m = motion.current;
+    const tot = m.th + m.ph;
+    const c = Math.cos(tot);
+    const s = Math.sin(tot);
+    /* The wall light is fixed (raking in from the upper left). Express its direction in the tag's own,
+       rotated frame so the contact shadow stays anchored to the tag and the eyelet highlight stays
+       pointed at the light. Same again for the cord, which only turns with the string. */
+    const sx = LX * c + LY * s;
+    const sy = -LX * s + LY * c;
+    const ct = Math.cos(m.th);
+    const st = Math.sin(m.th);
+    const lift = Math.min(1, Math.abs(m.w) * 0.32 + Math.abs(m.pw) * 0.1);
+    const k = 1 + lift * 0.75;
+    rig.style.setProperty('--theta', \`\${(m.th * (180 / Math.PI)).toFixed(2)}deg\`);
+    rig.style.setProperty('--flop', \`\${(m.ph * (180 / Math.PI)).toFixed(2)}deg\`);
+    rig.style.setProperty('--tot', \`\${(tot * (180 / Math.PI)).toFixed(2)}deg\`);
+    rig.style.setProperty('--sway', Math.min(1, Math.abs(m.th) / 0.9).toFixed(3));
+    rig.style.setProperty('--gx', \`\${(50 + m.th * 26).toFixed(1)}%\`);
+    rig.style.setProperty('--lift', lift.toFixed(3));
+    rig.style.setProperty('--sux', (sx * k).toFixed(3));
+    rig.style.setProperty('--suy', (sy * k).toFixed(3));
+    rig.style.setProperty('--cux', (LX * ct + LY * st).toFixed(3));
+    rig.style.setProperty('--cuy', (-LX * st + LY * ct).toFixed(3));
+    rig.style.setProperty('--lux', (-sx).toFixed(3));
+    rig.style.setProperty('--luy', (-sy).toFixed(3));
+    rig.style.setProperty('--glint', \`\${(m.th * 90).toFixed(1)}px\`);
+  }, []);
+
+  /* Fit the note to the room the tag really has: whole lines only, ellipsis on the last one,
+     never a line cut through the middle. Hidden entirely when not even one line fits. */
+  const fitNote = useCallback(() => {
+    const box = noteBoxRef.current;
+    const p = noteRef.current;
+    const content = contentRef.current;
+    if (!box || !p || !content) return;
+    const lh = parseFloat(getComputedStyle(p).lineHeight);
+    if (!lh) return;
+    const lines = Math.max(0, Math.floor((box.clientHeight + 1) / lh));
+    box.style.setProperty('--ht-note-lines', String(lines));
+    content.dataset.noteFit = lines < 1 ? 'none' : 'ok';
+  }, []);
+
+  useIsoLayoutEffect(() => {
+    fitNote();
+    const content = contentRef.current;
+    if (!content) return;
+    const ro = new ResizeObserver(fitNote);
+    ro.observe(content);
+    document.fonts?.ready.then(fitNote).catch(() => {});
+    return () => ro.disconnect();
+  }, [fitNote, title, price, note, tagShape]);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const sync = () => setReduced(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const io = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: 0.05 });
+    io.observe(root);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (reduced) {
+      const rest = SHAPE_REST[tagShape];
+      motion.current = { th: 0, w: 0, ph: rest + 0.14, pw: 0 };
+      paint();
+      return;
+    }
+    if (!inView) return;
+    let last = performance.now();
+    let id = 0;
+    const loop = (now: number) => {
+      const dt = Math.min((now - last) / 1000, 1 / 30);
+      last = now;
+      const m = motion.current;
+      const d = drag.current;
+      const rest = SHAPE_REST[tagShape];
+      const steps = Math.max(1, Math.ceil(dt / (1 / 120)));
+      const h = dt / steps;
+      for (let n = 0; n < steps; n++) {
+        let acc;
+        if (d.on) {
+          acc = DRAG_STIFF * (d.target - m.th) - DRAG_DAMP * m.w;
+        } else {
+          acc = -WS * WS * Math.sin(m.th) - (d.settle ? CS * 6 : CS) * m.w;
+        }
+        m.w = clamp(m.w + acc * h, VEL_MAX);
+        m.th += m.w * h;
+        const accTag = -WT * WT * Math.sin(m.ph - rest) - (d.settle ? CT * 4 : CT) * m.pw - acc * KC;
+        m.pw = clamp(m.pw + accTag * h, VEL_MAX);
+        m.ph += m.pw * h;
+      }
+      if (d.settle && Math.abs(m.th) < 0.02 && Math.abs(m.w) < 0.05 && Math.abs(m.ph - rest) < 0.03 && Math.abs(m.pw) < 0.08) {
+        d.settle = false;
+      }
+      paint();
+      id = requestAnimationFrame(loop);
+    };
+    id = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(id);
+  }, [reduced, inView, tagShape, paint]);
+
+  const settled = () => {
+    const m = motion.current;
+    return (
+      Math.abs(m.th) < 0.07 &&
+      Math.abs(m.w) < 0.2 &&
+      Math.abs(m.ph - SHAPE_REST[tagShape]) < 0.12 &&
+      Math.abs(m.pw) < 0.35
+    );
+  };
+
+  const push = (dir: number, stringImp: number, tagImp: number) => {
+    const m = motion.current;
+    m.w += dir * stringImp;
+    m.pw += dir * tagImp;
+    drag.current.settle = false;
+  };
+
+  const aim = (clientX: number, clientY: number) => {
+    const d = drag.current;
+    const dx = clientX - d.pivotX;
+    const dy = Math.max(clientY - d.pivotY, 30);
+    d.target = clamp(Math.atan2(dx, dy), DRAG_LIMIT);
+  };
+
+  const onPointerDown = (e: PointerEvent<HTMLElement>) => {
+    if (reduced) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const nail = nailRef.current?.getBoundingClientRect();
+    if (nail) {
+      drag.current.pivotX = nail.left + nail.width / 2;
+      drag.current.pivotY = nail.top + nail.height / 2;
+    }
+    drag.current.on = true;
+    drag.current.settle = false;
+    drag.current.t = performance.now();
+    drag.current.x = e.clientX;
+    drag.current.y = e.clientY;
+    aim(e.clientX, e.clientY);
+  };
+
+  const onPointerMove = (e: PointerEvent<HTMLElement>) => {
+    if (reduced || !drag.current.on) return;
+    aim(e.clientX, e.clientY);
+  };
+
+  const onPointerUp = (e: PointerEvent<HTMLElement>) => {
+    const d = drag.current;
+    if (!d.on) return;
+    d.on = false;
+    const dt = performance.now() - d.t;
+    const dist = Math.hypot(e.clientX - d.x, e.clientY - d.y);
+    if (e.type === 'pointerup' && dt < 280 && dist < 10) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const dir = e.clientX < rect.left + rect.width / 2 ? 1 : -1;
+      const touch = e.pointerType !== 'mouse';
+      push(dir, touch ? 1.35 : 0.55, touch ? 0.6 : 0.3);
+    }
+  };
+
+  const onPointerEnter = (e: PointerEvent<HTMLElement>) => {
+    if (reduced || e.pointerType !== 'mouse' || drag.current.on || !settled()) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const dir = e.clientX < rect.left + rect.width / 2 ? 1 : -1;
+    push(dir, 0.75, 0.25);
+  };
+
+  const onKeyDown = (e: KeyboardEvent<HTMLElement>) => {
+    if (e.key === 'Escape') {
+      drag.current.settle = true;
+      return;
+    }
+    if (reduced) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      push(e.key === 'ArrowRight' ? 1 : -1, 1.1, 0.5);
+    }
+  };
+
+  const rootStyle = {
+    '--ht-string': stringColor,
+    '--ht-ink': inkColor,
+  } as CSSProperties;
+
+  return (
+    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
+      <span className={styles.wallBroad} aria-hidden="true" />
+      <span className={styles.wallPlaster} aria-hidden="true" />
+      <span className={styles.wallGrit} aria-hidden="true" />
+      <span className={styles.wallSun} aria-hidden="true" />
+      <span className={styles.wallVignette} aria-hidden="true" />
+      <div className={styles.stage}>
+        <div className={[styles.scene, SHAPE_CLASS[tagShape]].join(' ')}>
+          <span className={styles.crater} aria-hidden="true" />
+          <div ref={rigRef} className={styles.rig}>
+            <span className={styles.shadowRig} aria-hidden="true">
+              <span className={styles.shadowSoft} />
+              <span className={styles.shadowTight} />
+            </span>
+            <div className={styles.tagWrap}>
+              <article
+                className={styles.tag}
+                tabIndex={0}
+                aria-labelledby={title ? titleId : undefined}
+                aria-label={title ? undefined : 'Hanging tag'}
+                aria-description={TAG_HELP}
+                onKeyDown={onKeyDown}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                onPointerCancel={onPointerUp}
+                onPointerEnter={onPointerEnter}
+              >
+                <span className={styles.face} aria-hidden="true" />
+                <span className={styles.fleck} aria-hidden="true" />
+                <span className={styles.relief} aria-hidden="true" />
+                <span className={styles.frame} aria-hidden="true" />
+                <span className={styles.glare} aria-hidden="true" />
+                <span className={styles.edge} aria-hidden="true" />
+                <div ref={contentRef} className={styles.content} data-note-fit="ok">
+                  {title && (
+                    <h3 id={titleId} className={styles.title}>
+                      {title}
+                    </h3>
+                  )}
+                  {price && <p className={styles.price}>{price}</p>}
+                  {note && <span className={styles.rule} aria-hidden="true" />}
+                  {note && (
+                    <div ref={noteBoxRef} className={styles.noteBox}>
+                      <p ref={noteRef} className={styles.note}>
+                        {note}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <span className={styles.patch} aria-hidden="true" />
+                <span className={styles.grommet} aria-hidden="true" />
+                <span className={styles.grain} aria-hidden="true" />
+              </article>
+            </div>
+            <span className={styles.cord} aria-hidden="true">
+              <span className={styles.string} />
+            </span>
+            <span className={styles.tailA} aria-hidden="true" />
+            <span className={styles.tailB} aria-hidden="true" />
+            <span className={styles.wraps} aria-hidden="true" />
+            <span className={styles.knot} aria-hidden="true" />
+          </div>
+          <span ref={nailRef} className={styles.nail} aria-hidden="true" />
+        </div>
+      </div>
+    </div>
+  );
+}
+\`\`\`
+
+\`\`\`css
+@font-face {
+  font-family: 'Bebas Neue';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('./fonts/bebas-neue-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Hanken Grotesk';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('./fonts/hanken-grotesk-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Hanken Grotesk';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url('./fonts/hanken-grotesk-latin-500-normal.woff2') format('woff2');
+}
+
+.root {
+  --ht-ink: #2c4a38;
+  --ht-string: #a87c4e;
+  --ht-kraft: #cfa06a;
+  --ht-kraft-2: #c0915b;
+  --ht-kraft-3: #a47645;
+  --ht-wall: #aeb7a8;
+  --ht-wall-2: #7c897e;
+  --ht-wall-ink: #1c2822;
+  --ht-shadow: rgba(10, 18, 14, 0.85);
+  --ht-font-stamp: 'Bebas Neue', 'Arial Narrow', 'Helvetica Neue', sans-serif;
+  --ht-font-body: 'Hanken Grotesk', system-ui, 'Segoe UI', sans-serif;
+  --ht-lx: 0.78;
+  --ht-ly: 0.62;
+  --ht-stage-h: clamp(460px, 58cqi, 780px);
+  --ht-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  /* Plaster, lit for real: three octaves of noise become a height map and an SVG distant light rakes across it. */
+  --ht-plaster: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000' viewBox='0 0 1600 1000'><filter id='w' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.0032 .0046' numOctaves='3' seed='3' result='a'/><feTurbulence type='fractalNoise' baseFrequency='.014 .019' numOctaves='4' seed='8' result='b'/><feTurbulence type='fractalNoise' baseFrequency='.2' numOctaves='3' seed='5' result='c'/><feComposite in='a' in2='b' operator='arithmetic' k1='0' k2='.46' k3='.34' result='ab'/><feComposite in='ab' in2='c' operator='arithmetic' k1='0' k2='1' k3='.12' result='h'/><feDiffuseLighting in='h' surfaceScale='9' diffuseConstant='1.05' lighting-color='%23fff'><feDistantLight azimuth='218' elevation='28'/></feDiffuseLighting></filter><rect width='1600' height='1000' filter='url(%23w)'/></svg>");
+  --ht-plaster-broad: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000' viewBox='0 0 1600 1000'><filter id='b' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.0018 .0026' numOctaves='3' seed='14' result='h'/><feColorMatrix in='h' type='matrix' values='0 0 0 0 .1  0 0 0 0 .14  0 0 0 0 .11  0 0 0 .62 -.12'/></filter><rect width='1600' height='1000' filter='url(%23b)'/></svg>");
+  --ht-plaster-grit: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000' viewBox='0 0 1600 1000'><filter id='g' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='2' seed='21' result='h'/><feDiffuseLighting in='h' surfaceScale='1.6' diffuseConstant='1' lighting-color='%23fff'><feDistantLight azimuth='218' elevation='34'/></feDiffuseLighting></filter><rect width='1600' height='1000' filter='url(%23g)'/></svg>");
+  /* Kraft stock: crinkle and fibre relief under the same raking light, then pale and dark wavy fibres and bark flecks. */
+  --ht-kraft-relief: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='700' viewBox='0 0 500 700'><filter id='r' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.007 .011' numOctaves='3' seed='6' result='a'/><feTurbulence type='fractalNoise' baseFrequency='.22' numOctaves='4' seed='12' result='b'/><feTurbulence type='fractalNoise' baseFrequency='.03 .09' numOctaves='2' seed='3' result='c'/><feComposite in='a' in2='b' operator='arithmetic' k1='0' k2='.4' k3='.42' result='ab'/><feComposite in='ab' in2='c' operator='arithmetic' k1='0' k2='1' k3='.2' result='h'/><feDiffuseLighting in='h' surfaceScale='3.4' diffuseConstant='.95' lighting-color='%23fff'><feDistantLight azimuth='218' elevation='46'/></feDiffuseLighting></filter><rect width='500' height='700' filter='url(%23r)'/></svg>");
+  --ht-kraft-fibres: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='700' viewBox='0 0 500 700'><filter id='p' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.02 .5' numOctaves='3' seed='4' result='s'/><feTurbulence type='fractalNoise' baseFrequency='.018' numOctaves='2' seed='9' result='d'/><feDisplacementMap in='s' in2='d' scale='140' xChannelSelector='R' yChannelSelector='G' result='w'/><feColorMatrix in='w' type='matrix' values='0 0 0 0 .99  0 0 0 0 .91  0 0 0 0 .73  0 0 0 8 -5.7'/></filter><filter id='q' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.016 .7' numOctaves='3' seed='17' result='s'/><feTurbulence type='fractalNoise' baseFrequency='.014' numOctaves='2' seed='5' result='d'/><feDisplacementMap in='s' in2='d' scale='150' xChannelSelector='G' yChannelSelector='R' result='w'/><feColorMatrix in='w' type='matrix' values='0 0 0 0 .38  0 0 0 0 .23  0 0 0 0 .09  0 0 0 8.5 -6.2'/></filter><filter id='f' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.42' numOctaves='2' seed='11'/><feColorMatrix type='matrix' values='0 0 0 0 .26  0 0 0 0 .15  0 0 0 0 .05  0 0 0 17 -13.3'/></filter><filter id='m' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.011 .02' numOctaves='3' seed='2'/><feColorMatrix type='matrix' values='0 0 0 0 .5  0 0 0 0 .32  0 0 0 0 .14  0 0 0 1.1 -.34'/></filter><rect width='500' height='700' filter='url(%23m)'/><rect width='500' height='700' filter='url(%23p)' opacity='.95'/><rect width='500' height='700' filter='url(%23q)' opacity='1'/><rect width='500' height='700' filter='url(%23f)'/></svg>");
+  /* Hairline plaster cracks around the nail. */
+  --ht-cracks: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100' fill='none' stroke-linecap='round' stroke-linejoin='round'><g stroke='rgba(20,28,24,.5)' stroke-width='.7'><path d='M50 50 L61 41 L66 30 L78 22 L84 8'/><path d='M50 50 L40 60 L41 72 L31 82 L26 96'/><path d='M50 50 L63 56 L74 55 L88 63'/><path d='M61 41 L72 43 L77 50'/><path d='M40 60 L28 57 L16 62'/></g><g stroke='rgba(255,252,238,.4)' stroke-width='.5' transform='translate(.9 1)'><path d='M50 50 L61 41 L66 30 L78 22 L84 8'/><path d='M50 50 L40 60 L41 72 L31 82 L26 96'/><path d='M50 50 L63 56 L74 55 L88 63'/></g></svg>");
+
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  container-type: inline-size;
+  box-sizing: border-box;
+  inline-size: 100%;
+  display: block;
+  border-radius: 26px;
+  background:
+    radial-gradient(100% 90% at 24% 6%, color-mix(in srgb, var(--ht-wall) 62%, #fff) 0%, transparent 62%),
+    linear-gradient(162deg, var(--ht-wall) 0%, var(--ht-wall-2) 100%);
+  color: var(--ht-ink);
+  font-family: var(--ht-font-body);
+}
+
+.root ::selection {
+  background: var(--ht-ink);
+  color: #f0e7d3;
+}
+
+/* ---------- Wall: plaster with raking light ---------- */
+
+.wallBroad,
+.wallPlaster,
+.wallGrit,
+.wallSun,
+.wallVignette {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Broad, soft trowel clouding: lighter and darker patches in the wash. */
+.wallBroad {
+  background: var(--ht-plaster-broad) center / cover no-repeat;
+  opacity: 0.55;
+  mix-blend-mode: multiply;
+}
+
+.wallPlaster {
+  background: var(--ht-plaster) center / cover no-repeat;
+  mix-blend-mode: overlay;
+  opacity: 0.95;
+}
+
+.wallGrit {
+  background: var(--ht-plaster-grit) center / cover no-repeat;
+  mix-blend-mode: soft-light;
+  opacity: 0.55;
+}
+
+/* A slab of low sun coming in from the left, and the wall falling into shade on the far side. */
+.wallSun {
+  background:
+    linear-gradient(
+      108deg,
+      transparent 6%,
+      rgba(255, 244, 216, 0.75) 24%,
+      rgba(255, 244, 216, 0.8) 56%,
+      rgba(255, 244, 216, 0.1) 76%,
+      transparent 90%
+    ),
+    linear-gradient(90deg, rgba(255, 246, 224, 0.2) 0%, transparent 38%);
+  mix-blend-mode: soft-light;
+}
+
+.wallVignette {
+  background:
+    radial-gradient(130% 105% at 38% 32%, transparent 52%, color-mix(in srgb, var(--ht-wall-ink) 56%, transparent) 100%),
+    linear-gradient(180deg, transparent 62%, color-mix(in srgb, var(--ht-wall-ink) 20%, transparent) 100%);
+}
+
+.stage {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  inline-size: 100%;
+  block-size: var(--ht-stage-h);
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  padding-block-start: calc(var(--ht-stage-h) * 0.06);
+}
+
+.scene {
+  --ht-tag-w: clamp(150px, min(52cqi, calc(var(--ht-stage-h) * 0.68 / var(--ht-hr))), 520px);
+  --ht-tag-h: calc(var(--ht-tag-w) * var(--ht-hr));
+  --ht-string-len: clamp(96px, calc(var(--ht-stage-h) * 0.225), 190px);
+  --ht-hole-r: clamp(7px, calc(var(--ht-tag-w) * 0.032), 12px);
+  --ht-patch-r: calc(var(--ht-hole-r) * 3);
+  --ht-cw: clamp(5px, calc(var(--ht-tag-w) * 0.028), 10px);
+  --ht-nail-d: clamp(15px, calc(var(--ht-tag-w) * 0.062), 28px);
+  --ht-sd: calc(var(--ht-tag-w) * 0.09);
+  --ht-gap: clamp(7px, calc(var(--ht-tag-w) * 0.04), 16px);
+  --ht-frame-in: clamp(12px, calc(var(--ht-tag-w) * 0.04), 18px);
+  --ht-hole-mask: radial-gradient(
+    circle at var(--ht-hole-x) var(--ht-hole-y),
+    transparent 0 calc(var(--ht-hole-r) - 0.5px),
+    #000 calc(var(--ht-hole-r) + 1.5px)
+  );
+  position: relative;
+  inline-size: var(--ht-tag-w);
+  block-size: calc(var(--ht-string-len) - var(--ht-hole-y-px) + var(--ht-tag-h) + 12px);
+  /* Re-centre the swing envelope (not the nail) so the whole tag keeps room on both sides. */
+  translate: var(--ht-shift) 0;
+}
+
+.shapeClassic {
+  --ht-pivot-x: 42%;
+  --ht-hole-x: 42%;
+  --ht-ratio: 5 / 7;
+  --ht-hr: 1.4;
+  --ht-radius: 10px;
+  --ht-corner: clamp(30px, calc(var(--ht-tag-w) * 0.17), 56px);
+  --ht-clip: polygon(var(--ht-corner) 0, 100% 0, 100% 100%, 0 100%, 0 var(--ht-corner));
+  --ht-hole-x-px: calc(var(--ht-tag-w) * 0.42);
+  --ht-hole-y-px: max(28px, calc(var(--ht-tag-h) * 0.085));
+  --ht-hole-y: var(--ht-hole-y-px);
+  --ht-frame-radius: 6px;
+  --ht-frame-clip: polygon(
+    calc(var(--ht-corner) - var(--ht-frame-in) * 0.586 - 2px) 0,
+    100% 0,
+    100% 100%,
+    0 100%,
+    0 calc(var(--ht-corner) - var(--ht-frame-in) * 0.586 - 2px)
+  );
+  --ht-diag: block;
+  --ht-diag-size: calc(var(--ht-corner) - var(--ht-frame-in) * 0.586);
+  --ht-flop-rest: 8deg;
+  --ht-shift: calc(var(--ht-tag-w) * 0.11);
+  --ht-pad-top: calc(var(--ht-hole-y-px) + var(--ht-patch-r) + clamp(8px, calc(var(--ht-tag-w) * 0.035), 16px));
+  --ht-pad-inline: clamp(20px, calc(var(--ht-tag-w) * 0.088), 32px);
+  --ht-pad-bottom: clamp(24px, calc(var(--ht-tag-w) * 0.1), 40px);
+  --ht-title-lines: 3;
+}
+
+.shapeRound {
+  --ht-pivot-x: 50%;
+  --ht-hole-x: 50%;
+  --ht-ratio: 1 / 1;
+  --ht-hr: 1;
+  --ht-radius: 50%;
+  --ht-clip: none;
+  --ht-hole-x-px: calc(var(--ht-tag-w) * 0.5);
+  --ht-hole-y-px: max(26px, calc(var(--ht-tag-h) * 0.11));
+  --ht-hole-y: var(--ht-hole-y-px);
+  --ht-frame-radius: 50%;
+  --ht-frame-clip: none;
+  --ht-diag: none;
+  --ht-diag-size: 0px;
+  --ht-flop-rest: 0deg;
+  --ht-shift: 0px;
+  --ht-pad-top: calc(var(--ht-hole-y-px) + var(--ht-patch-r) + clamp(6px, calc(var(--ht-tag-w) * 0.03), 14px));
+  --ht-pad-inline: calc(var(--ht-tag-w) * 0.15);
+  --ht-pad-bottom: calc(var(--ht-tag-w) * 0.19);
+  --ht-title-lines: 4;
+}
+
+.shapeArch {
+  --ht-pivot-x: 50%;
+  --ht-hole-x: 50%;
+  --ht-ratio: 5 / 6.6;
+  --ht-hr: 1.32;
+  --ht-radius: 999px 999px 22px 22px;
+  --ht-clip: none;
+  --ht-hole-x-px: calc(var(--ht-tag-w) * 0.5);
+  --ht-hole-y-px: max(28px, calc(var(--ht-tag-h) * 0.085));
+  --ht-hole-y: var(--ht-hole-y-px);
+  --ht-frame-radius: 999px 999px 12px 12px;
+  --ht-frame-clip: none;
+  --ht-diag: none;
+  --ht-diag-size: 0px;
+  --ht-flop-rest: 0deg;
+  --ht-shift: 0px;
+  --ht-pad-top: calc(var(--ht-hole-y-px) + var(--ht-patch-r) + clamp(8px, calc(var(--ht-tag-w) * 0.035), 16px));
+  --ht-pad-inline: clamp(22px, calc(var(--ht-tag-w) * 0.1), 36px);
+  --ht-pad-bottom: clamp(24px, calc(var(--ht-tag-w) * 0.11), 42px);
+  --ht-title-lines: 3;
+}
+
+@container (max-width: 420px) {
+  .shapeRound {
+    --ht-title-lines: 3;
+  }
+}
+
+.rig {
+  position: absolute;
+  inset: 0;
+  --theta: 0deg;
+  --flop: var(--ht-flop-rest);
+  --tot: 0deg;
+  --sway: 0;
+  --lift: 0;
+  --gx: 50%;
+  --sux: 0.78;
+  --suy: 0.62;
+  --cux: 0.78;
+  --cuy: 0.62;
+  --lux: -0.78;
+  --luy: -0.62;
+  --glint: 0px;
+  transform-origin: var(--ht-pivot-x) 0;
+  transform: rotate(var(--theta));
+  will-change: transform;
+}
+
+/* ---------- Nail: iron head, a dented crater in the plaster, hairline cracks ---------- */
+
+.crater {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: var(--ht-pivot-x);
+  translate: -50% -50%;
+  inline-size: calc(var(--ht-nail-d) * 4.2);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    var(--ht-cracks) center / 100% 100% no-repeat,
+    radial-gradient(circle at 41% 39%, rgba(14, 22, 18, 0.34) 0 16%, transparent 40%),
+    radial-gradient(circle at 63% 66%, rgba(255, 250, 232, 0.4) 0 12%, transparent 38%),
+    radial-gradient(circle at 50% 50%, rgba(255, 252, 238, 0.14) 0 36%, rgba(14, 22, 18, 0.12) 46%, transparent 62%);
+  -webkit-mask-image: radial-gradient(circle closest-side, #000 60%, transparent 100%);
+  mask-image: radial-gradient(circle closest-side, #000 60%, transparent 100%);
+}
+
+.nail {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: var(--ht-pivot-x);
+  translate: -50% -50%;
+  inline-size: var(--ht-nail-d);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  z-index: 3;
+  background:
+    radial-gradient(circle at 33% 29%, rgba(255, 255, 250, 0.95) 0 6%, rgba(255, 255, 250, 0) 24%),
+    radial-gradient(circle at 50% 50%, #8f8d86 0 32%, #5f5d58 62%, #32312d 88%, #161512 100%),
+    #46443f;
+  box-shadow:
+    0 0 0 calc(var(--ht-nail-d) * 0.06) rgba(16, 15, 13, 0.55),
+    calc(var(--ht-lx) * var(--ht-nail-d) * 0.34) calc(var(--ht-ly) * var(--ht-nail-d) * 0.34) calc(var(--ht-nail-d) * 0.2) rgba(12, 20, 16, 0.62),
+    calc(var(--ht-lx) * var(--ht-nail-d) * 0.8) calc(var(--ht-ly) * var(--ht-nail-d) * 0.8) calc(var(--ht-nail-d) * 0.55) rgba(12, 20, 16, 0.3);
+}
+
+/* Domed head: bright steel rim on the lit side, dark on the far side, and a glint. */
+.nail::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 215deg,
+    #e9e8e2 0deg,
+    #9c9a92 45deg,
+    #4a4944 110deg,
+    #1d1c19 170deg,
+    #3d3c38 215deg,
+    #85837b 275deg,
+    #d7d6cf 330deg,
+    #e9e8e2 360deg
+  );
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 58%, #000 62%, #000 94%, transparent 100%);
+  mask-image: radial-gradient(circle closest-side, transparent 58%, #000 62%, #000 94%, transparent 100%);
+  opacity: 0.85;
+}
+
+.nail::after {
+  content: '';
+  position: absolute;
+  inset: 24%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 32%, rgba(255, 255, 250, 0.55) 0, rgba(255, 255, 250, 0) 56%);
+}
+
+/* ---------- Twine: thick twisted cord, round-cord shading, sliding glints, hairs ---------- */
+
+.cord,
+.wraps,
+.knot,
+.tailA,
+.tailB {
+  --ht-tw-lite: color-mix(in srgb, var(--ht-string) 50%, #fff);
+  --ht-tw-mid: color-mix(in srgb, var(--ht-string) 96%, #fff);
+  --ht-tw-dark: color-mix(in srgb, var(--ht-string) 58%, #2a1705);
+}
+
+.cord {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: calc(var(--ht-pivot-x) - var(--ht-cw) / 2);
+  inline-size: var(--ht-cw);
+  block-size: calc(var(--ht-string-len) - var(--ht-hole-r) * 0.1);
+  pointer-events: none;
+  filter: drop-shadow(calc(var(--cux) * var(--ht-cw) * 0.5) calc(var(--cuy) * var(--ht-cw) * 0.5) calc(var(--ht-cw) * 0.28) rgba(12, 20, 16, 0.6))
+    drop-shadow(calc(var(--cux) * var(--ht-cw) * 1.5) calc(var(--cuy) * var(--ht-cw) * 1.5) calc(var(--ht-cw) * 0.8) rgba(12, 20, 16, 0.28));
+}
+
+.string {
+  position: absolute;
+  inset: 0;
+  border-radius: calc(var(--ht-cw) * 0.5);
+  background:
+    /* the cord dives into the eyelet and into its own shadow */
+    linear-gradient(180deg, transparent calc(100% - var(--ht-hole-r) * 1.5), rgba(14, 9, 3, 0.78) 100%),
+    /* slow bright glints that creep along the cord as it swings */
+    repeating-linear-gradient(
+        180deg,
+        transparent 0 calc(var(--ht-cw) * 1.1),
+        rgba(255, 248, 224, 0.5) calc(var(--ht-cw) * 1.1) calc(var(--ht-cw) * 1.3),
+        transparent calc(var(--ht-cw) * 1.3) calc(var(--ht-cw) * 3.9)
+      )
+      0 var(--glint) / 100% calc(var(--ht-cw) * 3.9),
+    /* round-cord shading, lit from the upper left */
+    linear-gradient(
+      90deg,
+      rgba(30, 17, 3, 0.7) 0%,
+      rgba(30, 17, 3, 0.16) 20%,
+      rgba(255, 240, 205, 0) 33%,
+      rgba(255, 244, 214, 0.5) 45%,
+      rgba(255, 244, 214, 0) 62%,
+      rgba(30, 17, 3, 0.26) 80%,
+      rgba(30, 17, 3, 0.74) 100%
+    ),
+    /* the twist: three plies, so a coarse ridge and a finer one that drift against each other */
+    repeating-linear-gradient(
+      151deg,
+      rgba(30, 17, 3, 0.5) 0,
+      rgba(30, 17, 3, 0) calc(var(--ht-cw) * 0.27),
+      rgba(255, 236, 196, 0.34) calc(var(--ht-cw) * 0.54),
+      rgba(255, 236, 196, 0) calc(var(--ht-cw) * 0.7),
+      rgba(30, 17, 3, 0.5) calc(var(--ht-cw) * 0.92)
+    ),
+    repeating-linear-gradient(
+      146deg,
+      transparent 0,
+      rgba(30, 17, 3, 0.2) calc(var(--ht-cw) * 0.16),
+      transparent calc(var(--ht-cw) * 0.34),
+      rgba(255, 236, 196, 0.16) calc(var(--ht-cw) * 0.5),
+      transparent calc(var(--ht-cw) * 0.66)
+    ),
+    var(--ht-tw-mid);
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - var(--ht-hole-r) * 0.95), transparent 100%);
+  mask-image: linear-gradient(180deg, #000 calc(100% - var(--ht-hole-r) * 0.95), transparent 100%);
+}
+
+/* Stray hairs off the cord, only on the lit side so they read as fibre, not noise. */
+.cord::before {
+  content: '';
+  position: absolute;
+  inset-block: 0 var(--ht-hole-r);
+  inset-inline: calc(var(--ht-cw) * -0.34);
+  background:
+    repeating-linear-gradient(24deg, transparent 0 calc(var(--ht-cw) * 1.5), rgba(255, 240, 205, 0.7) calc(var(--ht-cw) * 1.5) calc(var(--ht-cw) * 1.6), transparent calc(var(--ht-cw) * 1.6) calc(var(--ht-cw) * 2.9)),
+    repeating-linear-gradient(-32deg, transparent 0 calc(var(--ht-cw) * 2.2), color-mix(in srgb, var(--ht-tw-dark) 90%, transparent) calc(var(--ht-cw) * 2.2) calc(var(--ht-cw) * 2.3), transparent calc(var(--ht-cw) * 2.3) calc(var(--ht-cw) * 4.3));
+  -webkit-mask-image: linear-gradient(90deg, #000 0 24%, transparent 24% 76%, #000 76% 100%);
+  mask-image: linear-gradient(90deg, #000 0 24%, transparent 24% 76%, #000 76% 100%);
+  opacity: 0.55;
+}
+
+/* The tie: turns of twine wound round the nail's shank (seen behind the head), then an overhand knot. */
+.wraps {
+  position: absolute;
+  inset-block-start: calc(var(--ht-nail-d) * 0.3 - var(--ht-cw) * 1.1);
+  inset-inline-start: calc(var(--ht-pivot-x) - var(--ht-cw) * 1.65);
+  inline-size: calc(var(--ht-cw) * 3.3);
+  block-size: calc(var(--ht-cw) * 2.2);
+  border-radius: 48% 48% 44% 44% / 40% 40% 52% 52%;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(30, 17, 3, 0.55) 0%, rgba(30, 17, 3, 0) 24%, rgba(255, 243, 210, 0.3) 46%, rgba(30, 17, 3, 0) 66%, rgba(30, 17, 3, 0.6) 100%),
+    repeating-linear-gradient(
+      172deg,
+      rgba(30, 17, 3, 0.72) 0,
+      rgba(30, 17, 3, 0) calc(var(--ht-cw) * 0.12),
+      rgba(255, 236, 196, 0.3) calc(var(--ht-cw) * 0.3),
+      rgba(30, 17, 3, 0.7) calc(var(--ht-cw) * 0.62)
+    ),
+    var(--ht-tw-mid);
+  box-shadow:
+    calc(var(--cux) * var(--ht-cw) * 0.5) calc(var(--cuy) * var(--ht-cw) * 0.5) calc(var(--ht-cw) * 0.3) rgba(12, 20, 16, 0.55),
+    inset 0 0 0 0.5px rgba(30, 17, 3, 0.5);
+}
+
+.knot {
+  position: absolute;
+  inset-block-start: calc(var(--ht-nail-d) * 0.5 + var(--ht-cw) * 0.2);
+  inset-inline-start: calc(var(--ht-pivot-x) - var(--ht-cw) * 1.3);
+  inline-size: calc(var(--ht-cw) * 2.6);
+  block-size: calc(var(--ht-cw) * 2.2);
+  border-radius: 46% 54% 50% 50% / 44% 44% 56% 56%;
+  rotate: -9deg;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 34% 26%, rgba(255, 246, 220, 0.7) 0 9%, transparent 34%),
+    linear-gradient(90deg, rgba(30, 17, 3, 0.58) 0%, rgba(30, 17, 3, 0) 32%, rgba(255, 243, 210, 0.26) 48%, rgba(30, 17, 3, 0) 64%, rgba(30, 17, 3, 0.6) 100%),
+    linear-gradient(180deg, rgba(30, 17, 3, 0) 52%, rgba(30, 17, 3, 0.45) 100%),
+    repeating-linear-gradient(
+      118deg,
+      rgba(30, 17, 3, 0.68) 0,
+      rgba(30, 17, 3, 0) calc(var(--ht-cw) * 0.2),
+      rgba(255, 236, 196, 0.32) calc(var(--ht-cw) * 0.42),
+      rgba(30, 17, 3, 0.66) calc(var(--ht-cw) * 0.7)
+    ),
+    var(--ht-tw-mid);
+  box-shadow:
+    calc(var(--cux) * var(--ht-cw) * 0.6) calc(var(--cuy) * var(--ht-cw) * 0.6) calc(var(--ht-cw) * 0.35) rgba(12, 20, 16, 0.6),
+    calc(var(--cux) * var(--ht-cw) * 1.6) calc(var(--cuy) * var(--ht-cw) * 1.6) calc(var(--ht-cw) * 0.9) rgba(12, 20, 16, 0.26),
+    inset 0 0 0 0.5px rgba(30, 17, 3, 0.45);
+}
+
+/* Cut ends of the twine sticking out of the knot, unravelled at the tips. */
+.tailA,
+.tailB {
+  position: absolute;
+  inset-block-start: calc(var(--ht-nail-d) * 0.5 + var(--ht-cw) * 1.1);
+  inset-inline-start: var(--ht-pivot-x);
+  block-size: calc(var(--ht-cw) * 0.82);
+  transform-origin: 0 50%;
+  border-radius: calc(var(--ht-cw) * 0.4) 0 0 calc(var(--ht-cw) * 0.4);
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(30, 17, 3, 0.6) 0%, rgba(30, 17, 3, 0) 30%, rgba(255, 243, 210, 0.42) 46%, rgba(30, 17, 3, 0) 64%, rgba(30, 17, 3, 0.58) 100%),
+    repeating-linear-gradient(
+      100deg,
+      rgba(30, 17, 3, 0.6) 0,
+      rgba(30, 17, 3, 0) calc(var(--ht-cw) * 0.2),
+      rgba(255, 236, 196, 0.3) calc(var(--ht-cw) * 0.4),
+      rgba(30, 17, 3, 0.58) calc(var(--ht-cw) * 0.66)
+    ),
+    var(--ht-tw-mid);
+  filter: drop-shadow(calc(var(--cux) * var(--ht-cw) * 0.4) calc(var(--cuy) * var(--ht-cw) * 0.4) calc(var(--ht-cw) * 0.25) rgba(12, 20, 16, 0.55));
+}
+
+.tailA {
+  inline-size: calc(var(--ht-cw) * 4.4);
+  rotate: 118deg;
+}
+
+.tailB {
+  inline-size: calc(var(--ht-cw) * 3.4);
+  rotate: 66deg;
+}
+
+.tailA::after,
+.tailB::after {
+  content: '';
+  position: absolute;
+  inset-block: -22%;
+  inset-inline-start: 100%;
+  inline-size: calc(var(--ht-cw) * 0.95);
+  clip-path: polygon(0 28%, 100% 0, 88% 36%, 100% 52%, 84% 66%, 100% 100%, 0 72%);
+  background:
+    repeating-linear-gradient(180deg, transparent 0 0.5px, color-mix(in srgb, var(--ht-tw-lite) 88%, transparent) 0.5px 1.2px, color-mix(in srgb, var(--ht-tw-dark) 80%, transparent) 1.2px 1.7px);
+  -webkit-mask-image: linear-gradient(90deg, #000, transparent);
+  mask-image: linear-gradient(90deg, #000, transparent);
+}
+
+/* ---------- Contact shadow: lives in the tag's own swing frame, so it can never detach ---------- */
+
+.shadowRig {
+  position: absolute;
+  inset-block-start: calc(var(--ht-string-len) - var(--ht-hole-y-px));
+  inset-inline-start: calc(var(--ht-pivot-x) - var(--ht-hole-x-px));
+  inline-size: var(--ht-tag-w);
+  aspect-ratio: var(--ht-ratio);
+  transform-origin: var(--ht-hole-x) var(--ht-hole-y);
+  transform: rotate(var(--flop));
+  pointer-events: none;
+}
+
+.shadowSoft,
+.shadowTight {
+  position: absolute;
+  inset: 0;
+}
+
+.shadowSoft::before,
+.shadowTight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--ht-radius);
+  clip-path: var(--ht-clip);
+  background: var(--ht-shadow);
+}
+
+/* Broad soft pool, pushed away from the wall light; grows and softens as the tag swings off the wall. */
+.shadowSoft {
+  translate: calc(var(--sux) * var(--ht-sd)) calc(var(--suy) * var(--ht-sd));
+  scale: calc(1 + var(--lift) * 0.035);
+  filter: blur(calc(var(--ht-sd) * 0.62 + var(--lift) * 5px));
+  opacity: calc(0.9 - var(--lift) * 0.25);
+}
+
+/* Tight contact edge hugging the tag outline. */
+.shadowTight {
+  translate: calc(var(--sux) * var(--ht-sd) * 0.3) calc(var(--suy) * var(--ht-sd) * 0.3);
+  filter: blur(calc(var(--ht-sd) * 0.12));
+  opacity: calc(0.85 - var(--lift) * 0.3);
+}
+
+.tagWrap {
+  position: absolute;
+  inset-block-start: calc(var(--ht-string-len) - var(--ht-hole-y-px));
+  inset-inline-start: calc(var(--ht-pivot-x) - var(--ht-hole-x-px));
+  inline-size: var(--ht-tag-w);
+  transform-origin: var(--ht-hole-x) var(--ht-hole-y);
+  transform: rotate(var(--flop));
+  will-change: transform;
+}
+
+.tag {
+  position: relative;
+  box-sizing: border-box;
+  display: block;
+  inline-size: 100%;
+  aspect-ratio: var(--ht-ratio);
+  overflow: clip;
+  border-radius: var(--ht-radius);
+  clip-path: var(--ht-clip);
+  cursor: grab;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  outline: none;
+}
+
+.tag:active {
+  cursor: grabbing;
+}
+
+.tag:focus-visible {
+  box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--ht-ink) 55%, transparent);
+}
+
+.face,
+.fleck,
+.relief,
+.glare,
+.grain,
+.patch {
+  -webkit-mask-image: var(--ht-hole-mask);
+  mask-image: var(--ht-hole-mask);
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(130% 110% at 40% 0%, rgba(255, 246, 226, 0.3) 0%, transparent 46%),
+    radial-gradient(150% 130% at 50% 45%, transparent 52%, rgba(112, 72, 30, 0.26) 100%),
+    linear-gradient(172deg, var(--ht-kraft) 0%, var(--ht-kraft-2) 60%, var(--ht-kraft-3) 100%);
+}
+
+/* Fibre, mottling and bark flecks as colour. */
+.fleck {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--ht-kraft-fibres) center / cover no-repeat;
+  opacity: 0.9;
+}
+
+/* The same fibres as relief under the raking light: you can see the paper's tooth. */
+.relief {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--ht-kraft-relief) center / cover no-repeat;
+  mix-blend-mode: overlay;
+  opacity: 0.8;
+}
+
+.frame {
+  position: absolute;
+  inset: var(--ht-frame-in);
+  border-radius: var(--ht-frame-radius);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ht-ink) 36%, transparent);
+  clip-path: var(--ht-frame-clip);
+  pointer-events: none;
+}
+
+/* The frame follows the clipped corner of the classic tag instead of running off the stock. */
+.frame::before {
+  content: '';
+  display: var(--ht-diag);
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: var(--ht-diag-size);
+  block-size: var(--ht-diag-size);
+  background: linear-gradient(
+    to bottom right,
+    transparent calc(50% - 1.1px),
+    color-mix(in srgb, var(--ht-ink) 36%, transparent) calc(50% - 0.75px),
+    color-mix(in srgb, var(--ht-ink) 36%, transparent) calc(50% + 0.75px),
+    transparent calc(50% + 1.1px)
+  );
+}
+
+.glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    104deg,
+    transparent 28%,
+    rgba(255, 250, 234, 0.09) 44%,
+    rgba(255, 250, 234, 0.16) 50%,
+    rgba(255, 250, 234, 0.09) 56%,
+    transparent 72%
+  );
+  background-size: 240% 100%;
+  background-position: var(--gx) 0;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+
+/* Cut edge of the stock: a thin lit lip on the side facing the light, a dark one on the far side. */
+.edge {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset calc(var(--lux) * -1.6px) calc(var(--luy) * -1.6px) 0 rgba(255, 240, 206, 0.6),
+    inset calc(var(--lux) * 1.4px) calc(var(--luy) * 1.4px) 0 rgba(92, 54, 20, 0.45),
+    inset 0 0 calc(var(--ht-tag-w) * 0.05) rgba(92, 54, 20, 0.28);
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+  block-size: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ht-gap);
+  text-align: center;
+  padding-block: var(--ht-pad-top) var(--ht-pad-bottom);
+  padding-inline: var(--ht-pad-inline);
+}
+
+.content > * {
+  flex: 0 0 auto;
+  min-inline-size: 0;
+}
+
+.title {
+  margin: 0;
+  padding-block: 0.06em;
+  font-family: var(--ht-font-stamp);
+  font-size: clamp(14px, calc(var(--ht-tag-w) * 0.062), 24px);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: 0.12em;
+  color: color-mix(in srgb, var(--ht-ink) 88%, var(--ht-kraft));
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--ht-title-lines, 3);
+  line-clamp: var(--ht-title-lines, 3);
+  overflow: hidden;
+  text-shadow:
+    0 0 0.75px color-mix(in srgb, var(--ht-ink) 45%, transparent),
+    0.75px 0.5px 0 rgba(44, 74, 56, 0.14);
+}
+
+.price {
+  margin: 0;
+  padding: 0.04em 2px;
+  font-family: var(--ht-font-stamp);
+  font-size: clamp(44px, calc(var(--ht-tag-w) * 0.27), 120px);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: 0.025em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ht-ink);
+  transform: rotate(-1.4deg);
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  text-shadow:
+    0 0 1px color-mix(in srgb, var(--ht-ink) 40%, transparent),
+    1.5px 1px 0 rgba(44, 74, 56, 0.16);
+}
+
+.rule {
+  align-self: center;
+  inline-size: 44%;
+  block-size: 2px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ht-ink) 40%, transparent);
+}
+
+.content[data-note-fit='none'] .rule {
+  visibility: hidden;
+}
+
+/* The note takes whatever room is left; the component measures it and sets whole lines only. */
+.content > .noteBox {
+  flex: 1 1 0;
+  min-block-size: 0;
+  overflow: hidden;
+}
+
+.note {
+  margin: 0;
+  font-size: clamp(12px, calc(var(--ht-tag-w) * 0.047), 17px);
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  color: color-mix(in srgb, var(--ht-ink) 82%, var(--ht-kraft));
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+  hyphens: manual;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--ht-note-lines, 6);
+  line-clamp: var(--ht-note-lines, 6);
+  overflow: hidden;
+}
+
+.content[data-note-fit='none'] .note {
+  visibility: hidden;
+}
+
+/* ---------- Eyelet: a pasted paper reinforcement ring, then a rolled brass grommet with a real bore ---------- */
+
+.patch,
+.grommet {
+  position: absolute;
+  inset-block-start: var(--ht-hole-y);
+  inset-inline-start: var(--ht-hole-x);
+  translate: -50% -50%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Gummed paper washer: a different, slightly darker stock, sitting proud of the tag with its own lit edge. */
+.patch {
+  inline-size: calc(var(--ht-patch-r) * 2);
+  background:
+    radial-gradient(circle at 36% 30%, rgba(255, 240, 206, 0.34), transparent 60%),
+    var(--ht-kraft-fibres) center / 300% auto,
+    color-mix(in srgb, var(--ht-kraft-3) 82%, #6a3f17);
+  box-shadow:
+    inset calc(var(--lux) * -1.2px) calc(var(--luy) * -1.2px) 0 rgba(255, 236, 196, 0.5),
+    inset calc(var(--lux) * 1.2px) calc(var(--luy) * 1.2px) 0 rgba(70, 40, 14, 0.4),
+    calc(var(--sux) * 1.6px) calc(var(--suy) * 1.6px) 2.4px rgba(60, 34, 10, 0.55),
+    0 0 0 0.5px rgba(70, 40, 14, 0.4);
+}
+
+.grommet {
+  inline-size: calc(var(--ht-hole-r) * 2 + var(--ht-hole-r) * 1.5);
+  box-shadow:
+    calc(var(--sux) * 1.8px) calc(var(--suy) * 1.8px) 2.6px rgba(40, 24, 6, 0.6),
+    0 0 0 0.6px rgba(40, 24, 6, 0.4);
+}
+
+/* The rolled ring: torus shading across its width, a conic specular that always faces the wall light. */
+.grommet::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle closest-side,
+      transparent calc(var(--ht-hole-r) + 0.2px),
+      rgba(255, 244, 214, 0.5) calc(var(--ht-hole-r) + 0.9px),
+      rgba(255, 244, 214, 0) calc(var(--ht-hole-r) + 2.6px),
+      rgba(255, 244, 214, 0) calc(100% - 3px),
+      rgba(40, 24, 6, 0.55) calc(100% - 0.4px)
+    ),
+    conic-gradient(
+      from calc(var(--tot) * -1),
+      #f4d894 0deg,
+      #cfa254 40deg,
+      #8d6830 90deg,
+      #4d3216 135deg,
+      #6f4f22 180deg,
+      #b38a45 230deg,
+      #ebcc86 280deg,
+      #fff4cc 315deg,
+      #f8e0a0 345deg,
+      #f4d894 360deg
+    );
+  -webkit-mask-image: radial-gradient(
+    circle closest-side,
+    transparent calc(var(--ht-hole-r) - 0.5px),
+    #000 calc(var(--ht-hole-r) + 0.3px) calc(100% - 0.8px),
+    rgba(0, 0, 0, 0.45) 100%
+  );
+  mask-image: radial-gradient(
+    circle closest-side,
+    transparent calc(var(--ht-hole-r) - 0.5px),
+    #000 calc(var(--ht-hole-r) + 0.3px) calc(100% - 0.8px),
+    rgba(0, 0, 0, 0.45) 100%
+  );
+}
+
+/* The bore: a dark lip just inside the ring, and the specular on the lit side of the roll. */
+.grommet::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      ellipse calc(var(--ht-hole-r) * 0.5) calc(var(--ht-hole-r) * 0.3) at calc(50% + var(--lux) * var(--ht-hole-r) * 1.32) calc(50% + var(--luy) * var(--ht-hole-r) * 1.32),
+      rgba(255, 252, 235, 0.95) 0,
+      rgba(255, 244, 205, 0.5) 45%,
+      transparent 100%
+    ),
+    radial-gradient(
+      circle closest-side,
+      transparent calc(var(--ht-hole-r) + 0.3px),
+      rgba(20, 12, 3, 0.5) calc(var(--ht-hole-r) + 1px),
+      transparent calc(var(--ht-hole-r) + 2.6px)
+    );
+  -webkit-mask-image: radial-gradient(
+    circle closest-side,
+    #000 calc(var(--ht-hole-r) + 0.3px),
+    #000 100%
+  );
+  mask-image: radial-gradient(circle closest-side, #000 calc(var(--ht-hole-r) + 0.3px), #000 100%);
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: var(--ht-noise);
+  opacity: 0.12;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glare {
+    background-position: 50% 0;
+  }
+}
+\`\`\`
+`;export{n as default};

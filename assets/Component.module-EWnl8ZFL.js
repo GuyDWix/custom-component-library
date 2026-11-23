@@ -1,0 +1,313 @@
+const n=`/* TwistedRibbonStrip — silk ribbon: satin-sheen cream faces, deep teal backs,
+   soft studio light, long gentle shadows. */
+
+.root {
+  --ground-1: #f7f4ec;
+  --ground-2: #e2ded3;
+  --ink: #242f2d;
+  --ink-soft: rgba(36, 47, 45, 0.66);
+  --cream-1: #fbf5e6;
+  --cream-2: #e9dfc8;
+  --mat-edge: rgba(84, 70, 40, 0.16);
+  --teal: #12494d;
+  --teal-deep: #0b3336;
+  --font: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
+
+  position: relative;
+  isolation: isolate;
+  font-family: var(--font);
+  color: var(--ink);
+  background: radial-gradient(130% 100% at 50% -12%, var(--ground-1) 0%, var(--ground-1) 46%, var(--ground-2) 100%);
+  padding-block: 44px 10px;
+  overflow: clip;
+}
+
+.root ::selection {
+  background: var(--teal);
+  color: var(--cream-1);
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  background-size: 140px 140px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+}
+
+/* — animated ribbon — */
+
+.stage {
+  position: relative;
+  perspective: 1150px;
+  perspective-origin: 50% 38%;
+  overflow: clip;
+  border-radius: 16px;
+  touch-action: pan-y;
+  outline: none;
+}
+
+.stage:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: -2px;
+}
+
+.ribbonShadow {
+  position: absolute;
+  inset-inline: 7%;
+  inset-block-end: 14px;
+  block-size: 34px;
+  pointer-events: none;
+  background: radial-gradient(50% 100% at 50% 50%, rgba(19, 32, 33, 0.3), rgba(19, 32, 33, 0) 70%);
+}
+
+.panel {
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: 50%;
+  inline-size: var(--pw);
+  block-size: calc(var(--pw) * 1.3);
+  transform-style: preserve-3d;
+  opacity: 0;
+  will-change: transform;
+}
+
+.panel::after {
+  content: '';
+  position: absolute;
+  inset-inline: -7%;
+  inset-block-end: -9%;
+  block-size: 18%;
+  pointer-events: none;
+  border-radius: 50%;
+  transform: translateZ(-8px);
+  opacity: var(--shadow-o, 0);
+  background: radial-gradient(50% 100% at 50% 0%, rgba(13, 27, 28, 0.5), rgba(13, 27, 28, 0) 72%);
+}
+
+.faceFront,
+.faceBack {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  backface-visibility: hidden;
+  pointer-events: none;
+}
+
+.faceFront {
+  background: linear-gradient(155deg, var(--cream-1) 0%, #f2e9d6 55%, var(--cream-2) 100%);
+  box-shadow: inset 0 0 0 1px var(--mat-edge), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  padding: calc(var(--pw) * 0.045);
+  padding-block-end: calc(var(--pw) * 0.075);
+}
+
+.faceBack {
+  transform: rotateY(180deg);
+  background:
+    repeating-linear-gradient(72deg, rgba(255, 255, 255, 0.05) 0 1px, rgba(255, 255, 255, 0) 1px 3px),
+    linear-gradient(160deg, #17545a 0%, var(--teal) 45%, var(--teal-deep) 100%);
+  box-shadow: inset 0 0 0 1px rgba(5, 26, 28, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.mat {
+  position: relative;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: clip;
+  border-radius: 3px;
+}
+
+.photo {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+
+.photoAlt {
+  inline-size: 100%;
+  block-size: 100%;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--teal);
+  background: linear-gradient(150deg, #eef3f0, #dde6e2);
+}
+
+.sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-size: 220% 100%;
+  background-position: var(--shine, 50%) 0;
+}
+
+.faceFront > .sheen {
+  background-image: linear-gradient(115deg, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 250, 0.34) 46%, rgba(255, 255, 255, 0) 62%);
+  mix-blend-mode: soft-light;
+}
+
+.faceBack > .sheen {
+  background-image: linear-gradient(115deg, rgba(255, 255, 255, 0) 32%, rgba(214, 240, 238, 0.22) 48%, rgba(255, 255, 255, 0) 64%);
+}
+
+/* — caption — */
+
+.captionRow {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  min-block-size: 46px;
+  padding: 10px 48px 18px;
+  text-align: center;
+}
+
+.captionText {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+  color: var(--ink-soft);
+  max-inline-size: 56ch;
+  text-wrap: balance;
+  animation: caption-in 0.45s ease-out both;
+}
+
+.counter {
+  position: absolute;
+  inset-inline-end: clamp(16px, 4%, 44px);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: var(--teal);
+}
+
+@keyframes caption-in {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+}
+
+/* — quiet pause control (motion runs continuously) — */
+
+.pauseButton {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-end: 10px;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(18, 73, 77, 0.2);
+  background: rgba(251, 245, 230, 0.92);
+  color: var(--teal);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.25s ease, background-color 0.25s ease;
+  z-index: 2;
+}
+
+.stage:hover .pauseButton,
+.stage:focus-within .pauseButton {
+  opacity: 1;
+}
+
+.pauseButton:hover {
+  background: var(--cream-1);
+}
+
+.pauseButton:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+.pauseIcon {
+  inline-size: 12px;
+  block-size: 12px;
+  fill: currentColor;
+}
+
+/* — reduced motion: flat static strip, scroll-snapped — */
+
+.staticScroll {
+  display: flex;
+  gap: 22px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  padding: 8px 16px 14px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--teal) transparent;
+  outline: none;
+}
+
+.staticScroll:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: -2px;
+  border-radius: 12px;
+}
+
+.staticCard {
+  flex: none;
+  scroll-snap-align: center;
+  inline-size: min(72vw, 290px);
+  margin: 0;
+}
+
+.staticMat {
+  border-radius: 10px;
+  background: linear-gradient(155deg, var(--cream-1) 0%, #f2e9d6 55%, var(--cream-2) 100%);
+  box-shadow: inset 0 0 0 1px var(--mat-edge), 0 22px 32px -20px rgba(19, 32, 33, 0.4), 0 2px 6px rgba(19, 32, 33, 0.08);
+  padding: 12px;
+  padding-block-end: 20px;
+}
+
+.staticImg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 3px;
+}
+
+.staticEmpty {
+  aspect-ratio: 4 / 5;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--teal);
+  background: linear-gradient(150deg, #eef3f0, #dde6e2);
+  border-radius: 3px;
+}
+
+.staticCaption {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 2px 4px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .captionText {
+    animation: none;
+  }
+}
+`;export{n as default};

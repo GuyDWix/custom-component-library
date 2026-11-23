@@ -1,0 +1,465 @@
+const n=`/* Precision instrument: graphite ground, a pale readout panel, one signal-yellow beam. The size is the hero. */
+
+@font-face {
+  font-family: 'SFR Barlow Condensed';
+  src: url('./fonts/barlow-condensed-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SFR Plex Sans';
+  src: url('./fonts/ibm-plex-sans-var.woff2') format('woff2');
+  font-weight: 100 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+.root {
+  --sfr-font-display: 'SFR Barlow Condensed', 'Helvetica Neue', Arial, sans-serif;
+  --sfr-font-text: 'SFR Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  --sfr-ground: #14181a;
+  --sfr-paper: #f3f4f2;
+  --sfr-paper-soft: rgba(243, 244, 242, 0.7);
+  --sfr-sheet: #eef0ed;
+  --sfr-sheet-ink: #14171a;
+  --sfr-sheet-muted: #4d5357;
+  --sfr-ink: #14171a;
+  --sfr-alu-hi: #f2f3f1;
+  --sfr-alu: #e6e8e6;
+  --sfr-alu-lo: #d3d7d6;
+  --sfr-accent: #f5e02d;
+  --sfr-spring: cubic-bezier(0.34, 1.45, 0.5, 1);
+  --sfr-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  container: sfr / inline-size;
+  display: block;
+  box-sizing: border-box;
+  inline-size: 100%;
+  font-family: var(--sfr-font-text);
+  color: var(--sfr-paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+.root::selection {
+  background: var(--sfr-accent);
+  color: var(--sfr-ink);
+}
+
+.card {
+  --needle: 38cqw;
+  --ruler-h: 136px;
+  --avail: calc(100cqw - var(--needle) - 96px);
+  --glyph-max: min(24cqw, 300px);
+  --num-avail: calc(var(--needle) - 72px);
+  --num-max: 72px;
+  --muted: #aeb5b8;
+
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--needle) minmax(0, 1fr);
+  grid-template-rows: minmax(clamp(280px, 30cqw, 380px), auto) var(--ruler-h);
+  box-sizing: border-box;
+  border-radius: 28px;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--sfr-ground);
+}
+
+/* ───────── Paper readout (left of the beam): what is being measured ───────── */
+
+.slab {
+  grid-column: 1;
+  grid-row: 1;
+  box-sizing: border-box;
+  inline-size: calc(var(--needle) - 2px);
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 40px 40px 36px 44px;
+  color: var(--sfr-sheet-ink);
+  background: var(--sfr-sheet);
+}
+
+.measure {
+  margin: 0;
+  max-inline-size: 24ch;
+  font: 500 16px/1.4 var(--sfr-font-text);
+  color: var(--sfr-sheet-muted);
+  text-wrap: balance;
+}
+
+.readout {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  font-family: var(--sfr-font-display);
+  font-weight: 600;
+  font-size: min(var(--num-max), calc(var(--num-avail) / var(--ems)));
+  line-height: 0.9;
+  white-space: nowrap;
+  color: var(--sfr-sheet-ink);
+}
+
+.value {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+.unit {
+  margin-inline-start: 0.14em;
+  font-size: 0.4em;
+  color: var(--sfr-sheet-muted);
+}
+
+/* ───────── Size result (right of the beam): the hero ───────── */
+
+.info {
+  grid-column: 2;
+  grid-row: 1;
+  min-inline-size: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 40px 56px 36px 56px;
+  color: var(--sfr-paper);
+}
+
+.infoLabel {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  font: 500 16px/1.3 var(--sfr-font-text);
+  color: var(--muted);
+}
+
+.range {
+  font-variant-numeric: tabular-nums;
+  animation: sfrRise 380ms var(--sfr-ease) 40ms both;
+}
+
+.fit {
+  min-inline-size: 0;
+}
+
+.glyph {
+  display: block;
+  max-inline-size: 100%;
+  font-family: var(--sfr-font-display);
+  font-weight: 600;
+  font-size: min(var(--glyph-max), calc(var(--avail) / var(--chars) * 1.85));
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: var(--sfr-paper);
+  text-wrap: balance;
+  overflow-wrap: normal;
+  word-break: normal;
+  transform-origin: 0 100%;
+  animation: sfrPop 480ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.note {
+  margin: 0;
+  max-inline-size: 44ch;
+  font: 400 16px/1.55 var(--sfr-font-text);
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+/* ───────── The ruler: one quiet strip on the ink ground ───────── */
+
+.ruler {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  block-size: var(--ruler-h);
+  overflow: hidden;
+  direction: ltr;
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  outline: none;
+  border-block-start: 1px solid rgba(243, 244, 242, 0.14);
+}
+
+.ruler:active {
+  cursor: grabbing;
+}
+
+.ruler:focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border: 2px solid var(--sfr-paper);
+  box-shadow: inset 0 0 0 2px var(--sfr-ground);
+}
+
+.track {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: calc(var(--span) * var(--ppu) + 200cqw);
+  transform: translate3d(calc(var(--needle) - 100cqw - var(--off) * var(--ppu)), 0, 0);
+  will-change: transform;
+}
+
+.scale {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 100cqw;
+  inline-size: calc(var(--span) * var(--ppu));
+}
+
+.ticks {
+  position: absolute;
+  inset-block-start: 0;
+  /* ticks run the full track length; tile phase stays locked to the scale origin */
+  inset-inline-start: calc(-100cqw - 2px);
+  inline-size: calc(var(--span) * var(--ppu) + 200cqw + 4px);
+  block-size: 28px;
+}
+
+.tickMinor,
+.tickMajor {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  background-position-x: 100cqw;
+  background-repeat: repeat-x;
+}
+
+.tickMinor {
+  block-size: 10px;
+  background-image: linear-gradient(90deg, transparent 0 1px, rgba(243, 244, 242, 0.32) 1px 2px, transparent 2px);
+  background-size: calc(var(--ppu) / 10) 100%;
+}
+
+.tickMajor {
+  block-size: 24px;
+  background-image: linear-gradient(90deg, transparent 0 1px, var(--sfr-paper) 1px 3px, transparent 3px);
+  background-size: var(--ppu) 100%;
+}
+
+.numeral {
+  position: absolute;
+  inset-block-start: 36px;
+  inset-inline-start: calc(var(--at) * var(--ppu));
+  transform: translateX(-50%);
+  font: 500 14px/1 var(--sfr-font-text);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.chip,
+.chipOn {
+  position: absolute;
+  inset-block-start: 74px;
+  block-size: 40px;
+  inset-inline-start: calc(var(--at) * var(--ppu) + 2px);
+  inline-size: calc(var(--w) * var(--ppu) - 4px);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font: 600 14px/1 var(--sfr-font-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--muted);
+  box-shadow: inset 0 0 0 1px rgba(243, 244, 242, 0.18);
+}
+
+.chipOn {
+  color: var(--sfr-ink);
+  background: var(--sfr-accent);
+  box-shadow: none;
+  animation: sfrChip 360ms var(--sfr-ease) both;
+}
+
+/* ───────── The signal beam: the only accent ───────── */
+
+.needleLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  direction: ltr;
+  pointer-events: none;
+}
+
+.needle {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(var(--needle) - 1.5px);
+  inline-size: 3px;
+  background: var(--sfr-accent);
+  transform-origin: 50% 0;
+}
+
+/* ───────── Intro choreography states ───────── */
+
+.hidden {
+  opacity: 0;
+}
+
+.needleHidden {
+  transform: scaleY(0);
+}
+
+.needleDrop {
+  animation: sfrDrop 680ms var(--sfr-ease) both;
+}
+
+.rulerIn {
+  animation: sfrRuler 780ms var(--sfr-ease) 80ms both;
+}
+
+.slabIn {
+  animation: sfrRise 720ms var(--sfr-ease) 260ms both;
+}
+
+.riseA {
+  animation: sfrRise 620ms var(--sfr-ease) 420ms both;
+}
+
+.riseB {
+  animation: sfrRise 640ms var(--sfr-ease) 500ms both;
+}
+
+.riseC {
+  animation: sfrRise 640ms var(--sfr-ease) 600ms both;
+}
+
+@keyframes sfrDrop {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes sfrRuler {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sfrRise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sfrPop {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.94);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-1px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes sfrChip {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ───────── Narrow containers: one column, beam only through the ruler ───────── */
+
+@container sfr (max-width: 639px) {
+  .card {
+    --needle: 50cqw;
+    --ruler-h: 128px;
+    --avail: calc(100cqw - 56px);
+    --glyph-max: 34cqw;
+    --num-avail: calc(100cqw - 56px);
+    --num-max: 56px;
+
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto var(--ruler-h);
+    border-radius: 24px;
+  }
+
+  .slab {
+    grid-column: 1;
+    grid-row: 1;
+    inline-size: auto;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 28px;
+  }
+
+  .measure {
+    max-inline-size: 18ch;
+    font-size: 14px;
+  }
+
+  .info {
+    grid-column: 1;
+    grid-row: 2;
+    gap: 16px;
+    padding: 28px;
+  }
+
+  .ruler {
+    grid-row: 3;
+  }
+
+  .needleLayer {
+    inset-block-start: auto;
+    block-size: var(--ruler-h);
+  }
+}
+
+/* ───────── Reduced motion: no momentum (handled in script), no choreography, instant swaps ───────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .glyph,
+  .range,
+  .chipOn,
+  .needleDrop,
+  .rulerIn,
+  .slabIn,
+  .riseA,
+  .riseB,
+  .riseC {
+    animation: none;
+  }
+
+}
+`;export{n as default};
