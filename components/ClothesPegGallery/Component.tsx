@@ -37,9 +37,8 @@ type Pulse = { x: number; dir: number; amp: number; sigma: number; speed: number
 
 const PAD_TOP = 64;
 const GRIP = 14;
-const BORDER = 8;
-const CAP_H = 36;
-const OPEN_CAP_H = 96;
+const CAP_SPACE = 44;
+const CAP_GAP = 22;
 const X_BLEED = 48;
 const GRAV = 640;
 const SWING_K = 30;
@@ -49,6 +48,7 @@ const CURL_C = 7;
 const FLIGHT_K = 150;
 const FLIGHT_C = 19;
 const SIZE_CYCLE = [1.14, 0.85, 1.03, 0.92, 1.1, 0.88];
+const ASPECT_CYCLE = [1.25, 1, 1.35, 1.12, 1.25, 1];
 
 const HELP =
   'Photos hang from a line. Press Enter on a photo to unclip it to a large view; Escape re-hangs it.';
@@ -137,7 +137,7 @@ function layoutFor(width: number, count: number): Layout {
   const rows = Math.max(1, Math.ceil(count / perRow));
   const balanced = Math.ceil(count / rows);
   const slot = (width - 28) / balanced;
-  const basePw = clamp(slot * 0.8, 100, 235);
+  const basePw = clamp(slot * 0.74, 96, 220);
   const sagMax = clamp(width * 0.022, 10, 26);
   const geo: Geo[] = [];
   const rowMaxPh: number[] = [];
@@ -148,13 +148,13 @@ function layoutFor(width: number, count: number): Layout {
     const j = i - row * balanced;
     const t = ((j + 0.5) / inRow) * 0.84 + 0.08;
     const w = clamp(basePw * SIZE_CYCLE[i % SIZE_CYCLE.length], 92, 248);
-    const h = BORDER + (w - 2 * BORDER) * 1.08 + CAP_H;
-    rowMaxPh[row] = Math.max(rowMaxPh[row], h);
+    const h = w * ASPECT_CYCLE[i % ASPECT_CYCLE.length];
+    rowMaxPh[row] = Math.max(rowMaxPh[row], h + CAP_SPACE);
     geo.push({ x: t * width, y: 0, w, h, row, idx: 0 });
   }
   const y0s: number[] = [];
   for (let r = 0; r < rows; r++) {
-    y0s.push(r === 0 ? PAD_TOP : y0s[r - 1] + rowMaxPh[r - 1] + sagMax + 46);
+    y0s.push(r === 0 ? PAD_TOP : y0s[r - 1] + rowMaxPh[r - 1] + sagMax + 40);
   }
   const sims: RowSim[] = [];
   for (let r = 0; r < rows; r++) {
@@ -171,22 +171,21 @@ function layoutFor(width: number, count: number): Layout {
   return { rows, geo, sims, height, width };
 }
 
-function openRect(width: number, height: number, ph: number): Rect & { frame: number } {
+function openRect(width: number, height: number, ph: number): Rect & { capH: number } {
   const wide = width >= 640;
   const aspect = wide ? 1.35 : 0.9;
-  const frame = wide ? 36 : 24;
-  const maxW = Math.min(width - (wide ? 140 : 24), 780);
-  const maxH = Math.max(height - (wide ? 70 : 28), ph * 1.4);
-  const iw = Math.min(maxW - frame, (maxH - frame - OPEN_CAP_H) * aspect);
-  const w = iw + frame;
-  const h = iw / aspect + frame + OPEN_CAP_H;
-  return { x: (width - w) / 2, y: Math.max(14, (height - h) / 2), w, h, frame };
+  const capH = wide ? 120 : 104;
+  const maxW = Math.min(width - (wide ? 140 : 40), 780);
+  const maxH = Math.max(height - (wide ? 60 : 28), ph * 1.4);
+  const w = Math.min(maxW, (maxH - capH) * aspect);
+  const h = w / aspect + capH;
+  return { x: (width - w) / 2, y: Math.max(14, (height - h) / 2), w, h, capH };
 }
 
 export default function ClothesPegGallery({
   photos = defaultPhotos,
   breezeStrength = 4,
-  stringColor = '#6f6a62',
+  stringColor = '#a8a39a',
   className,
 }: ClothesPegGalleryProps) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
@@ -199,7 +198,6 @@ export default function ClothesPegGallery({
 
   const rootRef = useRef<HTMLDivElement>(null);
   const hangerRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const shadowRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const triggerRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const stringRefs = useRef<(SVGPathElement | null)[]>([]);
   const flyRef = useRef<HTMLDivElement>(null);
@@ -266,8 +264,7 @@ export default function ClothesPegGallery({
       set('height', `${Math.max(40, lerp(g.h, e.h, p))}px`);
       set('--cpg-rot', `${lerp(swings.current[i]?.a ?? 0, 0, p) - Math.sin(p * Math.PI) * 4}deg`);
       set('--cpg-lift', p.toFixed(3));
-      set('--cpg-pad', `${lerp(BORDER, e.frame / 2, p)}px`);
-      set('--cpg-foot', `${lerp(CAP_H, OPEN_CAP_H, p)}px`);
+      set('--cpg-foot', `${lerp(0, e.capH, p)}px`);
       scrimRef.current?.style.setProperty('opacity', p.toFixed(3));
     },
     [L, width],
@@ -375,7 +372,7 @@ export default function ClothesPegGallery({
       /* redraw cord strokes */
       for (let r = 0; r < live.length; r++) {
         const d = cordPath(live[r]);
-        for (let k = 0; k < 2; k++) stringRefs.current[r * 2 + k]?.setAttribute('d', d);
+        stringRefs.current[r]?.setAttribute('d', d);
       }
       /* prints: pendulum + paper curl, forced by cord movement and wind */
       let energy = 0;
@@ -399,7 +396,6 @@ export default function ClothesPegGallery({
           el.style.setProperty('--cpg-tx', `${(anchor.x - g.x).toFixed(2)}px`);
           el.style.setProperty('--cpg-ty', `${(anchor.y - g.y).toFixed(2)}px`);
           el.style.setProperty('--cpg-swing', `${sw.a.toFixed(2)}deg`);
-          shadowRefs.current[i]?.style.setProperty('--cpg-sh', Math.min(1, Math.abs(sw.a) / 14).toFixed(3));
           el.style.setProperty('--cpg-curlN', sw.curl.toFixed(3));
         }
       }
@@ -491,7 +487,6 @@ export default function ClothesPegGallery({
 
   const shown = active !== null ? photos[active] : null;
   const dialogLabel = shown ? shown.caption || shown.alt || 'Photo' : '';
-  const steelId = `cpg${uid}steel`;
 
   return (
     <div
@@ -500,16 +495,6 @@ export default function ClothesPegGallery({
       style={rootStyle}
       data-still={reduced || !playing || !inView ? '' : undefined}
     >
-      <svg className={styles.defs} aria-hidden="true" focusable="false">
-        <defs>
-          <linearGradient id={steelId} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#4a4f56" />
-            <stop offset="0.45" stopColor="#8b9199" />
-            <stop offset="1" stopColor="#3a3e44" />
-          </linearGradient>
-        </defs>
-      </svg>
-
       <ul className={styles.line} aria-label="Photo gallery" aria-description={HELP} aria-hidden={open || undefined}>
         {L.sims.map((sim, r) => (
           <li
@@ -523,17 +508,14 @@ export default function ClothesPegGallery({
               viewBox={`-48 0 ${width + 96} ${sim.vh}`}
               preserveAspectRatio="none"
             >
-              {[styles.stringShadow, styles.stringBase].map((cls, k) => (
-                <path
-                  key={cls}
-                  ref={(el) => {
-                    stringRefs.current[r * 2 + k] = el;
-                  }}
-                  className={cls}
-                  d={pathD[r] ?? cordPath(sim)}
-                  vectorEffect="non-scaling-stroke"
-                />
-              ))}
+              <path
+                ref={(el) => {
+                  stringRefs.current[r] = el;
+                }}
+                className={styles.string}
+                d={pathD[r] ?? cordPath(sim)}
+                vectorEffect="non-scaling-stroke"
+              />
             </svg>
           </li>
         ))}
@@ -550,13 +532,12 @@ export default function ClothesPegGallery({
               style={{ insetInlineStart: g.x, insetBlockStart: g.y }}
             >
               <span
-                ref={(el) => {
-                  shadowRefs.current[i] = el;
-                }}
-                className={styles.shadow}
+                className={styles.label}
                 aria-hidden="true"
                 style={{ '--cpg-pw': `${g.w}px`, '--cpg-ph': `${g.h}px` } as CSSProperties}
-              />
+              >
+                {p.caption}
+              </span>
               <div
                 ref={(el) => {
                   hangerRefs.current[i] = el;
@@ -591,25 +572,17 @@ export default function ClothesPegGallery({
                       </span>
                     )}
                   </span>
-                  {p.caption && <span className={styles.caption}>{p.caption}</span>}
                 </button>
                 <svg
                   className={styles.peg}
-                  viewBox="0 0 22 58"
+                  viewBox="0 0 12 34"
                   data-open={away ? '' : undefined}
                   aria-hidden="true"
                   focusable="false"
                 >
-                  <g className={styles.pegJawL}>
-                    <rect x="7.3" y="14" width="3.5" height="33" rx="1.75" fill={`url(#${steelId})`} />
-                  </g>
-                  <g className={styles.pegJawR}>
-                    <rect x="11.2" y="14" width="3.5" height="33" rx="1.75" fill={`url(#${steelId})`} />
-                  </g>
-                  <g className={styles.pegCoil}>
-                    <circle cx="11" cy="10.5" r="3.1" fill="none" stroke="#4a4f56" strokeWidth="1.1" />
-                  </g>
-                  <circle cx="11" cy="14.6" r="1.3" fill="#2f3338" />
+                  <rect className={styles.pegJawL} x="1" y="2" width="5" height="30" rx="1" />
+                  <rect className={styles.pegJawR} x="6" y="2" width="5" height="30" rx="1" />
+                  <rect className={styles.pegPin} x="4.5" y="9" width="3" height="3" rx="1.5" />
                 </svg>
               </div>
             </li>
@@ -663,15 +636,17 @@ export default function ClothesPegGallery({
               <span id={`${uid}-cap`} className={styles.flyCaption}>
                 {shown.caption}
               </span>
-              <span className={styles.flyCount} aria-hidden="true">
-                {String((active ?? 0) + 1).padStart(2, '0')} / {String(photos.length).padStart(2, '0')}
+              <span className={styles.flyAside}>
+                <span className={styles.flyCount} aria-hidden="true">
+                  {String((active ?? 0) + 1).padStart(2, '0')} / {String(photos.length).padStart(2, '0')}
+                </span>
+                <button ref={closeRef} type="button" className={styles.close} aria-label="Re-hang photo" onClick={rehang}>
+                  <svg viewBox="0 0 16 16" className={styles.closeIcon} aria-hidden="true">
+                    <path d="M4 4l8 8M12 4l-8 8" />
+                  </svg>
+                </button>
               </span>
             </span>
-            <button ref={closeRef} type="button" className={styles.close} aria-label="Re-hang photo" onClick={rehang}>
-              <svg viewBox="0 0 16 16" className={styles.closeIcon} aria-hidden="true">
-                <path d="M4 4l8 8M12 4l-8 8" />
-              </svg>
-            </button>
           </div>
         </>
       )}
