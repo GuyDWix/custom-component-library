@@ -392,10 +392,6 @@ export default function SizeFinderRuler({
     '--off': start - lo,
     '--span': model.hi - lo,
   } as CSSProperties;
-  const washStyle = {
-    '--at': active.from - 0.05 - lo,
-    '--w': active.to - active.from + 0.1,
-  } as CSSProperties;
 
   const armed = phase === 'armed';
   const play = phase === 'play';
@@ -421,23 +417,20 @@ export default function SizeFinderRuler({
         </div>
 
         <div className={styles.info}>
-          <div className={styles.infoTop}>
-            <p className={pick(styles.infoLabel, styles.hidden, styles.riseA)}>{sizeLabel}</p>
-            <div className={pick(styles.fit, styles.hidden, styles.riseB)}>
-              <span key={active.size} className={styles.glyph} style={{ '--chars': sizeChars } as CSSProperties}>
-                {active.size}
-              </span>
-              <span key={`bar-${active.size}`} className={styles.bar} />
-            </div>
-          </div>
-          <div className={pick(styles.detail, styles.hidden, styles.riseC)}>
-            <p key={`range-${index}`} className={styles.range}>
+          <p className={pick(styles.infoLabel, styles.hidden, styles.riseA)}>
+            {sizeLabel}
+            <span key={`range-${index}`} className={styles.range}>
               {rangeText}
-            </p>
-            <p key={`note-${index}`} className={styles.note}>
-              {active.note}
-            </p>
+            </span>
+          </p>
+          <div className={pick(styles.fit, styles.hidden, styles.riseB)}>
+            <span key={active.size} className={styles.glyph} style={{ '--chars': sizeChars } as CSSProperties}>
+              {active.size}
+            </span>
           </div>
+          <p key={`note-${index}`} className={pick(styles.note, styles.hidden, styles.riseC)}>
+            {active.note}
+          </p>
         </div>
 
         <div
@@ -460,10 +453,8 @@ export default function SizeFinderRuler({
         >
           <div ref={trackRef} className={styles.track} style={trackStyle}>
             <div className={styles.scale}>
-              <div className={styles.wash} style={washStyle} />
               <div className={styles.ticks}>
                 <div className={styles.tickMinor} />
-                <div className={styles.tickMid} />
                 <div className={styles.tickMajor} />
               </div>
               {numerals.map((n) => (
@@ -471,7 +462,6 @@ export default function SizeFinderRuler({
                   {n}
                 </span>
               ))}
-              <div className={styles.rail} />
               {list.map((r, i) => (
                 <span
                   key={`${r.from}-${i}`}
@@ -487,7 +477,6 @@ export default function SizeFinderRuler({
 
         <div className={styles.needleLayer} aria-hidden="true">
           <span ref={needleRef} className={pick(styles.needle, styles.needleHidden, styles.needleDrop)} />
-          <span className={pick(styles.needleFoot, styles.needleHidden, styles.needleDrop)} />
         </div>
       </div>
     </section>
@@ -496,8 +485,7 @@ export default function SizeFinderRuler({
 ```
 
 ```css
-/* Precision instrument: graphite ground, a matte anodised pale ruler with fine etched ticks, one signal-yellow
-   indicator, and a clean pale readout panel. Sans type only. */
+/* Precision instrument: graphite ground, a pale readout panel, one signal-yellow beam. The size is the hero. */
 
 @font-face {
   font-family: 'SFR Barlow Condensed';
@@ -548,36 +536,29 @@ export default function SizeFinderRuler({
 
 .card {
   --needle: 38cqw;
-  --ruler-h: 184px;
-  /* the needle breaks around the size-chip row so it never cuts through the selected label */
-  --gap-top: 90px;
-  --gap-foot: 38px;
-  --avail: calc(100cqw - var(--needle) - 92px);
-  --glyph-max: min(21cqw, 260px);
-  --num-avail: calc(var(--needle) - 66px);
-  --num-max: min(26cqw, 300px);
+  --ruler-h: 136px;
+  --avail: calc(100cqw - var(--needle) - 96px);
+  --glyph-max: min(24cqw, 300px);
+  --num-avail: calc(var(--needle) - 72px);
+  --num-max: 72px;
+  --muted: #aeb5b8;
 
   position: relative;
   display: grid;
   grid-template-columns: var(--needle) minmax(0, 1fr);
-  grid-template-rows: minmax(clamp(300px, 33cqw, 420px), auto) var(--ruler-h);
+  grid-template-rows: minmax(clamp(280px, 30cqw, 380px), auto) var(--ruler-h);
   box-sizing: border-box;
-  padding-block-end: 24px;
   border-radius: 28px;
   overflow: hidden;
   isolation: isolate;
-  background:
-    radial-gradient(110% 80% at 80% 0%, rgba(190, 215, 225, 0.07), transparent 62%),
-    var(--sfr-ground);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.07) inset;
+  background: var(--sfr-ground);
 }
 
-/* ───────── Paper readout (left of the needle) ───────── */
+/* ───────── Paper readout (left of the beam): what is being measured ───────── */
 
 .slab {
   grid-column: 1;
   grid-row: 1;
-  position: relative;
   box-sizing: border-box;
   inline-size: calc(var(--needle) - 2px);
   min-inline-size: 0;
@@ -585,12 +566,9 @@ export default function SizeFinderRuler({
   flex-direction: column;
   justify-content: space-between;
   gap: 24px;
-  padding: 32px 32px 30px 36px;
+  padding: 40px 40px 36px 44px;
   color: var(--sfr-sheet-ink);
-  background: linear-gradient(180deg, #f4f5f3 0%, var(--sfr-sheet) 100%);
-  box-shadow:
-    inset -1px 0 0 rgba(20, 23, 26, 0.1),
-    10px 0 30px -14px rgba(0, 0, 0, 0.5);
+  background: var(--sfr-sheet);
 }
 
 .measure {
@@ -609,8 +587,7 @@ export default function SizeFinderRuler({
   font-family: var(--sfr-font-display);
   font-weight: 600;
   font-size: min(var(--num-max), calc(var(--num-avail) / var(--ems)));
-  line-height: 0.8;
-  letter-spacing: -0.01em;
+  line-height: 0.9;
   white-space: nowrap;
   color: var(--sfr-sheet-ink);
 }
@@ -621,13 +598,12 @@ export default function SizeFinderRuler({
 }
 
 .unit {
-  margin-inline-start: 0.12em;
-  font-size: 0.3em;
-  letter-spacing: 0.01em;
+  margin-inline-start: 0.14em;
+  font-size: 0.4em;
   color: var(--sfr-sheet-muted);
 }
 
-/* ───────── Size result (right of the needle) ───────── */
+/* ───────── Size result (right of the beam): the hero ───────── */
 
 .info {
   grid-column: 2;
@@ -637,30 +613,27 @@ export default function SizeFinderRuler({
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 28px;
-  padding: 32px 46px 30px 48px;
+  gap: 24px;
+  padding: 40px 56px 36px 56px;
   color: var(--sfr-paper);
-}
-
-.infoTop {
-  min-inline-size: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
 }
 
 .infoLabel {
   margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
   font: 500 16px/1.3 var(--sfr-font-text);
-  color: var(--sfr-paper-soft);
-  text-wrap: balance;
+  color: var(--muted);
+}
+
+.range {
+  font-variant-numeric: tabular-nums;
+  animation: sfrRise 380ms var(--sfr-ease) 40ms both;
 }
 
 .fit {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 16px;
   min-inline-size: 0;
 }
 
@@ -680,43 +653,15 @@ export default function SizeFinderRuler({
   animation: sfrPop 480ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
 }
 
-.bar {
-  display: block;
-  inline-size: 72px;
-  block-size: 4px;
-  border-radius: 2px;
-  background: var(--sfr-accent);
-  transform-origin: 0 50%;
-  animation: sfrBar 520ms var(--sfr-ease) 80ms both;
-}
-
-.detail {
-  display: grid;
-  gap: 10px;
-  max-inline-size: 46ch;
-  min-inline-size: 0;
-}
-
-.range {
-  margin: 0;
-  font: 600 16px/1.3 var(--sfr-font-text);
-  font-variant-numeric: tabular-nums;
-  color: var(--sfr-paper-soft);
-  letter-spacing: 0.02em;
-  animation: sfrRise 380ms var(--sfr-ease) 40ms both;
-}
-
 .note {
   margin: 0;
-  font: 400 18px/1.5 var(--sfr-font-text);
-  color: rgba(243, 244, 242, 0.9);
+  max-inline-size: 44ch;
+  font: 400 16px/1.55 var(--sfr-font-text);
+  color: var(--muted);
   text-wrap: pretty;
-  animation: sfrRise 420ms var(--sfr-ease) 110ms both;
 }
 
-/* ───────── The anodised ruler ───────── */
-
-/* ───────── The anodised ruler ───────── */
+/* ───────── The ruler: one quiet strip on the ink ground ───────── */
 
 .ruler {
   grid-column: 1 / -1;
@@ -732,23 +677,11 @@ export default function SizeFinderRuler({
   user-select: none;
   -webkit-user-select: none;
   outline: none;
-  background: linear-gradient(180deg, var(--sfr-alu-hi) 0%, var(--sfr-alu) 55%, var(--sfr-alu-lo) 100%);
-  box-shadow: 0 -14px 30px -16px rgba(0, 0, 0, 0.45);
+  border-block-start: 1px solid rgba(243, 244, 242, 0.14);
 }
 
 .ruler:active {
   cursor: grabbing;
-}
-
-.ruler::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.85),
-    inset 0 -1px 0 rgba(20, 23, 26, 0.28);
 }
 
 .ruler:focus-visible::after {
@@ -757,8 +690,8 @@ export default function SizeFinderRuler({
   inset: 0;
   z-index: 3;
   pointer-events: none;
-  border: 2px solid var(--sfr-ink);
-  box-shadow: inset 0 0 0 2px var(--sfr-accent);
+  border: 2px solid var(--sfr-paper);
+  box-shadow: inset 0 0 0 2px var(--sfr-ground);
 }
 
 .track {
@@ -777,97 +710,73 @@ export default function SizeFinderRuler({
   inline-size: calc(var(--span) * var(--ppu));
 }
 
-.wash {
-  position: absolute;
-  inset-block-start: 0;
-  block-size: 124px;
-  inset-inline-start: calc(var(--at) * var(--ppu));
-  inline-size: calc(var(--w) * var(--ppu));
-  background: linear-gradient(180deg, rgba(20, 23, 26, 0.12), rgba(20, 23, 26, 0.02));
-  box-shadow: inset 1px 0 0 rgba(20, 23, 26, 0.25), inset -1px 0 0 rgba(20, 23, 26, 0.25);
-  transition:
-    inset-inline-start 420ms var(--sfr-spring),
-    inline-size 420ms var(--sfr-spring);
-}
-
 .ticks {
   position: absolute;
   inset-block-start: 0;
-  /* ticks run the full length of the track, so no blank wood at either end; tile phase stays locked to the scale origin */
+  /* ticks run the full track length; tile phase stays locked to the scale origin */
   inset-inline-start: calc(-100cqw - 2px);
   inline-size: calc(var(--span) * var(--ppu) + 200cqw + 4px);
-  block-size: 64px;
+  block-size: 28px;
 }
 
 .tickMinor,
-.tickMid,
 .tickMajor {
   position: absolute;
   inset-block-start: 0;
   inset-inline: 0;
+  background-position-x: 100cqw;
+  background-repeat: repeat-x;
 }
 
 .tickMinor {
-  block-size: 22px;
-  background-image: linear-gradient(90deg, transparent 0 1px, rgba(20, 23, 26, 0.5) 1px 3px, transparent 3px);
+  block-size: 10px;
+  background-image: linear-gradient(90deg, transparent 0 1px, rgba(243, 244, 242, 0.32) 1px 2px, transparent 2px);
   background-size: calc(var(--ppu) / 10) 100%;
-  background-position-x: 100cqw;
-  background-repeat: repeat-x;
-}
-
-.tickMid {
-  block-size: 36px;
-  background-image: linear-gradient(90deg, transparent 0 1px, var(--sfr-ink) 1px 3px, transparent 3px);
-  background-size: calc(var(--ppu) / 2) 100%;
-  background-position-x: 100cqw;
-  background-repeat: repeat-x;
 }
 
 .tickMajor {
-  block-size: 54px;
-  background-image: linear-gradient(90deg, transparent 0 1px, var(--sfr-ink) 1px 3px, transparent 3px);
+  block-size: 24px;
+  background-image: linear-gradient(90deg, transparent 0 1px, var(--sfr-paper) 1px 3px, transparent 3px);
   background-size: var(--ppu) 100%;
-  background-position-x: 100cqw;
-  background-repeat: repeat-x;
 }
 
 .numeral {
   position: absolute;
-  inset-block-start: 68px;
+  inset-block-start: 36px;
   inset-inline-start: calc(var(--at) * var(--ppu));
   transform: translateX(-50%);
-  font-family: var(--sfr-font-display);
-  font-weight: 600;
-  font-size: 30px;
-  line-height: 1;
-  letter-spacing: 0.01em;
+  font: 500 14px/1 var(--sfr-font-text);
   font-variant-numeric: tabular-nums;
-  color: var(--sfr-ink);
-}
-
-.rail {
-  position: absolute;
-  inset-block-start: 124px;
-  block-size: 40px;
-  inset-inline-start: -100cqw;
-  inline-size: calc(var(--span) * var(--ppu) + 200cqw);
-  box-sizing: border-box;
-  border-block: 1px solid rgba(20, 23, 26, 0.3);
-  background: rgba(20, 23, 26, 0.05);
+  color: var(--muted);
 }
 
 .chip,
+.chipOn {
+  position: absolute;
+  inset-block-start: 74px;
+  block-size: 40px;
+  inset-inline-start: calc(var(--at) * var(--ppu) + 2px);
+  inline-size: calc(var(--w) * var(--ppu) - 4px);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font: 600 14px/1 var(--sfr-font-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--muted);
+  box-shadow: inset 0 0 0 1px rgba(243, 244, 242, 0.18);
+}
 
 .chipOn {
-  z-index: 1;
-  color: var(--sfr-paper);
-  background: var(--sfr-ink);
-  border-inline-start-color: var(--sfr-ink);
-  box-shadow: 0 8px 14px -8px rgba(20, 23, 26, 0.5);
+  color: var(--sfr-ink);
+  background: var(--sfr-accent);
+  box-shadow: none;
   animation: sfrChip 360ms var(--sfr-ease) both;
 }
 
-/* ───────── The signal needle ───────── */
+/* ───────── The signal beam: the only accent ───────── */
 
 .needleLayer {
   position: absolute;
@@ -877,25 +786,13 @@ export default function SizeFinderRuler({
   pointer-events: none;
 }
 
-.needle,
-.needleFoot {
+.needle {
   position: absolute;
-  inset-block: 0 var(--gap-top);
-  inset-inline-start: calc(var(--needle) - 2px);
-  inline-size: 4px;
+  inset-block: 0;
+  inset-inline-start: calc(var(--needle) - 1.5px);
+  inline-size: 3px;
   background: var(--sfr-accent);
-  box-shadow:
-    0 0 0 1px rgba(14, 16, 15, 0.85),
-    0 0 18px 0 color-mix(in srgb, var(--sfr-accent) 22%, transparent);
   transform-origin: 50% 0;
-}
-
-.needleFoot {
-  inset-block: auto 0;
-  block-size: var(--gap-foot);
-  inset-inline-start: calc(var(--needle) - 2px);
-  border-radius: 0;
-  transform-origin: 50% 100%;
 }
 
 /* ───────── Intro choreography states ───────── */
@@ -978,15 +875,6 @@ export default function SizeFinderRuler({
   }
 }
 
-@keyframes sfrBar {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-
 @keyframes sfrChip {
   from {
     opacity: 0.4;
@@ -996,18 +884,16 @@ export default function SizeFinderRuler({
   }
 }
 
-/* ───────── Narrow containers: one column, needle only through the ruler ───────── */
+/* ───────── Narrow containers: one column, beam only through the ruler ───────── */
 
 @container sfr (max-width: 639px) {
   .card {
     --needle: 50cqw;
-    --ruler-h: 176px;
-    --gap-top: 82px;
-    --gap-foot: 30px;
-    --avail: calc(100cqw - 52px);
-    --glyph-max: 30cqw;
-    --num-avail: calc(100cqw - 52px);
-    --num-max: 34cqw;
+    --ruler-h: 128px;
+    --avail: calc(100cqw - 56px);
+    --glyph-max: 34cqw;
+    --num-avail: calc(100cqw - 56px);
+    --num-max: 56px;
 
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto var(--ruler-h);
@@ -1018,28 +904,23 @@ export default function SizeFinderRuler({
     grid-column: 1;
     grid-row: 1;
     inline-size: auto;
-    gap: 14px;
-    padding: 26px 26px 24px;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 28px;
   }
 
   .measure {
-    max-inline-size: 34ch;
-    font-size: 15px;
-  }
-
-  .readout {
-    justify-content: flex-start;
+    max-inline-size: 18ch;
+    font-size: 14px;
   }
 
   .info {
     grid-column: 1;
     grid-row: 2;
-    gap: 18px;
-    padding: 26px 26px 44px;
-  }
-
-  .note {
-    font-size: 16px;
+    gap: 16px;
+    padding: 28px;
   }
 
   .ruler {
@@ -1048,12 +929,7 @@ export default function SizeFinderRuler({
 
   .needleLayer {
     inset-block-start: auto;
-    block-size: calc(var(--ruler-h) + 24px + 22px);
-  }
-
-  .needle {
-    border-start-start-radius: 3px;
-    border-start-end-radius: 3px;
+    block-size: var(--ruler-h);
   }
 }
 
@@ -1061,9 +937,7 @@ export default function SizeFinderRuler({
 
 @media (prefers-reduced-motion: reduce) {
   .glyph,
-  .bar,
   .range,
-  .note,
   .chipOn,
   .needleDrop,
   .rulerIn,
@@ -1074,8 +948,5 @@ export default function SizeFinderRuler({
     animation: none;
   }
 
-  .wash {
-    transition: none;
-  }
 }
 ```

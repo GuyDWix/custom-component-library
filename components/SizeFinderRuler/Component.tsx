@@ -387,10 +387,6 @@ export default function SizeFinderRuler({
     '--off': start - lo,
     '--span': model.hi - lo,
   } as CSSProperties;
-  const washStyle = {
-    '--at': active.from - 0.05 - lo,
-    '--w': active.to - active.from + 0.1,
-  } as CSSProperties;
 
   const armed = phase === 'armed';
   const play = phase === 'play';
@@ -416,23 +412,20 @@ export default function SizeFinderRuler({
         </div>
 
         <div className={styles.info}>
-          <div className={styles.infoTop}>
-            <p className={pick(styles.infoLabel, styles.hidden, styles.riseA)}>{sizeLabel}</p>
-            <div className={pick(styles.fit, styles.hidden, styles.riseB)}>
-              <span key={active.size} className={styles.glyph} style={{ '--chars': sizeChars } as CSSProperties}>
-                {active.size}
-              </span>
-              <span key={`bar-${active.size}`} className={styles.bar} />
-            </div>
-          </div>
-          <div className={pick(styles.detail, styles.hidden, styles.riseC)}>
-            <p key={`range-${index}`} className={styles.range}>
+          <p className={pick(styles.infoLabel, styles.hidden, styles.riseA)}>
+            {sizeLabel}
+            <span key={`range-${index}`} className={styles.range}>
               {rangeText}
-            </p>
-            <p key={`note-${index}`} className={styles.note}>
-              {active.note}
-            </p>
+            </span>
+          </p>
+          <div className={pick(styles.fit, styles.hidden, styles.riseB)}>
+            <span key={active.size} className={styles.glyph} style={{ '--chars': sizeChars } as CSSProperties}>
+              {active.size}
+            </span>
           </div>
+          <p key={`note-${index}`} className={pick(styles.note, styles.hidden, styles.riseC)}>
+            {active.note}
+          </p>
         </div>
 
         <div
@@ -455,10 +448,8 @@ export default function SizeFinderRuler({
         >
           <div ref={trackRef} className={styles.track} style={trackStyle}>
             <div className={styles.scale}>
-              <div className={styles.wash} style={washStyle} />
               <div className={styles.ticks}>
                 <div className={styles.tickMinor} />
-                <div className={styles.tickMid} />
                 <div className={styles.tickMajor} />
               </div>
               {numerals.map((n) => (
@@ -466,7 +457,6 @@ export default function SizeFinderRuler({
                   {n}
                 </span>
               ))}
-              <div className={styles.rail} />
               {list.map((r, i) => (
                 <span
                   key={`${r.from}-${i}`}
@@ -482,7 +472,6 @@ export default function SizeFinderRuler({
 
         <div className={styles.needleLayer} aria-hidden="true">
           <span ref={needleRef} className={pick(styles.needle, styles.needleHidden, styles.needleDrop)} />
-          <span className={pick(styles.needleFoot, styles.needleHidden, styles.needleDrop)} />
         </div>
       </div>
     </section>
