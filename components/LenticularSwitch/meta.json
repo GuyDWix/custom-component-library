@@ -1,0 +1,39 @@
+{
+  "id": "c021",
+  "name": "LenticularSwitch",
+  "display_name": "Lenticular Switch",
+  "category": "media",
+  "tier": "everyday",
+  "job": "Make one photo flip to another as the angle changes, like a lenticular print built from thin vertical strips",
+  "visitor_action": "move the pointer sideways across the print, drag on touch, or use the arrow keys; a slow sway hints the flip when idle",
+  "owner_settings": [
+    "Image A",
+    "Image B",
+    "Image A description",
+    "Image B description",
+    "Strip width",
+    "Idle sway hint on/off"
+  ],
+  "site_types": [
+    "store",
+    "events",
+    "portfolio",
+    "business"
+  ],
+  "mobile": "drag sideways instead of hover; a slow auto-sway hints the flip",
+  "motion": "strips flip in a staggered wave following the pointer position, the print tilts slightly and a glossy glare line sweeps with it (reduced-motion: tap toggles A/B, no wave)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 2,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped",
+    "craft": "skipped"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Print shop: ribbed plastic sheen, vivid process-cyan and magenta photos, clean white mat, glossy glare line"
+}

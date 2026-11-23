@@ -1,0 +1,40 @@
+{
+  "id": "c004",
+  "name": "StitchedCompare",
+  "display_name": "Stitched Compare",
+  "category": "media",
+  "tier": "everyday",
+  "job": "Compare two photos (before/after, old/new) across a divider that is a visible stitched seam you drag, with thread tension animating as you pull",
+  "visitor_action": "drag the seam; arrow keys nudge; tap a side to jump",
+  "owner_settings": [
+    "Before image",
+    "Before image description",
+    "Before label",
+    "After image",
+    "After image description",
+    "After label",
+    "Thread colour"
+  ],
+  "site_types": [
+    "services",
+    "store",
+    "portfolio",
+    "business"
+  ],
+  "mobile": "full-width, large drag handle, seam stays vertical",
+  "motion": "stitches stretch and settle with spring as the seam moves (reduced-motion: seam moves with no stretch)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped (token saving, Guy 2026-11-23)",
+    "craft": "skipped (token saving, Guy 2026-11-23)"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Tailor's table: oatmeal linen frame with blue and white tailor's chalk marks, selvedge tapes, waxed madder-red cross-lacing, sewn-on button handle, pinned paper labels"
+}

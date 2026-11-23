@@ -1,0 +1,40 @@
+{
+  "id": "c096",
+  "name": "RadialContactFan",
+  "display_name": "Radial Contact Fan",
+  "category": "controls",
+  "tier": "showpiece",
+  "job": "One round button that fans out into contact actions (call, directions, message, book) along an arc with labels",
+  "visitor_action": "click/tap to open; arrows or Tab cycle actions; Esc closes",
+  "owner_settings": [
+    "Actions (label, icon, link)",
+    "Main button label",
+    "Button color",
+    "Fan direction",
+    "Heading and note",
+    "Brass edge color"
+  ],
+  "site_types": [
+    "restaurant",
+    "services",
+    "business",
+    "events",
+    "store"
+  ],
+  "mobile": "fans upward from bottom corner of its container, large targets",
+  "motion": "actions spring out along the arc with stagger, main icon rotates to a close mark (reduced-motion: actions appear instantly in a row)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "deferred-to-QA",
+    "craft": "deferred-to-QA"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Concierge desk: warm ivory surface, deep navy main disc, brass-edged action discs, subtle satin gloss and soft cast shadows"
+}

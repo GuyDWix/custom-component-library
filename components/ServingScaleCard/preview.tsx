@@ -4,7 +4,7 @@ import type { ServingScaleCardProps } from './Component';
 
 const worst: ServingScaleCardProps = {
   image: '',
-  eyebrow: 'Sunday family feast · serves a crowd · make-ahead friendly · 3 hours 45 minutes',
+  subtitle: 'Sunday family feast · serves a crowd · make-ahead friendly · 3 hours 45 minutes',
   title: 'Slow-braised Moroccan-spiced lamb shoulder with preserved lemon, apricots and herbed giant couscous',
   baseServings: 12,
   ingredients: [
@@ -30,7 +30,7 @@ const stage = {
   display: 'grid',
   placeItems: 'center',
   padding: 'clamp(16px, 4vw, 56px)',
-  background: 'linear-gradient(180deg, #ece7dc 0%, #e3e6ee 100%)',
+  background: 'linear-gradient(180deg, #e9ece6 0%, #dfe4dc 100%)',
 };
 
 export default function Preview() {
@@ -39,7 +39,7 @@ export default function Preview() {
 
   return (
     <div style={stage}>
-      <div style={{ width: '100%', maxWidth: 880 }}>
+      <div style={{ width: '100%', maxWidth: 1120 }}>
         <ServingScaleCard {...(isWorst ? worst : {})} />
       </div>
     </div>

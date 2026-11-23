@@ -1,0 +1,38 @@
+{
+  "id": "c045",
+  "name": "LabelMakerList",
+  "display_name": "Label Maker List",
+  "category": "text",
+  "tier": "everyday",
+  "job": "Present tags, services or ingredients as embossed label-maker strips that print out one after another with a tiny cut",
+  "visitor_action": "none (prints in view); hover tilts a strip",
+  "owner_settings": [
+    "Labels (text)",
+    "Tape color",
+    "Text style",
+    "Strips per row"
+  ],
+  "site_types": [
+    "store",
+    "services",
+    "business",
+    "restaurant",
+    "portfolio"
+  ],
+  "mobile": "strips stack full width",
+  "motion": "strips feed out and clip with a small snap, staggered (reduced-motion: all strips in place)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 2,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped (per instruction, 2026-11-23)",
+    "craft": "skipped (per instruction, 2026-11-23)"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Workshop shelf: glossy cobalt and cream tape strips, white raised letters, slight curl at the cut end, pegboard-grey ground"
+}

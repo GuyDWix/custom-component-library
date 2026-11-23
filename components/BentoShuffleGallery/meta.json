@@ -1,0 +1,38 @@
+{
+  "id": "c023",
+  "name": "BentoShuffleGallery",
+  "display_name": "Bento Shuffle Gallery",
+  "category": "media",
+  "tier": "everyday",
+  "job": "Show photos in an uneven tile layout where tiles trade sizes in turn so each photo gets a moment as the feature",
+  "visitor_action": "hover or tap a tile to make it the feature; otherwise the gallery rotates the feature by itself; arrow keys choose the feature",
+  "owner_settings": [
+    "Photos (image, caption)",
+    "Shuffle speed",
+    "Corner roundness",
+    "Gap"
+  ],
+  "site_types": [
+    "portfolio",
+    "restaurant",
+    "business",
+    "store",
+    "events"
+  ],
+  "mobile": "2-column grid, tap enlarges one tile",
+  "motion": "feature trade: outgoing tile lifts, winds up and sweeps on a bowed spring arc (tilt, deeper shadow) into the slot of the photo that grows into the 2x2 feature from the opposite bow; neighbours ripple away in its wake (reduced-motion: no auto shuffle, instant swap on tap)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped",
+    "craft": "skipped"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Sorbet bento: matte rounded tiles straight on the host page (no panel), peach and pistachio accents, one big bone caption card on the feature, Bricolage Grotesque ink text"
+}

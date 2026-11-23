@@ -37,6 +37,7 @@ const STIFFNESS = 190;
 const DAMPING = 20;
 const MAX_FONT = 28;
 const MIN_FONT = 15;
+const RANGE = /\s+[–—-]\s+/;
 const MAX_VELOCITY = 40;
 
 const isOpen = (s?: TimeSlot) => !!s && !s.booked;
@@ -63,8 +64,13 @@ function stepOpen(slots: TimeSlot[], from: number, dir: number, count = 1) {
   return found;
 }
 
+const splitRange = (time: string) => {
+  const [start, ...rest] = time.split(RANGE);
+  return { start, end: rest.join(' – ') };
+};
+
 function sizing(slots: TimeSlot[]) {
-  const longest = Math.max(5, ...slots.map((s) => s.time.length));
+  const longest = Math.max(5, ...slots.map((s) => splitRange(s.time).start.length));
   const font = clamp(Math.round((MAX_FONT * 7) / longest), MIN_FONT, MAX_FONT);
   const slot = clamp(Math.round((longest * font * 0.56) / 0.62), 112, 260);
   return { font, slot };
@@ -80,9 +86,9 @@ export default function TimeSlotTape({
   buttonLabel = 'Book {time}',
   buttonLink = '#book',
   noTimesLabel = 'No times left today',
-  tapeColor = '#F3D98B',
-  inkColor = '#1C2B4B',
-  deskColor = '#F6F0E3',
+  tapeColor = '#1A1D23',
+  inkColor = '#E6E9EE',
+  deskColor = '#121419',
   ariaLabel = 'Appointment time',
   className,
 }: TimeSlotTapeProps) {
@@ -101,7 +107,7 @@ export default function TimeSlotTape({
   const [inView, setInView] = useState(true);
 
   const rootRef = useRef<HTMLElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLSpanElement>(null);
   const slotEls = useRef<(HTMLDivElement | null)[]>([]);
   const motion = useRef({ p: restIndex, v: 0, target: restIndex, armed: false, centre: restIndex });
@@ -117,8 +123,7 @@ export default function TimeSlotTape({
 
   const paint = useCallback(() => {
     const { p } = motion.current;
-    const track = trackRef.current;
-    if (track) track.style.transform = `translate3d(${(-(PAD + p + 0.5) * slotRef.current).toFixed(2)}px, 0, 0)`;
+    viewportRef.current?.style.setProperty('--tst-x', `${(-(PAD + p + 0.5) * slotRef.current).toFixed(2)}px`);
     slotEls.current.forEach((el, i) => {
       if (!el) return;
       const d = Math.abs(i - p);
@@ -306,6 +311,7 @@ export default function TimeSlotTape({
     '--tst-slot': `${slot}px`,
     '--tst-num-size': `${font}px`,
     '--tst-pad': `${PAD * slot}px`,
+    '--tst-count': count,
     '--tst-play': inView && !dragging ? 'running' : 'paused',
   } as CSSProperties;
 
@@ -323,21 +329,19 @@ export default function TimeSlotTape({
 
   return (
     <section ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle} aria-label={ariaLabel}>
-      <span className={styles.light} aria-hidden="true" />
-      <span className={styles.grain} aria-hidden="true" />
-
       <div className={styles.inner}>
         {(eyebrow || heading || countText) && (
           <header className={styles.header}>
             <div className={styles.titles}>
-              {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
               {heading && <h3 className={styles.heading}>{heading}</h3>}
+              {eyebrow && <p className={styles.detail}>{eyebrow}</p>}
             </div>
             {count > 0 && countText && <p className={styles.count}>{countText}</p>}
           </header>
         )}
 
         <div
+          ref={viewportRef}
           className={dragging ? `${styles.viewport} ${styles.grabbing}` : styles.viewport}
           role="slider"
           aria-description={TAPE_HELP}
@@ -354,9 +358,14 @@ export default function TimeSlotTape({
           onPointerMove={onPointerMove}
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
+          style={{ '--tst-x': `${-(PAD + restIndex + 0.5) * slot}px` } as CSSProperties}
         >
-          <div ref={trackRef} className={styles.tape} style={{ transform: `translate3d(${-(PAD + restIndex + 0.5) * slot}px, 0, 0)` }}>
+          <span className={styles.rail} aria-hidden="true" />
+          <span className={styles.ticks} aria-hidden="true" />
+          <span className={styles.lens} aria-hidden="true" />
+          <div className={styles.tape}>
             {slots.map((s, i) => {
+              const { start, end } = splitRange(s.time);
               const near = smooth(clamp(1 - Math.abs(i - restIndex), 0, 1));
               return (
                 <div
@@ -369,13 +378,13 @@ export default function TimeSlotTape({
                   style={{ '--near': near, '--far': clamp(Math.abs(i - restIndex) / 3, 0, 1) } as CSSProperties}
                   aria-hidden="true"
                 >
-                  <span className={s.booked ? `${styles.numeral} ${styles.numeralBooked}` : styles.numeral}>{s.time}</span>
+                  <span className={s.booked ? `${styles.numeral} ${styles.numeralBooked}` : styles.numeral}>{start}</span>
+                  {end && <span className={styles.rangeEnd}>{end}</span>}
                   {s.booked && bookedLabel && <span className={styles.caption}>{bookedLabel}</span>}
                 </div>
               );
             })}
           </div>
-          <span className={styles.sheen} aria-hidden="true" />
           <span className={styles.pin} aria-hidden="true">
             <span className={styles.needle} />
             <span ref={pinRef} className={styles.pinHead} />

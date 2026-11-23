@@ -8,7 +8,8 @@ const stage: CSSProperties = {
   background:
     'radial-gradient(80% 60% at 70% 0%, #0b1a2e 0%, transparent 60%), radial-gradient(60% 50% at 0% 100%, #062320 0%, transparent 60%), #01040a',
   color: '#f5f2eb',
-  fontFamily: "'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif",
+  fontFamily:
+    "'Wix Madefor Display', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif",
   display: 'flex',
   flexDirection: 'column',
   gap: 'clamp(24px, 3vw, 40px)',

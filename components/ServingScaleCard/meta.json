@@ -7,13 +7,13 @@
   "job": "A recipe or kit card with a servings stepper where every ingredient quantity rolls to the new amount in real time, so the card does the arithmetic for the visitor",
   "visitor_action": "tap plus or minus; when the servings number is focused, arrow keys step servings (Page Up/Down by 5, Home/End to the limits)",
   "owner_settings": [
-    "Title and small heading",
+    "Title and subtitle",
     "Photo",
     "Base servings",
     "Ingredients (name, amount and unit)",
     "Method note",
     "Section labels (servings, ingredients, method)",
-    "Accent, rim and card colors"
+    "Accent, panel and background colors"
   ],
   "site_types": [
     "restaurant",
@@ -21,8 +21,8 @@
     "store",
     "events"
   ],
-  "mobile": "full-width card, photo on top, wide 56px stepper buttons spread across the card",
-  "motion": "amounts roll vertically digit by digit with a staggered spring, changed amounts get a brief tomato highlight, stepper presses with spring (reduced-motion: numbers swap instantly)",
+  "mobile": "photo stage on top with the giant servings numeral and a drag dial between 48px plus/minus buttons, basil panel below; ingredient grid narrows its columns",
+  "motion": "on each change: the tick dial springs to the new value (drag it directly), the giant numeral rolls like an odometer with a vertical motion-blur smear, the factor chip pops, ingredient amounts roll in a staggered cascade with a tomato underline sweep, and the photo gives a small push-in (reduced-motion: numbers and dial swap instantly, no smear or push)",
   "scores": {
     "concept": 2,
     "usefulness": 3,
@@ -31,10 +31,10 @@
   },
   "checks": {
     "tsc": "pass",
-    "render": "pass (1 fix: photo/copy mismatch, worst-case column alignment, 375 stepper layout)",
-    "craft": "pass (3, after 1 polish pass)"
+    "render": "pass (fixes: ingredient row placement, hero position in worst case, numeral clipping)",
+    "craft": "advisory 3, pending orchestrator review"
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Pantry enamel: cream enamel card, cobalt rim stripe, flat tomato-red stepper, speckle texture (gloss dropped per contemporary-polish rule)"
+  "art_direction": "Basil: dark ground, full-bleed food photo with a huge white servings numeral as the hero, a deep basil-green panel with white type and a tabular ingredient grid, tomato accent on the dial needle and factor chip, sans throughout"
 }

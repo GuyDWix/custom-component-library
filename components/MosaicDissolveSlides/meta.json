@@ -1,0 +1,37 @@
+{
+  "id": "c014",
+  "name": "MosaicDissolveSlides",
+  "display_name": "Mosaic Dissolve Slides",
+  "category": "media",
+  "tier": "showpiece",
+  "job": "Move between slides by flipping a grid of small tiles from one image to the next in a ripple that starts where the visitor clicked",
+  "visitor_action": "click arrows or the image; swipe on touch; a quiet pause control stops auto-advance",
+  "owner_settings": [
+    "Images (image, caption)",
+    "Tile size",
+    "Auto-advance on/off",
+    "Speed (seconds per slide)"
+  ],
+  "site_types": [
+    "portfolio",
+    "store",
+    "events",
+    "business"
+  ],
+  "mobile": "larger tiles, swipe advances",
+  "motion": "tiles flip in a radial wave from the click point with ease-out, a specular glint and a small lift; a slow glint keeps the surface alive (reduced-motion: instant crossfade, no auto-advance until played)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 2,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped (builder instruction 2026-11-23)",
+    "craft": "skipped (builder instruction 2026-11-23)"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Tile showroom: crisp square tiles with thin warm-grey grout lines, glossy flip highlights, neutral frame"
+}

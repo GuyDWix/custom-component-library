@@ -1,0 +1,39 @@
+{
+  "id": "c074",
+  "name": "CustomerDotsWaffle",
+  "display_name": "Customer Dots Waffle",
+  "category": "data",
+  "tier": "showpiece",
+  "job": "Make a percentage believable by showing a hundred tiny people; a stream of dots flies in and settles into a grid, with the right share lighting up, such as 92 of 100 customers come back",
+  "visitor_action": "hover or tap a dot group to see its label; none required",
+  "owner_settings": [
+    "Percentage",
+    "Statement under the grid",
+    "Highlighted group label",
+    "Other group label",
+    "Highlight color"
+  ],
+  "site_types": [
+    "business",
+    "services",
+    "restaurant",
+    "store",
+    "portfolio"
+  ],
+  "mobile": "10 by 10 grid fits the width, dots settle faster",
+  "motion": "dots fly in with spring settle, highlighted ones pulse once in a wave (reduced-motion: grid shown settled and lit)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "deferred-to-QA",
+    "craft": "deferred-to-QA"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Clinic mint: chalky white ground, soft slate dots, one saturated coral highlight, matte ceramic feel with a faint paper grain"
+}

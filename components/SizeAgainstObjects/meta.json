@@ -7,7 +7,7 @@
   "job": "Show a product's real size as clean outlines beside everyday objects (hand, mug, phone) drawn to scale from its dimensions, with a toggle to swap the comparison object, so shoppers grasp size without reading centimetres",
   "visitor_action": "tap an object chip to change the comparison (arrow keys move between chips); hover or focus the product or object to see exact dimensions",
   "owner_settings": [
-    "Product photo",
+    "Product photo (white background works best)",
     "Product name",
     "Width and height",
     "Comparison objects (choose up to 4 from hand, mug, phone, bank card, can, A4 sheet, each with its label)",
@@ -20,8 +20,8 @@
     "restaurant",
     "services"
   ],
-  "mobile": "product and object sit on one mat below the title, chips in one row that swipes sideways",
-  "motion": "product rises in, red measure arrow grows, the comparison object slides in and settles with a soft spring while its chalk outline draws itself; switching objects re-draws and resizes everything to the new scale (reduced-motion: everything shown instantly)",
+  "mobile": "readout stacks above the drawing, plot fills the width, segmented control scrolls sideways with an edge fade",
+  "motion": "ruler wipes in along the baseline, product drops onto it as its contact shadow settles, the comparison object's construction box appears then its outline traces, details and hatching follow, dimension lines grow from their centres and the size numbers count up; switching objects fades the old drawing, springs the scale (ruler ticks re-scale, product lifts slightly and lands) and the segmented thumb slides (reduced-motion: static, scale snaps)",
   "scores": {
     "concept": 3,
     "usefulness": 3,
@@ -30,10 +30,10 @@
   },
   "checks": {
     "tsc": "pass",
-    "render": "pass (1 fix: chalk outlines were cut short by non-scaling stroke + dash draw; entrance fill-mode broke the photo blend)",
-    "craft": "pass (3, after 1 polish pass: no layout jump on first measure, photo backdrop blends into the mat, chip list as full-width rows on wide)"
+    "render": "pass (fixes: matte filter region made an opaque box; narrow readout overlapped the plot; product reflection read as a pale column, removed)",
+    "craft": "pass (4 after 1 polish round: worst-case labels capped, stronger contact shadow, spring morph verified)"
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Pattern table: pale kraft cutting mat with fine grid, white chalk-line outlines, one tomato-red measure arrow, matte"
+  "art_direction": "Product lab: cool pale grey-blue ground with fine blueprint grid, photo product with real contact shadow, graphite technical line drawings with hatching, safety-orange architectural dimension lines, large sans tabular-numeral readout"
 }

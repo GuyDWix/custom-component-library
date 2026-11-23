@@ -17,8 +17,8 @@
     "portfolio",
     "restaurant"
   ],
-  "mobile": "two rows of short strings, tap opens full width",
-  "motion": "pendulum sway with damping, photo detaches with spring and soft shadow (reduced-motion: still hung, instant open)",
+  "mobile": "short lines of two or three prints, tap opens full width",
+  "motion": "Verlet cord sags under each print's weight and travelling gust pulses ripple along it; prints swing as pendulums from the cord points with phase-lagged paper curl and hard noon shadows; on tap the spring-steel peg snaps open, the cord rebounds, and the print floats up backlit to a lightbox (reduced-motion: settled line, prints still hung, instant open)",
   "scores": {
     "concept": 3,
     "usefulness": 3,
@@ -27,10 +27,10 @@
   },
   "checks": {
     "tsc": "pass",
-    "render": "pass (1 fix: eager images, larger prints/full captions, line vertically balanced)",
-    "craft": "pass (3, after 1 polish pass: flat hairline pause/close controls replacing glass blur and heavy shadow)"
+    "render": "skipped (shot.sh disabled 2026-11-23, Guy: token saving)",
+    "craft": "skipped (shot.sh disabled 2026-11-23, Guy: token saving)"
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Washing line: sky-blue backdrop, jute string, bleached wooden pegs, white-bordered prints, gentle sunlight"
+  "art_direction": "Bright noon line: white-hot sky, a Verlet cord in full sun, spring-steel pegs with wire coils, backlit translucent prints with hand-scrawled captions and hard noon shadows"
 }

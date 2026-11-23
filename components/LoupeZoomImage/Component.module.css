@@ -1,0 +1,372 @@
+/* Jeweller's bench — linen, a polished brass loupe, ebony grip, a bleeding product print */
+
+@font-face {
+  font-family: 'Schibsted Grotesk';
+  src: url('./fonts/schibsted-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Schibsted Grotesk';
+  src: url('./fonts/schibsted-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+.root {
+  --lz-rim: #b08a3c;
+  --lz-size: 320px;
+  --lz-zoom: 2.6;
+  --lz-linen: #ebe5d7;
+  --lz-linen-deep: #ddd4c1;
+  --lz-ink: #261f14;
+  --lz-muted: #5a5242;
+  --lz-font-display: 'Schibsted Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --lz-font-ui: 'Schibsted Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --lz-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.38  0 0 0 0 0.3  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  container-type: inline-size;
+  box-sizing: border-box;
+  inline-size: 100%;
+  display: grid;
+  border-radius: 22px;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 3px, rgba(112, 98, 70, 0.05) 3px 4px),
+    repeating-linear-gradient(90deg, transparent 0 3px, rgba(112, 98, 70, 0.05) 3px 4px),
+    linear-gradient(180deg, var(--lz-linen) 0%, var(--lz-linen-deep) 100%);
+  color: var(--lz-ink);
+  font-family: var(--lz-font-ui);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--lz-ink) 10%, transparent),
+    0 30px 60px -34px rgba(52, 40, 18, 0.55);
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--lz-noise);
+  opacity: 0.16;
+  mix-blend-mode: multiply;
+}
+
+.stage {
+  position: relative;
+  z-index: 2;
+  outline: none;
+  user-select: none;
+  touch-action: pan-y pinch-zoom;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+.stage:focus-visible {
+  box-shadow: inset 0 0 0 3px var(--lz-linen), inset 0 0 0 5px var(--lz-rim);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stage {
+    cursor: none;
+  }
+}
+
+.frame {
+  --lz-tx: 0px;
+  --lz-ty: 0px;
+  --lz-scale: 0.94;
+  --lz-tilt: -9deg;
+  --lz-gx: 0px;
+  --lz-gy: 0px;
+  --lz-drag: 0px;
+  --lz-mx: 0px;
+  --lz-my: 0px;
+
+  position: relative;
+  min-block-size: 220px;
+  background: #cbc3b0;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--lz-rim) 45%, transparent);
+}
+
+.photo {
+  position: absolute;
+  inset: 0;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* ---------- the loupe ---------- */
+
+.lensShadow {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  z-index: 2;
+  inline-size: calc(var(--lz-size) * 0.98);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(closest-side, rgba(36, 26, 8, 0.5) 0%, rgba(36, 26, 8, 0.22) 66%, transparent 100%);
+  filter: blur(13px);
+  transform:
+    translate3d(calc(var(--lz-tx) + var(--lz-drag)), calc(var(--lz-ty) + var(--lz-size) * 0.07), 0)
+    translate(-50%, -50%)
+    scale(var(--lz-scale));
+}
+
+.lens {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  z-index: 3;
+  inline-size: var(--lz-size);
+  aspect-ratio: 1;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform;
+  filter: drop-shadow(0 3px 3px rgba(30, 22, 6, 0.4));
+  transform:
+    translate3d(var(--lz-tx), var(--lz-ty), 0)
+    translate(-50%, -50%)
+    rotate(var(--lz-tilt))
+    scale(var(--lz-scale));
+}
+
+/* handle: brass ferrule, ebony grip with a turned rib pattern, brass end cap */
+.handle {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: calc(50% - var(--lz-size) * 0.07);
+  inline-size: calc(var(--lz-size) * 0.14);
+  block-size: calc(var(--lz-size) * 1.2);
+  transform-origin: 50% 0;
+  /* mirrored toward the side of the frame with room (--lz-hx/--lz-hy) and shortened to fit (--lz-hk) */
+  transform: scale(var(--lz-hx, 1), var(--lz-hy, 1)) rotate(-45deg) scale(1, var(--lz-hk, 1));
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .handle {
+    transition: none;
+  }
+}
+
+.ferrule {
+  position: absolute;
+  inset-block-start: calc(var(--lz-size) * 0.4);
+  inset-inline: 0;
+  block-size: calc(var(--lz-size) * 0.24);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--lz-rim), #000 58%) 0%,
+    color-mix(in srgb, var(--lz-rim), #fff 52%) 26%,
+    color-mix(in srgb, var(--lz-rim), #000 8%) 54%,
+    color-mix(in srgb, var(--lz-rim), #000 62%) 100%
+  );
+  clip-path: polygon(24% 0, 76% 0, 100% 100%, 0 100%);
+}
+
+.grip {
+  position: absolute;
+  inset-block-start: calc(var(--lz-size) * 0.6);
+  inset-inline: 9%;
+  block-size: calc(var(--lz-size) * 0.5);
+  background:
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0 2px, transparent 2px calc(var(--lz-size) * 0.055)),
+    linear-gradient(90deg, #070504 0%, #4b3b2b 26%, #1b140d 56%, #060403 100%);
+  clip-path: polygon(0 0, 100% 0, 112% 100%, -12% 100%);
+}
+
+.cap {
+  position: absolute;
+  inset-block-start: calc(var(--lz-size) * 1.07);
+  inset-inline: -7%;
+  block-size: calc(var(--lz-size) * 0.12);
+  border-radius: 45% 45% 50% 50%;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--lz-rim), #000 58%) 0%,
+    color-mix(in srgb, var(--lz-rim), #fff 56%) 30%,
+    color-mix(in srgb, var(--lz-rim), #000 12%) 62%,
+    color-mix(in srgb, var(--lz-rim), #000 60%) 100%
+  );
+}
+
+/* the thick polished brass rim */
+.rim {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 210deg,
+    color-mix(in srgb, var(--lz-rim), #fff 62%) 0%,
+    color-mix(in srgb, var(--lz-rim), #000 14%) 12%,
+    color-mix(in srgb, var(--lz-rim), #fff 34%) 26%,
+    color-mix(in srgb, var(--lz-rim), #000 42%) 45%,
+    color-mix(in srgb, var(--lz-rim), #fff 66%) 60%,
+    color-mix(in srgb, var(--lz-rim), #fff 6%) 74%,
+    color-mix(in srgb, var(--lz-rim), #000 22%) 86%,
+    color-mix(in srgb, var(--lz-rim), #fff 62%) 100%
+  );
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--lz-rim), #000 62%),
+    inset 0 2px 1px color-mix(in srgb, var(--lz-rim), #fff 74%),
+    inset 0 -3px 5px color-mix(in srgb, var(--lz-rim), #000 52%);
+}
+
+/* inner stepped bezel, catches light opposite the outer edge */
+.bezel {
+  position: absolute;
+  inset: calc(var(--lz-size) * 0.052);
+  border-radius: 50%;
+  background: conic-gradient(
+    from 30deg,
+    color-mix(in srgb, var(--lz-rim), #000 52%),
+    color-mix(in srgb, var(--lz-rim), #fff 40%),
+    color-mix(in srgb, var(--lz-rim), #000 40%),
+    color-mix(in srgb, var(--lz-rim), #fff 30%),
+    color-mix(in srgb, var(--lz-rim), #000 52%)
+  );
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--lz-rim), #000 66%);
+}
+
+.view {
+  position: absolute;
+  inset: calc(var(--lz-size) * 0.082);
+  border-radius: 50%;
+  overflow: hidden;
+  background: #211b10;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--lz-rim), #000 62%),
+    inset 0 3px 10px rgba(24, 18, 6, 0.55);
+}
+
+.lensImage {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: calc(var(--lz-zoom) * 100%);
+  block-size: calc(var(--lz-zoom) * 100%);
+  max-inline-size: none;
+  object-fit: cover;
+  user-select: none;
+  will-change: transform;
+  transform: translate3d(var(--lz-mx), var(--lz-my), 0);
+}
+
+/* thick-glass edge: darkens and bends toward the rim */
+.depth {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(closest-side, transparent 66%, rgba(20, 14, 4, 0.18) 88%, rgba(20, 14, 4, 0.5) 100%);
+}
+
+/* chromatic fringe: red and blue dispersion at the glass edge */
+.fringe {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow:
+    inset 4px 0 7px rgba(255, 52, 52, 0.55),
+    inset -4px 0 7px rgba(52, 118, 255, 0.6),
+    inset 0 4px 7px rgba(90, 255, 170, 0.22),
+    inset 0 -4px 7px rgba(255, 70, 200, 0.2);
+  mix-blend-mode: screen;
+  opacity: 0.8;
+}
+
+/* curved glare: a crescent hugging the upper-left of the glass, drifting with velocity */
+.curved {
+  position: absolute;
+  inset: 3%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: linear-gradient(142deg, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0.2) 38%, transparent 56%);
+  -webkit-mask-image: radial-gradient(ellipse 54% 54% at 60% 62%, transparent 95%, #000 100%);
+  mask-image: radial-gradient(ellipse 54% 54% at 60% 62%, transparent 95%, #000 100%);
+  transform: translate3d(var(--lz-gx), var(--lz-gy), 0);
+  mix-blend-mode: screen;
+}
+
+.glint {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(5% 4.5% at 70% 12%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.25) 50%, transparent 78%),
+    radial-gradient(22% 9% at 30% 90%, rgba(255, 255, 255, 0.2) 0%, transparent 100%),
+    linear-gradient(210deg, rgba(255, 255, 255, 0.1) 0%, transparent 34%);
+  transform: translate3d(var(--lz-gx), var(--lz-gy), 0);
+  mix-blend-mode: screen;
+}
+
+/* ---------- caption ---------- */
+
+.caption {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: clamp(18px, 3.4cqi, 34px) clamp(20px, 4cqi, 40px) clamp(20px, 3.6cqi, 36px);
+}
+
+.captionText {
+  min-inline-size: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.captionTitle {
+  margin: 0;
+  font-family: var(--lz-font-display);
+  font-size: clamp(20px, 3.3cqi, 30px);
+  font-weight: 700;
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+  color: var(--lz-ink);
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.captionDetail {
+  margin: 0;
+  max-inline-size: 52ch;
+  font-size: clamp(14px, 1.9cqi, 16px);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--lz-muted);
+  overflow-wrap: anywhere;
+}
+
+.mag {
+  flex: none;
+  padding: 4px 12px;
+  border: 1px solid color-mix(in srgb, var(--lz-rim) 70%, transparent);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--lz-rim), #000 52%);
+  white-space: nowrap;
+}
+
+.captionTitle::selection,
+.captionDetail::selection {
+  background: color-mix(in srgb, var(--lz-rim) 30%, transparent);
+}

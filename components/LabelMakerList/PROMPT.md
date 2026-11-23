@@ -1,0 +1,364 @@
+Create a custom element called "Label Maker List". Build it exactly as this React reference (same look, behavior and defaults).
+
+The site owner must be able to change: labels (text), tape color, text style, strips per row. Add other settings if they help.
+
+```tsx
+import { useEffect, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
+import styles from './Component.module.css';
+
+export type LabelTextStyle = 'raised' | 'printed';
+
+export interface LabelMakerListProps {
+  labels?: string[];
+  tapeColor?: string;
+  textStyle?: LabelTextStyle;
+  stripsPerRow?: number;
+  className?: string;
+}
+
+export const defaultLabels: string[] = [
+  'Key cutting',
+  'Frame restoration',
+  'Passport photos',
+  'Knife sharpening',
+  'Watch batteries',
+  'Engraving',
+];
+
+const COLUMN_GAP = 20;
+const CREAM = '#f3ecd8';
+
+const isLightTape = (color: string): boolean => {
+  const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color.trim());
+  if (!match) return false;
+  const raw = match[1].length === 3 ? match[1].split('').map((c) => c + c).join('') : match[1];
+  const r = parseInt(raw.slice(0, 2), 16);
+  const g = parseInt(raw.slice(2, 4), 16);
+  const b = parseInt(raw.slice(4, 6), 16);
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.6;
+};
+
+const stripVars = (index: number, tape: string, textStyle: LabelTextStyle, perRow: number): CSSProperties =>
+  ({
+    '--tape': tape,
+    '--ink-on-tape': isLightTape(tape) ? '#2b2115' : '#f8fafc',
+    '--emboss':
+      textStyle === 'printed'
+        ? 'none'
+        : isLightTape(tape)
+          ? '0 1px 0 rgba(255, 255, 255, 0.5), 0 2px 6px rgba(46, 34, 20, 0.3)'
+          : '0 -1px 0 rgba(5, 8, 20, 0.16), 0 1px 1px rgba(5, 8, 20, 0.42), 0 3px 7px rgba(5, 8, 20, 0.32)',
+    '--tilt': `${index % 2 === 0 ? -0.5 : 0.45}deg`,
+    '--i': `${index}`,
+    '--max-w': `calc((100% - ${(perRow - 1) * COLUMN_GAP}px) / ${perRow})`,
+  }) as CSSProperties;
+
+export default function LabelMakerList({
+  labels = defaultLabels,
+  tapeColor = '#2547d8',
+  textStyle = 'raised',
+  stripsPerRow = 3,
+  className,
+}: LabelMakerListProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+  const perRow = Math.min(6, Math.max(1, Math.round(stripsPerRow)));
+  const items = labels.map((label) => label.trim()).filter(Boolean);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.2 },
+    );
+    io.observe(root);
+    return () => io.disconnect();
+  }, []);
+
+  const rootVars = {
+    '--lm-tape': tapeColor,
+    '--lm-ls': textStyle === 'printed' ? '0.05em' : '0.09em',
+    '--lm-fw': textStyle === 'printed' ? '600' : '700',
+  } as CSSProperties;
+
+  return (
+    <div
+      ref={rootRef}
+      className={[styles.root, className].filter(Boolean).join(' ')}
+      style={rootVars}
+    >
+      <span className={styles.holes} aria-hidden="true" />
+      <span className={styles.grain} aria-hidden="true" />
+
+      {items.length > 0 && (
+        <ul className={styles.list} aria-label="Labels">
+          {items.map((text, i) => (
+            <li
+              key={i}
+              className={[styles.strip, inView ? styles.stripRun : ''].filter(Boolean).join(' ')}
+              style={stripVars(i, i % 2 === 0 ? tapeColor : CREAM, textStyle, perRow)}
+            >
+              <div className={[styles.tilt, inView ? styles.tiltRun : ''].filter(Boolean).join(' ')}>
+                <span className={styles.text}>{text}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+```
+
+```css
+.root {
+  --lm-tape: #2547d8;
+  --lm-ground: #a0a5ac;
+  --lm-ground-deep: #878d95;
+  --lm-ink: #262a31;
+  --lm-font: 'Helvetica Neue', 'Inter Tight', 'Inter', 'Segoe UI', system-ui, Arial, sans-serif;
+  --lm-ls: 0.09em;
+  --lm-fw: 700;
+  --lm-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  container-type: inline-size;
+  box-sizing: border-box;
+  inline-size: 100%;
+  padding: clamp(44px, 9cqi, 80px) clamp(22px, 6cqi, 64px);
+  border-radius: 28px;
+  background:
+    radial-gradient(140% 110% at 50% -12%, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 55%),
+    linear-gradient(180deg, var(--lm-ground) 0%, var(--lm-ground-deep) 100%);
+  color: var(--lm-ink);
+  font-family: var(--lm-font);
+}
+
+.holes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(
+    circle at 50% 50%,
+    rgba(38, 42, 49, 0.16) 0 1.7px,
+    rgba(255, 255, 255, 0.06) 2.4px,
+    rgba(255, 255, 255, 0) 3.4px
+  );
+  background-size: 30px 30px;
+  opacity: 0.75;
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--lm-noise);
+  opacity: 0.3;
+  mix-blend-mode: overlay;
+}
+
+.list {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.strip {
+  position: relative;
+  perspective: 700px;
+  max-inline-size: var(--max-w, 100%);
+}
+
+.strip:hover {
+  z-index: 3;
+}
+
+.stripRun {
+  animation: lmFeed 780ms both;
+  animation-delay: calc(140ms + var(--i, 0) * 130ms);
+}
+
+@keyframes lmFeed {
+  0% {
+    opacity: 0;
+    transform: translateX(-54px);
+    animation-timing-function: cubic-bezier(0.2, 0.6, 0.35, 1);
+  }
+  32% {
+    opacity: 1;
+  }
+  58% {
+    transform: translateX(6px);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+  }
+  80% {
+    transform: translateX(-2px);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.tilt {
+  position: relative;
+  box-sizing: border-box;
+  inline-size: 100%;
+  padding: 12px 32px 13px 24px;
+  border-radius: 4px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--tape, #2547d8) 62%, #fff) 0%,
+    color-mix(in srgb, var(--tape, #2547d8) 88%, #fff) 8%,
+    var(--tape, #2547d8) 30%,
+    color-mix(in srgb, var(--tape, #2547d8) 92%, #000) 86%,
+    color-mix(in srgb, var(--tape, #2547d8) 66%, #000) 100%
+  );
+  transform: rotate(var(--tilt, 0deg));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 2px 5px rgba(23, 27, 36, 0.24),
+    0 18px 30px -16px rgba(23, 27, 36, 0.55);
+  transition:
+    transform 520ms cubic-bezier(0.34, 1.45, 0.5, 1),
+    box-shadow 420ms ease;
+}
+
+.tilt:hover {
+  transform: rotate(calc(var(--tilt, 0deg) * -1.5)) translateY(-7px) rotateX(8deg) scale(1.02);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 6px 12px -6px rgba(23, 27, 36, 0.3),
+    0 30px 48px -20px rgba(23, 27, 36, 0.62);
+}
+
+.tilt::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      102deg,
+      rgba(255, 255, 255, 0) 34%,
+      rgba(255, 255, 255, 0.16) 45%,
+      rgba(255, 255, 255, 0.42) 49%,
+      rgba(255, 255, 255, 0.12) 53%,
+      rgba(255, 255, 255, 0) 68%
+    ),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 1px, rgba(255, 255, 255, 0) 1px 3px);
+  background-size: 240% 100%, 100% 100%;
+  background-position: 16% 0, 0 0;
+  transition: background-position 560ms ease;
+}
+
+.tilt:hover::before {
+  background-position: 74% 0, 0 0;
+}
+
+.tilt::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: 12px;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--tape, #2547d8) 50%, #000) 0%,
+    color-mix(in srgb, var(--tape, #2547d8) 30%, #000) 65%,
+    rgba(10, 12, 20, 0.6) 100%
+  );
+  box-shadow: -4px 2px 9px -3px rgba(20, 24, 34, 0.5);
+  transform-origin: left center;
+  transform: perspective(150px) rotateY(-40deg);
+}
+
+.tiltRun::after {
+  animation: lmCurl 500ms cubic-bezier(0.34, 1.35, 0.5, 1) both;
+  animation-delay: calc(140ms + var(--i, 0) * 130ms + 540ms);
+}
+
+@keyframes lmCurl {
+  0% {
+    transform: perspective(150px) rotateY(0deg);
+  }
+  62% {
+    transform: perspective(150px) rotateY(-50deg);
+  }
+  100% {
+    transform: perspective(150px) rotateY(-40deg);
+  }
+}
+
+.text {
+  position: relative;
+  display: block;
+  font-size: clamp(15px, 3cqi, 22px);
+  font-weight: var(--lm-fw, 700);
+  line-height: 1.15;
+  letter-spacing: var(--lm-ls, 0.09em);
+  text-transform: uppercase;
+  font-stretch: 90%;
+  color: var(--ink-on-tape, #f8fafc);
+  text-shadow: var(--emboss, none);
+  overflow-wrap: anywhere;
+}
+
+.text::selection {
+  background: color-mix(in srgb, var(--lm-tape, #2547d8) 62%, #000);
+  color: #fff;
+}
+
+@container (max-width: 540px) {
+  .list {
+    gap: 14px;
+  }
+
+  .strip {
+    max-inline-size: 100%;
+  }
+
+  .tilt {
+    padding: 13px 32px 14px 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stripRun {
+    animation: none;
+  }
+
+  .tiltRun::after {
+    animation: none;
+  }
+
+  .tilt {
+    transition: none;
+  }
+
+  .tilt:hover {
+    transform: rotate(var(--tilt, 0deg));
+  }
+
+  .tilt::before {
+    transition: none;
+  }
+}
+```

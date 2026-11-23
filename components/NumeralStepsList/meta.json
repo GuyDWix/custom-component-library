@@ -1,0 +1,39 @@
+{
+  "id": "c039",
+  "name": "NumeralStepsList",
+  "display_name": "Numeral Steps List",
+  "category": "text",
+  "tier": "everyday",
+  "job": "Explain a process as large outlined numerals that fill solid and bring their step text forward one at a time as the visitor reads down",
+  "visitor_action": "scroll through it; click a numeral to jump to that step",
+  "owner_settings": [
+    "Heading",
+    "Steps (title and text)",
+    "Numeral color",
+    "Text color",
+    "Show connecting line"
+  ],
+  "site_types": [
+    "services",
+    "business",
+    "store",
+    "events",
+    "restaurant"
+  ],
+  "mobile": "numerals shrink beside the text (same two-column sequence), thread runs straight down the left",
+  "art_direction": "Wet ink on stone: oversized Bodoni Moda numerals (~42% of the frame width each) zigzag down the stage as matte aubergine ink vessels, each hosting its text beside it; a liquid thread swings from numeral to numeral. The ink rises with a meniscus and sloshing surface, cures flat, then extrudes toward the reader with 3D tilt and one restrained glint band. Soft stone stage, quiet Hanken Grotesk.",
+  "motion": "Thread draws from one numeral across the frame to the next with a droplet on its head and splashes into it; the numeral fills with spring-driven wet ink (meniscus, scroll-inertia slosh, ripple); on full it cures matte and thuds out in 3D (10-slice extrusion, overshoot, tilt, glint sweep) while its text rises in beside it. Reduced-motion: all cured, slightly extruded, thread drawn, text shown.",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped (no screenshots, 2026-11-23 redo; runtime sanity via CDP only)",
+    "craft": "skipped (token-saving directive, 2026-11-23)"
+  },
+  "status": "built",
+  "studio2_tested": false
+}

@@ -1,0 +1,36 @@
+{
+  "id": "c006",
+  "name": "InkSwatchProduct",
+  "display_name": "Ink Swatch Product",
+  "category": "media",
+  "tier": "everyday",
+  "job": "Switch a product photo between colour variants with the new colour bleeding outward from the tapped swatch like ink in water",
+  "visitor_action": "click/tap a swatch; arrow keys cycle",
+  "owner_settings": [
+    "Product title",
+    "Colour variants (image, colour name, swatch colour)",
+    "Default variant",
+    "Swatch shape (circle or square)"
+  ],
+  "site_types": [
+    "store",
+    "business",
+    "portfolio"
+  ],
+  "mobile": "swatches below the image, thumb-sized",
+  "motion": "ink front springs out of the tapped swatch (organic noise-fingered edge, pigment veins running ahead, wet rim + shine, colour wash that relaxes behind the front); interruptible; reduced-motion: 150ms crossfade",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped (binding instruction, 2026-11-23)",
+    "craft": "skipped (binding instruction, 2026-11-23)"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Dye house: bone-white stage tinted by the active pigment, photo bleeding off the right edge with a stained wet edge, flat pigment swatches, heavy Bricolage display type"
+}

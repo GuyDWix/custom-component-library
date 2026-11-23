@@ -1,0 +1,40 @@
+{
+  "id": "c051",
+  "name": "CurtainRevealCard",
+  "display_name": "Curtain Reveal Card",
+  "category": "cards",
+  "tier": "everyday",
+  "job": "A service card whose stage curtains part on hover to reveal price, duration and what is included",
+  "visitor_action": "hover/focus or tap to open the curtains; tap again closes; Escape also closes",
+  "owner_settings": [
+    "Service name",
+    "Price",
+    "Duration",
+    "Details lines",
+    "Image",
+    "Curtain color",
+    "Open speed"
+  ],
+  "site_types": [
+    "services",
+    "events",
+    "business",
+    "portfolio"
+  ],
+  "mobile": "tap toggles curtains, details stay open once tapped",
+  "art_direction": "Full-bleed velvet theatre: wine-plum drapes edge to edge, half-drawn by default so the lit stage glows through the gap, brass-trimmed scalloped valance, large draggable brass tassel, footlights",
+  "motion": "drapes gather with eased overshoot and fold-shade shift, light floods the stage, price and details stagger in, tassel tugs; pulling the tassel down drags the drapes open; reduced-motion: drapes already open at the sides",
+  "scores": {
+    "concept": 2,
+    "usefulness": 2,
+    "uniqueness": 3,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped (render gate disabled, 2026-11-23)",
+    "craft": "skipped (craft gate disabled, 2026-11-23)"
+  },
+  "status": "built",
+  "studio2_tested": false
+}

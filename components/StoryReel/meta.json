@@ -1,0 +1,39 @@
+{
+  "id": "c020",
+  "name": "StoryReel",
+  "display_name": "Story Reel",
+  "category": "media",
+  "tier": "everyday",
+  "job": "Auto-advance a short sequence of photos with captions in a stories-style reel with segmented progress and tap zones",
+  "visitor_action": "tap right/left to move; press-and-hold to pause; keys work",
+  "owner_settings": [
+    "Slides (image, caption)",
+    "Seconds per slide",
+    "Progress colour",
+    "Start playing automatically",
+    "Repeat from the start"
+  ],
+  "site_types": [
+    "events",
+    "restaurant",
+    "store",
+    "blog",
+    "business"
+  ],
+  "mobile": "portrait ratio fills width, tap zones are large",
+  "motion": "progress segments fill linearly, slides crossfade with slight scale (reduced-motion: no auto-advance, manual only)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped",
+    "craft": "skipped"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Newsroom dusk: charcoal frame, coral progress bar, off-white captions on soft gradient scrim"
+}

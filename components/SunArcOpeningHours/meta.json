@@ -1,0 +1,40 @@
+{
+  "id": "c070",
+  "name": "SunArcOpeningHours",
+  "display_name": "Sun Arc Opening Hours",
+  "category": "data",
+  "tier": "showpiece",
+  "job": "Show weekly opening hours as a sun's arc across a sky that shifts from dawn to dusk, with the open stretch glowing and a live \"Open now, closes at 9pm\" badge",
+  "visitor_action": "tap or hover a weekday to see its arc; arrow keys switch days",
+  "owner_settings": [
+    "Hours per weekday (day, opens, closes)",
+    "Closed days",
+    "Open-now badge on/off",
+    "Sky tint",
+    "Time zone",
+    "12-hour or 24-hour clock",
+    "Title and badge wording"
+  ],
+  "site_types": [
+    "restaurant",
+    "business",
+    "store",
+    "services"
+  ],
+  "mobile": "arc fills the width, weekday chips below, swipe to change day",
+  "motion": "sun travels along the arc and settles on the current time with spring, sky colour eases between days (reduced-motion: sun parked at opening time, static sky)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "deferred-to-QA",
+    "craft": "deferred-to-QA"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Dawn lido: peach-to-periwinkle gradient sky, butter-yellow sun disc with soft bloom, deep indigo text, fine film grain"
+}

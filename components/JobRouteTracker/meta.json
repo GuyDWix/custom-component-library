@@ -1,0 +1,40 @@
+{
+  "id": "c084",
+  "name": "JobRouteTracker",
+  "display_name": "Job Route Tracker",
+  "category": "data",
+  "tier": "everyday",
+  "job": "Show the stages of an order, booking or project as a winding route with stops, where a small marker rides the line to the current stage and the next stage is labelled",
+  "visitor_action": "hover or tap a stop to read what happens there; arrow keys move between stops",
+  "owner_settings": [
+    "Title",
+    "Stages (name, short description)",
+    "Current stage",
+    "Marker icon",
+    "Route color",
+    "Status labels (you are here, next stop, done, coming up)"
+  ],
+  "site_types": [
+    "services",
+    "store",
+    "business",
+    "events",
+    "portfolio"
+  ],
+  "mobile": "route turns vertical, stops stack down the line",
+  "motion": "marker drops onto the first stop, then hops stop to stop along the winding route with squash and a ground shadow; pins stamp as it passes and the walked line turns solid while the route ahead stays dashed; on arrival the marker ripples, the next stop unfurls a flag, the readout rises and the compass needle swings and settles (reduced-motion: marker at current stop, route drawn, flag and readout in place)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "deferred-to-QA",
+    "craft": "deferred-to-QA"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Trail map: soft stone paper, forest-green dashed route, mustard stop pins, small hand-drawn compass mark"
+}

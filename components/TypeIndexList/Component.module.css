@@ -1,0 +1,354 @@
+@property --slot-t {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --slot-b {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@font-face {
+  font-family: 'Big Shoulders Display';
+  src: url('./fonts/big-shoulders-display-latin-800-normal.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('./fonts/inter-latin-500-normal.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('./fonts/inter-latin-600-normal.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+.root {
+  --ti-ink: #23262b;
+  --ti-accent: #1f45d3;
+  --ti-stroke: 1.5px;
+  --ti-paper: #f4f5f7;
+  --ti-ground-hi: #f0f1f3;
+  --ti-ground: #e7e9ed;
+  --ti-hair: color-mix(in srgb, var(--ti-ink) 17%, transparent);
+  --ti-muted: color-mix(in srgb, var(--ti-ink) 74%, transparent);
+  --ti-font-display: 'Big Shoulders Display', 'Avenir Next Condensed', 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
+  --ti-font-ui: 'Inter', 'Helvetica Neue', Arial, system-ui, sans-serif;
+  --ti-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.14  0 0 0 0 0.15  0 0 0 0 0.17  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --px: 0;
+  --py: 0;
+
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  container-type: inline-size;
+  box-sizing: border-box;
+  inline-size: 100%;
+  background: linear-gradient(180deg, var(--ti-ground-hi) 0%, var(--ti-ground) 100%);
+  color: var(--ti-ink);
+  font-family: var(--ti-font-ui);
+}
+
+.root ::selection {
+  background: var(--ti-accent);
+  color: #fff;
+}
+
+.inner {
+  --ti-pad-x: clamp(20px, 4.5cqi, 56px);
+  position: relative;
+  box-sizing: border-box;
+  padding-block: clamp(28px, 5cqi, 64px);
+  padding-inline: var(--ti-pad-x);
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background-image: var(--ti-noise);
+  opacity: 0.4;
+  mix-blend-mode: multiply;
+}
+
+.field {
+  position: relative;
+}
+
+/* ---- the slot: a cobalt-inked print seen through the active row ---- */
+
+.stage {
+  position: absolute;
+  inset-block: 0;
+  inset-inline: calc(var(--ti-pad-x) * -1);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  filter: drop-shadow(0 8px 26px color-mix(in srgb, var(--ti-accent) 42%, transparent));
+}
+
+.stageOn {
+  opacity: 1;
+}
+
+.stageLive {
+  transition: opacity 480ms ease;
+}
+
+/* Squeegee: the leading edge of the slot lands first, the trailing edge drags behind. */
+.stageLive.down {
+  transition:
+    opacity 480ms ease,
+    --slot-b 620ms cubic-bezier(0.16, 1, 0.3, 1),
+    --slot-t 780ms cubic-bezier(0.65, 0, 0.35, 1) 60ms;
+}
+
+.stageLive.up {
+  transition:
+    opacity 480ms ease,
+    --slot-t 620ms cubic-bezier(0.16, 1, 0.3, 1),
+    --slot-b 780ms cubic-bezier(0.65, 0, 0.35, 1) 60ms;
+}
+
+.window {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  overflow: hidden;
+  background: #0a1233;
+  clip-path: inset(var(--slot-t) 0 var(--slot-b) 0);
+}
+
+.pan {
+  position: absolute;
+  inset: 0;
+  transform: translate3d(calc(var(--px) * -1.8%), calc(var(--py) * -2.5%), 0) scale(1.1);
+  transition: transform 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  opacity: 0;
+  transform: scale(1.07);
+  transition:
+    opacity 640ms ease,
+    transform 1100ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.layerOn {
+  opacity: 1;
+  transform: scale(1);
+  transition-duration: 460ms, 1100ms;
+}
+
+.photo {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.08) brightness(1.12);
+  user-select: none;
+}
+
+.blank {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  background: repeating-linear-gradient(
+    135deg,
+    #ffffff 0 9px,
+    #c9ceda 9px 10px
+  );
+}
+
+/* Ink: white paper becomes cobalt, shadows stay deep, so one ink prints the whole picture. */
+.tint {
+  position: absolute;
+  inset: 0;
+  background: var(--ti-accent);
+  mix-blend-mode: multiply;
+}
+
+/* ---- the index ---- */
+
+.list {
+  position: relative;
+  z-index: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  border-block-start: 1px solid var(--ti-hair);
+}
+
+.item {
+  display: grid;
+}
+
+.row {
+  position: relative;
+  display: block;
+  /* top/bottom padding leave glyph headroom: the active band's bleed (up to 20px) never reaches neighbouring glyphs */
+  padding-block: clamp(26px, 3cqi, 36px) clamp(18px, 2cqi, 24px);
+  border-block-end: 1px solid var(--ti-hair);
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.row:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -5px;
+  box-shadow: inset 0 0 0 2px var(--ti-ink);
+}
+
+.head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  column-gap: clamp(12px, 2cqi, 22px);
+  align-items: baseline;
+}
+
+.num {
+  font-family: var(--ti-font-ui);
+  font-size: clamp(12px, 1.3cqi, 14px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  color: var(--ti-muted);
+  transition: color 320ms ease 120ms;
+}
+
+.numOn {
+  color: #fff;
+}
+
+.nameWrap {
+  position: relative;
+  display: block;
+  min-inline-size: 0;
+  transform-origin: 0 55%;
+  transform: perspective(1200px) rotateX(calc(var(--py) * -3deg))
+    rotateY(calc(var(--px) * 4.5deg)) skewX(calc(var(--px) * var(--d) * -1.5deg));
+  transition: transform 560ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.nameWrapOn {
+  transform: perspective(1200px) rotateX(calc(var(--py) * -2deg))
+    rotateY(calc(var(--px) * 2deg)) skewX(calc(var(--px) * -6deg));
+}
+
+.outline,
+.fill {
+  display: block;
+  font-family: var(--ti-font-display);
+  font-size: calc(clamp(40px, 10cqi, 132px) * var(--fit, 1));
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  /* natural break points only (spaces, hyphens); an over-wide single word is shrunk by the component (--fit) */
+  overflow-wrap: var(--ti-wrap, normal);
+  word-break: normal;
+  hyphens: manual;
+}
+
+.outline {
+  color: transparent;
+  -webkit-text-stroke: var(--ti-stroke) color-mix(in srgb, var(--ti-ink) 62%, transparent);
+  transition: -webkit-text-stroke-color 320ms ease;
+}
+
+.outlineOn {
+  -webkit-text-stroke-color: rgba(255, 255, 255, 0.85);
+}
+
+/* Solid ink: knocked out of the cobalt as the slot arrives, wiped in from the left. */
+.fill {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 100%;
+  color: #fff;
+  clip-path: inset(-8% 104% -8% -2%);
+  transition: clip-path 560ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.fillOn {
+  clip-path: inset(-8% -2% -8% -2%);
+  transition-delay: 140ms;
+}
+
+.label {
+  max-inline-size: 36cqi;
+  font-size: clamp(12px, 1.2cqi, 13px);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: end;
+  color: var(--ti-muted);
+  overflow-wrap: anywhere;
+  transition: color 320ms ease 120ms;
+}
+
+.labelOn {
+  color: #fff;
+}
+
+@container (max-width: 759px) {
+  .head {
+    grid-template-columns: auto minmax(0, 1fr);
+    row-gap: 6px;
+  }
+
+  .label {
+    grid-column: 2;
+    justify-self: start;
+    text-align: start;
+    max-inline-size: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stageLive,
+  .stageLive.down,
+  .stageLive.up,
+  .pan,
+  .layer,
+  .nameWrap,
+  .outline,
+  .fill,
+  .num,
+  .label {
+    transition: none;
+  }
+
+  .pan,
+  .nameWrap,
+  .nameWrapOn {
+    transform: none;
+  }
+
+  .pan {
+    transform: scale(1.04);
+  }
+
+  .layerOn {
+    transform: none;
+  }
+}

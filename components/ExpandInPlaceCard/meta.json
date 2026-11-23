@@ -1,0 +1,42 @@
+{
+  "id": "c053",
+  "name": "ExpandInPlaceCard",
+  "display_name": "Expand In-Place Card",
+  "category": "cards",
+  "tier": "everyday",
+  "job": "A compact card that smoothly grows to a larger layout in place, nudging neighbours aside, to reveal full description and a link",
+  "visitor_action": "click/tap the card or press Enter on the round control to expand; Esc or clicking again collapses",
+  "owner_settings": [
+    "Image",
+    "Image alt text",
+    "Title",
+    "Summary",
+    "Full text",
+    "Link label",
+    "Link URL",
+    "Accent color"
+  ],
+  "site_types": [
+    "services",
+    "business",
+    "portfolio",
+    "blog",
+    "store"
+  ],
+  "mobile": "expands to full width inline and scrolls into view",
+  "motion": "hero morph: the photo springs from an asymmetric arched panel into a full-bleed stage while the card grows, then the details row opens and the words cascade in with stagger (reduced-motion: instant, static)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped",
+    "craft": "skipped"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Harbour slate: cool grey-blue panels, crisp white type, one signal-orange accent, matte soft-radius surfaces"
+}

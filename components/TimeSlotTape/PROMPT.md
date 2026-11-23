@@ -42,6 +42,7 @@ const STIFFNESS = 190;
 const DAMPING = 20;
 const MAX_FONT = 28;
 const MIN_FONT = 15;
+const RANGE = /\s+[–—-]\s+/;
 const MAX_VELOCITY = 40;
 
 const isOpen = (s?: TimeSlot) => !!s && !s.booked;
@@ -68,8 +69,13 @@ function stepOpen(slots: TimeSlot[], from: number, dir: number, count = 1) {
   return found;
 }
 
+const splitRange = (time: string) => {
+  const [start, ...rest] = time.split(RANGE);
+  return { start, end: rest.join(' – ') };
+};
+
 function sizing(slots: TimeSlot[]) {
-  const longest = Math.max(5, ...slots.map((s) => s.time.length));
+  const longest = Math.max(5, ...slots.map((s) => splitRange(s.time).start.length));
   const font = clamp(Math.round((MAX_FONT * 7) / longest), MIN_FONT, MAX_FONT);
   const slot = clamp(Math.round((longest * font * 0.56) / 0.62), 112, 260);
   return { font, slot };
@@ -85,9 +91,9 @@ export default function TimeSlotTape({
   buttonLabel = 'Book {time}',
   buttonLink = '#book',
   noTimesLabel = 'No times left today',
-  tapeColor = '#F3D98B',
-  inkColor = '#1C2B4B',
-  deskColor = '#F6F0E3',
+  tapeColor = '#1A1D23',
+  inkColor = '#E6E9EE',
+  deskColor = '#121419',
   ariaLabel = 'Appointment time',
   className,
 }: TimeSlotTapeProps) {
@@ -106,7 +112,7 @@ export default function TimeSlotTape({
   const [inView, setInView] = useState(true);
 
   const rootRef = useRef<HTMLElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLSpanElement>(null);
   const slotEls = useRef<(HTMLDivElement | null)[]>([]);
   const motion = useRef({ p: restIndex, v: 0, target: restIndex, armed: false, centre: restIndex });
@@ -122,8 +128,7 @@ export default function TimeSlotTape({
 
   const paint = useCallback(() => {
     const { p } = motion.current;
-    const track = trackRef.current;
-    if (track) track.style.transform = `translate3d(${(-(PAD + p + 0.5) * slotRef.current).toFixed(2)}px, 0, 0)`;
+    viewportRef.current?.style.setProperty('--tst-x', `${(-(PAD + p + 0.5) * slotRef.current).toFixed(2)}px`);
     slotEls.current.forEach((el, i) => {
       if (!el) return;
       const d = Math.abs(i - p);
@@ -311,6 +316,7 @@ export default function TimeSlotTape({
     '--tst-slot': `${slot}px`,
     '--tst-num-size': `${font}px`,
     '--tst-pad': `${PAD * slot}px`,
+    '--tst-count': count,
     '--tst-play': inView && !dragging ? 'running' : 'paused',
   } as CSSProperties;
 
@@ -328,21 +334,19 @@ export default function TimeSlotTape({
 
   return (
     <section ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle} aria-label={ariaLabel}>
-      <span className={styles.light} aria-hidden="true" />
-      <span className={styles.grain} aria-hidden="true" />
-
       <div className={styles.inner}>
         {(eyebrow || heading || countText) && (
           <header className={styles.header}>
             <div className={styles.titles}>
-              {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
               {heading && <h3 className={styles.heading}>{heading}</h3>}
+              {eyebrow && <p className={styles.detail}>{eyebrow}</p>}
             </div>
             {count > 0 && countText && <p className={styles.count}>{countText}</p>}
           </header>
         )}
 
         <div
+          ref={viewportRef}
           className={dragging ? `${styles.viewport} ${styles.grabbing}` : styles.viewport}
           role="slider"
           aria-description={TAPE_HELP}
@@ -359,9 +363,14 @@ export default function TimeSlotTape({
           onPointerMove={onPointerMove}
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
+          style={{ '--tst-x': `${-(PAD + restIndex + 0.5) * slot}px` } as CSSProperties}
         >
-          <div ref={trackRef} className={styles.tape} style={{ transform: `translate3d(${-(PAD + restIndex + 0.5) * slot}px, 0, 0)` }}>
+          <span className={styles.rail} aria-hidden="true" />
+          <span className={styles.ticks} aria-hidden="true" />
+          <span className={styles.lens} aria-hidden="true" />
+          <div className={styles.tape}>
             {slots.map((s, i) => {
+              const { start, end } = splitRange(s.time);
               const near = smooth(clamp(1 - Math.abs(i - restIndex), 0, 1));
               return (
                 <div
@@ -374,13 +383,13 @@ export default function TimeSlotTape({
                   style={{ '--near': near, '--far': clamp(Math.abs(i - restIndex) / 3, 0, 1) } as CSSProperties}
                   aria-hidden="true"
                 >
-                  <span className={s.booked ? `${styles.numeral} ${styles.numeralBooked}` : styles.numeral}>{s.time}</span>
+                  <span className={s.booked ? `${styles.numeral} ${styles.numeralBooked}` : styles.numeral}>{start}</span>
+                  {end && <span className={styles.rangeEnd}>{end}</span>}
                   {s.booked && bookedLabel && <span className={styles.caption}>{bookedLabel}</span>}
                 </div>
               );
             })}
           </div>
-          <span className={styles.sheen} aria-hidden="true" />
           <span className={styles.pin} aria-hidden="true">
             <span className={styles.needle} />
             <span ref={pinRef} className={styles.pinHead} />
@@ -410,22 +419,22 @@ export default function TimeSlotTape({
 
 ```css
 .root {
-  --tst-tape: #f3d98b;
-  --tst-ink: #1c2b4b;
-  --tst-desk: #f6f0e3;
-  --tst-brass: #b68a3e;
-  --tst-brass-light: #f6e2ae;
-  --tst-brass-dark: #6e4f1c;
-  --tst-muted: color-mix(in srgb, var(--tst-ink) 66%, var(--tst-desk));
+  --tst-tape: #1a1d23;
+  --tst-ink: #e6e9ee;
+  --tst-desk: #121419;
+  --tst-accent: #5ee4b4;
+  --tst-accent-ink: #062016;
+  --tst-muted: color-mix(in srgb, var(--tst-ink) 64%, var(--tst-desk));
+  --tst-tick: color-mix(in srgb, var(--tst-ink) 34%, var(--tst-tape));
+  --tst-tick-minor: color-mix(in srgb, var(--tst-ink) 16%, var(--tst-tape));
+  --tst-hairline: color-mix(in srgb, var(--tst-ink) 9%, transparent);
   --tst-slot: 126px;
   --tst-num-size: 28px;
   --tst-pad: 1260px;
+  --tst-count: 18;
+  --tst-x: 0px;
   --tst-play: running;
-  --tst-font-display: 'Iowan Old Style', 'Baskerville', 'Libre Baskerville', 'Palatino Linotype', Georgia, serif;
-  --tst-font-num: 'DIN Alternate', 'DIN 2014', 'Bahnschrift', 'Barlow Semi Condensed', 'Roboto Condensed', 'Arial Narrow', sans-serif;
-  --tst-font-ui: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
-  --tst-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  --tst-fibre: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='60'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.9 .04' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.35  0 0 0 0 0.1  0 0 0 .28 0'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>");
+  --tst-font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
 
   position: relative;
   isolation: isolate;
@@ -433,42 +442,27 @@ export default function TimeSlotTape({
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  padding-block: 40px 36px;
+  padding-block: 36px 32px;
   padding-inline: 20px;
-  border-radius: 28px;
-  background:
-    radial-gradient(80% 70% at 18% 0%, rgba(255, 252, 244, 0.95) 0%, transparent 62%),
-    linear-gradient(180deg, color-mix(in srgb, var(--tst-desk) 82%, #fff) 0%, var(--tst-desk) 55%, color-mix(in srgb, var(--tst-desk) 90%, var(--tst-brass)) 100%);
+  border-radius: 24px;
+  border: 1px solid var(--tst-hairline);
+  background: var(--tst-desk);
   color: var(--tst-ink);
+  color-scheme: dark;
   font-family: var(--tst-font-ui);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    0 30px 60px -40px rgba(28, 43, 75, 0.45);
+  font-variant-numeric: tabular-nums;
+  accent-color: var(--tst-accent);
+  caret-color: var(--tst-accent);
+  scrollbar-color: var(--tst-tick) transparent;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.light,
-.grain {
-  position: absolute;
-  pointer-events: none;
-  z-index: -1;
-}
-
-.light {
-  inset-block-start: -30%;
-  inset-inline-end: -15%;
-  inline-size: 65%;
-  aspect-ratio: 1.6;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--tst-tape) 55%, transparent) 0%, transparent 100%);
-  filter: blur(48px);
-  opacity: 0.8;
-}
-
-.grain {
-  inset: 0;
-  background-image: var(--tst-noise);
-  mix-blend-mode: multiply;
-  opacity: 0.16;
+.root::selection,
+.heading::selection,
+.detail::selection,
+.count::selection {
+  background: color-mix(in srgb, var(--tst-accent) 32%, transparent);
+  color: var(--tst-ink);
 }
 
 .inner {
@@ -483,34 +477,33 @@ export default function TimeSlotTape({
   flex-wrap: wrap;
   align-items: end;
   justify-content: space-between;
-  gap: 12px 32px;
+  gap: 14px 32px;
 }
 
 .titles {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   min-inline-size: 0;
   flex: 1 1 320px;
 }
 
-.eyebrow {
+.heading {
   margin: 0;
-  font-family: var(--tst-font-num);
-  font-size: 14px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--tst-brass-dark);
+  font-weight: 600;
+  font-size: clamp(24px, 5cqi, 34px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
   overflow-wrap: anywhere;
 }
 
-.heading {
+.detail {
   margin: 0;
-  font-family: var(--tst-font-display);
-  font-weight: 600;
-  font-size: clamp(28px, 6cqi, 42px);
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  text-wrap: balance;
+  max-inline-size: 65ch;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--tst-muted);
+  text-wrap: pretty;
   overflow-wrap: anywhere;
 }
 
@@ -519,18 +512,15 @@ export default function TimeSlotTape({
   padding-block: 6px;
   padding-inline: 12px;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--tst-ink) 14%, transparent);
-  background: color-mix(in srgb, #fff 45%, transparent);
-  font-family: var(--tst-font-num);
-  font-size: 14px;
-  letter-spacing: 0.04em;
-  font-variant-numeric: tabular-nums;
+  border: 1px solid var(--tst-hairline);
+  font-size: 13px;
+  font-weight: 500;
   color: var(--tst-muted);
 }
 
 .viewport {
   position: relative;
-  block-size: 172px;
+  block-size: 168px;
   margin-inline: -20px;
   overflow: clip;
   cursor: grab;
@@ -538,8 +528,8 @@ export default function TimeSlotTape({
   user-select: none;
   -webkit-user-select: none;
   outline: none;
-  mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 86%, transparent 100%);
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 86%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
 }
 
 .grabbing {
@@ -547,55 +537,73 @@ export default function TimeSlotTape({
 }
 
 .viewport:focus-visible {
-  --tst-focus: 0 0 0 3px var(--tst-desk), 0 0 0 6px var(--tst-ink),;
+  --tst-focus: 0 0 0 2px var(--tst-accent), 0 0 0 5px color-mix(in srgb, var(--tst-accent) 22%, transparent),;
+}
+
+.rail {
+  position: absolute;
+  inset-block: 30px;
+  inset-inline: 0;
+  background: var(--tst-tape);
+  border-block: 1px solid var(--tst-hairline);
+}
+
+.ticks,
+.tape {
+  position: absolute;
+  inset-block: 30px;
+  inset-inline-start: 50%;
+  transform: translate3d(var(--tst-x), 0, 0);
+  will-change: transform;
+}
+
+.ticks {
+  inline-size: calc(var(--tst-pad) * 2 + var(--tst-count) * var(--tst-slot));
+  background-image:
+    linear-gradient(90deg, transparent calc(50% - 0.75px), var(--tst-tick) calc(50% - 0.75px) calc(50% + 0.75px), transparent calc(50% + 0.75px)),
+    linear-gradient(90deg, transparent calc(50% - 0.75px), var(--tst-tick) calc(50% - 0.75px) calc(50% + 0.75px), transparent calc(50% + 0.75px)),
+    linear-gradient(90deg, var(--tst-tick-minor) 0 1px, transparent 1px),
+    linear-gradient(90deg, var(--tst-tick-minor) 0 1px, transparent 1px);
+  background-size:
+    var(--tst-slot) 16px,
+    var(--tst-slot) 16px,
+    calc(var(--tst-slot) / 4) 8px,
+    calc(var(--tst-slot) / 4) 8px;
+  background-position: 0 0, 0 100%, 0 0, 0 100%;
+  background-repeat: repeat-x;
+}
+
+.lens {
+  position: absolute;
+  inset-block: 18px;
+  inset-inline-start: 50%;
+  inline-size: calc(var(--tst-slot) * 0.92);
+  margin-inline-start: calc(var(--tst-slot) * -0.46);
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, #fff 14%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, #fff 9%, transparent) 0%, color-mix(in srgb, #fff 3%, transparent) 55%, color-mix(in srgb, var(--tst-accent) 8%, transparent) 100%);
+  backdrop-filter: blur(5px) saturate(140%);
+  -webkit-backdrop-filter: blur(5px) saturate(140%);
+  box-shadow:
+    var(--tst-focus,)
+    inset 0 1px 0 color-mix(in srgb, #fff 16%, transparent),
+    0 14px 28px -14px rgba(0, 0, 0, 0.7);
+}
+
+.lens::before {
+  content: '';
+  position: absolute;
+  inset-inline: 12%;
+  inset-block: 46% 4%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--tst-accent) 34%, transparent), transparent);
+  filter: blur(10px);
 }
 
 .tape {
-  position: absolute;
-  inset-block: 26px 30px;
-  inset-inline-start: 50%;
   display: flex;
   padding-inline: var(--tst-pad);
-  border-radius: 3px;
-  will-change: transform;
-  background-color: var(--tst-tape);
-  background-image:
-    linear-gradient(90deg, transparent calc(50% - 1px), var(--tst-ink) calc(50% - 1px), var(--tst-ink) calc(50% + 1px), transparent calc(50% + 1px)),
-    linear-gradient(90deg, transparent calc(50% - 1px), var(--tst-ink) calc(50% - 1px), var(--tst-ink) calc(50% + 1px), transparent calc(50% + 1px)),
-    linear-gradient(90deg, color-mix(in srgb, var(--tst-ink) 80%, transparent) 0 1.5px, transparent 1.5px),
-    linear-gradient(90deg, color-mix(in srgb, var(--tst-ink) 80%, transparent) 0 1.5px, transparent 1.5px),
-    linear-gradient(90deg, color-mix(in srgb, var(--tst-ink) 55%, transparent) 0 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--tst-ink) 55%, transparent) 0 1px, transparent 1px),
-    linear-gradient(180deg, transparent 5px, color-mix(in srgb, var(--tst-ink) 30%, transparent) 5px 6px, transparent 6px calc(100% - 6px), color-mix(in srgb, var(--tst-ink) 30%, transparent) calc(100% - 6px) calc(100% - 5px), transparent calc(100% - 5px)),
-    var(--tst-fibre),
-    var(--tst-noise);
-  background-size:
-    var(--tst-slot) 26px,
-    var(--tst-slot) 26px,
-    var(--tst-slot) 17px,
-    var(--tst-slot) 17px,
-    calc(var(--tst-slot) / 4) 10px,
-    calc(var(--tst-slot) / 4) 10px,
-    100% 100%,
-    220px 60px,
-    160px 160px;
-  background-position:
-    0 0,
-    0 100%,
-    0 0,
-    0 100%,
-    0 0,
-    0 100%,
-    0 0,
-    0 0,
-    0 0;
-  background-repeat: repeat-x, repeat-x, repeat-x, repeat-x, repeat-x, repeat-x, no-repeat, repeat, repeat;
-  background-blend-mode: normal, normal, normal, normal, normal, normal, normal, multiply, soft-light;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    inset 0 -2px 0 rgba(110, 79, 28, 0.18),
-    0 2px 3px rgba(28, 43, 75, 0.18),
-    0 18px 26px -14px rgba(28, 43, 75, 0.42);
 }
 
 .slot {
@@ -616,60 +624,56 @@ export default function TimeSlotTape({
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: var(--tst-font-num);
   font-size: var(--tst-num-size);
-  line-height: 1.1;
+  font-weight: 600;
+  line-height: 1.15;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
-  color: var(--tst-ink);
-  opacity: calc(1 - var(--far) * 0.4);
-  font-weight: 700;
-  transform: scale(calc(1 + var(--near) * 0.5)) translateY(calc(var(--near) * -1px));
-  text-shadow:
-    0 1px 0 rgba(255, 255, 255, calc(var(--near) * 0.55)),
-    0 6px 14px rgba(110, 79, 28, calc(var(--near) * 0.22));
+  color: color-mix(in oklab, var(--tst-accent) calc(var(--near) * 100%), var(--tst-ink));
+  opacity: calc(1 - var(--far) * 0.32);
+  transform: scale(calc(1 + var(--near) * 0.42));
+}
+
+.rangeEnd {
+  max-inline-size: calc(var(--tst-slot) - 20px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: max(12px, calc(var(--tst-num-size) * 0.46));
+  font-weight: 500;
+  color: var(--tst-muted);
+  opacity: calc(1 - var(--far) * 0.3);
+  transform: translateY(calc(var(--near) * 6px));
 }
 
 .booked {
   cursor: not-allowed;
-  background-image: repeating-linear-gradient(-45deg, transparent 0 7px, color-mix(in srgb, var(--tst-ink) 9%, transparent) 7px 8px);
-  background-size: 100% 46%;
-  background-position: 50% 50%;
-  background-repeat: no-repeat;
 }
 
 .numeralBooked {
-  opacity: 0.38;
+  color: var(--tst-muted);
+  opacity: 0.7;
   text-decoration: line-through;
-  text-decoration-thickness: 2px;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: color-mix(in srgb, var(--tst-ink) 45%, transparent);
+  text-shadow: none;
 }
 
 .caption {
   max-inline-size: calc(var(--tst-slot) - 20px);
-  font-family: var(--tst-font-num);
   font-size: 11px;
+  font-weight: 500;
   line-height: 1.2;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   text-align: center;
   overflow-wrap: anywhere;
-  color: color-mix(in srgb, var(--tst-ink) 72%, var(--tst-tape));
-}
-
-.sheen {
-  position: absolute;
-  inset-block: 26px 30px;
-  inset-inline: 0;
-  pointer-events: none;
-  border-radius: 3px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.08) 22%, transparent 45%, rgba(110, 79, 28, 0.06) 78%, rgba(110, 79, 28, 0.16) 100%),
-    radial-gradient(40% 120% at 50% 50%, rgba(255, 250, 230, 0.14) 0%, transparent 70%);
+  color: var(--tst-muted);
 }
 
 .pin {
   position: absolute;
-  inset-block: 6px 16px;
+  inset-block: 6px;
   inset-inline-start: 50%;
   inline-size: 18px;
   margin-inline-start: -9px;
@@ -678,41 +682,24 @@ export default function TimeSlotTape({
 
 .needle {
   position: absolute;
-  inset-block: 14px 0;
-  mask-image: linear-gradient(180deg, #000 0 40px, transparent 40px calc(100% - 34px), #000 calc(100% - 34px));
-  -webkit-mask-image: linear-gradient(180deg, #000 0 40px, transparent 40px calc(100% - 34px), #000 calc(100% - 34px));
+  inset-block: 10px 0;
   inset-inline-start: 8px;
   inline-size: 2px;
   border-radius: 1px;
-  background: linear-gradient(180deg, var(--tst-brass) 0%, var(--tst-brass-dark) 100%);
-  box-shadow: 3px 2px 3px rgba(28, 43, 75, 0.25);
+  background: var(--tst-accent);
+  mask-image: linear-gradient(180deg, #000 0 14px, transparent 14px calc(100% - 14px), #000 calc(100% - 14px));
+  -webkit-mask-image: linear-gradient(180deg, #000 0 14px, transparent 14px calc(100% - 14px), #000 calc(100% - 14px));
 }
 
 .pinHead {
   position: absolute;
-  inset-block-start: 6px;
-  inset-inline-start: 0;
-  inline-size: 18px;
-  block-size: 18px;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 34% 30%, #fffaf0 0%, var(--tst-brass-light) 18%, var(--tst-brass) 55%, var(--tst-brass-dark) 100%);
-  box-shadow:
-    var(--tst-focus,)
-    inset 0 -1px 2px rgba(60, 40, 10, 0.4),
-    0 3px 6px rgba(28, 43, 75, 0.35),
-    4px 6px 8px rgba(28, 43, 75, 0.16);
-}
-
-.pinHead::after {
-  content: '';
-  position: absolute;
-  inset: 2px 5px 9px 3px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.85);
-  filter: blur(1px);
-  animation: glint 6s ease-in-out infinite;
-  animation-play-state: var(--tst-play);
+  inset-block-start: 4px;
+  inset-inline-start: 3px;
+  inline-size: 12px;
+  block-size: 4px;
+  border-radius: 2px;
+  background: var(--tst-accent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--tst-accent) 50%, transparent);
 }
 
 .footer {
@@ -724,89 +711,76 @@ export default function TimeSlotTape({
 }
 
 .button {
-  position: relative;
   flex: 0 1 auto;
   display: inline-block;
-  min-block-size: 56px;
+  min-block-size: 52px;
   min-inline-size: 200px;
   max-inline-size: 100%;
   box-sizing: border-box;
-  padding-block: 16px;
-  padding-inline: 28px;
+  padding-block: 14px;
+  padding-inline: 26px;
   line-height: 1.4;
   border: 0;
-  border-radius: 14px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, transparent 50%),
-    var(--tst-ink);
-  color: var(--tst-desk);
-  font-family: var(--tst-font-ui);
-  font-size: 17px;
+  border-radius: 12px;
+  background: var(--tst-accent);
+  color: var(--tst-accent-ink);
+  font-family: inherit;
+  font-size: 16px;
   font-weight: 600;
-  letter-spacing: 0.01em;
   text-align: center;
   text-decoration: none;
   text-wrap: balance;
   overflow-wrap: anywhere;
   cursor: pointer;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    inset 0 0 0 1px color-mix(in srgb, var(--tst-brass) 40%, transparent),
-    0 10px 22px -10px rgba(28, 43, 75, 0.6);
+  box-shadow: 0 8px 20px -12px color-mix(in srgb, var(--tst-accent) 70%, transparent);
   transition:
-    transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    background-color 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .button:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    inset 0 0 0 1px color-mix(in srgb, var(--tst-brass) 55%, transparent),
-    0 16px 28px -12px rgba(28, 43, 75, 0.6);
+  background: color-mix(in srgb, var(--tst-accent) 86%, #fff);
 }
 
 .button:active {
-  transform: translateY(0) scale(0.97);
+  transform: scale(0.98);
 }
 
 .button:focus-visible {
-  outline: 3px solid var(--tst-brass);
+  outline: 2px solid var(--tst-accent);
   outline-offset: 3px;
 }
 
 .button:disabled {
   cursor: not-allowed;
   transform: none;
-  background: color-mix(in srgb, var(--tst-ink) 18%, var(--tst-desk));
-  color: var(--tst-ink);
-  box-shadow: none;
+  background: var(--tst-tape);
+  color: var(--tst-muted);
+  box-shadow: inset 0 0 0 1px var(--tst-hairline);
 }
 
 .buttonTime {
   display: inline-block;
-  font-family: var(--tst-font-num);
-  font-size: 1.12em;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: var(--tst-tape);
-  animation: timeIn 0.38s cubic-bezier(0.2, 0.9, 0.3, 1.3);
+  animation: timeIn 0.32s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @container (max-width: 520px) {
   .viewport {
-    block-size: 184px;
+    block-size: 176px;
   }
 
   .button {
     flex-basis: 100%;
-    min-block-size: 60px;
+    min-block-size: 56px;
   }
 }
 
 @container (min-width: 900px) {
   .inner {
     padding-inline: 16px;
-    gap: 36px;
+    gap: 34px;
   }
 
   .viewport {
@@ -815,7 +789,6 @@ export default function TimeSlotTape({
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pinHead::after,
   .buttonTime {
     animation: none;
   }
@@ -825,24 +798,10 @@ export default function TimeSlotTape({
   }
 }
 
-@keyframes glint {
-  0%,
-  70%,
-  100% {
-    opacity: 0.85;
-  }
-  80% {
-    opacity: 0.3;
-  }
-  88% {
-    opacity: 1;
-  }
-}
-
 @keyframes timeIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;

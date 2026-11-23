@@ -1,0 +1,37 @@
+{
+  "id": "c007",
+  "name": "FilmStripScrubber",
+  "display_name": "Film Strip Scrubber",
+  "category": "media",
+  "tier": "everyday",
+  "job": "Browse photos on a sprocketed film strip where the frame under a fixed viewing window enlarges as you scrub",
+  "visitor_action": "drag, swipe or scroll the strip sideways; arrow keys step; click a frame to bring it under the window",
+  "owner_settings": [
+    "Photos (image and caption)",
+    "Frame ratio",
+    "Strip colour",
+    "Edge-print film label"
+  ],
+  "site_types": [
+    "portfolio",
+    "events",
+    "restaurant",
+    "blog"
+  ],
+  "mobile": "strip below the large frame, swipe scrubs",
+  "motion": "strip glides with momentum, centre frame scales up with spring (reduced-motion: snap steps, no scale)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped",
+    "craft": "skipped"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Cutting room: smoke-grey acetate strip, amber frame numbers, cool studio-white viewer, matte finish"
+}

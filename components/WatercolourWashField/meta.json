@@ -5,9 +5,9 @@
   "category": "ambient",
   "tier": "showpiece",
   "job": "Paint a slow watercolour wash behind content that blooms in from the edges as the block enters view, pigment pooling at the borders",
-  "visitor_action": "scroll in; none required",
+  "visitor_action": "scroll in; pointing at the paper rewets it and the pigment blooms again",
   "owner_settings": [
-    "Small heading, headline, paragraph, button label and link",
+    "Headline, paragraph, button label and link",
     "Colours (2)",
     "Wash intensity",
     "Edge style (soft | torn)"
@@ -19,8 +19,8 @@
     "events",
     "store"
   ],
-  "mobile": "smaller canvas (lower render resolution, smaller wash reach), static after bloom",
-  "motion": "wash spreads with a warped-noise shader for ~3.4s, rims darken as it 'dries', then stops completely; text staggers in (reduced-motion: finished painted wash, text shown at once)",
+  "mobile": "sim resolution scales to the block; touch rewets the paper with a fingertip; motion stops when the wash dries or the block leaves the screen",
+  "motion": "clear water sweeps the field in strokes, indigo and sap-green pigment diffuses wet-on-wet for ~6s while cauliflower blooms erupt and pigment granulates into the paper, then the wash dries completely (rims darken, sheen fades, all motion stops); text rises in a blurred stagger; pointing at the paper rewets it (reduced-motion: the finished dry wash renders instantly, text shown at once)",
   "scores": {
     "concept": 3,
     "usefulness": 1,
@@ -29,10 +29,10 @@
   },
   "checks": {
     "tsc": "pass",
-    "render": "pass (fix used: grid column minmax(0,1fr) + content width; the 375 shot's right-edge crop is the headless minimum-window artifact, also seen on CardStack; verified no overflow at a real 375 viewport)",
-    "craft": "3 after polish pass (noise scale and wash reach tied to block size, finer mobile render scale)"
+    "render": "pending: builder sandbox blocked all browser spawns (Chrome SIGABRT under seatbelt) so shot.sh could not run; sim+shader verified via a node port rendering the wash offline (indigo/sap-green diffusion, blooms, granulation confirmed); DOM layer verified by tsc, Vite transform and layout arithmetic \u2014 orchestrator review must re-run shot.sh",
+    "craft": "self-score 3 (advisory, offline evidence only)"
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Paper wash: cold-press paper grain, dusty rose and sea-glass blooms, darker pigment rims, always low contrast behind text"
+  "art_direction": "Wet-on-wet: simulated pigment diffusion with cauliflower blooms and granulation on cold-press paper; indigo and sap green, natural-white sheet, light mode"
 }

@@ -5,7 +5,7 @@
   "category": "media",
   "tier": "everyday",
   "job": "Show photos as instant prints that slowly develop from milky blank to full colour as they scroll in, then straighten when hovered",
-  "visitor_action": "scroll or swipe to develop; hover or focus a print to straighten it; click, tap, Enter or Space enlarges it, Escape sets it down",
+  "visitor_action": "scroll the scene into view to develop the prints; hover or focus a print to shake it and hurry the develop; click, tap, Enter or Space enlarges it, Escape sets it down",
   "owner_settings": [
     "Photos (image, caption)",
     "Print tilt",
@@ -18,8 +18,8 @@
     "portfolio",
     "blog"
   ],
-  "mobile": "horizontal swipe row of 2 visible prints; tap enlarges",
-  "motion": "image fades from milky blur to sharp with eased saturation ramp, staggered per print, tilt springs flat on hover (reduced-motion: fully developed, static tilt)",
+  "mobile": "hero print plus 2 supporting prints, all fully in frame, tap enlarges",
+  "motion": "prints drop onto a studio sweep, rest milky for a beat, then develop in a staggered chemical wave \u2014 blue-green blotches clear, colour overshoots and a flash bloom pops as it lands, the emulsion rim lingers last and captions ink in; the develop replays each time a print scrolls back into view; hovering or focusing a finished print shakes it and develops it again faster (a print still developing is hurried) (reduced-motion: prints lie still, fully developed)",
   "scores": {
     "concept": 3,
     "usefulness": 3,
@@ -28,10 +28,10 @@
   },
   "checks": {
     "tsc": "pass",
-    "render": "pass (1 fix: develop waits for image load, default speed 4s to 3.2s)",
-    "craft": "pass (3, no polish pass)"
+    "render": "skipped (Guy 2026-11-23, token saving: no shots, no self-scoring)",
+    "craft": "skipped (no self-scoring; Guy reviews in the gallery)"
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Instant film: cream plastic borders, faded cyan-green developing haze, handwritten blue-ink captions, soft table shadow"
+  "art_direction": "Studio flash: cool grey seamless sweep with a soft flash hotspot, glossy white instant prints with real slab edges, a chemical blue-green develop that clears in blotches leaving an emulsion rim, blue-ink handwritten captions"
 }

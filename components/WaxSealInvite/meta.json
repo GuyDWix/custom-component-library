@@ -21,7 +21,7 @@
     "store"
   ],
   "mobile": "same, scaled to width",
-  "motion": "seal cracks, flap folds back in 3D, card rises with spring (reduced-motion: crossfade to open state)",
+  "motion": "hover lifts the seal and tugs the flap; click: the seal cracks and its shards fall, the flap bends open in 3D to show the liner, the envelope sinks and the card rises out and swings forward to settle; closing reverses and presses a fresh seal (reduced-motion: instant state swap with a crossfade)",
   "scores": {
     "concept": 3,
     "usefulness": 3,
@@ -30,10 +30,10 @@
   },
   "checks": {
     "tsc": "pass",
-    "render": "pass (1 fix: seal shadow box artifact, worst-case date hidden by pocket, fibre texture too streaky)",
+    "render": "pass (polish: seal enlarged to carry the closed still)",
     "craft": "pass (3, after 1 polish pass)"
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Letterpress: heavy cotton-paper envelope in sage, oxblood wax with embossed initials and glossy highlight, debossed card type, paper fibre texture"
+  "art_direction": "Midnight post: ink-navy laid-paper envelope with fold thickness and shadows, vermilion poured wax seal with ridged rim, crisp emboss and translucent edge, vermilion lattice liner, cool laid-paper card with grotesk type, dark midnight stage"
 }

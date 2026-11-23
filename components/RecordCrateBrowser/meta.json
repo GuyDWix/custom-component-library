@@ -1,0 +1,36 @@
+{
+  "id": "c016",
+  "name": "RecordCrateBrowser",
+  "display_name": "Record Crate Browser",
+  "category": "media",
+  "tier": "everyday",
+  "job": "Browse items like flicking through a record crate: sleeves tip forward one by one so the front one is readable",
+  "visitor_action": "scroll wheel/swipe over the crate or press arrows to flick; click the front sleeve to open",
+  "owner_settings": [
+    "Items (image, title, subtitle)",
+    "Crate colour",
+    "Sleeve count visible"
+  ],
+  "site_types": [
+    "store",
+    "portfolio",
+    "events",
+    "blog"
+  ],
+  "mobile": "vertical swipe flicks sleeves",
+  "motion": "sleeves rock forward with eased overshoot and settle (reduced-motion: front sleeve swaps without tilt)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped",
+    "craft": "skipped"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Record shop: raw birch crate, slightly worn card sleeves, mustard and teal accents, small price stickers"
+}

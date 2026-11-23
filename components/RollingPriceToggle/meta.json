@@ -1,0 +1,36 @@
+{
+  "id": "c087",
+  "name": "RollingPriceToggle",
+  "display_name": "Rolling Price Toggle",
+  "category": "controls",
+  "tier": "everyday",
+  "job": "A billing or option toggle whose prices roll like odometer digits and whose included-features list reorders to match the choice",
+  "visitor_action": "click/tap or arrow keys to switch options",
+  "owner_settings": [
+    "Options (label, price, billing period, saving badge text, included features one per line)",
+    "Currency symbol",
+    "Highlight color"
+  ],
+  "site_types": [
+    "business",
+    "services",
+    "store",
+    "events"
+  ],
+  "mobile": "toggle full width above the price block",
+  "motion": "thumb slides with spring, digits roll to new values, features slide and fade (reduced-motion: instant swap)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "deferred-to-QA",
+    "craft": "deferred-to-QA"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Savings bank: fresh mint-white card, deep pine toggle thumb, tabular figures in dark slate, small gold saving badge"
+}

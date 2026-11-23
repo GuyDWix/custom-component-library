@@ -1,0 +1,39 @@
+{
+  "id": "c040",
+  "name": "SundialShadowHeadline",
+  "display_name": "Sundial Shadow Headline",
+  "category": "text",
+  "tier": "showpiece",
+  "job": "A bold headline casting a long hard shadow whose angle sweeps like the sun, tied to pointer position or slowly to time of day",
+  "visitor_action": "move pointer to swing the light; passive otherwise",
+  "owner_settings": [
+    "Headline text",
+    "Text color",
+    "Shadow color",
+    "Light direction (follows the pointer or sweeps automatically)",
+    "Show the sun disc"
+  ],
+  "site_types": [
+    "business",
+    "portfolio",
+    "store",
+    "events",
+    "blog"
+  ],
+  "mobile": "shadow arcs slowly on its own, scroll tilts it",
+  "motion": "shadow length and angle ease to light position (reduced-motion: fixed 45-degree shadow)",
+  "art_direction": "Desert midday: sand-yellow ground, terracotta letters, plum-brown long shadow with crisp edge, flat poster finish",
+  "scores": {
+    "concept": 3,
+    "usefulness": 2,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped (token saving, 2026-11-23)",
+    "craft": "skipped (token saving, 2026-11-23)"
+  },
+  "status": "built",
+  "studio2_tested": false
+}

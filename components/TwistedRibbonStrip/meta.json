@@ -1,0 +1,36 @@
+{
+  "id": "c022",
+  "name": "TwistedRibbonStrip",
+  "display_name": "Twisted Ribbon Strip",
+  "category": "media",
+  "tier": "showpiece",
+  "job": "Run a looping strip of photos as a half-twisted ribbon so each picture turns face-on as it passes the centre",
+  "visitor_action": "drag to move the ribbon; hover slows it down (keyboard: arrow keys step; small pause button)",
+  "owner_settings": [
+    "Photos (image, caption)",
+    "Speed",
+    "Twist amount"
+  ],
+  "site_types": [
+    "portfolio",
+    "store",
+    "events",
+    "restaurant"
+  ],
+  "mobile": "slower, flatter twist, swipe moves it",
+  "motion": "continuous glide with perspective twist, eases to a stop on hover (reduced-motion: flat static strip, scroll-snapped)",
+  "art_direction": "Silk ribbon: satin-sheen cream with deep teal backs, soft studio light, long gentle shadows",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped (render and craft gates skipped per Guy, 2026-11-23)",
+    "craft": "skipped (render and craft gates skipped per Guy, 2026-11-23)"
+  },
+  "status": "built",
+  "studio2_tested": false
+}

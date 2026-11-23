@@ -1,5 +1,5 @@
-import { useEffect, useId, useState } from 'react';
-import type { CSSProperties, KeyboardEvent } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
+import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import styles from './Component.module.css';
 
 export interface ServingScaleIngredient {
@@ -10,7 +10,7 @@ export interface ServingScaleIngredient {
 
 export interface ServingScaleCardProps {
   title?: string;
-  eyebrow?: string;
+  subtitle?: string;
   image?: string;
   imageAlt?: string;
   baseServings?: number;
@@ -20,8 +20,8 @@ export interface ServingScaleCardProps {
   methodLabel?: string;
   methodNote?: string;
   accentColor?: string;
-  rimColor?: string;
-  enamelColor?: string;
+  panelColor?: string;
+  backgroundColor?: string;
   className?: string;
 }
 
@@ -37,7 +37,9 @@ export const defaultIngredients: ServingScaleIngredient[] = [
 
 const MIN_SERVINGS = 1;
 const MAX_SERVINGS = 60;
+const TICK_GAP = 16;
 const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+const TICKS = Array.from({ length: MAX_SERVINGS }, (_, i) => i + 1);
 const FRACTIONS: [number, string][] = [
   [0, ''],
   [0.125, '⅛'],
@@ -50,12 +52,14 @@ const FRACTIONS: [number, string][] = [
 ];
 
 const clampServings = (n: number) => Math.min(MAX_SERVINGS, Math.max(MIN_SERVINGS, Math.round(n)));
+const clampPos = (p: number) => Math.min(MAX_SERVINGS - 1, Math.max(0, p));
 
 function formatAmount(value: number): string {
   if (value >= 20) return String(Math.round(value));
   const whole = Math.floor(value);
-  const [frac, glyph] = FRACTIONS.reduce((best, f) => (Math.abs(f[0] - (value - whole)) < Math.abs(best[0] - (value - whole)) ? f : best));
-  if (Math.abs(frac - (value - whole)) <= 0.04) {
+  const rest = value - whole;
+  const [frac, glyph] = FRACTIONS.reduce((best, f) => (Math.abs(f[0] - rest) < Math.abs(best[0] - rest) ? f : best));
+  if (Math.abs(frac - rest) <= 0.04) {
     const w = whole + (frac === 1 ? 1 : 0);
     return w === 0 ? glyph || '0' : `${w}${glyph}`;
   }
@@ -91,21 +95,21 @@ function Roll({ text, className }: { text: string; className?: string }) {
 }
 
 const MinusIcon = () => (
-  <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
-    <path d="M6 12h12" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" fill="none" />
+  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+    <path d="M6 12h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
   </svg>
 );
 
 const PlusIcon = () => (
-  <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
-    <path d="M12 6v12M6 12h12" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" fill="none" />
+  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+    <path d="M12 6v12M6 12h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
   </svg>
 );
 
 export default function ServingScaleCard({
   title = 'Pesto farfalle with cherry tomatoes',
-  eyebrow = 'Weeknight · 20 min',
-  image = 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=900&h=1000&fit=crop&q=80',
+  subtitle = 'Weeknight · 20 min',
+  image = 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=1600&h=1200&fit=crop&q=80',
   imageAlt = 'Farfalle in basil pesto with cherry tomatoes and salad leaves',
   baseServings = 4,
   servingsLabel = 'Servings',
@@ -113,109 +117,202 @@ export default function ServingScaleCard({
   ingredients = defaultIngredients,
   methodLabel = 'Method',
   methodNote = 'Cook the farfalle until just tender and keep a cup of the water. Loosen the pesto with lemon and a splash of that water, toss through the pasta, then fold in the tomatoes and leaves. Finish with parmesan.',
-  accentColor = '#d8432f',
-  rimColor = '#1f4fb4',
-  enamelColor = '#f7f0e1',
+  accentColor = '#ff6b4a',
+  panelColor = '#1c4a2d',
+  backgroundColor = '#0a120d',
   className,
 }: ServingScaleCardProps) {
   const base = clampServings(baseServings || 1);
   const [servings, setServings] = useState(base);
+  const [beat, setBeat] = useState({ n: 0, dir: 1 });
+  const [dragPos, setDragPos] = useState<number | null>(null);
+  const drag = useRef<{ x: number; pos: number; moved: boolean } | null>(null);
+  const current = useRef(base);
   const uid = useId();
   const titleId = `${uid}-title`;
 
-  useEffect(() => setServings(base), [base]);
+  useEffect(() => {
+    current.current = base;
+    setServings(base);
+  }, [base]);
 
   const factor = servings / base;
-  const step = (delta: number) => setServings((s) => clampServings(s + delta));
+  const changed = beat.n > 0;
+  const phase = beat.n % 2 ? 'a' : 'b';
+
+  const commit = (next: number) => {
+    const n = clampServings(next);
+    const prev = current.current;
+    if (n === prev) return;
+    current.current = n;
+    setBeat((b) => ({ n: b.n + 1, dir: n > prev ? 1 : -1 }));
+    setServings(n);
+  };
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    const moves: Record<string, () => number> = {
-      ArrowUp: () => servings + 1,
-      ArrowRight: () => servings + 1,
-      ArrowDown: () => servings - 1,
-      ArrowLeft: () => servings - 1,
-      PageUp: () => servings + 5,
-      PageDown: () => servings - 5,
-      Home: () => MIN_SERVINGS,
-      End: () => MAX_SERVINGS,
+    const moves: Record<string, number> = {
+      ArrowUp: servings + 1,
+      ArrowRight: servings + 1,
+      ArrowDown: servings - 1,
+      ArrowLeft: servings - 1,
+      PageUp: servings + 5,
+      PageDown: servings - 5,
+      Home: MIN_SERVINGS,
+      End: MAX_SERVINGS,
     };
-    const next = moves[e.key];
-    if (!next) return;
+    if (!(e.key in moves)) return;
     e.preventDefault();
-    setServings(clampServings(next()));
+    commit(moves[e.key]);
+  };
+
+  const onDialDown = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    drag.current = { x: e.clientX, pos: servings - 1, moved: false };
+  };
+
+  const onDialMove = (e: PointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    if (!d) return;
+    const dx = e.clientX - d.x;
+    if (!d.moved && Math.abs(dx) < 4) return;
+    d.moved = true;
+    const pos = clampPos(d.pos - dx / TICK_GAP);
+    setDragPos(pos);
+    commit(pos + 1);
+  };
+
+  const onDialUp = (e: PointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    drag.current = null;
+    setDragPos(null);
+    if (!d || d.moved || e.type === 'pointercancel') return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    commit(servings + Math.round((e.clientX - (rect.left + rect.width / 2)) / TICK_GAP));
   };
 
   const rootStyle = {
     '--ss-accent': accentColor,
-    '--ss-rim': rimColor,
-    '--ss-enamel': enamelColor,
+    '--ss-panel': panelColor,
+    '--ss-bg': backgroundColor,
+    '--ss-gap': `${TICK_GAP}px`,
   } as CSSProperties;
+
+  const dialPos = dragPos ?? servings - 1;
+  const lessLabel = `Fewer ${servingsLabel.toLowerCase()}`;
+  const moreLabel = `More ${servingsLabel.toLowerCase()}`;
 
   return (
     <article
-      className={[styles.root, image ? styles.withPhoto : '', className].filter(Boolean).join(' ')}
+      className={[styles.root, className].filter(Boolean).join(' ')}
       style={rootStyle}
       aria-labelledby={titleId}
     >
-      <span className={styles.speckle} aria-hidden="true" />
-      <div className={styles.layout}>
-        {image && (
-          <div className={styles.media}>
-            <img className={styles.photo} src={image} alt={imageAlt} loading="lazy" draggable={false} />
-          </div>
-        )}
+      <div className={[styles.frame, image ? styles.withPhoto : ''].filter(Boolean).join(' ')}>
+        <div className={styles.media} aria-hidden={image ? undefined : true}>
+          {image && (
+            <img
+              className={styles.photo}
+              data-beat={changed ? phase : undefined}
+              src={image}
+              alt={imageAlt}
+              draggable={false}
+            />
+          )}
+          <span className={styles.scrim} aria-hidden="true" />
+        </div>
 
-        <div className={styles.content}>
+        <div className={styles.hero}>
+          <div className={styles.heroLabel}>
+            <span className={styles.servingsLabel}>{servingsLabel}</span>
+            <span
+              className={styles.factor}
+              data-on={factor !== 1 ? '' : undefined}
+              data-beat={changed ? phase : undefined}
+              aria-hidden="true"
+            >
+              {formatFactor(factor)}
+            </span>
+          </div>
+
+          <div
+            className={styles.count}
+            role="spinbutton"
+            tabIndex={0}
+            aria-label={servingsLabel}
+            aria-valuenow={servings}
+            aria-valuemin={MIN_SERVINGS}
+            aria-valuemax={MAX_SERVINGS}
+            aria-description="Arrow keys change the amount, Page Up and Page Down by five; every ingredient quantity updates."
+            onKeyDown={onKeyDown}
+          >
+            <span
+              className={styles.numeral}
+              data-beat={changed ? phase : undefined}
+              style={{ '--sd': beat.dir } as CSSProperties}
+            >
+              <Roll text={String(servings)} className={styles.bigRoll} />
+            </span>
+          </div>
+
+          <div className={styles.controls}>
+            <button
+              type="button"
+              className={styles.btn}
+              onClick={() => commit(current.current - 1)}
+              disabled={servings <= MIN_SERVINGS}
+              aria-label={lessLabel}
+              tabIndex={-1}
+            >
+              <MinusIcon />
+            </button>
+            <div
+              className={styles.dial}
+              data-dragging={dragPos !== null ? '' : undefined}
+              aria-hidden="true"
+              onPointerDown={onDialDown}
+              onPointerMove={onDialMove}
+              onPointerUp={onDialUp}
+              onPointerCancel={onDialUp}
+            >
+              <span className={styles.track} style={{ '--pos': dialPos } as CSSProperties}>
+                {TICKS.map((n) => {
+                  const major = n === 1 || n % 5 === 0;
+                  return (
+                    <span
+                      key={n}
+                      className={major ? styles.tickMajor : styles.tick}
+                      data-on={n === servings ? '' : undefined}
+                      style={{ '--n': n - 1 } as CSSProperties}
+                    >
+                      {major && <span className={styles.tickNum}>{n}</span>}
+                    </span>
+                  );
+                })}
+              </span>
+              <span className={styles.needle} />
+            </div>
+            <button
+              type="button"
+              className={styles.btn}
+              onClick={() => commit(current.current + 1)}
+              disabled={servings >= MAX_SERVINGS}
+              aria-label={moreLabel}
+              tabIndex={-1}
+            >
+              <PlusIcon />
+            </button>
+          </div>
+        </div>
+
+        <div className={styles.panel}>
+          <span className={styles.grain} aria-hidden="true" />
           <header className={styles.head}>
-            {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
             <h3 id={titleId} className={styles.title}>
               {title}
             </h3>
+            {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
           </header>
-
-          <div className={styles.scale}>
-            <div className={styles.scaleText}>
-              <span className={styles.scaleLabel}>{servingsLabel}</span>
-              <span className={styles.factor} data-on={factor !== 1 ? '' : undefined} aria-hidden="true">
-                {formatFactor(factor)}
-              </span>
-            </div>
-            <div className={styles.stepper}>
-              <button
-                type="button"
-                className={styles.btn}
-                onClick={() => step(-1)}
-                disabled={servings <= MIN_SERVINGS}
-                aria-label={`Fewer ${servingsLabel.toLowerCase()}`}
-                tabIndex={-1}
-              >
-                <MinusIcon />
-              </button>
-              <div
-                className={styles.count}
-                role="spinbutton"
-                tabIndex={0}
-                aria-label={servingsLabel}
-                aria-valuenow={servings}
-                aria-valuemin={MIN_SERVINGS}
-                aria-valuemax={MAX_SERVINGS}
-                aria-description="Use the arrow keys to change the amount; every ingredient quantity updates."
-                onKeyDown={onKeyDown}
-              >
-                <Roll text={String(servings)} />
-              </div>
-              <button
-                type="button"
-                className={styles.btn}
-                onClick={() => step(1)}
-                disabled={servings >= MAX_SERVINGS}
-                aria-label={`More ${servingsLabel.toLowerCase()}`}
-                tabIndex={-1}
-              >
-                <PlusIcon />
-              </button>
-            </div>
-          </div>
 
           {ingredients.length > 0 && (
             <section className={styles.section} aria-label={ingredientsLabel}>
@@ -229,13 +326,13 @@ export default function ServingScaleCard({
                       <span className={styles.qty}>
                         {hasAmount && (
                           <>
-                            {servings !== base && <span key={servings} className={styles.flash} aria-hidden="true" />}
                             <Roll text={amount} className={styles.amount} />
                             <span className={styles.srOnly}>{amount}</span>
+                            {changed && <span key={beat.n} className={styles.sweep} aria-hidden="true" />}
                           </>
                         )}
-                        {item.unit && <span className={hasAmount ? styles.unit : styles.unitOnly}>{item.unit}</span>}
                       </span>
+                      <span className={hasAmount ? styles.unit : styles.unitOnly}>{item.unit}</span>
                       <span className={styles.name}>{item.name}</span>
                     </li>
                   );
@@ -250,11 +347,11 @@ export default function ServingScaleCard({
               <p className={styles.methodText}>{methodNote}</p>
             </section>
           )}
-
-          <p className={styles.srOnly} aria-live="polite">
-            {`${servingsLabel}: ${servings}`}
-          </p>
         </div>
+
+        <p className={styles.srOnly} aria-live="polite">
+          {`${servingsLabel}: ${servings}`}
+        </p>
       </div>
     </article>
   );

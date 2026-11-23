@@ -4,14 +4,15 @@
   "display_name": "Goal Jar Fill",
   "category": "data",
   "tier": "showpiece",
-  "job": "Show progress to a sales, donation or booking goal as a glass jar filling with liquid whose surface sloshes, with the raised amount and goal printed on the glass",
-  "visitor_action": "none; moving the pointer across the jar sloshes the liquid, a tap makes a ripple, Enter swirls it when focused",
+  "job": "Show progress to a sales, donation or booking goal as an apothecary glass jar filling with liquid whose surface sloshes, with the raised amount and goal printed on the jar's paper label",
+  "visitor_action": "none; moving the pointer across the jar sloshes the liquid, a tap makes a ripple, Enter swirls it when focused, and the cork pops when the goal is reached",
   "owner_settings": [
     "Amount reached",
     "Goal amount",
     "Label",
     "Currency symbol",
-    "Liquid color"
+    "Liquid color",
+    "Goal-reached text"
   ],
   "site_types": [
     "store",
@@ -19,8 +20,8 @@
     "business",
     "services"
   ],
-  "mobile": "jar centred, slosh on device tilt is skipped, tap makes a ripple",
-  "motion": "liquid rises to its level with eased fill and a counting amount while a canvas wave rolls on the surface, then settles and stops (reduced-motion: filled jar, flat surface)",
+  "mobile": "jar centred, tap makes a ripple, no tilt slosh",
+  "motion": "liquid rises with eased fill while the spring-wave surface sloshes and tilts, fine bubbles drift up and the amount counts; idle bubbles keep it alive; at 100% the cork pops with a spring overshoot, a fizz bursts, the caustics flare and a goal-reached pill springs in (reduced-motion: filled jar, still surface, frozen bubbles, cork resting open)",
   "scores": {
     "concept": 3,
     "usefulness": 2,
@@ -29,10 +30,10 @@
   },
   "checks": {
     "tsc": "pass",
-    "render": "pass (1 fix: percent marker overlapped the goal text, moved into the printed stack; shorter fill)",
-    "craft": "pass (3, after 1 polish pass)"
+    "render": "compile-checked only (vite serves tsx/css/woff2 clean); screenshots skipped \u2014 shot.sh disabled by Guy 2026-11-23",
+    "craft": "not self-scored (shots disabled by Guy 2026-11-23); pending independent review"
   },
   "status": "built",
   "studio2_tested": false,
-  "art_direction": "Pantry jar: warm kraft-paper background, thick clear glass with a curved highlight, honey-amber liquid, chalk-white label print"
+  "art_direction": "Apothecary glass (warm-earned): amber syrup rising in thick clear glass on a sunlit apothecary shelf; refraction glints at the walls, a climbing meniscus, fine rising bubbles, golden caustics on the shelf; the cork pops open at 100%. Giant ink numeral behind the glass, cream paper label carries the type. Light mode."
 }

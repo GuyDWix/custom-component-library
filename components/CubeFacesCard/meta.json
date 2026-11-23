@@ -1,0 +1,37 @@
+{
+  "id": "c061",
+  "name": "CubeFacesCard",
+  "display_name": "Cube Faces Card",
+  "category": "cards",
+  "tier": "showpiece",
+  "job": "A service card shaped as a rotating cube whose four faces carry overview, process, price and proof",
+  "visitor_action": "hover-drag or swipe to rotate; arrows and tab buttons jump to a face",
+  "owner_settings": [
+    "Four faces (label, title, text, key figure and its note)",
+    "Face color",
+    "Accent color",
+    "Auto-turn on or off"
+  ],
+  "site_types": [
+    "services",
+    "business",
+    "portfolio",
+    "events"
+  ],
+  "mobile": "swipe rotates, face tabs shown below",
+  "motion": "3D quarter-turn with spring settle and slight idle drift (reduced-motion: tabbed faces with fade)",
+  "scores": {
+    "concept": 3,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "deferred-to-QA",
+    "craft": "deferred-to-QA"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Ceramic block: glazed off-white tile faces with cobalt line icons, soft ambient occlusion, hairline bevel catching light"
+}

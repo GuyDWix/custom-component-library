@@ -11,7 +11,6 @@
     "Themes (label, words to highlight)",
     "Highlight colour",
     "Theme highlighted at start",
-    "Small heading",
     "Heading",
     "Summary line"
   ],
@@ -22,9 +21,9 @@
     "services",
     "events"
   ],
-  "mobile": "chips scroll sideways, reviews stack single column",
-  "motion": "highlight bands sweep across matched phrases, other text dims to 55 percent (reduced-motion: static highlight, no sweep)",
-  "art_direction": "Highlighter peach: warm paper cards, peach-orange highlighter bands, charcoal serif text, subtle paper grain",
+  "mobile": "chips scroll sideways, reviews stack in one column; two-column spread from 720px container width",
+  "motion": "rack focus on theme change: the lead matched sentence rises in as a 40-64px marked hero pull-quote, the list briefly defocuses, matching reviews glide to the top with a spring FLIP (staggered, interruptible), non-matching reviews recede (blur, fade, scale down) and sharpen on hover or keyboard focus, then the ultramarine marker is drawn line by line in two ink passes (light base first, deeper streaked pass after) across matched sentences one by one, and the count ticks in (reduced-motion: static marker, faded non-matches without blur or movement)",
+  "art_direction": "Signal blue, depth of field (light): crisp white ground, oversized near-black grotesk heading, editorial two-column review spread on hairlines, textured ultramarine marker strokes (streaked ink, ragged chisel edges) on matched sentences, non-matching reviews out of focus; flat hairline chips with solid ultramarine active chip",
   "scores": {
     "concept": 3,
     "usefulness": 3,
@@ -34,7 +33,7 @@
   "checks": {
     "tsc": "pass",
     "render": "pass",
-    "craft": 3
+    "craft": "3 (self, advisory; borderline on bar items 1 and 7)"
   },
   "status": "built",
   "studio2_tested": false

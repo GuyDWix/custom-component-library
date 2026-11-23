@@ -1,0 +1,40 @@
+{
+  "id": "c002",
+  "name": "LoupeZoomImage",
+  "display_name": "Loupe Zoom Image",
+  "category": "media",
+  "tier": "everyday",
+  "job": "Let visitors inspect product detail through a glass loupe that magnifies the photo under the pointer",
+  "visitor_action": "hover or drag the loupe over the image; keyboard arrows move it; tap toggles it on touch",
+  "owner_settings": [
+    "Image",
+    "Image description",
+    "Zoom level",
+    "Loupe size",
+    "Rim color",
+    "Caption",
+    "Detail line",
+    "Photo aspect ratio"
+  ],
+  "site_types": [
+    "store",
+    "portfolio",
+    "business"
+  ],
+  "mobile": "tap toggles the loupe at the tapped spot; tap-and-hold shows it above the finger and it follows the drag",
+  "motion": "loupe rests tilted on the print with a faint breathing float, picks up with a scale-in pop and follows the pointer with spring lag; glare, fringe and shadow drift with velocity (reduced-motion: no lag, instant moves)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped",
+    "craft": "skipped"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Jeweller's bench: neutral linen backdrop, polished brass rim, glass with curved highlight and faint chromatic fringe at the edge"
+}

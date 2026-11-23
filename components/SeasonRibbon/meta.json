@@ -1,0 +1,38 @@
+{
+  "id": "c083",
+  "name": "SeasonRibbon",
+  "display_name": "Season Ribbon",
+  "category": "data",
+  "tier": "everyday",
+  "job": "Show which months a product, tour or menu item is available as a twelve-month ribbon with in-season stretches in colour and the current month marked",
+  "visitor_action": "hover or tap an item row to highlight its months; none required",
+  "owner_settings": [
+    "Items (name, first month, last month)",
+    "Current month marker on or off",
+    "Season colours",
+    "Row labels (season range text on or off)"
+  ],
+  "site_types": [
+    "restaurant",
+    "store",
+    "services",
+    "events",
+    "business"
+  ],
+  "mobile": "rows stack with compact month initials",
+  "motion": "ribbons unfurl across the months in a stagger, marker drops onto the current month (reduced-motion: static ribbons)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "deferred-to-QA",
+    "craft": "deferred-to-QA"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Greengrocer: fresh-linen white, leaf green, blood-orange and plum bands, soft rounded ribbon with crisp ledger lines"
+}

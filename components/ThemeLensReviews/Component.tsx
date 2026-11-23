@@ -18,7 +18,6 @@ export interface ThemeLensReviewsProps {
   themes?: ThemeLensTheme[];
   highlightColor?: string;
   startTheme?: number;
-  eyebrow?: string;
   heading?: string;
   summary?: string;
   themesLabel?: string;
@@ -67,6 +66,7 @@ export const defaultThemes: ThemeLensTheme[] = [
 ];
 
 type Sentence = { text: string; gap: string };
+type Point = { x: number; y: number };
 
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
@@ -83,20 +83,40 @@ const themePattern = (keywords: string) => {
   return list.length ? new RegExp(`(?:^|[^\\p{L}\\p{N}])(?:${list.join('|')})`, 'iu') : null;
 };
 
-const initials = (name: string) =>
-  name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+const springEasing = (stiffness = 170, damping = 17, samples = 48) => {
+  const points: string[] = [];
+  let x = 0;
+  let v = 0;
+  const dt = 1 / 240;
+  const total = 0.9;
+  const perSample = Math.round(total / dt / samples);
+  for (let i = 0; i <= samples; i++) {
+    points.push(x.toFixed(4));
+    for (let s = 0; s < perSample; s++) {
+      v += (stiffness * (1 - x) - damping * v) * dt;
+      x += v * dt;
+    }
+  }
+  points[points.length - 1] = '1';
+  return `linear(${points.join(', ')})`;
+};
 
-const STAGGER_MS = 70;
-const MAX_STAGGER = 9;
+const SPRING = springEasing();
+const FALLBACK_EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+const GLIDE_MS = 900;
+const GLIDE_STAGGER_MS = 28;
+const INK_START_MS = 360;
+const INK_STAGGER_MS = 85;
+const MAX_INK_STEPS = 10;
 
-const CHIPS_HELP = 'Pick a theme to highlight it in every review; pick it again to clear. Left and right arrows move between themes.';
+const CHIPS_HELP =
+  'Pick a theme to bring the reviews that mention it into focus and mark the matching sentences; pick it again to clear. Left and right arrows move between themes.';
 
 export default function ThemeLensReviews({
   reviews = defaultReviews,
   themes = defaultThemes,
-  highlightColor = '#FF9A62',
-  startTheme = 0,
-  eyebrow = 'Guest reviews',
+  highlightColor = '#1F35D8',
+  startTheme = 1,
   heading = 'Read the praise that matters to you',
   summary = '{count} of {total} reviews mention {theme}',
   themesLabel = 'Highlight a theme',
@@ -106,7 +126,11 @@ export default function ThemeLensReviews({
   const [active, setActive] = useState(() => (startTheme >= 0 && startTheme < themes.length ? startTheme : -1));
   const [primed, setPrimed] = useState(true);
   const rootRef = useRef<HTMLElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
   const chipRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const rowRefs = useRef(new Map<number, HTMLLIElement>());
+  const before = useRef<Map<number, Point> | null>(null);
+  const running = useRef<Animation[]>([]);
 
   const parsed = useMemo(() => reviews.map((r) => splitSentences(r.text)), [reviews]);
 
@@ -121,6 +145,26 @@ export default function ThemeLensReviews({
 
   const counts = useMemo(() => hits.map((perReview) => perReview.filter((row) => row.some(Boolean)).length), [hits]);
 
+  const theme = active >= 0 ? themes[active] : undefined;
+  const activeHits = active >= 0 ? hits[active] : undefined;
+  const lensOn = !!theme && counts[active] > 0;
+
+  const order = useMemo(() => {
+    const all = reviews.map((_, i) => i);
+    if (!activeHits) return all;
+    const matched = (i: number) => activeHits[i].some(Boolean);
+    return [...all.filter(matched), ...all.filter((i) => !matched(i))];
+  }, [reviews, activeHits]);
+
+  const lead = useMemo(() => {
+    if (!activeHits) return null;
+    const ri = order.find((i) => activeHits[i].some(Boolean));
+    if (ri === undefined) return null;
+    const si = activeHits[ri].findIndex(Boolean);
+    if (si < 0) return null;
+    return { ri, si, text: parsed[ri][si].text, review: reviews[ri] };
+  }, [activeHits, order, parsed, reviews]);
+
   useIsoLayoutEffect(() => {
     const root = rootRef.current;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -132,16 +176,61 @@ export default function ThemeLensReviews({
         setPrimed(true);
         io.disconnect();
       },
-      { rootMargin: '0px 0px -12% 0px' },
+      { rootMargin: '0px 0px -15% 0px' },
     );
     io.observe(root);
     return () => io.disconnect();
   }, []);
 
-  const toggle = (i: number) => {
+  useIsoLayoutEffect(() => {
+    const from = before.current;
+    before.current = null;
+    if (!from) return;
+    running.current.forEach((a) => a.cancel());
+    running.current = [];
+    const easing = CSS.supports('transition-timing-function', 'linear(0, 1)') ? SPRING : FALLBACK_EASE;
+    order.forEach((ri, slot) => {
+      const el = rowRefs.current.get(ri);
+      const prev = from.get(ri);
+      if (!el || !prev) return;
+      const now = el.getBoundingClientRect();
+      const dx = prev.x - now.left;
+      const dy = prev.y - now.top;
+      if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return;
+      running.current.push(
+        el.animate([{ translate: `${dx}px ${dy}px` }, { translate: '0px 0px' }], {
+          duration: GLIDE_MS,
+          delay: slot * GLIDE_STAGGER_MS,
+          easing,
+          fill: 'backwards',
+        }),
+      );
+    });
+    const list = listRef.current;
+    if (list)
+      running.current.push(
+        list.animate(
+          [{ filter: 'blur(0px)' }, { filter: 'blur(1.2px)', offset: 0.3 }, { filter: 'blur(0px)' }],
+          { duration: 460, easing: 'ease-out' },
+        ),
+      );
+  }, [order]);
+
+  const choose = (next: number) => {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce && typeof Element !== 'undefined' && 'animate' in Element.prototype) {
+      const snap = new Map<number, Point>();
+      rowRefs.current.forEach((el, ri) => {
+        const r = el.getBoundingClientRect();
+        snap.set(ri, { x: r.left, y: r.top });
+      });
+      before.current = snap;
+    }
     setPrimed(true);
-    setActive((cur) => (cur === i ? -1 : i));
+    setActive(next);
   };
+
+  const toggle = (i: number) => choose(active === i ? -1 : i);
 
   const onChipKey = (e: KeyboardEvent<HTMLDivElement>) => {
     const keys = ['ArrowRight', 'ArrowLeft', 'Home', 'End'];
@@ -156,24 +245,31 @@ export default function ThemeLensReviews({
     chipRefs.current[next]?.focus();
   };
 
-  const theme = active >= 0 ? themes[active] : undefined;
-  const activeHits = active >= 0 ? hits[active] : undefined;
-
   const summaryParts = theme
     ? summary.split(/(\{count\}|\{total\}|\{theme\})/).map((part, i) => {
         if (part === '{count}')
           return (
-            <span key={i} className={styles.count}>
+            <span key={`c${active}-${i}`} className={styles.count}>
               {counts[active]}
             </span>
           );
-        if (part === '{total}') return <span key={i} className={styles.total}>{reviews.length}</span>;
-        if (part === '{theme}') return <span key={i} className={styles.themeWord}>{theme.label.toLowerCase()}</span>;
+        if (part === '{total}')
+          return (
+            <span key={i} className={styles.total}>
+              {reviews.length}
+            </span>
+          );
+        if (part === '{theme}')
+          return (
+            <span key={`t${active}-${i}`} className={primed ? `${styles.themeWord} ${styles.inkOn}` : styles.themeWord}>
+              {theme.label.toLowerCase()}
+            </span>
+          );
         return part;
       })
     : null;
 
-  let order = 0;
+  let inkStep = 0;
 
   return (
     <section
@@ -182,16 +278,35 @@ export default function ThemeLensReviews({
       style={{ '--tl-hl': highlightColor } as CSSProperties}
       aria-label={ariaLabel}
     >
-      <span className={styles.grain} aria-hidden="true" />
       <div className={styles.inner}>
-        <header className={styles.head}>
-          {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
-          {heading && <h2 className={styles.heading}>{heading}</h2>}
-        </header>
+        {heading && <h2 className={styles.heading}>{heading}</h2>}
+
+        {lead && (
+          <div key={active} className={styles.hero}>
+            <p className={styles.heroText}>
+              <mark
+                className={primed ? `${styles.ink} ${styles.inkOn}` : styles.ink}
+                style={{ '--tl-delay': '120ms' } as CSSProperties}
+              >
+                {lead.text}
+              </mark>
+            </p>
+            <p className={styles.heroWho}>
+              <span className={styles.heroName}>{lead.review.name}</span>
+              {lead.review.detail ? <span>{` · ${lead.review.detail}`}</span> : null}
+            </p>
+          </div>
+        )}
 
         <div className={styles.controls}>
           <div className={styles.chipScroller}>
-            <div className={styles.chips} role="group" aria-label={themesLabel} aria-description={CHIPS_HELP} onKeyDown={onChipKey}>
+            <div
+              className={styles.chips}
+              role="group"
+              aria-label={themesLabel}
+              aria-description={CHIPS_HELP}
+              onKeyDown={onChipKey}
+            >
               {themes.map((t, i) => {
                 const on = i === active;
                 return (
@@ -205,45 +320,57 @@ export default function ThemeLensReviews({
                     aria-pressed={on}
                     onClick={() => toggle(i)}
                   >
-                    <span className={on ? `${styles.swatch} ${styles.swatchOn}` : styles.swatch} aria-hidden="true" />
                     <span className={styles.chipLabel}>{t.label}</span>
-                    <span className={on ? `${styles.chipCount} ${styles.chipCountOn}` : styles.chipCount}>{counts[i]}</span>
+                    <span className={on ? `${styles.chipCount} ${styles.chipCountOn}` : styles.chipCount}>
+                      {counts[i]}
+                    </span>
                   </button>
                 );
               })}
             </div>
           </div>
-          <p className={theme ? `${styles.summary} ${styles.summaryOn}` : styles.summary} aria-live="polite">
+          <p className={styles.summary} aria-live="polite">
             {summaryParts}
           </p>
         </div>
 
-        <ul className={styles.grid}>
-          {reviews.map((r, ri) => {
+        <ul ref={listRef} className={styles.list}>
+          {order.map((ri) => {
+            const r = reviews[ri];
             const rowHits = activeHits?.[ri];
             const matched = !!rowHits?.some(Boolean);
-            const dimCard = !!theme && !matched;
+            const receded = primed && lensOn && !matched;
+            const depth = primed && lensOn ? (matched ? styles.rowFocus : styles.rowBlur) : '';
             return (
-              <li key={`${r.name}-${ri}`} className={dimCard ? `${styles.card} ${styles.cardDim}` : styles.card}>
-                <span className={matched ? `${styles.tab} ${styles.tabOn}` : styles.tab} aria-hidden="true" />
-                <span className={styles.quoteMark} aria-hidden="true">
-                  “
-                </span>
+              <li
+                key={ri}
+                tabIndex={receded ? 0 : undefined}
+                ref={(el) => {
+                  if (el) rowRefs.current.set(ri, el);
+                  else rowRefs.current.delete(ri);
+                }}
+                className={[styles.row, depth].filter(Boolean).join(' ')}
+              >
+                <div className={matched && lensOn ? `${styles.who} ${styles.whoOn}` : styles.who}>
+                  <span className={styles.name}>{r.name}</span>
+                  {r.detail && <span className={styles.detail}>{r.detail}</span>}
+                </div>
                 <p className={styles.text}>
                   {parsed[ri].map((s, si) => {
                     const hit = !!rowHits?.[si];
-                    if (!theme) return <span key={si}>{s.text + s.gap}</span>;
+                    if (!lensOn) return <span key={si}>{s.text + s.gap}</span>;
+                    if (lead && ri === lead.ri && si === lead.si) return <span key={si}>{s.gap}</span>;
                     if (!hit)
                       return (
-                        <span key={si} className={styles.dim}>
+                        <span key={si} className={styles.quiet}>
                           {s.text + s.gap}
                         </span>
                       );
-                    const delay = Math.min(order++, MAX_STAGGER) * STAGGER_MS;
+                    const delay = INK_START_MS + Math.min(inkStep++, MAX_INK_STEPS) * INK_STAGGER_MS;
                     return (
-                      <span key={si}>
+                      <span key={`${active}-${si}`}>
                         <mark
-                          className={primed ? `${styles.band} ${styles.bandOn}` : styles.band}
+                          className={primed ? `${styles.ink} ${styles.inkOn}` : styles.ink}
                           style={{ '--tl-delay': `${delay}ms` } as CSSProperties}
                         >
                           {s.text}
@@ -253,15 +380,6 @@ export default function ThemeLensReviews({
                     );
                   })}
                 </p>
-                <footer className={dimCard ? `${styles.byline} ${styles.bylineDim}` : styles.byline}>
-                  <span className={styles.avatar} aria-hidden="true">
-                    {initials(r.name)}
-                  </span>
-                  <span className={styles.who}>
-                    <span className={styles.name}>{r.name}</span>
-                    {r.detail && <span className={styles.detail}>{r.detail}</span>}
-                  </span>
-                </footer>
               </li>
             );
           })}

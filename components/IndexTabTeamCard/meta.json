@@ -1,0 +1,38 @@
+{
+  "id": "c066",
+  "name": "IndexTabTeamCard",
+  "display_name": "Index Tab Team Card",
+  "category": "cards",
+  "tier": "everyday",
+  "job": "A team card shaped as a file card with side tabs, where choosing a person flips the card to their profile like a Rolodex",
+  "visitor_action": "click/tap a tab or use arrow keys to flip to a person",
+  "owner_settings": [
+    "People (name, role, photo, bio)",
+    "Tab color",
+    "Card tone",
+    "Stamp text",
+    "Form labels (role, file number)"
+  ],
+  "site_types": [
+    "business",
+    "services",
+    "portfolio",
+    "events"
+  ],
+  "mobile": "tabs scroll horizontally above the card",
+  "motion": "card flips down with eased perspective, tab slides forward (reduced-motion: instant swap, tab highlighted)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 3,
+    "uniqueness": 2,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "deferred-to-QA",
+    "craft": "deferred-to-QA"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Registry office: manila card, olive tabs with typed labels, ink stamp accents, light desk shadow"
+}

@@ -1,0 +1,40 @@
+{
+  "id": "c058",
+  "name": "DrawerPullCard",
+  "display_name": "Drawer Pull Card",
+  "category": "cards",
+  "tier": "everyday",
+  "job": "A card with a hidden drawer that slides out from beneath to show extra details such as hours, specs or inclusions",
+  "visitor_action": "click or tap the drawer front (or press Enter); click again or Escape closes it",
+  "owner_settings": [
+    "Card title",
+    "Image",
+    "Drawer contents (rows of label and value)",
+    "Handle label",
+    "Wood or metal tone",
+    "Subtitle",
+    "Image description"
+  ],
+  "site_types": [
+    "business",
+    "store",
+    "restaurant",
+    "services"
+  ],
+  "mobile": "drawer slides down below the card on tap",
+  "motion": "drawer slides on eased rails with tiny bounce at stop (reduced-motion: drawer shown open)",
+  "scores": {
+    "concept": 2,
+    "usefulness": 2,
+    "uniqueness": 3,
+    "reach": 3
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped (render gate disabled for this batch)",
+    "craft": "skipped (craft gate disabled for this batch)"
+  },
+  "status": "built",
+  "studio2_tested": false,
+  "art_direction": "Full oak sideboard front-elevation as the hero: real vertical/horizontal grain, glazed door with painted-scene fallback, engraved title door, brass-pulled drawer band that springs out to a felt-lined tray"
+}

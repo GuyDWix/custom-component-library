@@ -1,0 +1,39 @@
+{
+  "id": "c052",
+  "name": "HangingTagCard",
+  "display_name": "Hanging Tag Card",
+  "category": "cards",
+  "tier": "showpiece",
+  "job": "A product or service card hung from a string that swings with real pendulum physics when touched",
+  "visitor_action": "hover or drag the tag to swing it; tap on touch; arrow keys push it when focused, Escape settles it",
+  "owner_settings": [
+    "Title",
+    "Price or label",
+    "Short note",
+    "String color",
+    "Ink color",
+    "Tag shape"
+  ],
+  "site_types": [
+    "store",
+    "portfolio",
+    "events",
+    "business"
+  ],
+  "mobile": "tap swings once, no drag required",
+  "motion": "pendulum swing with damped spring settle, shadow follows angle (reduced-motion: static slightly tilted tag)",
+  "art_direction": "Kraft atelier: unbleached kraft stock with reinforced eyelet, twine, ink-stamp type in forest green, soft cast shadow on wall",
+  "scores": {
+    "concept": 3,
+    "usefulness": 2,
+    "uniqueness": 3,
+    "reach": 2
+  },
+  "checks": {
+    "tsc": "pass",
+    "render": "skipped (token saving, 2026-11-23)",
+    "craft": "skipped (token saving, 2026-11-23)"
+  },
+  "status": "built",
+  "studio2_tested": false
+}

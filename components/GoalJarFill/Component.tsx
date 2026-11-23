@@ -8,10 +8,19 @@ export interface GoalJarFillProps {
   label?: string;
   currencySymbol?: string;
   liquidColor?: string;
+  reachedText?: string;
   className?: string;
 }
 
 type Rgb = [number, number, number];
+interface Bubble {
+  x: number;
+  y: number;
+  r: number;
+  vy: number;
+  wob: number;
+  ph: number;
+}
 
 const COLUMNS = 44;
 const WAVE_K = 0.028;
@@ -22,7 +31,8 @@ const TILT_DAMP = 6.5;
 const FILL_MS = 1700;
 const BASE = 0.1;
 const TOP = 0.9;
-const SURFACE_DEPTH = 0.028;
+const SURFACE_DEPTH = 0.03;
+const MAX_BUBBLES = 42;
 
 const clamp = (v: number, min = 0, max = 1) => Math.min(max, Math.max(min, v));
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3.2);
@@ -41,6 +51,7 @@ export default function GoalJarFill({
   label = 'Orchard replanting fund',
   currencySymbol = '$',
   liquidColor = '#c9780f',
+  reachedText = 'Goal reached',
   className,
 }: GoalJarFillProps) {
   const uid = useId();
@@ -53,9 +64,13 @@ export default function GoalJarFill({
   const rootRef = useRef<HTMLDivElement>(null);
   const glassRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const causticRef = useRef<HTMLCanvasElement>(null);
   const amountRef = useRef<HTMLSpanElement>(null);
   const percentRef = useRef<HTMLSpanElement>(null);
+  const numeralRef = useRef<HTMLSpanElement>(null);
   const wake = useRef<() => void>(() => {});
+  const bubblesRef = useRef<Bubble[]>([]);
+  const poppedRef = useRef(false);
   const sim = useRef({
     h: new Float32Array(COLUMNS),
     v: new Float32Array(COLUMNS),
@@ -70,9 +85,16 @@ export default function GoalJarFill({
   });
   const [reduced, setReduced] = useState(false);
   const [inView, setInView] = useState(false);
+  const [popped, setPopped] = useState(false);
 
   const live = useRef({ amount, ratio, symbol: currencySymbol, amountText, percent });
   live.current = { amount, ratio, symbol: currencySymbol, amountText, percent };
+
+  const syncPopped = (v: boolean) => {
+    if (poppedRef.current === v) return;
+    poppedRef.current = v;
+    setPopped(v);
+  };
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -95,23 +117,33 @@ export default function GoalJarFill({
     s.from = s.fill;
     s.to = clamp(ratio, 0, 1.04);
     s.start = -1;
+    if (s.to < 1) syncPopped(false);
     wake.current();
   }, [ratio]);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const glass = glassRef.current;
     const root = rootRef.current;
-    if (!canvas || !glass || !root) return;
+    const glass = glassRef.current;
+    const canvas = canvasRef.current;
+    const caustic = causticRef.current;
+    if (!root || !glass || !canvas || !caustic) return;
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const cctx = caustic.getContext('2d');
+    if (!ctx || !cctx) return;
 
     let w = 0;
     let hgt = 0;
+    let cw = 0;
+    let ch = 0;
     let raf = 0;
     let running = false;
+    let last = 0;
+    let time = 0;
+    let flare = 0;
+    let idleTimer = 0;
     let liquid: Rgb = [201, 120, 15];
     const s = sim.current;
+    const bubbles = bubblesRef.current;
 
     const readColor = () => {
       const probe = document.createElement('canvas').getContext('2d');
@@ -122,12 +154,55 @@ export default function GoalJarFill({
       liquid = [r, g, b];
     };
 
+    const spawnBubble = (x0?: number, y0 = 0.05, rMul = 1, vyMul = 1) => {
+      if (bubbles.length >= MAX_BUBBLES) return;
+      bubbles.push({
+        x: x0 ?? 0.18 + Math.random() * 0.64,
+        y: y0,
+        r: Math.max(0.7, (0.8 + Math.random() * 1.5) * (w / 280) * rMul),
+        vy: 0.22 + Math.random() * 0.3 * vyMul,
+        wob: 4 + Math.random() * 4,
+        ph: Math.random() * Math.PI * 2,
+      });
+    };
+
+    const drawCaustic = (fill: number, energy: number) => {
+      if (!cw || !ch) return;
+      cctx.clearRect(0, 0, cw, ch);
+      const a = 0.04 + clamp(fill) * 0.34 + flare * 0.5 + Math.min(0.14, energy * 0.5);
+      const cx = cw * 0.56;
+      const cy = ch * 0.42;
+      const pool = cctx.createRadialGradient(cx, cy, 0, cx, cy, cw * 0.32);
+      pool.addColorStop(0, `rgba(255, 206, 120, ${a * 0.85})`);
+      pool.addColorStop(1, 'rgba(255, 206, 120, 0)');
+      cctx.fillStyle = pool;
+      cctx.fillRect(0, 0, cw, ch);
+      cctx.lineCap = 'round';
+      for (let k = 0; k < 3; k++) {
+        cctx.beginPath();
+        const yy = ch * (0.34 + k * 0.16);
+        for (let px = cw * 0.24; px <= cw * 0.8; px += 6) {
+          const y =
+            yy +
+            Math.sin(px * 0.02 + time * (0.5 + k * 0.22) + k * 2.1) * ch * 0.07 +
+            Math.sin(px * 0.05 - time * 0.7 + k) * ch * 0.02;
+          if (px === cw * 0.24) cctx.moveTo(px, y);
+          else cctx.lineTo(px, y);
+        }
+        cctx.strokeStyle = `rgba(255, 218, 140, ${a * (0.55 - k * 0.13)})`;
+        cctx.lineWidth = 5 + k * 3;
+        cctx.stroke();
+      }
+    };
+
     const writeText = () => {
       const l = live.current;
       const shown = l.ratio > 0 ? clamp(s.fill / Math.max(0.0001, clamp(l.ratio, 0, 1.04)), 0, 1) : 1;
       const done = shown > 0.999;
       if (amountRef.current) amountRef.current.textContent = done ? l.amountText : money(l.symbol, l.amount * shown);
-      if (percentRef.current) percentRef.current.textContent = `${done ? l.percent : Math.round(l.percent * shown)}%`;
+      const pct = done ? l.percent : Math.round(l.percent * shown);
+      if (percentRef.current) percentRef.current.textContent = `${pct}%`;
+      if (numeralRef.current) numeralRef.current.textContent = `${pct}%`;
       root.style.setProperty('--gj-fill', clamp(s.fill, 0, 1).toFixed(4));
     };
 
@@ -147,8 +222,8 @@ export default function GoalJarFill({
       const front = (i: number) => level + s.h[i] * amp + s.tilt * (xs(i) - w / 2) * 0.16 - meniscus(i);
       const back = (i: number) => level - depth + s.h[COLUMNS - 1 - i] * amp * 0.7 - s.tilt * (xs(i) - w / 2) * 0.12;
 
-      const light = mix(liquid, [255, 236, 190], 0.45);
-      const deep = mix(liquid, [40, 14, 0], 0.45);
+      const light = mix(liquid, [255, 236, 190], 0.5);
+      const deep = mix(liquid, [40, 14, 0], 0.5);
 
       const trace = (fn: (i: number) => number, reverse = false) => {
         for (let k = 0; k < COLUMNS; k++) {
@@ -157,6 +232,7 @@ export default function GoalJarFill({
         }
       };
 
+      // surface band (back wall of the liquid ellipse)
       ctx.beginPath();
       ctx.moveTo(0, back(0));
       trace(back);
@@ -168,6 +244,7 @@ export default function GoalJarFill({
       ctx.fillStyle = top;
       ctx.fill();
 
+      // liquid body
       ctx.beginPath();
       ctx.moveTo(0, front(0));
       trace(front);
@@ -181,6 +258,7 @@ export default function GoalJarFill({
       ctx.fillStyle = body;
       ctx.fill();
 
+      // interior light: side shading + warm glow near the base
       ctx.save();
       ctx.clip();
       const side = ctx.createLinearGradient(0, 0, w, 0);
@@ -190,22 +268,49 @@ export default function GoalJarFill({
       side.addColorStop(1, 'rgba(30,10,0,0.38)');
       ctx.fillStyle = side;
       ctx.fillRect(0, 0, w, hgt);
-      const glow = ctx.createRadialGradient(w * 0.42, hgt * 0.82, 0, w * 0.42, hgt * 0.82, w * 0.55);
-      glow.addColorStop(0, rgba(mix(light, [255, 245, 220], 0.3), 0.45));
+      const glow = ctx.createRadialGradient(w * 0.42, hgt * 0.86, 0, w * 0.42, hgt * 0.86, w * 0.55);
+      glow.addColorStop(0, rgba(mix(light, [255, 245, 220], 0.3), 0.42));
       glow.addColorStop(1, rgba(light, 0));
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, w, hgt);
-      ctx.fillStyle = 'rgba(255,240,210,0.5)';
-      for (let b = 0; b < 9; b++) {
-        const bx = w * (0.16 + ((b * 0.37) % 0.7));
-        const by = hgt - ((b * 0.23 + s.fill * 0.6) % 1) * (hgt - level) * 0.9 - hgt * 0.06;
-        const r = 0.8 + ((b * 7) % 3) * 0.6;
-        ctx.beginPath();
-        ctx.arc(bx, by, r, 0, Math.PI * 2);
-        ctx.fill();
+
+      // rising bubbles, each with a bright rim and a specular dot
+      if (bubbles.length) {
+        for (let bi = bubbles.length - 1; bi >= 0; bi--) {
+          const b = bubbles[bi];
+          const col = Math.min(COLUMNS - 1, Math.max(0, Math.round(b.x * (COLUMNS - 1))));
+          const sy = front(col);
+          const bx = b.x * w + Math.sin(time * b.wob + b.ph) * w * 0.012;
+          const by = sy + (1 - b.y) * (hgt - 6 - sy);
+          ctx.beginPath();
+          ctx.arc(bx, by, b.r, 0, Math.PI * 2);
+          ctx.fillStyle = rgba(mix(liquid, [255, 250, 235], 0.3), 0.14);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(255,247,225,0.85)';
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(bx - b.r * 0.32, by - b.r * 0.36, Math.max(0.4, b.r * 0.26), 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255,255,255,0.95)';
+          ctx.fill();
+        }
       }
+
+      // refraction glints where the liquid climbs the inner walls
+      ctx.fillStyle = 'rgba(255,246,224,0.5)';
+      ctx.fillRect(w * 0.035, level - 3, 2, 9);
+      ctx.fillRect(w * 0.965 - 2, level - 3, 2, 9);
       ctx.restore();
 
+      // back rim of the surface catches light
+      ctx.beginPath();
+      ctx.moveTo(0, back(0));
+      trace(back);
+      ctx.strokeStyle = rgba(mix(light, [255, 255, 255], 0.25), 0.5);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // front meniscus line
       ctx.beginPath();
       ctx.moveTo(0, front(0));
       trace(front);
@@ -216,14 +321,24 @@ export default function GoalJarFill({
 
     const resize = () => {
       const r = glass.getBoundingClientRect();
-      if (!r.width || !r.height) return;
+      const cr = caustic.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      w = r.width;
-      hgt = r.height;
-      canvas.width = Math.round(w * dpr);
-      canvas.height = Math.round(hgt * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (r.width && r.height) {
+        w = r.width;
+        hgt = r.height;
+        canvas.width = Math.round(w * dpr);
+        canvas.height = Math.round(hgt * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      if (cr.width && cr.height) {
+        cw = cr.width;
+        ch = cr.height;
+        caustic.width = Math.round(cw * dpr);
+        caustic.height = Math.round(ch * dpr);
+        cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
       draw();
+      drawCaustic(clamp(s.fill), 0);
     };
 
     const step = (dt: number) => {
@@ -244,37 +359,70 @@ export default function GoalJarFill({
         s.tiltV += (-TILT_K * s.tilt - TILT_DAMP * s.tiltV) * h;
         s.tilt += s.tiltV * h;
       }
+      for (let bi = bubbles.length - 1; bi >= 0; bi--) {
+        bubbles[bi].y += bubbles[bi].vy * dt;
+        if (bubbles[bi].y >= 1) bubbles.splice(bi, 1);
+      }
+      flare *= Math.exp(-1.6 * dt);
     };
 
     const calm = () => {
-      if (s.start >= 0 || Math.abs(s.tilt) > 0.004 || Math.abs(s.tiltV) > 0.01) return false;
+      if (s.start >= 0 || bubbles.length > 0) return false;
+      if (Math.abs(s.tilt) > 0.004 || Math.abs(s.tiltV) > 0.01) return false;
       for (let i = 0; i < COLUMNS; i++) if (Math.abs(s.h[i]) > 0.05 || Math.abs(s.v[i]) > 0.02) return false;
       return true;
     };
 
-    let last = 0;
+    const scheduleIdle = () => {
+      if (idleTimer || reduced || !inView) return;
+      idleTimer = window.setTimeout(() => {
+        idleTimer = 0;
+        spawnBubble();
+        s.v[Math.floor(COLUMNS * (0.3 + Math.random() * 0.4))] += -0.35;
+        start();
+      }, 2600 + Math.random() * 2800);
+    };
+
     const loop = (now: number) => {
       const dt = Math.min((now - last) / 1000, 1 / 30);
       last = now;
+      time += dt;
       if (s.fill !== s.to || s.start >= 0) {
         if (s.start < 0) s.start = now;
         const t = clamp((now - s.start) / FILL_MS);
         s.fill = s.from + (s.to - s.from) * easeOut(t);
-        if (Math.random() < 0.35) s.v[Math.floor(COLUMNS * (0.35 + Math.random() * 0.3))] += (1 - t) * 2.2;
+        if (Math.random() < 0.3) spawnBubble();
+        if (Math.random() < 0.3) s.v[Math.floor(COLUMNS * (0.35 + Math.random() * 0.3))] += (1 - t) * 2.2;
         if (t >= 1) {
           s.fill = s.to;
           s.start = -1;
           s.tiltV += 0.25;
+          if (s.to >= 1) {
+            if (!poppedRef.current) {
+              syncPopped(true);
+              for (let i = 0; i < 22; i++) spawnBubble(0.25 + Math.random() * 0.5, 0.6 + Math.random() * 0.32, 0.8, 2);
+              s.v[Math.floor(COLUMNS * 0.5)] += -3.2;
+              s.tiltV += 0.5;
+              flare = 1;
+            }
+          } else {
+            syncPopped(false);
+          }
         }
       }
       step(dt);
       draw();
+      const energy = s.h.reduce((a, x) => a + Math.abs(x), 0) / COLUMNS;
+      drawCaustic(clamp(s.fill), energy);
       writeText();
       if (calm()) {
         running = false;
         s.h.fill(0);
         s.v.fill(0);
         draw();
+        drawCaustic(clamp(s.fill), 0);
+        writeText();
+        scheduleIdle();
         return;
       }
       raf = requestAnimationFrame(loop);
@@ -287,33 +435,54 @@ export default function GoalJarFill({
       raf = requestAnimationFrame(loop);
     };
 
-    readColor();
-    if (reduced) {
+    const renderStatic = () => {
       s.fill = s.to;
       s.start = -1;
       s.h.fill(0);
       s.v.fill(0);
       s.tilt = 0;
       s.tiltV = 0;
+      if (s.to >= 1 && !poppedRef.current) {
+        for (let i = 0; i < 10; i++) bubbles.push({
+          x: 0.2 + Math.random() * 0.6,
+          y: 0.2 + Math.random() * 0.65,
+          r: Math.max(0.7, (0.8 + Math.random() * 1.4) * (w / 280)),
+          vy: 0.3,
+          wob: 5,
+          ph: Math.random() * Math.PI * 2,
+        });
+      } else if (s.to < 1) {
+        bubbles.length = 0;
+      }
+      syncPopped(s.to >= 1);
+      draw();
+      drawCaustic(clamp(s.fill), 0);
+      writeText();
+    };
+
+    readColor();
+    if (reduced) {
+      renderStatic();
     }
     wake.current = () => {
       readColor();
       if (reduced) {
-        s.fill = s.to;
-        s.start = -1;
-        draw();
-        writeText();
-      } else start();
+        renderStatic();
+      } else {
+        start();
+      }
     };
 
     const ro = new ResizeObserver(resize);
     ro.observe(glass);
+    ro.observe(caustic);
     resize();
     writeText();
     start();
     return () => {
       ro.disconnect();
       cancelAnimationFrame(raf);
+      window.clearTimeout(idleTimer);
       running = false;
       wake.current = () => {};
     };
@@ -370,52 +539,69 @@ export default function GoalJarFill({
 
   return (
     <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
-      <span className={styles.paper} aria-hidden="true" />
-      <span className={styles.vignette} aria-hidden="true" />
+      <div className={styles.stage}>
+        <span className={styles.lightGlow} aria-hidden="true" />
+        <span className={styles.halo} aria-hidden="true" />
+        <span ref={numeralRef} className={styles.numeral} aria-hidden="true">
+          {percent}%
+        </span>
+        <div className={styles.shelf} aria-hidden="true" />
+        <canvas ref={causticRef} className={styles.caustics} aria-hidden="true" />
 
-      <div
-        className={styles.jar}
-        role="progressbar"
-        tabIndex={0}
-        aria-labelledby={labelId}
-        aria-valuemin={0}
-        aria-valuemax={goal}
-        aria-valuenow={Math.min(amount, goal)}
-        aria-valuetext={`${amountText} of ${goalText}, ${percent}%`}
-        aria-description={JAR_HELP}
-        onPointerMove={onPointerMove}
-        onPointerLeave={onPointerLeave}
-        onPointerDown={onPointerDown}
-        onKeyDown={onKeyDown}
-      >
-        <span className={styles.caustic} aria-hidden="true" />
-        <span className={styles.shadow} aria-hidden="true" />
-        <span className={styles.rim} aria-hidden="true" />
-        <span className={styles.neck} aria-hidden="true" />
-        <div ref={glassRef} className={styles.glass}>
-          <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
-          <span className={styles.ticks} aria-hidden="true" />
-          <span className={styles.print} aria-hidden="true">
-            <span ref={amountRef} className={styles.amount} style={amountStyle}>
-              {amountText}
-            </span>
-            <span className={styles.goal}>/ {goalText}</span>
-            <span ref={percentRef} className={styles.percent}>
-              {percent}%
-            </span>
-          </span>
-          <span className={styles.base} aria-hidden="true" />
-          <span className={styles.highlight} aria-hidden="true" />
-          <span className={styles.highlightThin} aria-hidden="true" />
-          <span className={styles.grainGlass} aria-hidden="true" />
+        <div
+          className={styles.jar}
+          role="progressbar"
+          tabIndex={0}
+          aria-labelledby={label ? labelId : undefined}
+          aria-valuemin={0}
+          aria-valuemax={goal}
+          aria-valuenow={Math.min(amount, goal)}
+          aria-valuetext={`${amountText} of ${goalText}, ${percent}%`}
+          aria-description={JAR_HELP}
+          onPointerMove={onPointerMove}
+          onPointerLeave={onPointerLeave}
+          onPointerDown={onPointerDown}
+          onKeyDown={onKeyDown}
+        >
+          <span className={styles.shadow} aria-hidden="true" />
+          <span
+            className={[styles.corkShadow, popped ? styles.corkShadowOpen : ''].filter(Boolean).join(' ')}
+            aria-hidden="true"
+          />
+          <div
+            className={[styles.cork, popped ? styles.corkPopped : ''].filter(Boolean).join(' ')}
+            aria-hidden="true"
+          >
+            <span className={styles.corkSkin} aria-hidden="true" />
+          </div>
+          <span className={styles.lip} aria-hidden="true" />
+          <span className={styles.neck} aria-hidden="true" />
+          <div ref={glassRef} className={styles.glass}>
+            <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
+            <span className={styles.ticks} aria-hidden="true" />
+            <div className={styles.paper}>
+              {label && <p id={labelId} className={styles.name}>{label}</p>}
+              {label && <span className={styles.rule} aria-hidden="true" />}
+              <span ref={amountRef} className={styles.amount} style={amountStyle}>
+                {amountText}
+              </span>
+              <span className={styles.rule} aria-hidden="true" />
+              <span className={styles.goalLine}>
+                <span ref={percentRef}>{percent}%</span> of {goalText}
+              </span>
+              <span className={styles.paperShade} aria-hidden="true" />
+            </div>
+            <span className={styles.base} aria-hidden="true" />
+            <span className={styles.highlight} aria-hidden="true" />
+            <span className={styles.highlightThin} aria-hidden="true" />
+            <span className={styles.lens} aria-hidden="true" />
+            <span className={styles.grainGlass} aria-hidden="true" />
+          </div>
         </div>
-      </div>
 
-      {label && (
-        <p id={labelId} className={styles.label}>
-          {label}
-        </p>
-      )}
+        {popped && reachedText && <span className={styles.pill}>{reachedText}</span>}
+        <span className={styles.grain} aria-hidden="true" />
+      </div>
     </div>
   );
 }

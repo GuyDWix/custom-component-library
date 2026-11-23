@@ -1,0 +1,987 @@
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: swap;
+  src: url('./fonts/ibm-plex-sans-latin-var.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('./fonts/barlow-condensed-latin-600-normal.woff2') format('woff2');
+}
+
+/* the three numbers that drive the physics: swing-in, toggle jolt, dial sweep */
+@property --dc-k {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+@property --dc-sway {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@property --dc-ring {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+.root {
+  --dc-sheet: #f3f6f8;
+  --dc-paper: #ffffff;
+  --dc-ink: #12263f;
+  --dc-well: color-mix(in srgb, var(--dc-ink) 7%, var(--dc-sheet));
+  --dc-ink-2: color-mix(in srgb, var(--dc-ink) 78%, var(--dc-sheet));
+  --dc-ink-3: color-mix(in srgb, var(--dc-ink) 84%, var(--dc-sheet));
+  --dc-line: color-mix(in srgb, var(--dc-ink) 14%, transparent);
+  --dc-mint: #21b98c;
+  --dc-mint-ink: color-mix(in srgb, var(--dc-mint) 40%, #06281f);
+  --dc-slip: color-mix(in srgb, var(--dc-mint) 17%, var(--dc-paper));
+  --dc-slip-hi: color-mix(in srgb, var(--dc-mint) 28%, var(--dc-paper));
+  --dc-slip-edge: color-mix(in srgb, var(--dc-mint) 46%, var(--dc-paper));
+  --dc-font: 'IBM Plex Sans', system-ui, sans-serif;
+  --dc-display: 'Barlow Condensed', 'IBM Plex Sans', system-ui, sans-serif;
+  --dc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dc-fall: cubic-bezier(0.5, 0, 0.9, 0.4);
+  /* damped springs, sampled: beam swing-in (15% overshoot) and toggle jolt (21%) */
+  --dc-spring-a: linear(0, 0.218, 0.448, 0.662, 0.841, 0.978, 1.072, 1.128, 1.151, 1.151, 1.134, 1.109, 1.08, 1.053, 1.028, 1.009, 0.995, 0.986, 0.982, 0.981, 0.982, 0.985, 0.989, 0.992, 0.995, 0.998, 1);
+  --dc-spring-b: linear(0, 0.302, 0.632, 0.909, 1.097, 1.19, 1.207, 1.173, 1.117, 1.058, 1.01, 0.979, 0.964, 0.963, 0.97, 0.981, 0.991, 0.999, 1.004, 1.007, 1.007, 1.005, 1.003, 1.001, 1, 0.999, 1);
+
+
+  position: relative;
+  container-type: inline-size;
+  box-sizing: border-box;
+  inline-size: 100%;
+  overflow: clip;
+  border: 1px solid var(--dc-line);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, var(--dc-paper) 0, transparent 260px),
+    radial-gradient(color-mix(in srgb, var(--dc-ink) 11%, transparent) 1px, transparent 1.3px) 0 0 / 20px 20px,
+    var(--dc-sheet);
+  box-shadow:
+    0 1px 2px rgba(18, 38, 63, 0.05),
+    0 30px 54px -30px rgba(18, 38, 63, 0.34);
+  color: var(--dc-ink);
+  font-family: var(--dc-font);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.root ::selection {
+  background: color-mix(in srgb, var(--dc-mint) 26%, #fff);
+}
+
+/* a card that mounts below the fold sits in its finished state and plays the opening once it scrolls into view */
+.pending .scale,
+.pending .crown,
+.pending .rod,
+.pending .cell,
+.pending .slab,
+.pending .chip {
+  animation: none;
+}
+
+/* ───────── toolbar (switch) ───────── */
+
+.toolbar {
+  position: relative;
+  z-index: 6;
+  padding: 18px 22px 0;
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0;
+  appearance: none;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.switch:focus-visible {
+  outline: 2px solid var(--dc-mint-ink);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
+.track {
+  position: relative;
+  flex: none;
+  inline-size: 44px;
+  block-size: 26px;
+  border: 1px solid color-mix(in srgb, var(--dc-ink) 34%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--dc-ink) 6%, transparent);
+  transition:
+    background-color 240ms var(--dc-ease),
+    border-color 240ms var(--dc-ease);
+}
+
+.thumb {
+  position: absolute;
+  inset-block-start: 2px;
+  inset-inline-start: 2px;
+  inline-size: 20px;
+  block-size: 20px;
+  border: 1px solid color-mix(in srgb, var(--dc-ink) 18%, transparent);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(18, 38, 63, 0.22);
+  transition: inset-inline-start 340ms cubic-bezier(0.34, 1.5, 0.44, 1);
+}
+
+.switchOn .track {
+  border-color: var(--dc-mint-ink);
+  background: var(--dc-mint);
+}
+
+.switchOn .thumb {
+  inset-inline-start: 20px;
+}
+
+.switchLabel {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--dc-ink-3);
+}
+
+.switchOn .switchLabel {
+  color: var(--dc-ink);
+}
+
+.switch[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* ───────── the scale ───────── */
+
+.scale {
+  /* geometry: the nameplates sit under the beam ends, labels run down the pillar */
+  --dc-mid: clamp(150px, 27cqi, 220px);
+  --dc-half: calc(25cqi + var(--dc-mid) / 4);
+  --dc-tmax: 7.5deg;
+  --dc-beamY: 70px;
+  --dc-tilt: 0;
+  --dc-frac: 0;
+  --dc-ang: calc(var(--dc-tilt) * var(--dc-tmax) * var(--dc-k) + var(--dc-sway));
+  position: relative;
+  isolation: isolate;
+  direction: ltr;
+  padding-block: var(--dc-beamY) 76px;
+  animation-name: dcSwing, dcDial;
+  animation-duration: 1150ms, 1000ms;
+  animation-timing-function: var(--dc-spring-a), var(--dc-ease);
+  animation-delay: 460ms, 560ms;
+  animation-fill-mode: backwards, backwards;
+}
+
+.swayA {
+  animation-name: dcSwing, dcDial, dcJoltA;
+  animation-duration: 1150ms, 1000ms, 1250ms;
+  animation-timing-function: var(--dc-spring-a), var(--dc-ease), var(--dc-spring-b);
+  animation-delay: 460ms, 560ms, 0ms;
+  animation-fill-mode: backwards, backwards, none;
+}
+
+.swayB {
+  animation-name: dcSwing, dcDial, dcJoltB;
+  animation-duration: 1150ms, 1000ms, 1250ms;
+  animation-timing-function: var(--dc-spring-a), var(--dc-ease), var(--dc-spring-b);
+  animation-delay: 460ms, 560ms, 0ms;
+  animation-fill-mode: backwards, backwards, none;
+}
+
+.rig {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0;
+  z-index: 4;
+  block-size: calc(var(--dc-beamY) * 2);
+  pointer-events: none;
+}
+
+.beam {
+  position: absolute;
+  inset-block-start: calc(var(--dc-beamY) - 8px);
+  inset-inline-start: calc(50% - var(--dc-half));
+  inline-size: calc(var(--dc-half) * 2);
+  block-size: 16px;
+  border-radius: 8px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 11px, rgba(255, 255, 255, 0.3) 11px 12px),
+    linear-gradient(180deg, color-mix(in srgb, var(--dc-ink) 88%, #fff) 0, var(--dc-ink) 55%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 12px 18px -10px rgba(18, 38, 63, 0.5);
+  transform: rotate(var(--dc-ang));
+}
+
+.cap {
+  position: absolute;
+  inset-block-start: 50%;
+  inline-size: 28px;
+  block-size: 28px;
+  margin-block-start: -14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--dc-mint) 0 4px, var(--dc-ink) 4.5px);
+  box-shadow: 0 0 0 3px var(--dc-sheet);
+}
+
+.capA {
+  inset-inline-start: -14px;
+}
+
+.capB {
+  inset-inline-end: -14px;
+}
+
+.pillar {
+  position: absolute;
+  inset-block: var(--dc-beamY) 40px;
+  inset-inline-start: 50%;
+  z-index: 0;
+  inline-size: 3px;
+  margin-inline-start: -1.5px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--dc-ink) 0, color-mix(in srgb, var(--dc-ink) 22%, transparent) 90px);
+}
+
+.base {
+  position: absolute;
+  inset-block-end: 22px;
+  inset-inline-start: 50%;
+  z-index: 0;
+  inline-size: clamp(120px, var(--dc-mid), 210px);
+  block-size: 24px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--dc-ink) 90%, #fff), var(--dc-ink));
+  clip-path: polygon(10% 0, 90% 0, 100% 100%, 0 100%);
+}
+
+/* the table the scale stands on */
+.scale::after {
+  content: '';
+  position: absolute;
+  inset-inline: 22px;
+  inset-block-end: 21px;
+  block-size: 1px;
+  background: linear-gradient(90deg, transparent, var(--dc-line) 14%, var(--dc-line) 86%, transparent);
+  pointer-events: none;
+}
+
+.hub {
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: var(--dc-beamY);
+  z-index: 5;
+  translate: -50% -50%;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 3px;
+  box-sizing: border-box;
+  inline-size: 78px;
+  block-size: 78px;
+  padding-block-start: 22px;
+  border-radius: 50%;
+  background: var(--dc-ink);
+  box-shadow:
+    0 0 0 5px var(--dc-sheet),
+    0 14px 22px -10px rgba(18, 38, 63, 0.55);
+  font-family: var(--dc-display);
+  font-size: 27px;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  color: #fff;
+  transition: scale 420ms cubic-bezier(0.34, 1.5, 0.44, 1);
+}
+
+.hub::before {
+  content: '';
+  position: absolute;
+  inset: -11px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--dc-mint) calc(var(--dc-ring) * var(--dc-frac) * 360deg),
+    color-mix(in srgb, var(--dc-ink) 14%, transparent) 0
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+}
+
+.diffOn .hub {
+  scale: 1.08;
+}
+
+.pillNum {
+  color: color-mix(in srgb, var(--dc-mint) 62%, #fff);
+}
+
+.pillSlash {
+  color: color-mix(in srgb, #fff 45%, var(--dc-ink));
+}
+
+.pillTotal {
+  color: color-mix(in srgb, #fff 82%, var(--dc-ink));
+}
+
+/* ───────── nameplates: heavy counterweights hung from the beam ends ───────── */
+
+.crown {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--dc-mid) minmax(0, 1fr);
+  animation: dcCrown 760ms var(--dc-ease) 60ms backwards;
+}
+
+.nameL {
+  --dc-nm: clamp(22px, 4.6cqi, 38px);
+}
+
+.nameXL {
+  --dc-nm: clamp(16px, 3.2cqi, 27px);
+}
+
+.hang {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hangA {
+  grid-column: 1;
+  translate: 0 calc(sin(var(--dc-ang)) * var(--dc-half) * -1);
+}
+
+.hangB {
+  grid-column: 3;
+  translate: 0 calc(sin(var(--dc-ang)) * var(--dc-half));
+}
+
+.stirrup {
+  display: block;
+  flex: none;
+  inline-size: 56%;
+  block-size: 50px;
+  fill: none;
+  stroke: var(--dc-ink);
+  stroke-width: 1.6;
+  vector-effect: non-scaling-stroke;
+  overflow: visible;
+}
+
+.stirrup path {
+  vector-effect: non-scaling-stroke;
+}
+
+.plate {
+  position: relative;
+  box-sizing: border-box;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 84%;
+  margin: 0;
+  padding: 26px 14px 20px;
+  border-radius: 16px;
+  background:
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.035) 0 2px, transparent 2px 5px),
+    linear-gradient(180deg, color-mix(in srgb, var(--dc-ink) 92%, #fff), var(--dc-ink) 40%);
+  box-shadow:
+    inset 0 -4px 0 var(--dc-mint),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 22px 32px -20px rgba(18, 38, 63, 0.6);
+  text-align: center;
+  color: #fff;
+}
+
+.bolt {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 7px;
+  block-size: 9px;
+  pointer-events: none;
+}
+
+.bolt::before,
+.bolt::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inline-size: 9px;
+  block-size: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--dc-ink) 0 1.6px, color-mix(in srgb, var(--dc-mint) 70%, #fff) 2px);
+}
+
+.bolt::before {
+  inset-inline-start: calc(24.6% - 4.5px);
+}
+
+.bolt::after {
+  inset-inline-start: calc(75.4% - 4.5px);
+}
+
+.name {
+  display: block;
+  min-inline-size: 0;
+  font-family: var(--dc-display);
+  font-size: var(--dc-nm, clamp(26px, 6.1cqi, 54px));
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: 0.014em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  text-wrap: balance;
+  unicode-bidi: plaintext;
+}
+
+/* ───────── the hangers: rods with slotted masses ───────── */
+
+.list {
+  position: relative;
+  z-index: 1;
+  padding-block: 8px 34px;
+}
+
+.rod {
+  position: absolute;
+  inset-block: -16px 8px;
+  inline-size: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--dc-ink) 78%, #fff), var(--dc-ink));
+  animation: dcRod 620ms var(--dc-ease) 200ms backwards;
+}
+
+.rod::after {
+  content: '';
+  position: absolute;
+  inset-block-end: -4px;
+  inset-inline-start: 50%;
+  inline-size: 13px;
+  block-size: 13px;
+  margin-inline-start: -6.5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--dc-ink) 70%, #fff), var(--dc-ink) 62%);
+}
+
+.rodA {
+  inset-inline-start: calc((100% - var(--dc-mid)) / 4);
+  translate: -50% calc(sin(var(--dc-ang)) * var(--dc-half) * -1);
+}
+
+.rodB {
+  inset-inline-end: calc((100% - var(--dc-mid)) / 4);
+  translate: 50% calc(sin(var(--dc-ang)) * var(--dc-half));
+}
+
+.rowWrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition:
+    grid-template-rows 460ms var(--dc-ease),
+    visibility 0s;
+}
+
+/* matching masses fall off the bottom of the hangers, then the stack closes up */
+.diffOn .rowMatch {
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows 440ms cubic-bezier(0.6, 0, 0.3, 1) calc(280ms + min(var(--r), 10) * 24ms),
+    visibility 0s calc(280ms + min(var(--r), 10) * 24ms + 440ms);
+}
+
+.row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--dc-mid) minmax(0, 1fr);
+  grid-template-areas: 'a label b';
+  align-items: center;
+  min-block-size: 0;
+  outline-offset: -2px;
+  border-radius: 16px;
+}
+
+.row::before {
+  content: '';
+  position: absolute;
+  inset-inline: 10px;
+  inset-block: 2px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--dc-mint) 11%, transparent);
+  opacity: 0;
+  transition: opacity 200ms ease;
+  pointer-events: none;
+}
+
+.row:hover::before,
+.row:focus-visible::before {
+  opacity: 1;
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--dc-mint-ink);
+}
+
+.cell {
+  --dc-ang: calc(var(--dc-tilt) * var(--dc-tmax) * var(--dc-k) + var(--dc-sway));
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 0;
+  padding: 5px 12px;
+  /* each mass trails the plate a hair behind, so the stack settles like a chain */
+  animation: dcSwing 1150ms var(--dc-spring-a) calc(460ms + min(var(--i), 12) * 9ms) backwards;
+}
+
+.cellA {
+  grid-area: a;
+  translate: 0 calc(sin(var(--dc-ang)) * var(--dc-half) * -1);
+}
+
+.cellB {
+  grid-area: b;
+  translate: 0 calc(sin(var(--dc-ang)) * var(--dc-half));
+}
+
+.slab {
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  inline-size: fit-content;
+  min-inline-size: calc(var(--dc-w) * 100%);
+  max-inline-size: 100%;
+  min-block-size: 38px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-family: var(--dc-display);
+  font-size: clamp(18px, 3.2cqi, 23px);
+  font-weight: 600;
+  letter-spacing: 0.014em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  overflow-wrap: anywhere;
+  unicode-bidi: plaintext;
+  transition:
+    transform 320ms cubic-bezier(0.34, 1.5, 0.44, 1),
+    box-shadow 320ms var(--dc-ease),
+    background-color 220ms ease,
+    opacity 260ms ease calc(240ms + min(var(--i), 10) * 26ms),
+    translate 420ms var(--dc-ease) calc(240ms + min(var(--i), 10) * 26ms);
+  animation: dcThread 640ms var(--dc-ease) calc(120ms + var(--i) * 40ms) backwards;
+}
+
+/* the weights that make the difference are the big ones */
+.slabHeavy,
+.slabLight,
+.slabText {
+  min-block-size: 64px;
+  font-size: clamp(24px, 5.2cqi, 40px);
+}
+
+.slabHeavy {
+  background:
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.04) 0 2px, transparent 2px 5px),
+    linear-gradient(180deg, color-mix(in srgb, var(--dc-ink) 90%, #fff), var(--dc-ink) 45%);
+  color: #fff;
+  box-shadow:
+    inset 0 -4px 0 var(--dc-mint),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 14px 20px -12px rgba(18, 38, 63, 0.62);
+}
+
+.slabLight,
+.slabText {
+  border: 1px solid var(--dc-slip-edge);
+  background: var(--dc-slip);
+  color: var(--dc-ink);
+  box-shadow:
+    inset 0 -4px 0 color-mix(in srgb, var(--dc-mint) 80%, var(--dc-paper)),
+    0 10px 16px -12px rgba(18, 38, 63, 0.4);
+}
+
+.slabGhost {
+  min-block-size: 64px;
+  font-size: clamp(24px, 5.2cqi, 40px);
+  border: 1.5px dashed color-mix(in srgb, var(--dc-ink) 38%, transparent);
+  background: transparent;
+  color: var(--dc-ink-3);
+}
+
+.slabMatch {
+  border: 1px solid var(--dc-line);
+  background: var(--dc-well);
+  color: var(--dc-ink-2);
+}
+
+.row:hover .slab,
+.row:focus-visible .slab {
+  transform: translateY(-4px);
+}
+
+.row:hover .slabHeavy,
+.row:focus-visible .slabHeavy {
+  box-shadow:
+    inset 0 -4px 0 var(--dc-mint),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 22px 28px -14px rgba(18, 38, 63, 0.6);
+}
+
+.row:hover .slabLight,
+.row:focus-visible .slabLight,
+.row:hover .slabText,
+.row:focus-visible .slabText {
+  background: var(--dc-slip-hi);
+}
+
+.row:hover .slabMatch,
+.row:focus-visible .slabMatch {
+  background: var(--dc-paper);
+  color: var(--dc-ink);
+}
+
+.diffOn .rowMatch .slab {
+  opacity: 0;
+  translate: 0 26px;
+  pointer-events: none;
+  transition:
+    opacity 240ms ease-in calc(min(var(--r), 10) * 26ms),
+    translate 320ms var(--dc-fall) calc(min(var(--r), 10) * 26ms);
+}
+
+/* ───────── label tags on the pillar ───────── */
+
+.cellLabel {
+  grid-area: label;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  min-inline-size: 0;
+  padding-inline: 6px;
+}
+
+.chip {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  max-inline-size: 100%;
+  padding: 8px 14px 9px;
+  border: 1px solid var(--dc-line);
+  border-radius: 11px;
+  background: var(--dc-paper);
+  box-shadow: 0 1px 2px rgba(18, 38, 63, 0.06);
+  text-align: center;
+  transition:
+    opacity 260ms ease calc(240ms + min(var(--i), 10) * 26ms),
+    translate 420ms var(--dc-ease) calc(240ms + min(var(--i), 10) * 26ms),
+    border-color 220ms ease;
+  animation: dcPop 560ms var(--dc-ease) calc(180ms + var(--i) * 40ms) backwards;
+}
+
+.rowDiff .chip {
+  border-color: var(--dc-slip-edge);
+}
+
+.diffOn .rowMatch .chip {
+  opacity: 0;
+  translate: 0 26px;
+  transition:
+    opacity 240ms ease-in calc(min(var(--r), 10) * 26ms),
+    translate 320ms var(--dc-fall) calc(min(var(--r), 10) * 26ms);
+}
+
+.tick {
+  flex: none;
+  inline-size: 20px;
+  block-size: 4px;
+  border-radius: 2px;
+  background: var(--dc-mint);
+  transition: transform 260ms cubic-bezier(0.34, 1.5, 0.44, 1);
+}
+
+.rowMatch .tick {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dc-ink) 40%, transparent);
+}
+
+.row:hover .tick,
+.row:focus-visible .tick {
+  transform: scaleX(1.35);
+}
+
+.labelText {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  line-height: 1.3;
+  color: var(--dc-ink-3);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  unicode-bidi: plaintext;
+}
+
+.rowDiff .labelText {
+  color: var(--dc-mint-ink);
+}
+
+/* long pasted text: switch to readable sans, start-aligned, full-width slab */
+.rowLong .slab {
+  inline-size: 100%;
+  min-inline-size: 0;
+  place-items: start;
+  padding-block: 14px;
+  font-family: var(--dc-font);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.5;
+  text-align: start;
+  overflow-wrap: break-word;
+}
+
+.rowLong .slabHeavy,
+.rowLong .slabLight,
+.rowLong .slabText {
+  min-block-size: 64px;
+  font-weight: 600;
+}
+
+.rowLong .cell {
+  align-self: stretch;
+}
+
+/* ───────── keyframes ───────── */
+
+@keyframes dcSwing {
+  from {
+    --dc-k: 0;
+  }
+  to {
+    --dc-k: 1;
+  }
+}
+
+@keyframes dcDial {
+  from {
+    --dc-ring: 0;
+  }
+  to {
+    --dc-ring: 1;
+  }
+}
+
+@keyframes dcJoltA {
+  from {
+    --dc-sway: calc(var(--dc-tilt) * 2.6deg);
+  }
+  to {
+    --dc-sway: 0deg;
+  }
+}
+
+@keyframes dcJoltB {
+  from {
+    --dc-sway: calc(var(--dc-tilt) * 2.6deg);
+  }
+  to {
+    --dc-sway: 0deg;
+  }
+}
+
+@keyframes dcCrown {
+  from {
+    opacity: 0;
+    transform: translateY(-22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dcRod {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 -20px 0);
+  }
+}
+
+@keyframes dcThread {
+  from {
+    opacity: 0;
+    translate: 0 -30px;
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes dcPop {
+  from {
+    opacity: 0;
+    scale: 0.86;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+/* ───────── narrow containers: labels sit above each pair of masses ───────── */
+
+@container (width < 620px) {
+  .scale {
+    --dc-mid: 0px;
+    --dc-half: 25cqi;
+    --dc-tmax: 11deg;
+    --dc-beamY: 66px;
+  }
+
+  .toolbar {
+    padding-inline: 18px;
+  }
+
+  .hub {
+    inline-size: 64px;
+    block-size: 64px;
+    padding-block-start: 18px;
+    font-size: 23px;
+  }
+
+  .hub::before {
+    inset: -9px;
+  }
+
+  .stirrup {
+    block-size: 46px;
+  }
+
+  .plate {
+    inline-size: 92%;
+    padding: 22px 8px 16px;
+    border-radius: 14px;
+  }
+
+  .name {
+    font-size: var(--dc-nm, clamp(24px, 8.4cqi, 40px));
+  }
+
+  .nameL {
+    --dc-nm: clamp(20px, 6.6cqi, 30px);
+  }
+
+  .nameXL {
+    --dc-nm: clamp(16px, 5cqi, 22px);
+  }
+
+  .base {
+    inline-size: 110px;
+  }
+
+  .row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'label label'
+      'a b';
+  }
+
+  .cellLabel {
+    padding-block: 6px 2px;
+  }
+
+  .cell {
+    padding: 4px 14px;
+  }
+
+  .slab {
+    padding-inline: 10px;
+    font-size: clamp(18px, 5.2cqi, 22px);
+  }
+
+  .slabHeavy,
+  .slabLight,
+  .slabText,
+  .slabGhost {
+    font-size: clamp(22px, 7.6cqi, 32px);
+  }
+
+  .chip {
+    padding: 6px 12px 7px;
+  }
+
+  .labelText {
+    font-size: 13.5px;
+  }
+
+  .rowLong .slab {
+    font-size: 14.5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scale,
+  .crown,
+  .rod,
+  .cell,
+  .slab,
+  .chip,
+  .hub,
+  .row::before,
+  .track,
+  .thumb,
+  .tick {
+    animation: none;
+    transition: none;
+  }
+
+  .rowWrap,
+  .diffOn .rowMatch,
+  .diffOn .rowMatch .slab,
+  .diffOn .rowMatch .chip {
+    transition: none;
+  }
+
+  .diffOn .rowMatch .slab,
+  .diffOn .rowMatch .chip {
+    translate: none;
+  }
+
+  .row:hover .slab,
+  .row:focus-visible .slab {
+    transform: none;
+  }
+}

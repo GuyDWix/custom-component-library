@@ -26,47 +26,149 @@ export const defaultPhotos: ClothesPegPhoto[] = [
   { image: img('photo-1501785888041-af3ef285b470'), caption: 'Lake road at golden hour' },
 ];
 
-type Swing = { a: number; v: number };
-type Geo = { x: number; y: number; t: number; row: number };
+/* geometry + physics constants */
+type Pt = { x: number; y: number; px: number; py: number; m: number };
+type RowSim = { pts: Pt[]; rest: number[]; y0: number; vh: number };
+type Geo = { x: number; y: number; w: number; h: number; row: number; idx: number };
+type Layout = { rows: number; geo: Geo[]; sims: RowSim[]; height: number; width: number };
+type Swing = { a: number; v: number; curl: number; cv: number };
 type Rect = { x: number; y: number; w: number; h: number };
+type Pulse = { x: number; dir: number; amp: number; sigma: number; speed: number };
 
 const PAD_TOP = 64;
-const PEG_GRIP = 12;
-const CAPTION_H = 30;
-const OPEN_CAPTION_H = 74;
-const SWING_K = 17;
-const SWING_C = 1.5;
+const GRIP = 14;
+const BORDER = 10;
+const CAP_H = 36;
+const OPEN_CAP_H = 96;
+const X_BLEED = 48;
+const GRAV = 640;
+const SWING_K = 30;
+const SWING_C = 2.4;
+const CURL_K = 46;
+const CURL_C = 7;
 const FLIGHT_K = 150;
 const FLIGHT_C = 19;
+const SIZE_CYCLE = [1.14, 0.85, 1.03, 0.92, 1.1, 0.88];
 
-const HELP = 'Photos hang on a washing line. Press Enter on a photo to unclip it to a large view; Escape re-hangs it.';
+const HELP =
+  'Photos hang on a washing line in the noon sun. Press Enter on a photo to unclip it to a large view; Escape re-hangs it.';
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 const lerp = (a: number, b: number, p: number) => a + (b - a) * p;
-const curve = (sag: number) => `M 0 0 Q 50 ${(sag * 2).toFixed(2)} 100 0`;
+const restTilt = (i: number) => (((i * 37) % 7) - 3) * 0.6;
+const massFor = (g: Geo) => 1 + ((g.w * g.h) / 26000) * 3.4;
 const minHeight = (width: number, h: number) => Math.max(h, width >= 640 ? 480 : 420);
-const restTilt = (i: number) => (((i * 37) % 7) - 3) * 0.7;
 
-function layoutFor(width: number, count: number) {
+function cordPath(sim: RowSim): string {
+  let d = '';
+  for (let k = 0; k < sim.pts.length; k++) {
+    const p = sim.pts[k];
+    d += `${k ? ' L ' : 'M '}${p.x.toFixed(1)} ${(p.y - sim.y0).toFixed(1)}`;
+  }
+  return d;
+}
+
+/* Verlet rope: settle to rest sag (print weights deepened) at layout time */
+function settleRow(width: number, y0: number, anchors: { x: number; m: number }[], sagMax: number, vh: number): RowSim {
+  const x0 = -X_BLEED;
+  const x1 = width + X_BLEED;
+  const n = Math.max(19, anchors.length * 6 + 1);
+  const pts: Pt[] = [];
+  for (let k = 0; k < n; k++) {
+    const u = k / (n - 1);
+    const x = x0 + (x1 - x0) * u;
+    const y = y0 + sagMax * 4 * u * (1 - u);
+    pts.push({ x, y, px: x, py: y, m: 1 });
+  }
+  for (const a of anchors) {
+    const idx = clamp(Math.round(((a.x - x0) / (x1 - x0)) * (n - 1)), 1, n - 2);
+    pts[idx].m = a.m;
+  }
+  const rest: number[] = [];
+  for (let k = 0; k < n - 1; k++) {
+    rest.push(Math.hypot(pts[k + 1].x - pts[k].x, pts[k + 1].y - pts[k].y));
+  }
+  const g = GRAV / 3600; /* (1/60)^2 */
+  for (let it = 0; it < 240; it++) {
+    for (let k = 1; k < n - 1; k++) {
+      const p = pts[k];
+      const vx = (p.x - p.px) * 0.99;
+      const vy = (p.y - p.py) * 0.99;
+      p.px = p.x;
+      p.py = p.y;
+      p.x += vx;
+      p.y += vy + g;
+    }
+    for (let s = 0; s < 2; s++) {
+      for (let k = 0; k < n - 1; k++) {
+        const a = pts[k];
+        const b = pts[k + 1];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const d = Math.hypot(dx, dy);
+        if (d > rest[k] && d > 0) {
+          const diff = (d - rest[k]) / d;
+          const wa = 1 / a.m;
+          const wb = 1 / b.m;
+          const tw = wa + wb;
+          const ox = (dx * diff) / tw;
+          const oy = (dy * diff) / tw;
+          a.x += ox * wa;
+          a.y += oy * wa;
+          b.x -= ox * wb;
+          b.y -= oy * wb;
+        }
+      }
+    }
+    pts[0].x = x0;
+    pts[0].y = y0;
+    pts[0].px = x0;
+    pts[0].py = y0;
+    pts[n - 1].x = x1;
+    pts[n - 1].y = y0;
+    pts[n - 1].px = x1;
+    pts[n - 1].py = y0;
+  }
+  return { pts, rest, y0, vh };
+}
+
+function layoutFor(width: number, count: number): Layout {
   const perRow = clamp(Math.floor(width / 190), 2, 6);
   const rows = Math.max(1, Math.ceil(count / perRow));
   const balanced = Math.ceil(count / rows);
-  const slot = (width - 32) / balanced;
-  const pw = clamp(slot * 0.86, 96, 220);
-  const ph = (pw - 16) * 1.2 + 8 + CAPTION_H;
-  const sag = clamp(width * 0.045, 18, 46);
-  const rowH = ph + sag + 34;
-  const content = PAD_TOP + rows * rowH + 28;
-  const top = PAD_TOP + Math.max(0, minHeight(width, content) - content) * 0.4;
+  const slot = (width - 28) / balanced;
+  const basePw = clamp(slot * 0.8, 100, 235);
+  const sagMax = clamp(width * 0.05, 22, 58);
   const geo: Geo[] = [];
+  const rowMaxPh: number[] = [];
+  for (let r = 0; r < rows; r++) rowMaxPh.push(0);
   for (let i = 0; i < count; i++) {
     const row = Math.floor(i / balanced);
     const inRow = Math.min(balanced, count - row * balanced);
     const j = i - row * balanced;
-    const t = (j + 0.5) / inRow * 0.88 + 0.06;
-    geo.push({ x: t * width, y: top + row * rowH + sag * 4 * t * (1 - t), t, row });
+    const t = ((j + 0.5) / inRow) * 0.84 + 0.08;
+    const w = clamp(basePw * SIZE_CYCLE[i % SIZE_CYCLE.length], 92, 248);
+    const h = BORDER + (w - 2 * BORDER) * 1.08 + CAP_H;
+    rowMaxPh[row] = Math.max(rowMaxPh[row], h);
+    geo.push({ x: t * width, y: 0, w, h, row, idx: 0 });
   }
-  return { rows, pw, ph, sag, rowH, top, geo, height: content };
+  const y0s: number[] = [];
+  for (let r = 0; r < rows; r++) {
+    y0s.push(r === 0 ? PAD_TOP : y0s[r - 1] + rowMaxPh[r - 1] + sagMax + 46);
+  }
+  const sims: RowSim[] = [];
+  for (let r = 0; r < rows; r++) {
+    const anchors = geo.filter((g) => g.row === r).map((g) => ({ x: g.x, m: massFor(g) }));
+    sims.push(settleRow(width, y0s[r], anchors, sagMax, sagMax + 56));
+  }
+  for (const g of geo) {
+    const sim = sims[g.row];
+    const span = width + 2 * X_BLEED;
+    g.idx = clamp(Math.round(((g.x + X_BLEED) / span) * (sim.pts.length - 1)), 1, sim.pts.length - 2);
+    g.y = sim.pts[g.idx].y;
+  }
+  const height = (y0s[rows - 1] ?? PAD_TOP) + (rowMaxPh[rows - 1] || 200) + sagMax + 58;
+  return { rows, geo, sims, height, width };
 }
 
 function openRect(width: number, height: number, ph: number): Rect & { frame: number } {
@@ -75,19 +177,19 @@ function openRect(width: number, height: number, ph: number): Rect & { frame: nu
   const frame = wide ? 36 : 24;
   const maxW = Math.min(width - (wide ? 140 : 24), 780);
   const maxH = Math.max(height - (wide ? 70 : 28), ph * 1.4);
-  const iw = Math.min(maxW - frame, (maxH - frame - OPEN_CAPTION_H) * aspect);
+  const iw = Math.min(maxW - frame, (maxH - frame - OPEN_CAP_H) * aspect);
   const w = iw + frame;
-  const h = iw / aspect + frame + OPEN_CAPTION_H;
+  const h = iw / aspect + frame + OPEN_CAP_H;
   return { x: (width - w) / 2, y: Math.max(14, (height - h) / 2), w, h, frame };
 }
 
 export default function ClothesPegGallery({
   photos = defaultPhotos,
   breezeStrength = 4,
-  stringColor = '#b48a57',
+  stringColor = '#7d93a3',
   className,
 }: ClothesPegGalleryProps) {
-  const uid = useId();
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const [width, setWidth] = useState(960);
   const [reduced, setReduced] = useState(false);
   const [inView, setInView] = useState(true);
@@ -105,13 +207,29 @@ export default function ClothesPegGallery({
   const swings = useRef<Swing[]>([]);
   const flight = useRef({ p: 0, v: 0, target: 0 });
   const breeze = useRef(breezeStrength);
-  const kick = useRef(0);
+  const sims = useRef<RowSim[] | null>(null);
 
   breeze.current = clamp(breezeStrength, 0, 10);
   const L = useMemo(() => layoutFor(width, photos.length), [width, photos.length]);
-  const layout = useRef(L);
-  layout.current = L;
-  while (swings.current.length < photos.length) swings.current.push({ a: restTilt(swings.current.length), v: 0 });
+  const pathD = useMemo(() => L.sims.map(cordPath), [L]);
+  const farCord = useMemo(() => {
+    const y = Math.max(46, PAD_TOP * 0.55);
+    const dip = clamp(width * 0.03, 12, 38);
+    return `M -48 ${y} Q ${width / 2} ${(y + dip * 2).toFixed(1)} ${width + 48} ${y}`;
+  }, [width]);
+
+  const resetSims = useCallback(() => {
+    sims.current = L.sims.map((s) => ({ ...s, pts: s.pts.map((p) => ({ ...p })) }));
+  }, [L]);
+
+  useEffect(() => {
+    resetSims();
+  }, [resetSims]);
+
+  while (swings.current.length < photos.length) {
+    const i = swings.current.length;
+    swings.current.push({ a: restTilt(i), v: 0, curl: 0.3, cv: 0 });
+  }
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -134,101 +252,199 @@ export default function ClothesPegGallery({
     };
   }, []);
 
-  const hungRect = useCallback((i: number): Rect & { a: number } => {
-    const { geo, pw, ph } = layout.current;
-    const g = geo[i];
-    return { x: g.x - pw / 2, y: g.y - PEG_GRIP, w: pw, h: ph, a: swings.current[i]?.a ?? 0 };
-  }, []);
-
   const paintFlight = useCallback(
     (i: number) => {
       const fly = flyRef.current;
       if (!fly) return;
-      const { p } = flight.current;
-      const s = hungRect(i);
-      const e = openRect(width, minHeight(width, layout.current.height), layout.current.ph);
-      const set = (k: string, v: string) => fly.style.setProperty(k, v);
-      set('left', `${lerp(s.x, e.x, p)}px`);
-      set('top', `${lerp(s.y, e.y, p)}px`);
-      set('width', `${Math.max(40, lerp(s.w, e.w, p))}px`);
-      set('height', `${Math.max(40, lerp(s.h, e.h, p))}px`);
-      set('--cpg-rot', `${lerp(s.a, 0, clamp(p, 0, 1)) - Math.sin(clamp(p, 0, 1) * Math.PI) * 5}deg`);
-      set('--cpg-lift', clamp(p, 0, 1).toFixed(3));
-      set('--cpg-pad', `${lerp(8, e.frame / 2, clamp(p, 0, 1))}px`);
-      set('--cpg-foot', `${lerp(CAPTION_H, OPEN_CAPTION_H, clamp(p, 0, 1))}px`);
-      scrimRef.current?.style.setProperty('opacity', clamp(p, 0, 1).toFixed(3));
-    },
-    [hungRect, width],
-  );
-
-  useEffect(() => {
-    if (reduced || !inView) return;
-    let last = performance.now();
-    let id = 0;
-    const loop = (now: number) => {
-      const dt = Math.min((now - last) / 1000, 1 / 30);
-      last = now;
-      const s = now / 1000;
-      const { geo, sag, rows } = layout.current;
-      const wind = playing ? breeze.current : 0;
-      const gust = 0.55 + 0.45 * Math.sin(s * 0.21) * Math.sin(s * 0.13 + 1.2);
-      const steps = 3;
-      const h = dt / steps;
-      let energy = Math.abs(kick.current);
-      const rowBob = (r: number) => wind * gust * Math.sin(s * 0.8 + r * 1.3) * 0.7;
-
-      geo.forEach((g, i) => {
-        const sw = swings.current[i];
-        const force =
-          wind * gust * (Math.sin(s * 1.05 - g.t * 3.1 + g.row) * 9 + Math.sin(s * 2.3 + i * 1.7) * 3.5);
-        for (let n = 0; n < steps; n++) {
-          sw.v += (-SWING_K * (sw.a - restTilt(i) * 0.4) - SWING_C * sw.v + force) * h;
-          sw.a += sw.v * h;
-        }
-        energy += Math.abs(sw.v);
-        const bob = rowBob(g.row) * 4 * g.t * (1 - g.t);
-        hangerRefs.current[i]?.style.setProperty('transform', `translate3d(0, ${bob.toFixed(2)}px, 0) rotate(${sw.a.toFixed(2)}deg)`);
-      });
-
-      for (let r = 0; r < rows; r++) {
-        const d = curve(sag + rowBob(r));
-        for (let k = 0; k < 3; k++) stringRefs.current[r * 3 + k]?.setAttribute('d', d);
-      }
-
       const f = flight.current;
-      if (active !== null) {
-        for (let n = 0; n < steps; n++) {
-          f.v += (FLIGHT_K * (f.target - f.p) - FLIGHT_C * f.v) * h;
-          f.p += f.v * h;
-        }
-        paintFlight(active);
-        energy += Math.abs(f.v) + Math.abs(f.target - f.p);
-        if (f.target === 0 && Math.abs(f.p) < 0.004 && Math.abs(f.v) < 0.05) {
-          setActive(null);
-          const sw = swings.current[active];
-          if (sw) sw.v += 60;
-        }
-      }
-      kick.current = 0;
-      if (!playing && energy < 0.02 && active === null) return;
-      id = requestAnimationFrame(loop);
-    };
-    id = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(id);
-  }, [reduced, inView, playing, active, paintFlight]);
+      const p = clamp(f.p, 0, 1);
+      const g = L.geo[i];
+      const anchor = sims.current?.[g.row]?.pts[g.idx];
+      const sx = (anchor ? anchor.x : g.x) - g.w / 2;
+      const sy = (anchor ? anchor.y : g.y) + GRIP;
+      const e = openRect(width, minHeight(width, L.height), g.h);
+      const set = (k: string, v: string) => fly.style.setProperty(k, v);
+      set('left', `${lerp(sx, e.x, p)}px`);
+      set('top', `${lerp(sy, e.y, p)}px`);
+      set('width', `${Math.max(40, lerp(g.w, e.w, p))}px`);
+      set('height', `${Math.max(40, lerp(g.h, e.h, p))}px`);
+      set('--cpg-rot', `${lerp(swings.current[i]?.a ?? 0, 0, p) - Math.sin(p * Math.PI) * 4}deg`);
+      set('--cpg-lift', p.toFixed(3));
+      set('--cpg-pad', `${lerp(BORDER, e.frame / 2, p)}px`);
+      set('--cpg-foot', `${lerp(CAP_H, OPEN_CAP_H, p)}px`);
+      scrimRef.current?.style.setProperty('opacity', p.toFixed(3));
+    },
+    [L, width],
+  );
 
   useEffect(() => {
     if (active === null) return;
     if (reduced) paintFlight(active);
   }, [active, reduced, paintFlight, width]);
 
+  /* the noon breeze: Verlet cord + swing + curl, gusts ripple along the line */
+  useEffect(() => {
+    if (reduced || !inView) return;
+    const live = sims.current;
+    if (!live) return;
+    let last = performance.now();
+    let raf = 0;
+    let nextGust = 0.7 + Math.random() * 2.6;
+    const pulses: Pulse[] = [];
+    const blowing = () => playing && breeze.current > 0;
+    const windAt = (x: number, s: number) => {
+      const b = playing ? breeze.current : 0;
+      const gust = 0.55 + 0.45 * Math.sin(s * 0.21) * Math.sin(s * 0.13 + 1.2);
+      const ripple = 0.5 * Math.sin(x * 0.012 - s * 2.5) + 0.3 * Math.sin(x * 0.026 - s * 1.15 + 2.1);
+      let f = b * 16 * gust * ripple;
+      if (blowing()) {
+        for (const pu of pulses) {
+          const dx = x - pu.x;
+          f += pu.amp * Math.exp(-(dx * dx) / (2 * pu.sigma * pu.sigma)) * pu.dir;
+        }
+      }
+      return f;
+    };
+    const loop = (now: number) => {
+      const dt = Math.min((now - last) / 1000, 1 / 30);
+      last = now;
+      const s = now / 1000;
+      const steps = 2;
+      const h = dt / steps || 1 / 120;
+      const wind = blowing();
+      if (wind) {
+        nextGust -= dt;
+        if (nextGust <= 0 && pulses.length < 3) {
+          const dir = Math.random() < 0.5 ? -1 : 1;
+          const amp = (26 + Math.random() * 30) * (0.5 + breeze.current / 10);
+          pulses.push({
+            x: dir > 0 ? -80 : width + 80,
+            dir,
+            amp,
+            sigma: 120 + Math.random() * 60,
+            speed: (260 + Math.random() * 160) * dir,
+          });
+          nextGust = 2.2 + Math.random() * 3.8;
+        }
+        for (let k = pulses.length - 1; k >= 0; k--) {
+          pulses[k].x += pulses[k].speed * dt;
+          if (pulses[k].x < -260 || pulses[k].x > width + 260) pulses.splice(k, 1);
+        }
+      }
+      /* cord: verlet + rope constraints (pins at both bleeds) */
+      const gStep = GRAV * h * h;
+      for (const sim of live) {
+        const pts = sim.pts;
+        const rest = sim.rest;
+        const n = pts.length;
+        for (let k = 1; k < n - 1; k++) {
+          const p = pts[k];
+          const vx = (p.x - p.px) * 0.988;
+          const vy = (p.y - p.py) * 0.988;
+          p.px = p.x;
+          p.py = p.y;
+          p.x += vx + windAt(p.x, s) * h * h;
+          p.y += vy + gStep;
+        }
+        for (let it = 0; it < 3; it++) {
+          for (let k = 0; k < n - 1; k++) {
+            const a = pts[k];
+            const b = pts[k + 1];
+            const dx = b.x - a.x;
+            const dy = b.y - a.y;
+            const d = Math.hypot(dx, dy);
+            if (d > rest[k] && d > 0) {
+              const diff = (d - rest[k]) / d;
+              const wa = 1 / a.m;
+              const wb = 1 / b.m;
+              const tw = wa + wb;
+              const ox = (dx * diff) / tw;
+              const oy = (dy * diff) / tw;
+              a.x += ox * wa;
+              a.y += oy * wa;
+              b.x -= ox * wb;
+              b.y -= oy * wb;
+            }
+          }
+        }
+        pts[0].x = -X_BLEED;
+        pts[0].y = sim.y0;
+        pts[0].px = pts[0].x;
+        pts[0].py = pts[0].y;
+        pts[n - 1].x = width + X_BLEED;
+        pts[n - 1].y = sim.y0;
+        pts[n - 1].px = pts[n - 1].x;
+        pts[n - 1].py = pts[n - 1].y;
+      }
+      /* redraw cord strokes */
+      for (let r = 0; r < live.length; r++) {
+        const d = cordPath(live[r]);
+        for (let k = 0; k < 3; k++) stringRefs.current[r * 3 + k]?.setAttribute('d', d);
+      }
+      /* prints: pendulum + paper curl, forced by cord movement and wind */
+      let energy = 0;
+      for (let i = 0; i < L.geo.length; i++) {
+        const g = L.geo[i];
+        const anchor = live[g.row].pts[g.idx];
+        const ax = (anchor.x - anchor.px) / h;
+        const wf = windAt(anchor.x, s);
+        const sw = swings.current[i];
+        const curlT = 0.3 + Math.min(9, Math.abs(sw.v) * 1.3 + Math.abs(wf) * 0.012);
+        for (let n = 0; n < steps; n++) {
+          sw.v += (-SWING_K * (sw.a - restTilt(i) * 0.7) - SWING_C * sw.v + (wf * 0.05 + ax * 1.6)) * h;
+          sw.a += sw.v * h;
+          sw.cv += (CURL_K * (curlT - sw.curl) - CURL_C * sw.cv) * h;
+          sw.curl = clamp(sw.curl + sw.cv * h, 0, 10);
+        }
+        energy += Math.abs(sw.v) + Math.abs(anchor.x - anchor.px);
+        if (active === i) continue;
+        const el = hangerRefs.current[i];
+        if (el) {
+          el.style.setProperty('--cpg-tx', `${(anchor.x - g.x).toFixed(2)}px`);
+          el.style.setProperty('--cpg-ty', `${(anchor.y - g.y).toFixed(2)}px`);
+          el.style.setProperty('--cpg-swing', `${sw.a.toFixed(2)}deg`);
+          el.style.setProperty('--cpg-swingN', sw.a.toFixed(3));
+          el.style.setProperty('--cpg-curlN', sw.curl.toFixed(3));
+        }
+      }
+      /* unclipped print: spring flight to the lightbox */
+      if (active !== null) {
+        const f = flight.current;
+        for (let n = 0; n < steps; n++) {
+          f.v += (FLIGHT_K * (f.target - f.p) - FLIGHT_C * f.v) * h;
+          f.p += f.v * h;
+        }
+        paintFlight(active);
+        energy += Math.abs(f.v) + Math.abs(f.target - f.p);
+        if (f.target === 0 && Math.abs(f.p) < 0.005 && Math.abs(f.v) < 0.06) {
+          const g = L.geo[active];
+          const anchor = live[g.row].pts[g.idx];
+          anchor.m = massFor(g); /* the weight returns: cord dips and rebounds */
+          anchor.py = anchor.y - 5;
+          const sw = swings.current[active];
+          if (sw) sw.v += 24;
+          setActive(null);
+        }
+      }
+      if (!playing && energy < 0.05 && active === null) return;
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [reduced, inView, playing, active, paintFlight, L, width]);
+
   useEffect(() => {
     if (open) closeRef.current?.focus({ preventScroll: true });
   }, [open]);
 
   const unclip = (i: number) => {
+    const g = L.geo[i];
+    const anchor = sims.current?.[g.row]?.pts[g.idx];
+    if (anchor) anchor.m = 1; /* cord loses the weight: it springs up */
     flight.current = { p: 0, v: 0, target: 1 };
     if (reduced) flight.current.p = 1;
+    const sw = swings.current[i];
+    if (sw) sw.v += 20;
     setActive(i);
     setOpen(true);
   };
@@ -240,8 +456,15 @@ export default function ClothesPegGallery({
     triggerRefs.current[active]?.focus({ preventScroll: true });
     if (reduced) {
       flight.current.p = 0;
+      const g = L.geo[active];
+      const anchor = sims.current?.[g.row]?.pts[g.idx];
+      if (anchor) anchor.m = massFor(g);
       setActive(null);
     } else if (!inView) {
+      const g = L.geo[active];
+      const anchor = sims.current?.[g.row]?.pts[g.idx];
+      if (anchor) anchor.m = massFor(g);
+      flight.current.p = 0;
       setActive(null);
     }
   };
@@ -250,7 +473,9 @@ export default function ClothesPegGallery({
     if (reduced || e.pointerType !== 'mouse') return;
     const sw = swings.current[i];
     if (sw) sw.v += clamp(e.movementX, -12, 12) * 2.2;
-    kick.current = 1;
+    const g = L.geo[i];
+    const anchor = sims.current?.[g.row]?.pts[g.idx];
+    if (anchor) anchor.px -= clamp(e.movementX, -10, 10) * 0.35;
   };
 
   const onDialogKey = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -265,13 +490,13 @@ export default function ClothesPegGallery({
 
   const rootStyle = {
     '--cpg-string': stringColor,
-    '--cpg-pw': `${L.pw}px`,
-    '--cpg-ph': `${L.ph}px`,
     minBlockSize: `${minHeight(width, L.height)}px`,
   } as CSSProperties;
 
   const shown = active !== null ? photos[active] : null;
   const dialogLabel = shown ? shown.caption || shown.alt || 'Photo' : '';
+  const steelId = `cpg${uid}steel`;
+  const wireId = `cpg${uid}wire`;
 
   return (
     <div
@@ -281,21 +506,53 @@ export default function ClothesPegGallery({
       data-still={reduced || !playing || !inView ? '' : undefined}
     >
       <span className={styles.sun} aria-hidden="true" />
-      <span className={styles.rays} aria-hidden="true" />
       <span className={styles.cloudA} aria-hidden="true" />
       <span className={styles.cloudB} aria-hidden="true" />
       <span className={styles.grain} aria-hidden="true" />
 
+      <svg className={styles.defs} aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id={steelId} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#7c8b96" />
+            <stop offset="0.16" stopColor="#dfe8ee" />
+            <stop offset="0.5" stopColor="#f7fafc" />
+            <stop offset="0.84" stopColor="#bcc8d1" />
+            <stop offset="1" stopColor="#677680" />
+          </linearGradient>
+          <linearGradient id={wireId} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#8d9aa5" />
+            <stop offset="0.5" stopColor="#f1f6f8" />
+            <stop offset="1" stopColor="#8d9aa5" />
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <svg className={styles.farCord} aria-hidden="true" viewBox={`-48 0 ${width + 96} 200`} preserveAspectRatio="none">
+        <path className={styles.farBase} d={farCord} vectorEffect="non-scaling-stroke" />
+        <path className={styles.farTwist} d={farCord} vectorEffect="non-scaling-stroke" />
+      </svg>
+
       <ul className={styles.line} aria-label="Photo gallery" aria-description={HELP} aria-hidden={open || undefined}>
-        {Array.from({ length: L.rows }, (_, r) => (
-          <li key={`s${r}`} className={styles.stringRow} aria-hidden="true" style={{ insetBlockStart: L.top + r * L.rowH, blockSize: L.sag }}>
-            <svg className={styles.stringSvg} viewBox={`0 0 100 ${L.sag}`} preserveAspectRatio="none">
+        {L.sims.map((sim, r) => (
+          <li
+            key={`s${r}`}
+            className={styles.stringRow}
+            aria-hidden="true"
+            style={{ insetBlockStart: sim.y0, blockSize: sim.vh }}
+          >
+            <svg
+              className={styles.stringSvg}
+              viewBox={`-48 0 ${width + 96} ${sim.vh}`}
+              preserveAspectRatio="none"
+            >
               {[styles.stringShadow, styles.stringBase, styles.stringTwist].map((cls, k) => (
                 <path
                   key={cls}
-                  ref={(el) => { stringRefs.current[r * 3 + k] = el; }}
+                  ref={(el) => {
+                    stringRefs.current[r * 3 + k] = el;
+                  }}
                   className={cls}
-                  d={curve(L.sag)}
+                  d={pathD[r] ?? cordPath(sim)}
                   vectorEffect="non-scaling-stroke"
                 />
               ))}
@@ -304,23 +561,39 @@ export default function ClothesPegGallery({
         ))}
         {photos.map((p, i) => {
           const g = L.geo[i];
+          if (!g) return null;
           const label = p.caption || p.alt || `Photo ${i + 1}`;
-          const hanging = active !== i;
+          const away = active === i;
           return (
-            <li key={i} className={styles.slot} style={{ insetInlineStart: g.x, insetBlockStart: g.y }}>
+            <li
+              key={i}
+              className={styles.slot}
+              data-away={away ? '' : undefined}
+              style={{ insetInlineStart: g.x, insetBlockStart: g.y }}
+            >
               <div
-                ref={(el) => { hangerRefs.current[i] = el; }}
+                ref={(el) => {
+                  hangerRefs.current[i] = el;
+                }}
                 className={styles.hanger}
-                style={{ transform: `rotate(${restTilt(i)}deg)` }}
+                style={
+                  {
+                    '--cpg-pw': `${g.w}px`,
+                    '--cpg-ph': `${g.h}px`,
+                    '--cpg-swing': `${restTilt(i)}deg`,
+                  } as CSSProperties
+                }
               >
+                <span className={styles.shadow} aria-hidden="true" />
                 <button
-                  ref={(el) => { triggerRefs.current[i] = el; }}
+                  ref={(el) => {
+                    triggerRefs.current[i] = el;
+                  }}
                   type="button"
                   className={styles.print}
-                  data-away={hanging ? undefined : ''}
                   aria-label={label}
                   aria-haspopup="dialog"
-                  tabIndex={hanging && !open ? 0 : -1}
+                  tabIndex={!away && !open ? 0 : -1}
                   onClick={() => unclip(i)}
                   onPointerMove={nudge(i)}
                 >
@@ -328,16 +601,43 @@ export default function ClothesPegGallery({
                     {p.image ? (
                       <img className={styles.photo} src={p.image} alt="" draggable={false} />
                     ) : (
-                      <span className={styles.blank} aria-hidden="true">{label.charAt(0)}</span>
+                      <span className={styles.blank} aria-hidden="true">
+                        {label.charAt(0)}
+                      </span>
                     )}
-                    <span className={styles.sheen} aria-hidden="true" />
+                    <span className={styles.bleed} aria-hidden="true" />
                   </span>
                   {p.caption && <span className={styles.caption}>{p.caption}</span>}
+                  <span className={styles.gloss} aria-hidden="true" />
                   <span className={styles.paper} aria-hidden="true" />
                 </button>
-                <span className={styles.peg} data-empty={hanging ? undefined : ''} aria-hidden="true">
-                  <span className={styles.pegSpring} />
-                </span>
+                <svg
+                  className={styles.peg}
+                  viewBox="0 0 22 58"
+                  data-open={away ? '' : undefined}
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <g className={styles.pegJawL}>
+                    <rect x="4.9" y="14.2" width="5.4" height="37" rx="2.7" fill={`url(#${steelId})`} />
+                    <rect x="9.4" y="15.8" width="0.9" height="33.6" rx="0.45" fill="rgba(35,55,69,0.38)" />
+                    <rect x="5.7" y="15.6" width="0.9" height="34.4" rx="0.45" fill="rgba(255,255,255,0.75)" />
+                  </g>
+                  <g className={styles.pegJawR}>
+                    <rect x="11.7" y="14.2" width="5.4" height="37" rx="2.7" fill={`url(#${steelId})`} />
+                    <rect x="11.7" y="15.8" width="0.9" height="33.6" rx="0.45" fill="rgba(35,55,69,0.38)" />
+                    <rect x="15.4" y="15.6" width="0.9" height="34.4" rx="0.45" fill="rgba(255,255,255,0.75)" />
+                  </g>
+                  <g className={styles.pegCoil}>
+                    <ellipse cx="11" cy="8.1" rx="6.4" ry="2.7" fill="none" stroke="rgba(35,55,69,0.3)" strokeWidth="1.7" />
+                    <ellipse cx="11" cy="7.4" rx="6.4" ry="2.7" fill="none" stroke={`url(#${wireId})`} strokeWidth="1.6" />
+                    <ellipse cx="11" cy="11.6" rx="6.4" ry="2.7" fill="none" stroke="rgba(35,55,69,0.3)" strokeWidth="1.7" />
+                    <ellipse cx="11" cy="10.9" rx="6.4" ry="2.7" fill="none" stroke={`url(#${wireId})`} strokeWidth="1.6" />
+                    <ellipse cx="11" cy="15.1" rx="6.4" ry="2.7" fill="none" stroke="rgba(35,55,69,0.3)" strokeWidth="1.7" />
+                    <ellipse cx="11" cy="14.4" rx="6.4" ry="2.7" fill="none" stroke={`url(#${wireId})`} strokeWidth="1.6" />
+                  </g>
+                  <circle cx="11" cy="17.4" r="1.6" fill="#8d9aa5" />
+                </svg>
               </div>
             </li>
           );
@@ -360,7 +660,13 @@ export default function ClothesPegGallery({
 
       {shown && (
         <>
-          <div ref={scrimRef} className={styles.scrim} onClick={rehang} aria-hidden="true" style={{ opacity: reduced ? 1 : 0 }} />
+          <div
+            ref={scrimRef}
+            className={styles.scrim}
+            onClick={rehang}
+            aria-hidden="true"
+            style={{ opacity: reduced ? 1 : 0 }}
+          />
           <div
             ref={flyRef}
             className={styles.fly}
@@ -369,19 +675,22 @@ export default function ClothesPegGallery({
             aria-label={dialogLabel}
             aria-describedby={`${uid}-cap`}
             onKeyDown={onDialogKey}
-            data-open={open ? '' : undefined}
             onClick={rehang}
           >
             <span className={styles.flyWell}>
               {shown.image ? (
                 <img className={styles.photo} src={shown.image} alt={shown.alt || shown.caption || ''} draggable={false} />
               ) : (
-                <span className={styles.blank} aria-hidden="true">{dialogLabel.charAt(0)}</span>
+                <span className={styles.blank} aria-hidden="true">
+                  {dialogLabel.charAt(0)}
+                </span>
               )}
-              <span className={styles.sheen} aria-hidden="true" />
+              <span className={styles.bleed} aria-hidden="true" />
             </span>
             <span className={styles.flyFoot}>
-              <span id={`${uid}-cap`} className={styles.flyCaption}>{shown.caption}</span>
+              <span id={`${uid}-cap`} className={styles.flyCaption}>
+                {shown.caption}
+              </span>
               <span className={styles.flyCount} aria-hidden="true">
                 {String((active ?? 0) + 1).padStart(2, '0')} / {String(photos.length).padStart(2, '0')}
               </span>

@@ -3,13 +3,16 @@ import HoneycombLens, { defaultPhotos } from './Component';
 import type { HoneycombLensPhoto } from './Component';
 
 const longCaption =
-  'The long communal table on a late summer evening, lit by beeswax candles and shared with the whole neighbourhood';
+  'The long communal table on a late summer evening, laid with the whole harvest and shared with everyone from the neighbourhood until the candles burned out';
 
 const worstPhotos: HoneycombLensPhoto[] = [
   ...defaultPhotos,
-  ...defaultPhotos.map((p, i) => (i % 3 === 0 ? { ...p, caption: longCaption } : i % 4 === 1 ? { image: p.image } : p)),
+  ...defaultPhotos.map((p, i) =>
+    i % 3 === 0 ? { ...p, caption: longCaption } : i % 4 === 1 ? { image: p.image } : p,
+  ),
   { image: '', caption: 'Missing image' },
   { image: defaultPhotos[0].image, caption: 'Supercalifragilisticexpialidocious-honeycomb-harvest-festival' },
+  { image: defaultPhotos[1].image },
 ];
 
 const stage = {
@@ -18,7 +21,7 @@ const stage = {
   display: 'grid',
   placeItems: 'center',
   padding: 'clamp(16px, 4vw, 56px)',
-  background: 'linear-gradient(180deg, #f3eee4 0%, #ece6da 100%)',
+  background: 'linear-gradient(180deg, #101319 0%, #05060a 100%)',
 };
 
 export default function Preview() {

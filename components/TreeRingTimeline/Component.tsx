@@ -15,7 +15,6 @@ export interface TreeRingTimelineProps {
   milestones?: TreeRingMilestone[];
   centreLabel?: string;
   centreCaption?: string;
-  eyebrow?: string;
   woodTone?: WoodTone;
   ringThickness?: RingThickness;
   ariaLabel?: string;
@@ -143,7 +142,6 @@ export default function TreeRingTimeline({
   milestones = defaultMilestones,
   centreLabel = 'Since 2009',
   centreCaption = 'Est.',
-  eyebrow = 'Our story, ring by ring',
   woodTone = 'oak',
   ringThickness = 'natural',
   ariaLabel = 'Years in business',
@@ -255,7 +253,6 @@ export default function TreeRingTimeline({
 
   return (
     <section ref={rootRef} className={rootClass} aria-label={ariaLabel}>
-      <span className={styles.grain} aria-hidden="true" />
       <div className={styles.inner}>
         <div className={styles.discCol}>
           <div
@@ -361,7 +358,6 @@ export default function TreeRingTimeline({
         </div>
 
         <div className={styles.story}>
-          {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
           {current && (
             <div className={styles.feature} aria-live="polite">
               <p key={active} className={stepped ? `${styles.year} ${styles.yearIn}` : styles.year}>
