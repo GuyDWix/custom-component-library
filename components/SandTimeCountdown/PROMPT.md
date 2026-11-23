@@ -145,51 +145,16 @@ function solvePile(volume: number): number {
   return (lo + hi) / 2;
 }
 
-/* ---------- turned brass posts ---------- */
+/* ---------- slim metal frame ---------- */
 
-const ellipse = (e: number, c: number, half: number, amp: number) =>
-  amp * Math.sqrt(Math.max(0, 1 - Math.pow((e - c) / half, 2)));
-
-function columnHW(e: number): number {
-  if (e < 7) return 8;
-  if (e < 9) return 8 - (e - 7);
-  if (e >= 16 && e <= 26) return 6 + ellipse(e, 21, 5, 3.4);
-  if (e >= 119 && e <= 127) return 6 + ellipse(e, 123, 4, 1.6);
-  if (e >= 190) return 6 + 2.6 * Math.pow(Math.sin(((e - 190) / 38) * (Math.PI / 2)), 2);
-  return 6;
-}
-
-function rodHW(e: number): number {
-  if (e < 9) return 2.8 + ellipse(e, 4.5, 4.5, 2.4);
-  return 2.8;
-}
-
-function postPath(cx: number, y0: number, len: number, hw: (e: number) => number): string {
-  const ds: number[] = [];
-  for (let d = 0; d < len; d += 1.5) ds.push(d);
-  ds.push(len);
-  const e = (d: number) => Math.min(d, len - d);
-  const left = ds.map((d) => `${(cx - hw(e(d))).toFixed(2)} ${(y0 + d).toFixed(2)}`);
-  const right = ds
-    .slice()
-    .reverse()
-    .map((d) => `${(cx + hw(e(d))).toFixed(2)} ${(y0 + d).toFixed(2)}`);
-  return `M${left.join('L')}L${right.join('L')}Z`;
-}
-
-const POST_Y0 = 72;
-const POST_LEN = 456;
-const POSTS = {
-  columns: [postPath(66, POST_Y0, POST_LEN, columnHW), postPath(334, POST_Y0, POST_LEN, columnHW)],
-  rods: [postPath(64, POST_Y0, POST_LEN, rodHW), postPath(336, POST_Y0, POST_LEN, rodHW)],
-} as const;
-const CAP_HALF: Record<SandTimeFrameStyle, number> = { columns: 152, rods: 146, open: 136 };
+const CAP_Y = 58;
+const POST_OFFSET = 134;
+const POST_HW: Record<'columns' | 'rods', number> = { columns: 2.2, rods: 1.3 };
+const CAP_HALF: Record<SandTimeFrameStyle, number> = { columns: 146, rods: 146, open: 112 };
 
 const CAP_PIECES = [
-  { dy: 0, h: 6, inset: 34, rx: 3, dark: false },
-  { dy: 6, h: 20, inset: 0, rx: 2.5, dark: false },
-  { dy: 26, h: 4, inset: 4, rx: 1, dark: true },
-  { dy: 30, h: 4, inset: 24, rx: 1.5, dark: true },
+  { dy: 0, h: 12, inset: 0, rx: 2, lip: false },
+  { dy: 12, h: 3, inset: 12, rx: 1, lip: true },
 ] as const;
 
 /* ---------- colour helpers ---------- */
@@ -337,7 +302,7 @@ export default function SandTimeCountdown({
     let last = 0;
     const grains: Grain[] = [];
     const sliders: Slider[] = Array.from({ length: 28 }, () => ({ u: rand(), side: rand() < 0.5 ? -1 : 1, speed: 0.16 + rand() * 0.22 }));
-    const glints: Glint[] = Array.from({ length: 22 }, (_, i) => ({
+    const glints: Glint[] = Array.from({ length: 8 }, (_, i) => ({
       region: (i % 2) as 0 | 1,
       u: rand() * 2 - 1,
       depth: rand() * 9,
@@ -422,11 +387,11 @@ export default function SandTimeCountdown({
       ctx.fillStyle = g;
       ctx.fillRect(-140, y0 - 6, 280, y1 - y0 + 12);
       const h = ctx.createLinearGradient(-R_IN, 0, R_IN, 0);
-      h.addColorStop(0, 'rgba(30,16,2,0.6)');
+      h.addColorStop(0, 'rgba(30,16,2,0.34)');
       h.addColorStop(0.22, 'rgba(30,16,2,0)');
       h.addColorStop(0.58, 'rgba(255,240,200,0.07)');
       h.addColorStop(0.78, 'rgba(30,16,2,0)');
-      h.addColorStop(1, 'rgba(30,16,2,0.55)');
+      h.addColorStop(1, 'rgba(30,16,2,0.3)');
       ctx.fillStyle = h;
       ctx.fillRect(-140, y0 - 6, 280, y1 - y0 + 12);
       if (strata) strata(ctx);
@@ -485,20 +450,7 @@ export default function SandTimeCountdown({
         poly.lineTo(128, MID + 3);
         poly.lineTo(-128, MID + 3);
         poly.closePath();
-        fillSand(poly, sim.yL, MID + 3, (c) => {
-          /* strata that bend into the funnel: sand layers dragged toward the neck */
-          for (let n = 1; n <= 5; n++) {
-            c.beginPath();
-            xs.forEach((x, i) => {
-              const y = upperY(x, t, false) + n * 17 * (1 - 0.25 * Math.min(1, Math.abs(x) / 90));
-              if (i) c.lineTo(x, y);
-              else c.moveTo(x, y);
-            });
-            c.strokeStyle = css(n % 2 ? pal.lo : pal.hi, n % 2 ? 0.2 : 0.16);
-            c.lineWidth = 2.2;
-            c.stroke();
-          }
-        });
+        fillSand(poly, sim.yL, MID + 3, null);
         crest(pts);
       }
 
@@ -556,7 +508,7 @@ export default function SandTimeCountdown({
       /* warm glints on both surfaces */
       ctx.save();
       ctx.clip(glassIn);
-      const boost = live ? 0.55 + sim.energy * 0.9 : 0.8;
+      const boost = live ? 0.4 + sim.energy * 0.6 : 0.5;
       for (const g of glints) {
         let x: number;
         let y: number;
@@ -811,37 +763,19 @@ export default function SandTimeCountdown({
     }
   };
 
-  const brushedFilters = (sfx: string) => (
-    <>
-      <filter id={gid('bl' + sfx)} x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
-        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.75" numOctaves="2" seed="5" result="n" />
-        <feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 0.93  0 0 0 0 0.72  1.1 0 0 0 -0.34" result="c" />
-        <feComposite in="c" in2="SourceAlpha" operator="in" />
-      </filter>
-      <filter id={gid('bd' + sfx)} x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
-        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.75" numOctaves="2" seed="5" result="n" />
-        <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.16  0 0 0 0 0.1  0 0 0 0 0.03  -1.1 0 0 0 0.72" result="c" />
-        <feComposite in="c" in2="SourceAlpha" operator="in" />
-      </filter>
-    </>
-  );
-
-  const slab = (key: string, x: number, y: number, w: number, h: number, rx: number, dark: boolean) => (
+  const slab = (key: string, x: number, y: number, w: number, h: number, rx: number, lip: boolean) => (
     <g key={key}>
-      <rect x={x} y={y} width={w} height={h} rx={rx} fill={dark ? url('plateDk') : url('plate')} />
-      <rect x={x} y={y} width={w} height={h} rx={rx} fill={url('slabV')} />
-      <rect x={x} y={y} width={w} height={h} rx={rx} fill="#fff" filter={url('bl')} opacity={dark ? 0.2 : 0.55} />
-      <rect x={x} y={y} width={w} height={h} rx={rx} fill="#fff" filter={url('bd')} opacity={0.5} />
-      <rect x={x + rx} y={y + 0.4} width={Math.max(0, w - rx * 2)} height="0.9" fill="rgba(255,247,214,0.7)" />
-      <rect x={x + rx} y={y + h - 1.1} width={Math.max(0, w - rx * 2)} height="1" fill="rgba(28,16,2,0.55)" />
+      <rect x={x} y={y} width={w} height={h} rx={rx} fill={url('metal')} />
+      <rect x={x} y={y} width={w} height={h} rx={rx} fill={url('metalV')} opacity={lip ? 0.7 : 1} />
+      {!lip && <rect x={x + rx} y={y + 0.5} width={Math.max(0, w - rx * 2)} height="0.8" fill="rgba(255,250,235,0.45)" />}
     </g>
   );
 
   const capSlabs = (top: boolean) =>
     CAP_PIECES.map((c, i) => {
       const hw = capHalf - c.inset;
-      const y = top ? 38 + c.dy : 562 - c.dy - c.h;
-      return slab(`${top ? 't' : 'b'}${i}`, CX - hw, y, hw * 2, c.h, c.rx, c.dark);
+      const y = top ? CAP_Y + c.dy : 2 * MID - CAP_Y - c.dy - c.h;
+      return slab(`${top ? 't' : 'b'}${i}`, CX - hw, y, hw * 2, c.h, c.rx, c.lip);
     });
 
   return (
@@ -853,9 +787,6 @@ export default function SandTimeCountdown({
       aria-labelledby={heading ? headingId : undefined}
       aria-label={heading ? undefined : 'Countdown'}
     >
-      <span className={styles.stars} aria-hidden="true" />
-      <span className={styles.vignette} aria-hidden="true" />
-
       {heading && (
         <h2 id={headingId} className={styles.heading}>
           {heading}
@@ -879,180 +810,99 @@ export default function SandTimeCountdown({
       <div className={styles.stage}>
         <div className={styles.assembly}>
           <span className={styles.glow} aria-hidden="true" />
-          <span className={styles.dial} aria-hidden="true">
-            <span className={styles.ring} />
-            <span className={styles.ringArc} />
-            <span className={styles.ringInner} />
-          </span>
-
-          <div className={styles.rise}>
-            <div className={styles.glassFrame}>
-              <div
-                ref={glassRef}
-                className={styles.glass}
-                tabIndex={0}
-                role="img"
-                aria-label="Hourglass"
-                aria-description="Press Enter or Space to rock the glass."
-                onPointerEnter={onPointerEnter}
-                onPointerDown={onPointerDown}
-                onKeyDown={onKeyDown}
-              >
-                <svg className={styles.layer} viewBox={`0 0 ${GW} ${GH}`} aria-hidden="true" focusable="false">
-                  <defs>
-                    <linearGradient id={gid('wall')} x1="0" x2="1" y1="0" y2="0">
-                      <stop offset="0" stopColor="#bff0f2" stopOpacity="0.55" />
-                      <stop offset="0.12" stopColor="#8fd3d8" stopOpacity="0.22" />
-                      <stop offset="0.5" stopColor="#6fb8c0" stopOpacity="0.1" />
-                      <stop offset="0.88" stopColor="#8fd3d8" stopOpacity="0.2" />
-                      <stop offset="1" stopColor="#bff0f2" stopOpacity="0.5" />
-                    </linearGradient>
-                    <linearGradient id={gid('void')} x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0" stopColor="#0a3a42" stopOpacity="0.5" />
-                      <stop offset="1" stopColor="#031a1f" stopOpacity="0.62" />
-                    </linearGradient>
-                  </defs>
-                  <path d={INNER_PATH} fill={url('void')} />
-                  <path d={OUTER_PATH + INNER_PATH} fillRule="evenodd" fill={url('wall')} />
-                  <path d={OUTER_PATH} fill="none" stroke="rgba(205,245,248,0.42)" strokeWidth="1.1" />
-                  <path d={INNER_PATH} fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth="0.8" />
-                </svg>
-
-                <canvas ref={canvasRef} className={styles.sandCanvas} aria-hidden="true" />
-
-                <svg className={styles.layer} viewBox={`0 0 ${GW} ${GH}`} aria-hidden="true" focusable="false">
-                  <defs>
-                    {brushedFilters('')}
-                    <clipPath id={gid('clip')}>
-                      <path d={INNER_PATH} />
-                    </clipPath>
-                    <linearGradient id={gid('plate')} x1="0" x2="1" y1="0" y2="0">
-                      <stop offset="0" style={{ stopColor: 'var(--stc-brass-dk)' }} />
-                      <stop offset="0.04" style={{ stopColor: 'var(--stc-brass-lo)' }} />
-                      <stop offset="0.16" style={{ stopColor: 'var(--stc-brass)' }} />
-                      <stop offset="0.3" style={{ stopColor: 'var(--stc-brass-hi)' }} />
-                      <stop offset="0.43" style={{ stopColor: 'var(--stc-brass)' }} />
-                      <stop offset="0.58" style={{ stopColor: 'var(--stc-brass-lo)' }} />
-                      <stop offset="0.74" style={{ stopColor: 'var(--stc-brass)' }} />
-                      <stop offset="0.86" style={{ stopColor: 'var(--stc-brass-hi)', stopOpacity: 0.85 }} />
-                      <stop offset="0.96" style={{ stopColor: 'var(--stc-brass-lo)' }} />
-                      <stop offset="1" style={{ stopColor: 'var(--stc-brass-dk)' }} />
-                    </linearGradient>
-                    <linearGradient id={gid('plateDk')} x1="0" x2="1" y1="0" y2="0">
-                      <stop offset="0" style={{ stopColor: 'var(--stc-brass-dk)' }} />
-                      <stop offset="0.3" style={{ stopColor: 'var(--stc-brass-lo)' }} />
-                      <stop offset="0.5" style={{ stopColor: 'var(--stc-brass-dk)' }} />
-                      <stop offset="0.8" style={{ stopColor: 'var(--stc-brass-lo)' }} />
-                      <stop offset="1" style={{ stopColor: 'var(--stc-brass-dk)' }} />
-                    </linearGradient>
-                    <linearGradient id={gid('slabV')} x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0" stopColor="#fff6d6" stopOpacity="0.28" />
-                      <stop offset="0.45" stopColor="#000" stopOpacity="0" />
-                      <stop offset="1" stopColor="#031a1f" stopOpacity="0.42" />
-                    </linearGradient>
-                    <linearGradient id={gid('post')} x1="0" x2="1" y1="0" y2="0">
-                      <stop offset="0" style={{ stopColor: 'var(--stc-brass-dk)' }} />
-                      <stop offset="0.16" style={{ stopColor: 'var(--stc-brass-lo)' }} />
-                      <stop offset="0.34" style={{ stopColor: 'var(--stc-brass-hi)' }} />
-                      <stop offset="0.48" style={{ stopColor: 'var(--stc-brass)' }} />
-                      <stop offset="0.7" style={{ stopColor: 'var(--stc-brass-lo)' }} />
-                      <stop offset="0.88" style={{ stopColor: 'var(--stc-brass)', stopOpacity: 0.9 }} />
-                      <stop offset="1" style={{ stopColor: 'var(--stc-brass-dk)' }} />
-                    </linearGradient>
-                    <linearGradient id={gid('postV')} x1="0" x2="0" y1={POST_Y0} y2={POST_Y0 + POST_LEN} gradientUnits="userSpaceOnUse">
-                      <stop offset="0" stopColor="#000" stopOpacity="0.45" />
-                      <stop offset="0.07" stopColor="#000" stopOpacity="0" />
-                      <stop offset="0.93" stopColor="#000" stopOpacity="0" />
-                      <stop offset="1" stopColor="#000" stopOpacity="0.45" />
-                    </linearGradient>
-                    <linearGradient id={gid('spec')} x1="0" x2="0" y1="96" y2="272" gradientUnits="userSpaceOnUse">
-                      <stop offset="0" stopColor="#fff" stopOpacity="0" />
-                      <stop offset="0.25" stopColor="#fff" stopOpacity="0.85" />
-                      <stop offset="0.7" stopColor="#fff" stopOpacity="0.3" />
-                      <stop offset="1" stopColor="#fff" stopOpacity="0" />
-                    </linearGradient>
-                    <linearGradient id={gid('spec2')} x1="0" x2="0" y1="330" y2="506" gradientUnits="userSpaceOnUse">
-                      <stop offset="0" stopColor="#fff" stopOpacity="0" />
-                      <stop offset="0.3" stopColor="#fff" stopOpacity="0.4" />
-                      <stop offset="0.8" stopColor="#fff" stopOpacity="0.14" />
-                      <stop offset="1" stopColor="#fff" stopOpacity="0" />
-                    </linearGradient>
-                    <linearGradient id={gid('warm')} x1="0" x2="0" y1="110" y2="272" gradientUnits="userSpaceOnUse">
-                      <stop offset="0" stopColor="#ffd98a" stopOpacity="0" />
-                      <stop offset="0.5" stopColor="#ffd98a" stopOpacity="0.5" />
-                      <stop offset="1" stopColor="#ffd98a" stopOpacity="0" />
-                    </linearGradient>
-                    <linearGradient id={gid('capShade')} x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0" stopColor="#021418" stopOpacity="0.6" />
-                      <stop offset="1" stopColor="#021418" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-
-                  <g clipPath={url('clip')}>
-                    <rect x="60" y={IN_TOP} width="280" height="30" fill={url('capShade')} />
-                    <rect x="60" y={IN_BOT - 30} width="280" height="30" fill={url('capShade')} transform={`rotate(180 ${CX} ${IN_BOT - 15})`} />
-                  </g>
-                  <path d={band(-1, 96, 272, 9, 19)} fill={url('spec')} opacity="0.5" />
-                  <path d={edgeLine(-1, 96, 272, 6)} fill="none" stroke={url('spec')} strokeWidth="1.3" strokeLinecap="round" />
-                  <path d={band(-1, 332, 506, 10, 17)} fill={url('spec2')} opacity="0.5" />
-                  <path d={edgeLine(-1, 332, 506, 6)} fill="none" stroke={url('spec2')} strokeWidth="1.1" strokeLinecap="round" />
-                  <path d={edgeLine(1, 110, 272, 5)} fill="none" stroke={url('warm')} strokeWidth="1.6" strokeLinecap="round" />
-
-                  {frame !== 'open' &&
-                    POSTS[frame].map((d, i) => (
-                      <g key={i}>
-                        <path d={d} fill={url('post')} />
-                        <path d={d} fill={url('postV')} />
-                        <path d={d} fill="#fff" filter={url('bl')} opacity="0.4" />
-                        <path d={d} fill="#fff" filter={url('bd')} opacity="0.45" />
-                      </g>
-                    ))}
-
-                  {capSlabs(true)}
-                  {capSlabs(false)}
-                </svg>
-              </div>
-            </div>
-
-            <div className={styles.plinth}>
-              <span className={styles.table} aria-hidden="true" />
-              <span className={styles.cast} aria-hidden="true" />
-              <svg className={styles.plinthGrain} aria-hidden="true" focusable="false">
-                <defs>{brushedFilters('p')}</defs>
-                <rect width="100%" height="100%" fill="#fff" filter={url('blp')} opacity="0.5" />
-                <rect width="100%" height="100%" fill="#fff" filter={url('bdp')} opacity="0.5" />
+          <span className={styles.floor} aria-hidden="true" />
+          <div className={styles.glassFrame}>
+            <div
+              ref={glassRef}
+              className={styles.glass}
+              tabIndex={0}
+              role="img"
+              aria-label="Hourglass"
+              aria-description="Press Enter or Space to rock the glass."
+              onPointerEnter={onPointerEnter}
+              onPointerDown={onPointerDown}
+              onKeyDown={onKeyDown}
+            >
+              <svg className={styles.layer} viewBox={`0 0 ${GW} ${GH}`} aria-hidden="true" focusable="false">
+                <defs>
+                  <linearGradient id={gid('wall')} x1="0" x2="1" y1="0" y2="0">
+                    <stop offset="0" stopColor="#d8eef0" stopOpacity="0.3" />
+                    <stop offset="0.14" stopColor="#bfe0e4" stopOpacity="0.1" />
+                    <stop offset="0.5" stopColor="#bfe0e4" stopOpacity="0.03" />
+                    <stop offset="0.86" stopColor="#bfe0e4" stopOpacity="0.09" />
+                    <stop offset="1" stopColor="#d8eef0" stopOpacity="0.26" />
+                  </linearGradient>
+                </defs>
+                <path d={INNER_PATH} fill="rgba(4,16,20,0.28)" />
+                <path d={OUTER_PATH + INNER_PATH} fillRule="evenodd" fill={url('wall')} />
+                <path d={OUTER_PATH} fill="none" stroke="rgba(214,236,238,0.4)" strokeWidth="1" />
+                <path d={INNER_PATH} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="0.7" />
               </svg>
-              <span className={styles.plinthBevel} aria-hidden="true" />
-            </div>
 
-            <div className={[styles.readout, clock === null && styles.pending].filter(Boolean).join(' ')} role="timer" aria-label={finished ? finishedMessage : spoken}>
-              {finished ? (
-                <p className={styles.done}>{finishedMessage}</p>
-              ) : (
-                units.map((label, i) => (
-                  <div key={i} className={styles.cell} aria-hidden="true">
-                    <span key={`${i}-${real[i]}`} className={styles.num}>
-                      {pad2(shown[i])}
-                    </span>
-                    <span className={styles.unit}>{label}</span>
-                  </div>
-                ))
-              )}
+              <canvas ref={canvasRef} className={styles.sandCanvas} aria-hidden="true" />
+
+              <svg className={styles.layer} viewBox={`0 0 ${GW} ${GH}`} aria-hidden="true" focusable="false">
+                <defs>
+                  <linearGradient id={gid('metal')} x1="0" x2="1" y1="0" y2="0">
+                    <stop offset="0" style={{ stopColor: 'var(--stc-metal-lo)' }} />
+                    <stop offset="0.3" style={{ stopColor: 'var(--stc-metal)' }} />
+                    <stop offset="0.45" style={{ stopColor: 'var(--stc-metal-hi)' }} />
+                    <stop offset="0.65" style={{ stopColor: 'var(--stc-metal)' }} />
+                    <stop offset="1" style={{ stopColor: 'var(--stc-metal-lo)' }} />
+                  </linearGradient>
+                  <linearGradient id={gid('metalV')} x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0" stopColor="#fff" stopOpacity="0.14" />
+                    <stop offset="1" stopColor="#000" stopOpacity="0.3" />
+                  </linearGradient>
+                  <linearGradient id={gid('spec')} x1="0" x2="0" y1="96" y2="272" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stopColor="#fff" stopOpacity="0" />
+                    <stop offset="0.3" stopColor="#fff" stopOpacity="0.6" />
+                    <stop offset="1" stopColor="#fff" stopOpacity="0" />
+                  </linearGradient>
+                  <linearGradient id={gid('spec2')} x1="0" x2="0" y1="330" y2="506" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stopColor="#fff" stopOpacity="0" />
+                    <stop offset="0.35" stopColor="#fff" stopOpacity="0.3" />
+                    <stop offset="1" stopColor="#fff" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+
+                <path d={edgeLine(-1, 96, 272, 7)} fill="none" stroke={url('spec')} strokeWidth="1.1" strokeLinecap="round" />
+                <path d={edgeLine(-1, 332, 506, 7)} fill="none" stroke={url('spec2')} strokeWidth="1" strokeLinecap="round" />
+
+                {frame !== 'open' &&
+                  [-1, 1].map((side) => (
+                    <rect
+                      key={side}
+                      x={CX + side * POST_OFFSET - POST_HW[frame]}
+                      y={CAP_Y + 12}
+                      width={POST_HW[frame] * 2}
+                      height={2 * (MID - CAP_Y - 12)}
+                      fill={url('metal')}
+                    />
+                  ))}
+
+                {capSlabs(true)}
+                {capSlabs(false)}
+              </svg>
             </div>
           </div>
-          <span className={styles.rake} aria-hidden="true" />
         </div>
       </div>
 
-      <svg className={styles.grain} aria-hidden="true" focusable="false">
-        <defs>
-          <filter id={gid('grain')} x="0" y="0" width="100%" height="100%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch" />
-            <feColorMatrix type="matrix" values="0 0 0 0 0.9  0 0 0 0 0.85  0 0 0 0 0.7  0 0 0 0.55 0" />
-          </filter>
-        </defs>
-        <rect width="100%" height="100%" filter={url('grain')} />
-      </svg>
+      <div className={[styles.readout, clock === null && styles.pending].filter(Boolean).join(' ')} role="timer" aria-label={finished ? finishedMessage : spoken}>
+        {finished ? (
+          <p className={styles.done}>{finishedMessage}</p>
+        ) : (
+          units.map((label, i) => (
+            <div key={i} className={styles.cell} aria-hidden="true">
+              <span key={`${i}-${real[i]}`} className={styles.num}>
+                {pad2(shown[i])}
+              </span>
+              <span className={styles.unit}>{label}</span>
+            </div>
+          ))
+        )}
+      </div>
     </section>
   );
 }
@@ -1076,18 +926,13 @@ export default function SandTimeCountdown({
 }
 
 .root {
-  --stc-bg: #0a2b31;
-  --stc-bg-deep: #05181c;
-  --stc-glow: #1d6770;
-  --stc-ink: #f4ead0;
-  --stc-ink-dim: rgba(244, 234, 208, 0.62);
-  --stc-brass-hi: #f7e6ae;
-  --stc-brass: #cfa45a;
-  --stc-brass-lo: #92692f;
-  --stc-brass-dk: #4a3216;
+  --stc-ink: #efe8d8;
+  --stc-ink-dim: rgba(239, 232, 216, 0.62);
+  --stc-metal-hi: #e6dcc4;
+  --stc-metal: #b5a687;
+  --stc-metal-lo: #6c6352;
   --stc-sand: #ecd49b;
   --stc-font: 'Jost', 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
-  --stc-play: running;
 
   position: relative;
   isolation: isolate;
@@ -1096,11 +941,14 @@ export default function SandTimeCountdown({
   box-sizing: border-box;
   inline-size: 100%;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
-  border-radius: 28px;
+  row-gap: 8px;
+  padding: 0 24px clamp(32px, 6cqw, 56px);
+  border-radius: 24px;
   background:
-    radial-gradient(64% 58% at 50% 40%, color-mix(in srgb, var(--stc-glow) 55%, var(--stc-bg)) 0%, transparent 72%),
-    linear-gradient(180deg, var(--stc-bg) 0%, var(--stc-bg-deep) 100%);
+    radial-gradient(60% 70% at 50% 42%, #153038 0%, transparent 75%),
+    linear-gradient(180deg, #0c1d22 0%, #081317 100%);
   color: var(--stc-ink);
   font-family: var(--stc-font);
 }
@@ -1110,68 +958,26 @@ export default function SandTimeCountdown({
 .num::selection,
 .unit::selection,
 .done::selection {
-  background: var(--stc-brass);
-  color: var(--stc-bg-deep);
+  background: var(--stc-metal);
+  color: #081317;
 }
-
-/* ---------- backdrop ---------- */
-
-.stars {
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  pointer-events: none;
-  background-image:
-    radial-gradient(1.5px 1.5px at 8% 14%, rgba(244, 234, 208, 0.85), transparent),
-    radial-gradient(1.5px 1.5px at 17% 62%, rgba(244, 234, 208, 0.6), transparent),
-    radial-gradient(2px 2px at 24% 31%, rgba(247, 230, 174, 0.8), transparent),
-    radial-gradient(1.5px 1.5px at 31% 84%, rgba(244, 234, 208, 0.5), transparent),
-    radial-gradient(1.5px 1.5px at 66% 9%, rgba(244, 234, 208, 0.7), transparent),
-    radial-gradient(2px 2px at 78% 22%, rgba(247, 230, 174, 0.8), transparent),
-    radial-gradient(1.5px 1.5px at 86% 57%, rgba(244, 234, 208, 0.55), transparent),
-    radial-gradient(1.5px 1.5px at 93% 12%, rgba(244, 234, 208, 0.75), transparent),
-    radial-gradient(1.5px 1.5px at 71% 88%, rgba(244, 234, 208, 0.45), transparent),
-    radial-gradient(2px 2px at 4% 46%, rgba(247, 230, 174, 0.6), transparent);
-  animation: twinkle 7s ease-in-out infinite alternate;
-  animation-play-state: var(--stc-play);
-}
-
-.vignette {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: radial-gradient(120% 95% at 50% 42%, transparent 52%, rgba(2, 10, 12, 0.55) 100%);
-}
-
-.grain {
-  position: absolute;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
-  z-index: 4;
-  pointer-events: none;
-  mix-blend-mode: overlay;
-  opacity: 0.1;
-}
-
-/* ---------- copy and controls ---------- */
 
 .heading {
-  position: absolute;
+  position: relative;
   z-index: 3;
-  inset-block-start: 40px;
-  inset-inline-start: 44px;
-  max-inline-size: 30cqw;
+  box-sizing: border-box;
+  max-inline-size: 30ch;
   margin: 0;
-  font-size: clamp(26px, 3.2cqw, 46px);
+  padding-block-start: 44px;
+  font-size: clamp(24px, 5.6cqw, 32px);
   font-weight: 300;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  text-align: center;
   text-wrap: balance;
   overflow-wrap: anywhere;
   color: var(--stc-ink);
-  animation: slideIn 900ms 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: slideIn 900ms 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .pause {
@@ -1189,7 +995,7 @@ export default function SandTimeCountdown({
   background: transparent;
   color: var(--stc-ink-dim);
   cursor: pointer;
-  opacity: 0.55;
+  opacity: 0.6;
   transition:
     opacity 200ms ease,
     background-color 200ms ease;
@@ -1197,29 +1003,25 @@ export default function SandTimeCountdown({
 
 .pause:hover {
   opacity: 1;
-  background: rgba(244, 234, 208, 0.08);
+  background: rgba(239, 232, 216, 0.08);
 }
 
 .pause:focus-visible,
 .glass:focus-visible {
-  outline: 2px solid var(--stc-brass-hi);
+  outline: 2px solid var(--stc-metal-hi);
   outline-offset: 4px;
 }
 
-/* ---------- stage ---------- */
-
 .stage {
-  --w: clamp(300px, 36cqw, 480px);
-  --u: calc(var(--w) / 464);
+  --w: clamp(220px, 58cqw, 300px);
+  --u: calc(var(--w) / 400);
 
   position: relative;
   z-index: 2;
-  box-sizing: border-box;
-  display: grid;
-  justify-items: end;
   inline-size: 100%;
-  padding-block: calc(var(--u) * 40) calc(var(--u) * 56);
-  padding-inline: 20px 9cqw;
+  display: grid;
+  justify-items: center;
+  padding-block: 12px 4px;
 }
 
 .assembly {
@@ -1230,135 +1032,39 @@ export default function SandTimeCountdown({
 .glow {
   position: absolute;
   inset-inline-start: 50%;
-  inset-block-start: calc(var(--u) * 290);
-  inline-size: calc(var(--u) * 940);
+  inset-block-start: 46%;
+  inline-size: 190%;
   aspect-ratio: 1;
   translate: -50% -50%;
   border-radius: 50%;
   pointer-events: none;
-  background: radial-gradient(closest-side, rgba(52, 150, 158, 0.3), rgba(22, 86, 96, 0.12) 55%, transparent);
+  background: radial-gradient(closest-side, rgba(70, 150, 158, 0.16), transparent);
   animation: fadeIn 1400ms ease both;
 }
 
-/* the graduated dial: a non-spinning wrapper so the tick-free zone for the title stays put */
-.dial {
-  /* where the title ends, measured in the dial's own box (negative = the ring never reaches it) */
-  --clear: calc(68px + 30cqw - (100cqw - 9cqw - var(--w) / 2 - var(--u) * 420));
-  --band: calc(var(--u) * 80 + 340px);
-
+.floor {
   position: absolute;
   inset-inline-start: 50%;
-  inset-block-start: calc(var(--u) * 300);
-  inline-size: calc(var(--u) * 840);
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  pointer-events: none;
-  -webkit-mask-image:
-    linear-gradient(90deg, transparent var(--clear), #000 calc(var(--clear) + 56px)), linear-gradient(#000, #000);
-  mask-image:
-    linear-gradient(90deg, transparent var(--clear), #000 calc(var(--clear) + 56px)), linear-gradient(#000, #000);
-  -webkit-mask-size:
-    100% 100%,
-    100% calc(100% - var(--band));
-  mask-size:
-    100% 100%,
-    100% calc(100% - var(--band));
-  -webkit-mask-position:
-    0 0,
-    0 100%;
-  mask-position:
-    0 0,
-    0 100%;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-composite: source-over;
-  mask-composite: add;
-}
-
-.ring,
-.ringInner,
-.ringArc {
-  position: absolute;
-  inset-inline-start: 50%;
-  inset-block-start: 50%;
-  aspect-ratio: 1;
-  translate: -50% -50%;
+  inset-block-end: calc(var(--u) * 24);
+  inline-size: 96%;
+  block-size: calc(var(--u) * 26);
+  translate: -50% 50%;
   border-radius: 50%;
   pointer-events: none;
-  animation: fadeIn 1800ms 300ms ease both;
-}
-
-.ring {
-  inline-size: 100%;
-  background: repeating-conic-gradient(from 0deg, rgba(207, 164, 90, 0.5) 0 0.4deg, transparent 0.4deg 2.5deg);
-  -webkit-mask-image: radial-gradient(closest-side, transparent 95.2%, #000 95.6%, #000 100%, transparent 100.4%);
-  mask-image: radial-gradient(closest-side, transparent 95.2%, #000 95.6%, #000 100%, transparent 100.4%);
-  animation:
-    fadeIn 1800ms 300ms ease both,
-    spin 420s linear infinite;
-  animation-play-state: var(--stc-play);
-}
-
-.ringInner {
-  inline-size: 100%;
-  background:
-    repeating-conic-gradient(from -0.35deg, rgba(247, 230, 174, 0.8) 0 0.7deg, transparent 0.7deg 15deg);
-  -webkit-mask-image: radial-gradient(closest-side, transparent 91%, #000 91.4%, #000 100%, transparent 100.4%);
-  mask-image: radial-gradient(closest-side, transparent 91%, #000 91.4%, #000 100%, transparent 100.4%);
-  animation:
-    fadeIn 1800ms 300ms ease both,
-    spin 420s linear infinite;
-  animation-play-state: var(--stc-play);
-}
-
-.ringArc {
-  inline-size: 91.6667%;
-  background: conic-gradient(from 0deg, rgba(247, 230, 174, 0.7) 0 calc(var(--stc-progress, 0) * 1turn), rgba(207, 164, 90, 0.1) 0);
-  -webkit-mask-image: radial-gradient(closest-side, transparent 98%, #000 98.4%, #000 100%, transparent 100.4%);
-  mask-image: radial-gradient(closest-side, transparent 98%, #000 98.4%, #000 100%, transparent 100.4%);
-}
-
-/* a low raking moonbeam from the title side, laid over the glass and brass so they catch it on one edge */
-.rake {
-  position: absolute;
-  inset-inline-start: -150%;
-  inset-block-start: -22%;
-  inline-size: 300%;
-  block-size: 130%;
-  pointer-events: none;
-  mix-blend-mode: screen;
-  background: linear-gradient(
-    74deg,
-    transparent 31%,
-    rgba(255, 224, 160, 0.04) 40%,
-    rgba(255, 228, 168, 0.13) 45%,
-    rgba(255, 224, 160, 0.05) 49%,
-    transparent 56%
-  );
-  -webkit-mask-image: linear-gradient(180deg, #000 0, #000 55%, transparent 92%);
-  mask-image: linear-gradient(180deg, #000 0, #000 55%, transparent 92%);
-  animation: fadeIn 2200ms 500ms ease both;
-}
-
-.rise {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  justify-items: center;
-  animation: rise 1100ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  background: radial-gradient(closest-side, rgba(0, 4, 6, 0.55), transparent);
+  filter: blur(calc(var(--u) * 6));
 }
 
 .glassFrame {
-  grid-row: 1;
-  grid-column: 1;
-  inline-size: 86.2%;
-  margin-block-end: calc(var(--u) * -18);
+  position: relative;
+  inline-size: 100%;
+  animation: rise 1000ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .glass {
   position: relative;
   aspect-ratio: 400 / 580;
-  transform-origin: 50% 96.9%;
+  transform-origin: 50% 93.4%;
   will-change: transform;
   touch-action: pan-y;
   border-radius: 12px;
@@ -1382,124 +1088,16 @@ export default function SandTimeCountdown({
   pointer-events: none;
 }
 
-/* ---------- plinth with the readout ---------- */
-
-.plinth {
-  grid-row: 2;
-  grid-column: 1;
-  position: relative;
-  inline-size: 100%;
-  min-block-size: calc(var(--u) * 118);
-  border-radius: calc(var(--u) * 12) calc(var(--u) * 12) calc(var(--u) * 16) calc(var(--u) * 16);
-  background: linear-gradient(
-    180deg,
-    var(--stc-brass-hi) 0%,
-    var(--stc-brass) 7%,
-    var(--stc-brass) 24%,
-    var(--stc-brass-lo) 72%,
-    var(--stc-brass-dk) 100%
-  );
-  box-shadow:
-    inset 0 1px 0 rgba(255, 248, 220, 0.75),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.45),
-    0 calc(var(--u) * 26) calc(var(--u) * 54) rgba(0, 0, 0, 0.6);
-}
-
-.plinthGrain {
-  position: absolute;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
-  border-radius: inherit;
-  overflow: hidden;
-  mix-blend-mode: overlay;
-  pointer-events: none;
-}
-
-.plinthBevel {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background:
-    linear-gradient(
-      180deg,
-      transparent calc(var(--u) * 14),
-      rgba(0, 0, 0, 0.38) calc(var(--u) * 14) calc(var(--u) * 15),
-      rgba(255, 240, 190, 0.28) calc(var(--u) * 15) calc(var(--u) * 16),
-      transparent calc(var(--u) * 16)
-    ),
-    linear-gradient(180deg, rgba(255, 246, 210, 0.4) 0, rgba(255, 246, 210, 0) calc(var(--u) * 12)),
-    linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0.55) 0,
-      rgba(0, 0, 0, 0) 9%,
-      rgba(255, 244, 210, 0.16) 27%,
-      rgba(0, 0, 0, 0) 48%,
-      rgba(0, 0, 0, 0.16) 78%,
-      rgba(0, 0, 0, 0.58) 100%
-    );
-}
-
-.table {
-  position: absolute;
-  z-index: -1;
-  inset-inline-start: 50%;
-  inset-block-start: calc(100% - var(--u) * 30);
-  translate: -50% 0;
-  inline-size: 300cqw;
-  block-size: calc(var(--u) * 260);
-  pointer-events: none;
-  border-block-start: 1px solid rgba(207, 164, 90, 0.3);
-  background:
-    radial-gradient(14% 28% at 50% 0%, rgba(207, 164, 90, 0.2), transparent),
-    linear-gradient(180deg, #0f3c44 0%, #082329 45%, #041418 100%);
-}
-
-.cast {
-  position: absolute;
-  z-index: -1;
-  inset-inline-start: 38%;
-  inset-block-end: calc(var(--u) * -34);
-  inline-size: 130%;
-  block-size: calc(var(--u) * 58);
-  pointer-events: none;
-  background: radial-gradient(closest-side, rgba(0, 6, 8, 0.7), rgba(0, 6, 8, 0.28) 55%, transparent);
-  filter: blur(calc(var(--u) * 9));
-  transform: skewX(-38deg);
-  transform-origin: 0 50%;
-}
+/* ---------- readout ---------- */
 
 .readout {
-  grid-row: 2;
-  grid-column: 1;
   position: relative;
-  z-index: 1;
-  align-self: center;
-  justify-self: center;
+  z-index: 2;
   box-sizing: border-box;
-  inline-size: calc(var(--u) * 392);
-  min-block-size: calc(var(--u) * 78);
-  margin-block: calc(var(--u) * 20);
-  align-items: start;
+  inline-size: min(100%, 420px);
+  margin-block-start: 28px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-radius: calc(var(--u) * 7);
-  background:
-    linear-gradient(
-      90deg,
-      transparent calc(33.333% - 0.5px),
-      rgba(207, 164, 90, 0.26) calc(33.333% - 0.5px) calc(33.333% + 0.5px),
-      transparent calc(33.333% + 0.5px),
-      transparent calc(66.666% - 0.5px),
-      rgba(207, 164, 90, 0.26) calc(66.666% - 0.5px) calc(66.666% + 0.5px),
-      transparent calc(66.666% + 0.5px)
-    ),
-    linear-gradient(180deg, #021114 0%, #06262c 100%);
-  box-shadow:
-    inset 0 2px 7px rgba(0, 0, 0, 0.75),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.55),
-    0 1px 0 rgba(255, 238, 180, 0.5);
   transition: opacity 500ms ease;
 }
 
@@ -1511,34 +1109,36 @@ export default function SandTimeCountdown({
   display: grid;
   align-content: start;
   justify-items: center;
-  gap: calc(var(--u) * 3);
+  gap: 10px;
   min-inline-size: 0;
-  padding-block: calc(var(--u) * 8.5);
+  padding-inline: 4px;
+}
+
+.cell + .cell {
+  border-inline-start: 1px solid rgba(181, 166, 135, 0.28);
 }
 
 .num {
-  font-size: calc(var(--u) * 42);
+  font-size: clamp(40px, 12cqw, 56px);
   font-weight: 300;
   line-height: 1;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
   color: var(--stc-ink);
-  text-shadow: 0 0 calc(var(--u) * 20) rgba(244, 200, 120, 0.28);
   animation: tickIn 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .unit {
   max-inline-size: 100%;
-  padding-inline: 6px;
   box-sizing: border-box;
-  font-size: max(12px, calc(var(--u) * 13));
+  font-size: 12px;
   font-weight: 500;
-  line-height: 1.2;
-  letter-spacing: 0.06em;
-  color: var(--stc-brass-hi);
-  opacity: 0.82;
-  white-space: normal;
+  line-height: 1.25;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--stc-metal-hi);
+  opacity: 0.8;
   overflow-wrap: anywhere;
   text-wrap: balance;
   text-align: center;
@@ -1548,10 +1148,10 @@ export default function SandTimeCountdown({
   grid-column: 1 / -1;
   place-self: center;
   margin: 0;
-  padding-inline: calc(var(--u) * 18);
-  font-size: max(15px, calc(var(--u) * 22));
+  padding-inline: 12px;
+  font-size: 20px;
   font-weight: 300;
-  line-height: 1.2;
+  line-height: 1.25;
   letter-spacing: -0.01em;
   text-align: center;
   text-wrap: balance;
@@ -1564,7 +1164,7 @@ export default function SandTimeCountdown({
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(calc(var(--u) * 22));
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
@@ -1603,117 +1203,77 @@ export default function SandTimeCountdown({
   }
 }
 
-@keyframes spin {
-  to {
-    rotate: 360deg;
-  }
-}
+/* ---------- wide: text left, glass right ---------- */
 
-@keyframes twinkle {
-  from {
-    opacity: 0.55;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* ---------- container-sized layouts ---------- */
-
-@container (max-width: 859px) {
-  .stage {
-    --w: clamp(260px, 62cqw, 400px);
-    justify-items: center;
-    padding-block: calc(var(--u) * 20) calc(var(--u) * 50);
-    padding-inline: 20px;
-  }
-
-  /* stacked: the title sits above the stage, so the dial's top arc fades out before it reaches the title */
-  .dial {
-    -webkit-mask-image: linear-gradient(180deg, transparent calc(var(--u) * 126), #000 calc(var(--u) * 200));
-    mask-image: linear-gradient(180deg, transparent calc(var(--u) * 126), #000 calc(var(--u) * 200));
-    -webkit-mask-size: 100% 100%;
-    mask-size: 100% 100%;
-    -webkit-mask-position: 0 0;
-    mask-position: 0 0;
-  }
-
-  .rake {
-    inset-inline-start: -80%;
-    inline-size: 260%;
+@container (min-width: 760px) {
+  .root {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'head glass'
+      'read glass';
+    align-content: center;
+    column-gap: clamp(32px, 8cqw, 96px);
+    padding: 40px clamp(40px, 9cqw, 112px);
+    justify-items: start;
   }
 
   .heading {
-    position: static;
-    box-sizing: border-box;
-    max-inline-size: 30ch;
-    padding-block-start: 36px;
-    padding-inline: 24px;
-    font-size: clamp(22px, 5.4cqw, 30px);
-    text-align: center;
+    grid-area: head;
+    align-self: end;
+    max-inline-size: 16ch;
+    padding: 0;
+    font-size: clamp(30px, 4cqw, 48px);
+    text-align: start;
   }
-}
 
-@container (max-width: 559px) {
   .stage {
-    --w: clamp(200px, 62cqw, 290px);
-    padding-block: calc(var(--u) * 14) 36px;
-    padding-inline: 12px;
-  }
-
-  .heading {
-    padding-block-start: 30px;
-  }
-
-  .plinth {
-    min-block-size: calc(var(--u) * 46);
+    --w: clamp(240px, 28cqw, 340px);
+    grid-area: glass;
+    grid-row: 1 / span 2;
+    inline-size: auto;
+    padding-block: 8px;
   }
 
   .readout {
-    grid-row: 3;
-    inline-size: min(calc(100cqw - 24px), 360px);
-    min-block-size: 0;
-    margin-block: 44px 0;
-    padding-block: 4px;
-    background:
-      linear-gradient(
-        90deg,
-        transparent calc(33.333% - 0.5px),
-        rgba(207, 164, 90, 0.3) calc(33.333% - 0.5px) calc(33.333% + 0.5px),
-        transparent calc(33.333% + 0.5px),
-        transparent calc(66.666% - 0.5px),
-        rgba(207, 164, 90, 0.3) calc(66.666% - 0.5px) calc(66.666% + 0.5px),
-        transparent calc(66.666% + 0.5px)
-      );
-    box-shadow: none;
-    border-radius: 0;
+    grid-area: read;
+    align-self: start;
+    inline-size: min(100%, 520px);
+    margin-block-start: 36px;
   }
 
   .cell {
-    gap: 6px;
+    justify-items: start;
+    padding-inline: 20px;
+  }
+
+  .cell:first-child {
+    padding-inline-start: 0;
   }
 
   .num {
-    font-size: clamp(38px, 12.5cqw, 54px);
+    font-size: clamp(48px, 6cqw, 84px);
   }
 
   .unit {
-    font-size: 13px;
+    text-align: start;
   }
 
   .done {
-    font-size: 20px;
-    padding-inline: 20px;
+    place-self: start;
+    padding-inline: 0;
+    font-size: 24px;
+    text-align: start;
+  }
+
+  .pause {
+    inset-block-start: 14px;
+    inset-inline-end: 14px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .stars,
   .glow,
-  .ring,
-  .ringInner,
-  .ringArc,
-  .rise,
+  .glassFrame,
   .heading,
   .num {
     animation: none;

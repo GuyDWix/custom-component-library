@@ -140,51 +140,16 @@ function solvePile(volume: number): number {
   return (lo + hi) / 2;
 }
 
-/* ---------- turned brass posts ---------- */
+/* ---------- slim metal frame ---------- */
 
-const ellipse = (e: number, c: number, half: number, amp: number) =>
-  amp * Math.sqrt(Math.max(0, 1 - Math.pow((e - c) / half, 2)));
-
-function columnHW(e: number): number {
-  if (e < 7) return 8;
-  if (e < 9) return 8 - (e - 7);
-  if (e >= 16 && e <= 26) return 6 + ellipse(e, 21, 5, 3.4);
-  if (e >= 119 && e <= 127) return 6 + ellipse(e, 123, 4, 1.6);
-  if (e >= 190) return 6 + 2.6 * Math.pow(Math.sin(((e - 190) / 38) * (Math.PI / 2)), 2);
-  return 6;
-}
-
-function rodHW(e: number): number {
-  if (e < 9) return 2.8 + ellipse(e, 4.5, 4.5, 2.4);
-  return 2.8;
-}
-
-function postPath(cx: number, y0: number, len: number, hw: (e: number) => number): string {
-  const ds: number[] = [];
-  for (let d = 0; d < len; d += 1.5) ds.push(d);
-  ds.push(len);
-  const e = (d: number) => Math.min(d, len - d);
-  const left = ds.map((d) => `${(cx - hw(e(d))).toFixed(2)} ${(y0 + d).toFixed(2)}`);
-  const right = ds
-    .slice()
-    .reverse()
-    .map((d) => `${(cx + hw(e(d))).toFixed(2)} ${(y0 + d).toFixed(2)}`);
-  return `M${left.join('L')}L${right.join('L')}Z`;
-}
-
-const POST_Y0 = 72;
-const POST_LEN = 456;
-const POSTS = {
-  columns: [postPath(66, POST_Y0, POST_LEN, columnHW), postPath(334, POST_Y0, POST_LEN, columnHW)],
-  rods: [postPath(64, POST_Y0, POST_LEN, rodHW), postPath(336, POST_Y0, POST_LEN, rodHW)],
-} as const;
-const CAP_HALF: Record<SandTimeFrameStyle, number> = { columns: 152, rods: 146, open: 136 };
+const CAP_Y = 58;
+const POST_OFFSET = 134;
+const POST_HW: Record<'columns' | 'rods', number> = { columns: 2.2, rods: 1.3 };
+const CAP_HALF: Record<SandTimeFrameStyle, number> = { columns: 146, rods: 146, open: 112 };
 
 const CAP_PIECES = [
-  { dy: 0, h: 6, inset: 34, rx: 3, dark: false },
-  { dy: 6, h: 20, inset: 0, rx: 2.5, dark: false },
-  { dy: 26, h: 4, inset: 4, rx: 1, dark: true },
-  { dy: 30, h: 4, inset: 24, rx: 1.5, dark: true },
+  { dy: 0, h: 12, inset: 0, rx: 2, lip: false },
+  { dy: 12, h: 3, inset: 12, rx: 1, lip: true },
 ] as const;
 
 /* ---------- colour helpers ---------- */
@@ -332,7 +297,7 @@ export default function SandTimeCountdown({
     let last = 0;
     const grains: Grain[] = [];
     const sliders: Slider[] = Array.from({ length: 28 }, () => ({ u: rand(), side: rand() < 0.5 ? -1 : 1, speed: 0.16 + rand() * 0.22 }));
-    const glints: Glint[] = Array.from({ length: 22 }, (_, i) => ({
+    const glints: Glint[] = Array.from({ length: 8 }, (_, i) => ({
       region: (i % 2) as 0 | 1,
       u: rand() * 2 - 1,
       depth: rand() * 9,
@@ -417,11 +382,11 @@ export default function SandTimeCountdown({
       ctx.fillStyle = g;
       ctx.fillRect(-140, y0 - 6, 280, y1 - y0 + 12);
       const h = ctx.createLinearGradient(-R_IN, 0, R_IN, 0);
-      h.addColorStop(0, 'rgba(30,16,2,0.6)');
+      h.addColorStop(0, 'rgba(30,16,2,0.34)');
       h.addColorStop(0.22, 'rgba(30,16,2,0)');
       h.addColorStop(0.58, 'rgba(255,240,200,0.07)');
       h.addColorStop(0.78, 'rgba(30,16,2,0)');
-      h.addColorStop(1, 'rgba(30,16,2,0.55)');
+      h.addColorStop(1, 'rgba(30,16,2,0.3)');
       ctx.fillStyle = h;
       ctx.fillRect(-140, y0 - 6, 280, y1 - y0 + 12);
       if (strata) strata(ctx);
@@ -480,20 +445,7 @@ export default function SandTimeCountdown({
         poly.lineTo(128, MID + 3);
         poly.lineTo(-128, MID + 3);
         poly.closePath();
-        fillSand(poly, sim.yL, MID + 3, (c) => {
-          /* strata that bend into the funnel: sand layers dragged toward the neck */
-          for (let n = 1; n <= 5; n++) {
-            c.beginPath();
-            xs.forEach((x, i) => {
-              const y = upperY(x, t, false) + n * 17 * (1 - 0.25 * Math.min(1, Math.abs(x) / 90));
-              if (i) c.lineTo(x, y);
-              else c.moveTo(x, y);
-            });
-            c.strokeStyle = css(n % 2 ? pal.lo : pal.hi, n % 2 ? 0.2 : 0.16);
-            c.lineWidth = 2.2;
-            c.stroke();
-          }
-        });
+        fillSand(poly, sim.yL, MID + 3, null);
         crest(pts);
       }
 
@@ -551,7 +503,7 @@ export default function SandTimeCountdown({
       /* warm glints on both surfaces */
       ctx.save();
       ctx.clip(glassIn);
-      const boost = live ? 0.55 + sim.energy * 0.9 : 0.8;
+      const boost = live ? 0.4 + sim.energy * 0.6 : 0.5;
       for (const g of glints) {
         let x: number;
         let y: number;
@@ -806,37 +758,19 @@ export default function SandTimeCountdown({
     }
   };
 
-  const brushedFilters = (sfx: string) => (
-    <>
-      <filter id={gid('bl' + sfx)} x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
-        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.75" numOctaves="2" seed="5" result="n" />
-        <feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 0.93  0 0 0 0 0.72  1.1 0 0 0 -0.34" result="c" />
-        <feComposite in="c" in2="SourceAlpha" operator="in" />
-      </filter>
-      <filter id={gid('bd' + sfx)} x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
-        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.75" numOctaves="2" seed="5" result="n" />
-        <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.16  0 0 0 0 0.1  0 0 0 0 0.03  -1.1 0 0 0 0.72" result="c" />
-        <feComposite in="c" in2="SourceAlpha" operator="in" />
-      </filter>
-    </>
-  );
-
-  const slab = (key: string, x: number, y: number, w: number, h: number, rx: number, dark: boolean) => (
+  const slab = (key: string, x: number, y: number, w: number, h: number, rx: number, lip: boolean) => (
     <g key={key}>
-      <rect x={x} y={y} width={w} height={h} rx={rx} fill={dark ? url('plateDk') : url('plate')} />
-      <rect x={x} y={y} width={w} height={h} rx={rx} fill={url('slabV')} />
-      <rect x={x} y={y} width={w} height={h} rx={rx} fill="#fff" filter={url('bl')} opacity={dark ? 0.2 : 0.55} />
-      <rect x={x} y={y} width={w} height={h} rx={rx} fill="#fff" filter={url('bd')} opacity={0.5} />
-      <rect x={x + rx} y={y + 0.4} width={Math.max(0, w - rx * 2)} height="0.9" fill="rgba(255,247,214,0.7)" />
-      <rect x={x + rx} y={y + h - 1.1} width={Math.max(0, w - rx * 2)} height="1" fill="rgba(28,16,2,0.55)" />
+      <rect x={x} y={y} width={w} height={h} rx={rx} fill={url('metal')} />
+      <rect x={x} y={y} width={w} height={h} rx={rx} fill={url('metalV')} opacity={lip ? 0.7 : 1} />
+      {!lip && <rect x={x + rx} y={y + 0.5} width={Math.max(0, w - rx * 2)} height="0.8" fill="rgba(255,250,235,0.45)" />}
     </g>
   );
 
   const capSlabs = (top: boolean) =>
     CAP_PIECES.map((c, i) => {
       const hw = capHalf - c.inset;
-      const y = top ? 38 + c.dy : 562 - c.dy - c.h;
-      return slab(`${top ? 't' : 'b'}${i}`, CX - hw, y, hw * 2, c.h, c.rx, c.dark);
+      const y = top ? CAP_Y + c.dy : 2 * MID - CAP_Y - c.dy - c.h;
+      return slab(`${top ? 't' : 'b'}${i}`, CX - hw, y, hw * 2, c.h, c.rx, c.lip);
     });
 
   return (
@@ -848,9 +782,6 @@ export default function SandTimeCountdown({
       aria-labelledby={heading ? headingId : undefined}
       aria-label={heading ? undefined : 'Countdown'}
     >
-      <span className={styles.stars} aria-hidden="true" />
-      <span className={styles.vignette} aria-hidden="true" />
-
       {heading && (
         <h2 id={headingId} className={styles.heading}>
           {heading}
@@ -874,180 +805,99 @@ export default function SandTimeCountdown({
       <div className={styles.stage}>
         <div className={styles.assembly}>
           <span className={styles.glow} aria-hidden="true" />
-          <span className={styles.dial} aria-hidden="true">
-            <span className={styles.ring} />
-            <span className={styles.ringArc} />
-            <span className={styles.ringInner} />
-          </span>
-
-          <div className={styles.rise}>
-            <div className={styles.glassFrame}>
-              <div
-                ref={glassRef}
-                className={styles.glass}
-                tabIndex={0}
-                role="img"
-                aria-label="Hourglass"
-                aria-description="Press Enter or Space to rock the glass."
-                onPointerEnter={onPointerEnter}
-                onPointerDown={onPointerDown}
-                onKeyDown={onKeyDown}
-              >
-                <svg className={styles.layer} viewBox={`0 0 ${GW} ${GH}`} aria-hidden="true" focusable="false">
-                  <defs>
-                    <linearGradient id={gid('wall')} x1="0" x2="1" y1="0" y2="0">
-                      <stop offset="0" stopColor="#bff0f2" stopOpacity="0.55" />
-                      <stop offset="0.12" stopColor="#8fd3d8" stopOpacity="0.22" />
-                      <stop offset="0.5" stopColor="#6fb8c0" stopOpacity="0.1" />
-                      <stop offset="0.88" stopColor="#8fd3d8" stopOpacity="0.2" />
-                      <stop offset="1" stopColor="#bff0f2" stopOpacity="0.5" />
-                    </linearGradient>
-                    <linearGradient id={gid('void')} x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0" stopColor="#0a3a42" stopOpacity="0.5" />
-                      <stop offset="1" stopColor="#031a1f" stopOpacity="0.62" />
-                    </linearGradient>
-                  </defs>
-                  <path d={INNER_PATH} fill={url('void')} />
-                  <path d={OUTER_PATH + INNER_PATH} fillRule="evenodd" fill={url('wall')} />
-                  <path d={OUTER_PATH} fill="none" stroke="rgba(205,245,248,0.42)" strokeWidth="1.1" />
-                  <path d={INNER_PATH} fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth="0.8" />
-                </svg>
-
-                <canvas ref={canvasRef} className={styles.sandCanvas} aria-hidden="true" />
-
-                <svg className={styles.layer} viewBox={`0 0 ${GW} ${GH}`} aria-hidden="true" focusable="false">
-                  <defs>
-                    {brushedFilters('')}
-                    <clipPath id={gid('clip')}>
-                      <path d={INNER_PATH} />
-                    </clipPath>
-                    <linearGradient id={gid('plate')} x1="0" x2="1" y1="0" y2="0">
-                      <stop offset="0" style={{ stopColor: 'var(--stc-brass-dk)' }} />
-                      <stop offset="0.04" style={{ stopColor: 'var(--stc-brass-lo)' }} />
-                      <stop offset="0.16" style={{ stopColor: 'var(--stc-brass)' }} />
-                      <stop offset="0.3" style={{ stopColor: 'var(--stc-brass-hi)' }} />
-                      <stop offset="0.43" style={{ stopColor: 'var(--stc-brass)' }} />
-                      <stop offset="0.58" style={{ stopColor: 'var(--stc-brass-lo)' }} />
-                      <stop offset="0.74" style={{ stopColor: 'var(--stc-brass)' }} />
-                      <stop offset="0.86" style={{ stopColor: 'var(--stc-brass-hi)', stopOpacity: 0.85 }} />
-                      <stop offset="0.96" style={{ stopColor: 'var(--stc-brass-lo)' }} />
-                      <stop offset="1" style={{ stopColor: 'var(--stc-brass-dk)' }} />
-                    </linearGradient>
-                    <linearGradient id={gid('plateDk')} x1="0" x2="1" y1="0" y2="0">
-                      <stop offset="0" style={{ stopColor: 'var(--stc-brass-dk)' }} />
-                      <stop offset="0.3" style={{ stopColor: 'var(--stc-brass-lo)' }} />
-                      <stop offset="0.5" style={{ stopColor: 'var(--stc-brass-dk)' }} />
-                      <stop offset="0.8" style={{ stopColor: 'var(--stc-brass-lo)' }} />
-                      <stop offset="1" style={{ stopColor: 'var(--stc-brass-dk)' }} />
-                    </linearGradient>
-                    <linearGradient id={gid('slabV')} x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0" stopColor="#fff6d6" stopOpacity="0.28" />
-                      <stop offset="0.45" stopColor="#000" stopOpacity="0" />
-                      <stop offset="1" stopColor="#031a1f" stopOpacity="0.42" />
-                    </linearGradient>
-                    <linearGradient id={gid('post')} x1="0" x2="1" y1="0" y2="0">
-                      <stop offset="0" style={{ stopColor: 'var(--stc-brass-dk)' }} />
-                      <stop offset="0.16" style={{ stopColor: 'var(--stc-brass-lo)' }} />
-                      <stop offset="0.34" style={{ stopColor: 'var(--stc-brass-hi)' }} />
-                      <stop offset="0.48" style={{ stopColor: 'var(--stc-brass)' }} />
-                      <stop offset="0.7" style={{ stopColor: 'var(--stc-brass-lo)' }} />
-                      <stop offset="0.88" style={{ stopColor: 'var(--stc-brass)', stopOpacity: 0.9 }} />
-                      <stop offset="1" style={{ stopColor: 'var(--stc-brass-dk)' }} />
-                    </linearGradient>
-                    <linearGradient id={gid('postV')} x1="0" x2="0" y1={POST_Y0} y2={POST_Y0 + POST_LEN} gradientUnits="userSpaceOnUse">
-                      <stop offset="0" stopColor="#000" stopOpacity="0.45" />
-                      <stop offset="0.07" stopColor="#000" stopOpacity="0" />
-                      <stop offset="0.93" stopColor="#000" stopOpacity="0" />
-                      <stop offset="1" stopColor="#000" stopOpacity="0.45" />
-                    </linearGradient>
-                    <linearGradient id={gid('spec')} x1="0" x2="0" y1="96" y2="272" gradientUnits="userSpaceOnUse">
-                      <stop offset="0" stopColor="#fff" stopOpacity="0" />
-                      <stop offset="0.25" stopColor="#fff" stopOpacity="0.85" />
-                      <stop offset="0.7" stopColor="#fff" stopOpacity="0.3" />
-                      <stop offset="1" stopColor="#fff" stopOpacity="0" />
-                    </linearGradient>
-                    <linearGradient id={gid('spec2')} x1="0" x2="0" y1="330" y2="506" gradientUnits="userSpaceOnUse">
-                      <stop offset="0" stopColor="#fff" stopOpacity="0" />
-                      <stop offset="0.3" stopColor="#fff" stopOpacity="0.4" />
-                      <stop offset="0.8" stopColor="#fff" stopOpacity="0.14" />
-                      <stop offset="1" stopColor="#fff" stopOpacity="0" />
-                    </linearGradient>
-                    <linearGradient id={gid('warm')} x1="0" x2="0" y1="110" y2="272" gradientUnits="userSpaceOnUse">
-                      <stop offset="0" stopColor="#ffd98a" stopOpacity="0" />
-                      <stop offset="0.5" stopColor="#ffd98a" stopOpacity="0.5" />
-                      <stop offset="1" stopColor="#ffd98a" stopOpacity="0" />
-                    </linearGradient>
-                    <linearGradient id={gid('capShade')} x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0" stopColor="#021418" stopOpacity="0.6" />
-                      <stop offset="1" stopColor="#021418" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-
-                  <g clipPath={url('clip')}>
-                    <rect x="60" y={IN_TOP} width="280" height="30" fill={url('capShade')} />
-                    <rect x="60" y={IN_BOT - 30} width="280" height="30" fill={url('capShade')} transform={`rotate(180 ${CX} ${IN_BOT - 15})`} />
-                  </g>
-                  <path d={band(-1, 96, 272, 9, 19)} fill={url('spec')} opacity="0.5" />
-                  <path d={edgeLine(-1, 96, 272, 6)} fill="none" stroke={url('spec')} strokeWidth="1.3" strokeLinecap="round" />
-                  <path d={band(-1, 332, 506, 10, 17)} fill={url('spec2')} opacity="0.5" />
-                  <path d={edgeLine(-1, 332, 506, 6)} fill="none" stroke={url('spec2')} strokeWidth="1.1" strokeLinecap="round" />
-                  <path d={edgeLine(1, 110, 272, 5)} fill="none" stroke={url('warm')} strokeWidth="1.6" strokeLinecap="round" />
-
-                  {frame !== 'open' &&
-                    POSTS[frame].map((d, i) => (
-                      <g key={i}>
-                        <path d={d} fill={url('post')} />
-                        <path d={d} fill={url('postV')} />
-                        <path d={d} fill="#fff" filter={url('bl')} opacity="0.4" />
-                        <path d={d} fill="#fff" filter={url('bd')} opacity="0.45" />
-                      </g>
-                    ))}
-
-                  {capSlabs(true)}
-                  {capSlabs(false)}
-                </svg>
-              </div>
-            </div>
-
-            <div className={styles.plinth}>
-              <span className={styles.table} aria-hidden="true" />
-              <span className={styles.cast} aria-hidden="true" />
-              <svg className={styles.plinthGrain} aria-hidden="true" focusable="false">
-                <defs>{brushedFilters('p')}</defs>
-                <rect width="100%" height="100%" fill="#fff" filter={url('blp')} opacity="0.5" />
-                <rect width="100%" height="100%" fill="#fff" filter={url('bdp')} opacity="0.5" />
+          <span className={styles.floor} aria-hidden="true" />
+          <div className={styles.glassFrame}>
+            <div
+              ref={glassRef}
+              className={styles.glass}
+              tabIndex={0}
+              role="img"
+              aria-label="Hourglass"
+              aria-description="Press Enter or Space to rock the glass."
+              onPointerEnter={onPointerEnter}
+              onPointerDown={onPointerDown}
+              onKeyDown={onKeyDown}
+            >
+              <svg className={styles.layer} viewBox={`0 0 ${GW} ${GH}`} aria-hidden="true" focusable="false">
+                <defs>
+                  <linearGradient id={gid('wall')} x1="0" x2="1" y1="0" y2="0">
+                    <stop offset="0" stopColor="#d8eef0" stopOpacity="0.3" />
+                    <stop offset="0.14" stopColor="#bfe0e4" stopOpacity="0.1" />
+                    <stop offset="0.5" stopColor="#bfe0e4" stopOpacity="0.03" />
+                    <stop offset="0.86" stopColor="#bfe0e4" stopOpacity="0.09" />
+                    <stop offset="1" stopColor="#d8eef0" stopOpacity="0.26" />
+                  </linearGradient>
+                </defs>
+                <path d={INNER_PATH} fill="rgba(4,16,20,0.28)" />
+                <path d={OUTER_PATH + INNER_PATH} fillRule="evenodd" fill={url('wall')} />
+                <path d={OUTER_PATH} fill="none" stroke="rgba(214,236,238,0.4)" strokeWidth="1" />
+                <path d={INNER_PATH} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="0.7" />
               </svg>
-              <span className={styles.plinthBevel} aria-hidden="true" />
-            </div>
 
-            <div className={[styles.readout, clock === null && styles.pending].filter(Boolean).join(' ')} role="timer" aria-label={finished ? finishedMessage : spoken}>
-              {finished ? (
-                <p className={styles.done}>{finishedMessage}</p>
-              ) : (
-                units.map((label, i) => (
-                  <div key={i} className={styles.cell} aria-hidden="true">
-                    <span key={`${i}-${real[i]}`} className={styles.num}>
-                      {pad2(shown[i])}
-                    </span>
-                    <span className={styles.unit}>{label}</span>
-                  </div>
-                ))
-              )}
+              <canvas ref={canvasRef} className={styles.sandCanvas} aria-hidden="true" />
+
+              <svg className={styles.layer} viewBox={`0 0 ${GW} ${GH}`} aria-hidden="true" focusable="false">
+                <defs>
+                  <linearGradient id={gid('metal')} x1="0" x2="1" y1="0" y2="0">
+                    <stop offset="0" style={{ stopColor: 'var(--stc-metal-lo)' }} />
+                    <stop offset="0.3" style={{ stopColor: 'var(--stc-metal)' }} />
+                    <stop offset="0.45" style={{ stopColor: 'var(--stc-metal-hi)' }} />
+                    <stop offset="0.65" style={{ stopColor: 'var(--stc-metal)' }} />
+                    <stop offset="1" style={{ stopColor: 'var(--stc-metal-lo)' }} />
+                  </linearGradient>
+                  <linearGradient id={gid('metalV')} x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0" stopColor="#fff" stopOpacity="0.14" />
+                    <stop offset="1" stopColor="#000" stopOpacity="0.3" />
+                  </linearGradient>
+                  <linearGradient id={gid('spec')} x1="0" x2="0" y1="96" y2="272" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stopColor="#fff" stopOpacity="0" />
+                    <stop offset="0.3" stopColor="#fff" stopOpacity="0.6" />
+                    <stop offset="1" stopColor="#fff" stopOpacity="0" />
+                  </linearGradient>
+                  <linearGradient id={gid('spec2')} x1="0" x2="0" y1="330" y2="506" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stopColor="#fff" stopOpacity="0" />
+                    <stop offset="0.35" stopColor="#fff" stopOpacity="0.3" />
+                    <stop offset="1" stopColor="#fff" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+
+                <path d={edgeLine(-1, 96, 272, 7)} fill="none" stroke={url('spec')} strokeWidth="1.1" strokeLinecap="round" />
+                <path d={edgeLine(-1, 332, 506, 7)} fill="none" stroke={url('spec2')} strokeWidth="1" strokeLinecap="round" />
+
+                {frame !== 'open' &&
+                  [-1, 1].map((side) => (
+                    <rect
+                      key={side}
+                      x={CX + side * POST_OFFSET - POST_HW[frame]}
+                      y={CAP_Y + 12}
+                      width={POST_HW[frame] * 2}
+                      height={2 * (MID - CAP_Y - 12)}
+                      fill={url('metal')}
+                    />
+                  ))}
+
+                {capSlabs(true)}
+                {capSlabs(false)}
+              </svg>
             </div>
           </div>
-          <span className={styles.rake} aria-hidden="true" />
         </div>
       </div>
 
-      <svg className={styles.grain} aria-hidden="true" focusable="false">
-        <defs>
-          <filter id={gid('grain')} x="0" y="0" width="100%" height="100%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch" />
-            <feColorMatrix type="matrix" values="0 0 0 0 0.9  0 0 0 0 0.85  0 0 0 0 0.7  0 0 0 0.55 0" />
-          </filter>
-        </defs>
-        <rect width="100%" height="100%" filter={url('grain')} />
-      </svg>
+      <div className={[styles.readout, clock === null && styles.pending].filter(Boolean).join(' ')} role="timer" aria-label={finished ? finishedMessage : spoken}>
+        {finished ? (
+          <p className={styles.done}>{finishedMessage}</p>
+        ) : (
+          units.map((label, i) => (
+            <div key={i} className={styles.cell} aria-hidden="true">
+              <span key={`${i}-${real[i]}`} className={styles.num}>
+                {pad2(shown[i])}
+              </span>
+              <span className={styles.unit}>{label}</span>
+            </div>
+          ))
+        )}
+      </div>
     </section>
   );
 }
