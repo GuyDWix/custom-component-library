@@ -34,8 +34,8 @@ const stage = {
   boxSizing: 'border-box' as const,
   display: 'grid',
   placeItems: 'center',
-  padding: 'clamp(16px, 4vw, 56px)',
-  background: '#f6f5fa',
+  padding: 'clamp(24px, 5vw, 64px)',
+  background: '#e7eaf0',
 };
 
 export default function Preview() {

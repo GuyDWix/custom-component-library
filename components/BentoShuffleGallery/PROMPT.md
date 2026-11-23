@@ -816,11 +816,13 @@ export default function BentoShuffleGallery({
 .root {
   --bs-radius: 22px;
   --bs-gap: 14px;
-  --bs-ink: #1d1b2e;
-  --bs-ink-soft: rgba(29, 27, 46, 0.6);
-  --bs-surface: #ffffff;
-  --bs-wash: #ebe8f5;
-  --bs-accent: #6f5cf0;
+  --bs-ink: #232634;
+  --bs-ink-soft: #565b6e;
+  --bs-surface: #e7eaf0;
+  --bs-wash: #d9dde6;
+  --bs-accent: #4a55c9;
+  --bs-hi: rgba(255, 255, 255, 0.95);
+  --bs-lo: rgba(139, 148, 170, 0.5);
   --bs-font-ui:
     "Bricolage Grotesque", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
 
@@ -863,7 +865,7 @@ export default function BentoShuffleGallery({
   border-radius: var(--bs-radius);
 }
 
-/* flat tiles; the only shadow is the lift of a tile in flight */
+/* soft-UI: tiles are raised from the surface by a paired light/dark shadow; a tile in flight lifts further */
 .tile {
   --bs-sx: 0;
   --bs-sy: 0;
@@ -883,8 +885,10 @@ export default function BentoShuffleGallery({
   transform-origin: 50% 50%;
   -webkit-tap-highlight-color: transparent;
   will-change: transform;
-  box-shadow: 0 calc(var(--bs-lf) * 20px) calc(var(--bs-lf) * 36px)
-    calc(var(--bs-lf) * -12px) rgba(29, 27, 46, calc(var(--bs-lf) * 0.32));
+  box-shadow:
+    -6px -6px 14px var(--bs-hi),
+    7px 8px 16px var(--bs-lo),
+    0 calc(var(--bs-lf) * 20px) calc(var(--bs-lf) * 34px) calc(var(--bs-lf) * -10px) rgba(35, 38, 52, calc(var(--bs-lf) * 0.3));
 }
 
 .tile:focus-visible {
@@ -925,8 +929,11 @@ export default function BentoShuffleGallery({
   max-inline-size: calc(100% - 24px);
   padding: 0.5em 0.95em;
   border-radius: 999px;
-  background: var(--bs-surface);
-  color: var(--bs-ink);
+  background: rgba(22, 24, 34, 0.68);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5);
+  backdrop-filter: blur(14px) saturate(1.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  color: #ffffff;
   font-size: clamp(12px, 2.6cqi, 15px);
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -942,7 +949,7 @@ export default function BentoShuffleGallery({
   block-size: 0.5em;
   margin-inline-end: 0.55em;
   border-radius: 50%;
-  background: var(--bs-accent);
+  background: #b8c0ff;
   vertical-align: 0.08em;
 }
 
@@ -956,8 +963,11 @@ export default function BentoShuffleGallery({
   max-inline-size: calc(100% - 20px);
   padding: 5px 12px;
   border-radius: 999px;
-  background: var(--bs-surface);
-  color: var(--bs-ink);
+  background: rgba(22, 24, 34, 0.68);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5);
+  backdrop-filter: blur(14px) saturate(1.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  color: #ffffff;
   font-size: 13px;
   font-weight: 500;
   line-height: 1.25;
@@ -968,8 +978,10 @@ export default function BentoShuffleGallery({
   pointer-events: none;
 }
 
-.tile:focus-visible .chipQuiet {
+.tile:focus-visible .chipQuiet,
+.tile:hover .chipQuiet {
   opacity: 1;
+  transition: opacity 200ms ease;
 }
 
 .pause {
@@ -987,15 +999,18 @@ export default function BentoShuffleGallery({
   background: var(--bs-surface);
   color: var(--bs-ink);
   cursor: pointer;
-  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: -3px -3px 8px var(--bs-hi), 4px 4px 10px var(--bs-lo);
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 200ms ease;
 }
 
 .pause:hover {
   transform: scale(1.06);
 }
 
-.pause:active {
-  transform: scale(0.94);
+.pause:active,
+.pause[aria-pressed="true"] {
+  transform: scale(0.96);
+  box-shadow: inset -2px -2px 5px var(--bs-hi), inset 3px 3px 7px var(--bs-lo);
 }
 
 .pause:focus-visible {
@@ -1018,7 +1033,7 @@ export default function BentoShuffleGallery({
 }
 
 .ringTrack {
-  stroke: rgba(29, 27, 46, 0.12);
+  stroke: rgba(35, 38, 52, 0.14);
 }
 
 .ringFill {
