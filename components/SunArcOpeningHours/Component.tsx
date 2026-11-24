@@ -521,10 +521,6 @@ export default function SunArcOpeningHours({
           () => {
             aim(e.sun, S(dm.c), 34, 8.5);
             kick();
-            e.timer = window.setTimeout(() => {
-              aim(e.lift, 0, 70, 12);
-              kick();
-            }, 2200);
           },
           intro ? 1100 : 460,
         );

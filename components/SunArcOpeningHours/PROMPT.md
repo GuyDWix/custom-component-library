@@ -356,7 +356,7 @@ export default function SunArcOpeningHours({
     const lift1 = Math.min(lift, 1);
     const amt = clamp(e.amt.x, 0, 1);
     const p = pt(g, sx);
-    const sy = p.y + (1 - lift) * g.R * 2.6;
+    const sy = p.y + (1 - lift) * Math.max(g.R * 2.6, g.stageH - p.y + 120);
 
     box.style.setProperty('--sx', `${p.x.toFixed(1)}px`);
     box.style.setProperty('--sb', `${(g.stageH - sy).toFixed(1)}px`);
