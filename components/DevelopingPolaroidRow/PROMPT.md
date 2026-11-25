@@ -303,14 +303,6 @@ export default function DevelopingPolaroidRow({
 ```css
 /* Studio flash — instant prints developing on a cool seamless sweep */
 
-@font-face {
-  font-family: 'Caveat';
-  src: url('./fonts/caveat.woff2') format('woff2');
-  font-weight: 400 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 .root {
   --dp-border: #f8f9fb;
   --dp-table: #dde1e7;
