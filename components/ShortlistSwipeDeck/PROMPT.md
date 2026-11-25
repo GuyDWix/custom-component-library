@@ -495,12 +495,17 @@ export default function ShortlistSwipeDeck({
             </div>
           </div>
 
-          <a className={styles.enquire} href={enquireHref(enquireLink, keptItems.map((it) => it.title))}>
-            <span className={styles.enquireLabel}>{enquireLabel}</span>
-            <svg className={styles.icon} viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </a>
+          {keptItems.length ? (
+            <a className={styles.enquire} href={enquireHref(enquireLink, keptItems.map((it) => it.title))}>
+              <span className={styles.enquireLabel}>{enquireLabel}</span>
+              <Arrow />
+            </a>
+          ) : (
+            <button type="button" className={styles.enquire} disabled>
+              <span className={styles.enquireLabel}>{enquireLabel}</span>
+              <Arrow />
+            </button>
+          )}
         </aside>
       </div>
 
@@ -508,6 +513,14 @@ export default function ShortlistSwipeDeck({
         {announcement}
       </p>
     </section>
+  );
+}
+
+function Arrow() {
+  return (
+    <svg className={styles.icon} viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 ```
@@ -930,9 +943,9 @@ export default function ShortlistSwipeDeck({
 
 .keep {
   border: 1px solid transparent;
-  background: var(--sd-accent);
-  color: var(--sd-on-accent);
-  box-shadow: 0 6px 16px -10px color-mix(in srgb, var(--sd-accent) 70%, transparent);
+  background: var(--sd-ink);
+  color: var(--sd-paper);
+  box-shadow: 0 8px 18px -12px color-mix(in srgb, var(--sd-ink) 80%, transparent);
   transform: scale(calc(1 + var(--keep-lean) * 0.07));
 }
 
@@ -941,7 +954,7 @@ export default function ShortlistSwipeDeck({
 }
 
 .keep:hover {
-  background: color-mix(in srgb, var(--sd-accent) 90%, #000);
+  background: color-mix(in srgb, var(--sd-ink) 86%, var(--sd-clay));
 }
 
 .skip:active,
@@ -1208,19 +1221,35 @@ export default function ShortlistSwipeDeck({
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  min-block-size: 52px;
-  padding: 10px 20px;
-  border-radius: 16px;
-  background: var(--sd-accent);
+  gap: 12px;
+  min-block-size: 60px;
+  padding: 12px 24px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sd-accent) 88%, #fff), var(--sd-accent));
   color: var(--sd-on-accent);
-  font: 600 15px/1.2 var(--sd-font-ui);
+  font: 700 16px/1.2 var(--sd-font-ui);
   letter-spacing: -0.01em;
   text-decoration: none;
-  transition: background-color 180ms ease;
+  box-shadow:
+    0 14px 30px -12px color-mix(in srgb, var(--sd-accent) 75%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.28);
+  cursor: pointer;
+  transition: background-color 180ms ease, box-shadow 180ms ease, transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.enquire:hover {
+.enquire:disabled {
+  background: none;
+  color: var(--sd-muted);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--sd-ink) 18%, transparent);
+  cursor: not-allowed;
+}
+
+.enquire:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+.enquire:not(:disabled):hover {
   background: color-mix(in srgb, var(--sd-accent) 90%, #000);
 }
 
@@ -1254,7 +1283,7 @@ export default function ShortlistSwipeDeck({
   }
 
   .layout {
-    grid-template-columns: minmax(0, 360px) minmax(0, 320px);
+    grid-template-columns: minmax(0, 360px) minmax(0, 240px);
     grid-template-rows: auto auto auto;
     column-gap: 40px;
   }
@@ -1329,10 +1358,8 @@ export default function ShortlistSwipeDeck({
     position: absolute;
     inset-block: 0 34px;
     inset-inline: 0;
-    padding: 10px;
-    border-radius: 26px;
-    background: color-mix(in srgb, var(--sd-paper) 62%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sd-clay-deep) 38%, transparent);
+    padding: 0;
+    gap: 14px;
     grid-template-rows: auto minmax(0, 1fr);
     overflow: hidden;
   }
@@ -1340,20 +1367,53 @@ export default function ShortlistSwipeDeck({
   .list {
     max-block-size: none;
     min-block-size: 0;
+    gap: 0;
     overscroll-behavior: contain;
+    border-block-start: 1px solid color-mix(in srgb, var(--sd-ink) 14%, transparent);
+  }
+
+  .row {
+    padding: 10px 0;
+    border-radius: 0;
+    background: none;
+    border-block-end: 1px solid color-mix(in srgb, var(--sd-ink) 14%, transparent);
+  }
+
+  .trayEmpty {
+    padding: 14px 0 0;
+    border-block-start: 1px solid color-mix(in srgb, var(--sd-ink) 14%, transparent);
+    font-family: var(--sd-font-display);
+    font-size: 20px;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    max-inline-size: 22ch;
   }
 
   .slots {
-    display: grid;
-  }
-
-  .enquire {
-    min-block-size: 54px;
-    padding-block: 8px;
+    display: none;
   }
 
   .title {
     font-size: 28px;
+  }
+}
+
+@container (min-width: 1000px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 360px minmax(0, 1fr);
+    column-gap: 56px;
+  }
+
+  .top,
+  .stage,
+  .actions {
+    grid-column: 2;
+  }
+
+  .tray {
+    grid-column: 3;
+    justify-self: start;
+    inline-size: min(100%, 240px);
   }
 }
 
