@@ -1,3 +1,5 @@
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/700.css';
 import { useMemo } from 'react';
 import StoryReel from './Component';
 import type { StoryReelSlide } from './Component';
