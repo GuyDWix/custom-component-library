@@ -891,7 +891,7 @@ export default function SizeAgainstObjects({
   --sao-hairline: rgba(17, 26, 38, 0.12);
   --sao-accent: #f0521c;
   --sao-accent-ink: #c43c0c;
-  --sao-font-display: 'Inter Tight', 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --sao-font-display: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --sao-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --sao-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.26  0 0 0 0 0.34  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   --sao-ease: cubic-bezier(0.16, 1, 0.3, 1);
