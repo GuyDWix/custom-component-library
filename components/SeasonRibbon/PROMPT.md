@@ -271,14 +271,6 @@ export default function SeasonRibbon({
 ```
 
 ```css
-@font-face {
-  font-family: 'Familjen Grotesk';
-  src: url('./fonts/familjen-grotesk-latin-wght-normal.woff2') format('woff2');
-  font-weight: 400 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 .root {
   --sr-linen: #f5f4ef;
   --sr-ink: #1b2620;
