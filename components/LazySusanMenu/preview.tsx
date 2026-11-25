@@ -1,3 +1,4 @@
+import '@fontsource/gloock/400.css';
 import { useMemo } from 'react';
 import LazySusanMenu from './Component';
 import type { LazySusanItem } from './Component';
