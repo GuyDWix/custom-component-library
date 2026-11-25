@@ -1,27 +1,3 @@
-@font-face {
-  font-family: 'Special Elite';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url('./fonts/special-elite-latin-400-normal.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Archivo';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-  src: url('./fonts/archivo-latin-700-normal.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Archivo';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 800;
-  src: url('./fonts/archivo-latin-800-normal.woff2') format('woff2');
-}
-
 .root {
   --it-tab: #5f6b34;
   --it-tab-ink: #f7f1d6;
@@ -33,7 +9,7 @@
   --it-rule: #c4584a;
   --it-radius: 7px;
   --it-font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
-  --it-font-type: 'Special Elite', 'Courier New', Courier, monospace;
+  --it-font-type: 'IBM Plex Mono', 'Courier New', Courier, monospace;
 
   --it-ink-soft: color-mix(in srgb, var(--it-ink) 80%, var(--it-tone));
   --it-ruled: color-mix(in srgb, var(--it-ink) 16%, transparent);
