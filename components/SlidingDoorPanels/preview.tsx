@@ -1,3 +1,6 @@
+import '@fontsource/montserrat/300.css';
+import '@fontsource/montserrat/400.css';
+import '@fontsource/space-grotesk/400.css';
 import { useMemo } from 'react';
 import SlidingDoorPanels from './Component';
 import type { SlidingDoorImage } from './Component';

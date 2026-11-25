@@ -410,30 +410,14 @@ export default function SlidingDoorPanels({
 ```
 
 ```css
-@font-face {
-  font-family: 'Jost Glass';
-  src: url('./fonts/jost-latin-300-normal.woff2') format('woff2');
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Space Grotesk Glass';
-  src: url('./fonts/space-grotesk-500.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
 /* Dark cinematic architecture: full-bleed photo, smoked-glass slabs, one pale ink */
 .root {
   --sd-night: #07080a;
   --sd-smoke: linear-gradient(180deg, #151920 0%, #0b0d11 100%);
   --sd-ink: #f1efe9;
   --sd-ink-dim: rgba(241, 239, 233, 0.66);
-  --sd-font-display: 'Jost Glass', system-ui, sans-serif;
-  --sd-font-ui: 'Space Grotesk Glass', ui-monospace, Menlo, sans-serif;
+  --sd-font-display: 'Montserrat', system-ui, sans-serif;
+  --sd-font-ui: 'Space Grotesk', ui-monospace, Menlo, sans-serif;
   --sd-gutter: clamp(18px, 4cqi, 56px);
   --sd-dwell: 7000ms;
   --sd-n: 6;
