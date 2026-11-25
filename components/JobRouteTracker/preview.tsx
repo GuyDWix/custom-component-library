@@ -1,3 +1,7 @@
+import '@fontsource/bricolage-grotesque/400.css';
+import '@fontsource/bricolage-grotesque/600.css';
+import '@fontsource/bricolage-grotesque/700.css';
+import '@fontsource/bricolage-grotesque/800.css';
 import { useMemo } from 'react';
 import JobRouteTracker from './Component';
 import type { JobRouteTrackerProps } from './Component';
