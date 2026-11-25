@@ -1,0 +1,16 @@
+{
+  "name": "Starter",
+  "display_name": "Starter",
+  "category": "cards",
+  "tier": "everyday",
+  "job": "A clean card with one message and one action (replace with what the visitor gets from your component)",
+  "visitor_action": "reads the message and clicks or taps the button; Enter activates it from the keyboard",
+  "owner_settings": ["Title", "Text", "Button label and link", "Accent color"],
+  "site_types": [],
+  "mobile": "stacks in one column at 375",
+  "motion": "button lifts slightly on hover (reduced-motion: static)",
+  "status": "backlog",
+  "studio2_tested": false,
+  "art_direction": "",
+  "notes": ""
+}

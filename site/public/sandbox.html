@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Component sandbox</title>
+    <style>
+      html, body { margin: 0; }
+      .sbx-stage {
+        min-height: 100vh; box-sizing: border-box; display: grid; place-items: center;
+        padding: 48px; background: linear-gradient(180deg, #f3f2ef 0%, #e9eae6 100%);
+      }
+      #root { width: 100%; max-width: 1040px; }
+      .is-preview .sbx-stage { display: block; min-height: 0; padding: 0; background: none; }
+      .is-preview #root { max-width: none; }
+    </style>
+    <style id="component-css"></style>
+    <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.development.js"></script>
+    <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.development.js"></script>
+  </head>
+  <body>
+    <div class="sbx-stage"><div id="root"></div></div>
+    <script>
+      const h = React.createElement;
+      const rootEl = document.getElementById('root');
+      const post = (msg) => parent.postMessage(msg, '*');
+      const reportError = (err) => post({ type: 'error', message: String(err && err.message ? err.message : err) });
+      let root;
+      let renderId = 0;
+
+      // Sandbox has no CSS module scoping, so styles.foo is just "foo"
+      const cssModule = new Proxy({}, {
+        get: (_, key) => (typeof key === 'string' && key !== '__esModule' && key !== 'then' ? key : undefined),
+      });
+
+      const jsxRuntime = {
+        Fragment: React.Fragment,
+        jsx: (type, props, key) => h(type, key === undefined ? props : { ...props, key }),
+        jsxs: (type, props, key) => h(type, key === undefined ? props : { ...props, key }),
+      };
+
+      const assetUrl = (base, path) => new URL(path.replace(/^\.\//, ''), base).href;
+
+      function makeRequire(assetBase, componentExports) {
+        return (id) => {
+          if (componentExports && id === './Component') return componentExports;
+          if (id.startsWith('@fontsource/')) return {};
+          if (id === 'react') return React;
+          if (id === 'react-dom' || id === 'react-dom/client') return ReactDOM;
+          if (id === 'react/jsx-runtime') return jsxRuntime;
+          if (/\.module\.css$/.test(id)) return cssModule;
+          if (/^\.\/images\/[^/]+$/.test(id)) return { default: assetUrl(assetBase, id), __esModule: true };
+          throw new Error(`Import "${id}" isn't available in the editor. Use only react, ./Component.module.css and ./images/<file>.`);
+        };
+      }
+
+      function load(js, require, file) {
+        const module = { exports: {} };
+        new Function('require', 'module', 'exports', js)(require, module, module.exports);
+        const Component = module.exports.default;
+        if (typeof Component !== 'function' && typeof Component !== 'object') {
+          throw new Error(`${file} has no default export. Add "export default function MyComponent() {…}".`);
+        }
+        return module.exports;
+      }
+
+      function loadRoot(js, previewJs, assetBase) {
+        const component = load(js, makeRequire(assetBase), 'Component.tsx');
+        return previewJs ? load(previewJs, makeRequire(assetBase, component), 'preview.tsx').default : component.default;
+      }
+
+      class Boundary extends React.Component {
+        constructor(props) { super(props); this.state = { failed: false }; }
+        static getDerivedStateFromError() { return { failed: true }; }
+        componentDidCatch(err) { reportError(err); }
+        componentDidMount() { if (!this.state.failed) post({ type: 'rendered' }); }
+        render() { return this.state.failed ? null : this.props.children; }
+      }
+
+      // Relative url(./fonts/x.woff2) must point at the gallery host, not this opaque-origin page
+      const absolutizeCss = (css, assetBase) =>
+        css.replace(/url\(\s*(['"]?)\.\/([^'")]+)\1\s*\)/g, (_, q, path) => `url(${q}${assetUrl(assetBase, path)}${q})`);
+
+      function syncFonts(fonts) {
+        document.querySelectorAll('link[data-font]').forEach((l) => l.remove());
+        for (const href of fonts) {
+          const link = Object.assign(document.createElement('link'), { rel: 'stylesheet', href });
+          link.dataset.font = '';
+          document.head.append(link);
+        }
+      }
+
+      function render({ js, previewJs, css, fonts = [], assetBase }) {
+        document.getElementById('component-css').textContent = absolutizeCss(css, assetBase);
+        document.body.classList.toggle('is-preview', !!previewJs);
+        syncFonts(fonts);
+        try {
+          const Component = loadRoot(js, previewJs, assetBase);
+          root ??= ReactDOM.createRoot(rootEl);
+          root.render(h(Boundary, { key: ++renderId }, h(Component)));
+        } catch (err) {
+          root?.render(null);
+          reportError(err);
+        }
+      }
+
+      addEventListener('message', (e) => {
+        if (e.source === parent && e.data && e.data.type === 'render') render(e.data);
+      });
+      addEventListener('error', (e) => reportError(e.error || e.message));
+      addEventListener('unhandledrejection', (e) => reportError(e.reason));
+      const stagePadding = () => (document.body.classList.contains('is-preview') ? 0 : 96);
+      new ResizeObserver(() => post({ type: 'height', height: rootEl.offsetHeight + stagePadding() })).observe(rootEl);
+      post({ type: 'ready' });
+    </script>
+  </body>
+</html>

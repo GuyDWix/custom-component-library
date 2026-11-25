@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
+import { fetchVersion, type Version } from './edits';
+import SandboxFrame from './SandboxFrame';
 import ScaledFrame from './ScaledFrame';
 
 const MOUNT_MARGIN = '300px';
@@ -20,10 +22,20 @@ function useNearViewport(ref: RefObject<Element>) {
   return near;
 }
 
-export default function Thumb({ name, title }: { name: string; title: string }) {
+function useVersionWhen(name: string, enabled: boolean) {
+  const [version, setVersion] = useState<Version | null>(null);
+  useEffect(() => {
+    if (enabled) fetchVersion(name, true).then(setVersion, () => setVersion(null));
+  }, [name, enabled]);
+  return version;
+}
+
+export default function Thumb({ name, title, hasVersion }: { name: string; title: string; hasVersion: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const near = useNearViewport(ref);
   const [loaded, setLoaded] = useState(false);
+  const version = useVersionWhen(name, near && hasVersion);
+  const frame = { title: `${title} preview`, width: 1280, height: 800, decorative: true };
 
   useEffect(() => {
     if (!near) setLoaded(false);
@@ -32,16 +44,10 @@ export default function Thumb({ name, title }: { name: string; title: string }) 
   return (
     <div ref={ref} className={`g-thumb${loaded ? ' is-loaded' : ''}`}>
       <div className="g-thumb__placeholder" aria-hidden="true">{title}</div>
-      {near && (
-        <ScaledFrame
-          src={`?c=${encodeURIComponent(name)}`}
-          title={`${title} preview`}
-          width={1280}
-          height={800}
-          decorative
-          onLoad={() => setLoaded(true)}
-        />
+      {near && !hasVersion && (
+        <ScaledFrame src={`?c=${encodeURIComponent(name)}`} {...frame} onLoad={() => setLoaded(true)} />
       )}
+      {near && version && <SandboxFrame name={name} code={version} {...frame} onRendered={() => setLoaded(true)} />}
     </div>
   );
 }

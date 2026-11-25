@@ -1,0 +1,91 @@
+.root {
+  --st-accent: #3858e9;
+  --st-ink: #14161c;
+  --st-muted: #5b6070;
+  --st-surface: #ffffff;
+  --st-font: 'Wix Madefor Display', system-ui, sans-serif;
+  container-type: inline-size;
+  font-family: var(--st-font);
+  color: var(--st-ink);
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: 16px;
+  padding: 28px;
+  border-radius: 20px;
+  background: var(--st-surface);
+  box-shadow: 0 1px 2px rgb(20 22 28 / 0.06), 0 12px 32px rgb(20 22 28 / 0.08);
+}
+
+.glow {
+  position: absolute;
+  inset-block-start: -40%;
+  inset-inline-end: -20%;
+  inline-size: 70%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--st-accent) 22%, transparent), transparent 70%);
+  pointer-events: none;
+}
+
+.title {
+  position: relative;
+  margin: 0;
+  font-size: clamp(22px, 6cqi, 34px);
+  font-weight: 600;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.text {
+  position: relative;
+  margin: 0;
+  max-inline-size: 52ch;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--st-muted);
+  overflow-wrap: anywhere;
+}
+
+.button {
+  position: relative;
+  justify-self: start;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: var(--st-accent);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  transition: transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 200ms ease;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--st-accent) 35%, transparent);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--st-accent);
+  outline-offset: 3px;
+}
+
+@container (min-width: 560px) {
+  .card {
+    padding: 44px;
+    gap: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+
+  .button:hover {
+    transform: none;
+  }
+}

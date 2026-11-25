@@ -1,9 +1,16 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { entries, metaLine, type Entry } from './data';
+import { SHOW_REVIEW, isRepoName, metaLine, type Entry } from './data';
 import Badges from './Badges';
+import { entryFor, useCatalog } from './catalog';
+import { fetchVersion, loadRepoCode, type Code, type Version } from './edits';
+import Editor from './Editor';
 import { CodePanel, PromptPanel } from './PromptPanel';
+import SandboxFrame from './SandboxFrame';
 import ScaledFrame from './ScaledFrame';
 import Segmented from './Segmented';
+import StatusControl, { ClaimControl, History } from './StatusBlock';
+import Tabs, { TabPanel } from './Tabs';
+import { useMe, useWorkState } from './workflow';
 
 const icon = (path: ReactNode) => (
   <svg className="g-seg__icon" viewBox="0 0 16 16" aria-hidden="true">{path}</svg>
@@ -29,30 +36,37 @@ const viewHref = (e: Entry) => `?view=${encodeURIComponent(e.name)}`;
 const previewHref = (e: Entry) => `?c=${encodeURIComponent(e.name)}`;
 const sentence = (s?: string) => (s ? s[0].toUpperCase() + s.slice(1) : undefined);
 
-function Preview({ entry }: { entry: Entry }) {
+function Preview({ entry, code, label }: { entry: Entry; code?: Code; label?: string }) {
   const [device, setDevice] = useState<Device>('desktop');
   const [data, setData] = useState<Data>('optimal');
   const src = previewHref(entry) + (data === 'extreme' ? '&worst=1' : '');
   const title = `${entry.title} live preview`;
+  const hasData = !code || !!code.preview;
+  const frame = (width: number, height: number, maxScale?: number) =>
+    code ? (
+      <SandboxFrame key={device} name={entry.name} code={code} title={title} width={width} height={height} maxScale={maxScale} worst={data === 'extreme'} />
+    ) : (
+      <ScaledFrame key={src} src={src} title={title} width={width} height={height} maxScale={maxScale} />
+    );
 
   return (
     <section className="g-preview" aria-label="Live preview">
       <div className="g-preview__bar">
         <Segmented label="Viewport" value={device} options={DEVICES} onChange={setDevice} />
-        <Segmented label="Data" value={data} options={DATA} onChange={setData} />
-        <a className="g-link g-preview__open" href={src} target="_blank" rel="noreferrer">
-          Open full page ↗
-        </a>
+        {hasData && <Segmented label="Data" value={data} options={DATA} onChange={setData} />}
+        {code ? (
+          label && <span className="g-pill g-pill--edited">{label}</span>
+        ) : (
+          <a className="g-link g-preview__open" href={src} target="_blank" rel="noreferrer">
+            Open full page ↗
+          </a>
+        )}
       </div>
       {device === 'desktop' ? (
-        <div className="g-stage">
-          <ScaledFrame key={src} src={src} title={title} width={1280} height={800} fitContent />
-        </div>
+        <div className="g-stage">{frame(1280, 800)}</div>
       ) : (
         <div className="g-stage g-stage--mobile">
-          <div className="g-device">
-            <ScaledFrame key={src} src={src} title={title} width={375} height={760} maxScale={1} fitContent />
-          </div>
+          <div className="g-device">{frame(375, 760, 1)}</div>
         </div>
       )}
     </section>
@@ -78,7 +92,7 @@ function Field({ label, children }: { label: string; children?: ReactNode }) {
   );
 }
 
-function Details({ entry }: { entry: Entry }) {
+function Details({ entry, history }: { entry: Entry; history?: ReactNode }) {
   const behavior = [entry.visitorAction, entry.motion, entry.mobile].some(Boolean);
   const look = entry.artDirection || entry.siteTypes.length > 0;
   return (
@@ -109,49 +123,34 @@ function Details({ entry }: { entry: Entry }) {
           </dl>
         </Group>
       )}
+      {history}
     </div>
   );
 }
 
-function Panel({ entry }: { entry: Entry }) {
+type PanelProps = { entry: Entry; code?: Code | null; history?: ReactNode; kit?: ReactNode; onEdit?: () => void };
+
+function Panel({ entry, code, history, kit, onEdit }: PanelProps) {
   const [tab, setTab] = useState<Tab>('Details');
-  const id = (t: Tab) => `g-tab-${t.toLowerCase()}`;
+  const actions = (kit || onEdit) && (
+    <div className="g-panel__actions">
+      {kit}
+      {onEdit && <button type="button" className="g-btn g-btn--ghost g-btn--sm" disabled={code === undefined} onClick={onEdit}>Edit</button>}
+    </div>
+  );
   return (
     <section className="g-panel" aria-label="Component information">
-      <div className="g-tabs" role="tablist" aria-label="Component information">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            id={id(t)}
-            type="button"
-            role="tab"
-            className="g-tab"
-            aria-selected={t === tab}
-            aria-controls={`${id(t)}-panel`}
-            tabIndex={t === tab ? 0 : -1}
-            onClick={() => setTab(t)}
-            onKeyDown={(e) => {
-              const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
-              if (!step) return;
-              const next = TABS[(TABS.indexOf(tab) + step + TABS.length) % TABS.length];
-              setTab(next);
-              document.getElementById(id(next))?.focus();
-            }}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-      <div id={`${id(tab)}-panel`} role="tabpanel" aria-labelledby={id(tab)} className="g-tabpanel">
-        {tab === 'Details' && <Details entry={entry} />}
-        {tab === 'Prompt' && <PromptPanel name={entry.name} />}
-        {tab === 'Code' && <CodePanel name={entry.name} />}
-      </div>
+      <Tabs label="Component information" tabs={TABS} value={tab} onChange={setTab} end={actions} />
+      <TabPanel tab={tab}>
+        {tab === 'Details' && <Details entry={entry} history={history} />}
+        {tab === 'Prompt' && <PromptPanel entry={entry} code={code} />}
+        {tab === 'Code' && <CodePanel code={code} />}
+      </TabPanel>
     </section>
   );
 }
 
-function Pager({ index }: { index: number }) {
+function Pager({ entries, index }: { entries: Entry[]; index: number }) {
   const prev = entries[index - 1];
   const next = entries[index + 1];
   return (
@@ -162,34 +161,112 @@ function Pager({ index }: { index: number }) {
   );
 }
 
+const kitHref = (name: string, isNew: boolean) =>
+  isNew ? `/api/kit/new?name=${encodeURIComponent(name)}` : `/api/kit/${encodeURIComponent(name)}`;
+
+function useCode(name: string) {
+  const [saved, setSaved] = useState<Version | null>();
+  const [repo, setRepo] = useState<Code | null>();
+  useEffect(() => {
+    fetchVersion(name).then((v) => setSaved(v ?? null), () => setSaved(null));
+    loadRepoCode(name).then(setRepo, () => setRepo(null));
+  }, [name]);
+  const current = saved === undefined ? undefined : saved ?? repo;
+  return { saved, setSaved, current };
+}
+
 export default function Detail({ name }: { name: string }) {
+  const { entries } = useCatalog();
+  const me = useMe();
+  const work = useWorkState(name);
+  const { saved, setSaved, current } = useCode(name);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<Code>();
+  const inRepo = isRepoName(name);
+  const isNew = !inRepo && saved === null;
+  const wantsNew = new URLSearchParams(location.search).get('new') === '1';
+  const entry = inRepo || saved ? entryFor(name, saved?.meta) : isNew && wantsNew ? entryFor(name) : undefined;
   const index = entries.findIndex((e) => e.name === name);
-  const entry = entries[index];
+  const previewCode = draft ?? saved ?? undefined;
+  const holder = work.state?.assigneeEmail;
+  const showState = SHOW_REVIEW && !isNew && work.state !== undefined;
+  const canEdit = work.state !== undefined && (!holder || holder === me?.email);
+
+  const close = () => {
+    setEditing(false);
+    setDraft(undefined);
+  };
+  const onSaved = (v: Version) => {
+    setSaved(v);
+    close();
+    work.refresh();
+    if (wantsNew) history.replaceState(null, '', `?view=${encodeURIComponent(name)}`);
+  };
 
   useEffect(() => {
     document.title = entry ? `${entry.title} · Component Library` : 'Not found · Component Library';
-  }, [entry]);
+  }, [entry?.title]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!entry) {
+    return (
+      <main className="g-page g-page--detail">
+        <a className="g-link g-back" href="./">← All components</a>
+        <p className={saved === undefined ? 'g-muted' : 'g-empty'}>{saved === undefined ? 'Loading…' : `No component named “${name}”.`}</p>
+      </main>
+    );
+  }
+
+  const kit = SHOW_REVIEW && (
+    <a className="g-btn g-btn--ghost g-btn--sm" href={kitHref(name, isNew)} download>
+      {isNew ? 'Download blank kit' : 'Download kit'}
+    </a>
+  );
+
+  const side =
+    (isNew || editing) && current !== undefined ? (
+      <Editor
+        name={name}
+        saved={saved ?? null}
+        initial={current ?? { tsx: '', css: '' }}
+        isNew={isNew}
+        onPreview={setDraft}
+        onSaved={onSaved}
+        onClose={isNew ? undefined : close}
+      />
+    ) : (
+      <Panel
+        entry={entry}
+        code={current}
+        history={SHOW_REVIEW && <History name={name} version={work.changes} />}
+        kit={kit}
+        onEdit={SHOW_REVIEW && canEdit ? () => setEditing(true) : undefined}
+      />
+    );
 
   return (
     <main className="g-page g-page--detail">
       <a className="g-link g-back" href="./">← All components</a>
-      {entry ? (
-        <>
-          <header className="g-detail__head">
+      <header className="g-detail__head">
+        <div className="g-detail__top">
+          <div className="g-detail__name">
             <h1 className="g-detail__title">{entry.title}</h1>
-            {metaLine(entry) && <p className="g-card__meta">{metaLine(entry)}</p>}
-            {entry.job && <p className="g-detail__job">{entry.job}</p>}
-            <Badges entry={entry} />
-          </header>
-          <div className="g-detail__layout">
-            <Preview entry={entry} />
-            <Panel entry={entry} />
+            {showState && <ClaimControl work={work} me={me} />}
+            {showState && <StatusControl work={work} />}
           </div>
-          <Pager index={index} />
-        </>
-      ) : (
-        <p className="g-empty">No component named “{name}”.</p>
-      )}
+          {isNew && <div className="g-detail__controls">{kit}</div>}
+        </div>
+        {work.error && <p className="g-editor__notice g-editor__notice--bad" role="alert">{work.error}</p>}
+        {metaLine(entry) && <p className="g-card__meta">{metaLine(entry)}</p>}
+        {entry.job && <p className="g-detail__job">{entry.job}</p>}
+        <Badges entry={entry} />
+      </header>
+      <div className="g-detail__layout">
+        {(!isNew || previewCode) && (
+          <Preview entry={entry} code={previewCode} label={draft ? 'Unsaved preview' : saved ? 'Edited' : undefined} />
+        )}
+        {side}
+      </div>
+      {index >= 0 && <Pager entries={entries} index={index} />}
     </main>
   );
 }
