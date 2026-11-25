@@ -1,11 +1,3 @@
-@font-face {
-  font-family: 'Drawer Hanken';
-  src: url('./fonts/hanken.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-
 /* Soft UI: one surface colour, depth from paired light/dark shadows, one teal accent. */
 .root {
   --surface: #e6e1d9;
@@ -16,7 +8,7 @@
   --accent: #0f766e;
   --accent-ink: #ffffff;
   --focus: #0b514b;
-  --font: 'Drawer Hanken', 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
+  --font: 'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
   --pad: clamp(1.25rem, 6cqi, 2.5rem);
   --d: clamp(4px, 1.5cqi, 9px);
 
