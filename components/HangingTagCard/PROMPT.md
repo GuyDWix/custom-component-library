@@ -343,30 +343,6 @@ export default function HangingTagCard({
 ```
 
 ```css
-@font-face {
-  font-family: 'Bebas Neue';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url('./fonts/bebas-neue-latin-400-normal.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Hanken Grotesk';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url('./fonts/hanken-grotesk-latin-400-normal.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Hanken Grotesk';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 500;
-  src: url('./fonts/hanken-grotesk-latin-500-normal.woff2') format('woff2');
-}
-
 .root {
   --ht-ink: #2c4a38;
   --ht-string: #a87c4e;
@@ -377,8 +353,8 @@ export default function HangingTagCard({
   --ht-wall-2: #7c897e;
   --ht-wall-ink: #1c2822;
   --ht-shadow: rgba(10, 18, 14, 0.85);
-  --ht-font-stamp: 'Bebas Neue', 'Arial Narrow', 'Helvetica Neue', sans-serif;
-  --ht-font-body: 'Hanken Grotesk', system-ui, 'Segoe UI', sans-serif;
+  --ht-font-stamp: 'Oswald', 'Arial Narrow', 'Helvetica Neue', sans-serif;
+  --ht-font-body: 'Instrument Sans', system-ui, 'Segoe UI', sans-serif;
   --ht-lx: 0.78;
   --ht-ly: 0.62;
   --ht-stage-h: clamp(460px, 58cqi, 780px);
@@ -1052,6 +1028,7 @@ export default function HangingTagCard({
   margin: 0;
   padding-block: 0.06em;
   font-family: var(--ht-font-stamp);
+  text-transform: uppercase;
   font-size: clamp(14px, calc(var(--ht-tag-w) * 0.062), 24px);
   font-weight: 400;
   line-height: 1.05;
@@ -1073,6 +1050,7 @@ export default function HangingTagCard({
   margin: 0;
   padding: 0.04em 2px;
   font-family: var(--ht-font-stamp);
+  text-transform: uppercase;
   font-size: clamp(44px, calc(var(--ht-tag-w) * 0.27), 120px);
   font-weight: 400;
   line-height: 0.92;
