@@ -1,3 +1,4 @@
+import '@fontsource/anton/400.css';
 import { useMemo } from 'react';
 import FoldedPaperHeadline from './Component';
 import type { FoldedPaperHeadlineProps } from './Component';

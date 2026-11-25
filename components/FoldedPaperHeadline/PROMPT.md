@@ -277,14 +277,6 @@ export default function FoldedPaperHeadline({
 ```
 
 ```css
-@font-face {
-  font-family: 'Anton';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url('./fonts/anton-latin-400-normal.woff2') format('woff2');
-}
-
 .root {
   --fph-paper: #b32914;
   --fph-ink: #f0e5cf;
