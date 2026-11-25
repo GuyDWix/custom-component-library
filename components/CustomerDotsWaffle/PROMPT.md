@@ -860,14 +860,6 @@ export default function CustomerDotsWaffle({
 ```
 
 ```css
-@font-face {
-  font-family: 'CDW Figtree';
-  src: url('./figtree-latin.woff2') format('woff2');
-  font-weight: 300 900;
-  font-style: normal;
-  font-display: swap;
-}
-
 @property --cdw-ground {
   syntax: '<color>';
   inherits: true;
@@ -897,7 +889,7 @@ export default function CustomerDotsWaffle({
   --cdw-slate: #7f8e9a;
   --cdw-ink: #1c2832;
   --cdw-highlight: #f2503f;
-  --cdw-font: 'CDW Figtree', 'Figtree', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --cdw-font: 'DM Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --cdw-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
   position: relative;
