@@ -740,22 +740,6 @@ export default function ContactSheetGallery({
   initial-value: 1600px;
 }
 
-@font-face {
-  font-family: 'Space Grotesk';
-  src: url('./fonts/space-grotesk-500.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Space Grotesk';
-  src: url('./fonts/space-grotesk-700.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 .root {
   --csg-room: #131417;
   --csg-paper: #f2ebdd;
