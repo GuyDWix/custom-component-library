@@ -1,3 +1,10 @@
+import '@fontsource/caveat/400.css';
+import '@fontsource/caveat/700.css';
+import '@fontsource/instrument-sans/400.css';
+import '@fontsource/instrument-sans/500.css';
+import '@fontsource/instrument-sans/700.css';
+import '@fontsource/oswald/400.css';
+import '@fontsource/oswald/700.css';
 import { useMemo } from 'react';
 import FlipMenuCard from './Component';
 import type { FlipMenuCardProps } from './Component';
