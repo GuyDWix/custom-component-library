@@ -263,22 +263,6 @@ export default function GoalJarFill({
 ```
 
 ```css
-@font-face {
-  font-family: 'Schibsted Grotesk';
-  src: url('./fonts/schibsted-500.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Schibsted Grotesk';
-  src: url('./fonts/schibsted-700.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 /* Soft-UI liquid tablet: pressed well, tinted liquid with two wave layers, numeral inverts along the wave. */
 .root {
   --gj-liquid: #1a86a8;
@@ -291,7 +275,7 @@ export default function GoalJarFill({
   --gj-deep: #061822;
   --gj-top: color-mix(in srgb, var(--gj-liquid) 82%, var(--gj-deep));
   --gj-bottom: color-mix(in srgb, var(--gj-liquid) 52%, var(--gj-deep));
-  --gj-font: 'Schibsted Grotesk', 'Avenir Next', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --gj-font: 'Instrument Sans', 'Avenir Next', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --gj-fill: 0;
   --gj-len: 2;
 
