@@ -1,11 +1,3 @@
-@font-face {
-  font-family: 'Archivo';
-  src: url('./fonts/archivo-latin.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-
 /*
  * The component IS the sticker: one full-bleed warm-vinyl sheet that fills its
  * frame edge to edge. Under it, an equally composed ink field waits for the peel.
