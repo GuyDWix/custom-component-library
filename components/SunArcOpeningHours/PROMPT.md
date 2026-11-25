@@ -800,14 +800,6 @@ export default function SunArcOpeningHours({
 ```
 
 ```css
-@font-face {
-  font-family: 'Instrument Sans';
-  src: url('./fonts/instrument-sans-latin-wght.woff2') format('woff2');
-  font-weight: 400 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 .root {
   --sa-ink: #171a3d;
   --sa-tint: #9ba7f5;
