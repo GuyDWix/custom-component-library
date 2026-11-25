@@ -445,7 +445,7 @@ export default function WaxSealInvite({
   --ws-ink: color-mix(in oklab, var(--ws-env) 86%, black);
   --ws-muted: color-mix(in oklab, var(--ws-ink) 74%, var(--ws-paper));
   --ws-stage: color-mix(in oklab, var(--ws-env) 42%, #05060b);
-  --ws-font-display: 'Inter Tight', 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --ws-font-display: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --ws-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --ws-font-seal: 'Didot', 'Bodoni 72', 'Bodoni Moda', 'Playfair Display', Georgia, serif;
   --ws-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .8 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");

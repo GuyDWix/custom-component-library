@@ -1,3 +1,6 @@
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/inter/700.css';
 import { useEffect, useMemo, useRef } from 'react';
 import WaxSealInvite from './Component';
 import type { WaxSealInviteProps } from './Component';
