@@ -1,3 +1,5 @@
+import '@fontsource/instrument-sans/400.css';
+import '@fontsource/instrument-sans/500.css';
 import { useMemo } from 'react';
 import BlackHoleIntro from './Component';
 
