@@ -1,13 +1,5 @@
-@font-face {
-  font-family: 'Instrument Sans SAR';
-  src: url('./fonts/instrument-sans-latin-wght.woff2') format('woff2');
-  font-weight: 400 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 .root {
-  --sar-font: 'Instrument Sans SAR', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
+  --sar-font: 'Instrument Sans', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
   --sar-paper: #e1eee7;
   --sar-paper-hi: #f2f9f5;
   --sar-paper-deep: #d3e5dc;
