@@ -1,3 +1,7 @@
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/inter/700.css';
 import { useMemo } from 'react';
 import PackageSliderCard from './Component';
 import type { PackageSliderStop } from './Component';

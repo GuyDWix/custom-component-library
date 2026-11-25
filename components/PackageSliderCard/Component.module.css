@@ -1,17 +1,9 @@
-@font-face {
-  font-family: 'Inter Tight';
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url('./fonts/inter-tight-latin.woff2') format('woff2');
-}
-
 .root {
   --ps-paper: #f2f1ed;
   --ps-ink: #111110;
   --ps-mute: #66655f;
   --ps-rule: color-mix(in srgb, var(--ps-ink) 16%, transparent);
-  --ps-font: 'Inter Tight', 'Helvetica Neue', Arial, system-ui, sans-serif;
+  --ps-font: 'Inter', 'Helvetica Neue', Arial, system-ui, sans-serif;
 
   position: relative;
   container-type: inline-size;
