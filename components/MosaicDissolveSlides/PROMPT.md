@@ -607,14 +607,6 @@ export default function MosaicDissolveSlides({
 ```
 
 ```css
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 500;
-  src: url('./fonts/space-grotesk-500.woff2') format('woff2');
-}
-
 .root {
   --md-ink: #0c0d0f;
   --md-paper: #ecebe6;
