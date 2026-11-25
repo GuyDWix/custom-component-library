@@ -519,20 +519,12 @@ export default function BrochureUnfoldCard({
 ```
 
 ```css
-@font-face {
-  font-family: 'Epilogue Brochure';
-  src: url('./fonts/epilogue-latin-wght-normal.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-
 .root {
   --bc-paper: #e7d8b4;
   --bc-ink: #2f3b17;
   --bc-accent: #f2a35f;
   --bc-stage: #161b0e;
-  --bc-font: 'Epilogue Brochure', 'Helvetica Neue', Arial, sans-serif;
+  --bc-font: 'Epilogue', 'Helvetica Neue', Arial, sans-serif;
   container-type: inline-size;
   position: relative;
   box-sizing: border-box;

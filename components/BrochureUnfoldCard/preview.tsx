@@ -1,3 +1,7 @@
+import '@fontsource/epilogue/400.css';
+import '@fontsource/epilogue/500.css';
+import '@fontsource/epilogue/700.css';
+import '@fontsource/epilogue/800.css';
 import { useMemo } from 'react';
 import BrochureUnfoldCard from './Component';
 import type { BrochurePanel } from './Component';
