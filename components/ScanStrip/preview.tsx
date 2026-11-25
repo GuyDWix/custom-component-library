@@ -1,3 +1,7 @@
+import '@fontsource/bricolage-grotesque/400.css';
+import '@fontsource/bricolage-grotesque/600.css';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/700.css';
 import { useMemo } from 'react';
 import ScanStrip from './Component';
 import type { ScanStripProps } from './Component';

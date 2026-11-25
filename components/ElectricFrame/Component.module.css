@@ -1,11 +1,3 @@
-@font-face {
-  font-family: 'Bricolage Grotesque';
-  font-style: normal;
-  font-weight: 200 800;
-  font-display: swap;
-  src: url('./fonts/bricolage.woff2') format('woff2');
-}
-
 .root {
   --ef-color: #7cc4ff;
   --ef-light: var(--ef-color);

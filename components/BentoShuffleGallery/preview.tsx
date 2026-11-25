@@ -1,3 +1,7 @@
+import '@fontsource/bricolage-grotesque/400.css';
+import '@fontsource/bricolage-grotesque/500.css';
+import '@fontsource/bricolage-grotesque/600.css';
+import '@fontsource/bricolage-grotesque/700.css';
 import { useMemo } from 'react';
 import BentoShuffleGallery from './Component';
 import type { BentoPhoto } from './Component';

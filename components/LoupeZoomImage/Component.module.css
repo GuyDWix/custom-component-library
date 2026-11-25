@@ -1,21 +1,5 @@
 /* Neutral print table — a handleless glass loupe with a thin ring and soft shadow */
 
-@font-face {
-  font-family: 'Schibsted Grotesk';
-  src: url('./fonts/schibsted-500.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Schibsted Grotesk';
-  src: url('./fonts/schibsted-700.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 .root {
   --lz-rim: #b08a3c;
   --lz-size: 320px;
@@ -24,8 +8,8 @@
   --lz-linen-deep: #eceae6;
   --lz-ink: #1d1d1f;
   --lz-muted: #55555a;
-  --lz-font-display: 'Schibsted Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --lz-font-ui: 'Schibsted Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --lz-font-display: 'Instrument Sans', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --lz-font-ui: 'Instrument Sans', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
 
   position: relative;
   isolation: isolate;

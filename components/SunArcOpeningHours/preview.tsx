@@ -1,3 +1,7 @@
+import '@fontsource/instrument-sans/400.css';
+import '@fontsource/instrument-sans/500.css';
+import '@fontsource/instrument-sans/600.css';
+import '@fontsource/instrument-sans/700.css';
 import { useMemo } from 'react';
 import SunArcOpeningHours from './Component';
 import type { SunArcOpeningHoursProps } from './Component';

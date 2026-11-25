@@ -337,15 +337,6 @@ export default function DiffCompareCard({
 ```
 
 ```css
-@font-face {
-  font-family: 'IBM Plex Sans';
-  font-style: normal;
-  font-weight: 100 700;
-  font-display: swap;
-  src: url('./fonts/ibm-plex-sans-latin-var.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
 .root {
   --dc-paper: #ffffff;
   --dc-ink: #17191f;
@@ -593,8 +584,10 @@ export default function DiffCompareCard({
   background: var(--dc-tint);
 }
 
+
 .pan[data-lead='true'] .panBody {
-  border-color: color-mix(in srgb, var(--dc-ink) 30%, var(--dc-line));
+  border-inline-color: color-mix(in srgb, var(--dc-ink) 30%, var(--dc-line));
+  border-block-end-color: color-mix(in srgb, var(--dc-ink) 30%, var(--dc-line));
 }
 
 .panHead {

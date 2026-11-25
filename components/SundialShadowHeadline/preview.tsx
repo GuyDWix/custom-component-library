@@ -1,3 +1,6 @@
+import '@fontsource/archivo/400.css';
+import '@fontsource/archivo/700.css';
+import '@fontsource/archivo/900.css';
 import { useMemo } from 'react';
 import SundialShadowHeadline from './Component';
 

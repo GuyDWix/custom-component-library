@@ -1,3 +1,5 @@
+import '@fontsource/wix-madefor-display/400.css';
+import '@fontsource/wix-madefor-display/500.css';
 import { useMemo } from 'react';
 import DrumRingCarousel, { defaultPhotos } from './Component';
 import type { DrumPhoto } from './Component';

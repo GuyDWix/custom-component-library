@@ -598,7 +598,7 @@ export default function SundialShadowHeadline({
   --sd-tick: #c49149;
   --sd-ink: #5d2e42;
   --sd-sun-size: clamp(34px, 9cqw, 74px);
-  --sd-font: 'Archivo Black', 'Arial Black', 'Helvetica Neue', system-ui, sans-serif;
+  --sd-font: 'Archivo', 'Arial Black', 'Helvetica Neue', system-ui, sans-serif;
 
   position: relative;
   isolation: isolate;
@@ -619,6 +619,7 @@ export default function SundialShadowHeadline({
       var(--sd-ground) 100%
     );
   font-family: var(--sd-font);
+  font-weight: 900;
   touch-action: pan-y;
   -webkit-tap-highlight-color: transparent;
   outline: none;

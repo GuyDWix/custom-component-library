@@ -1,3 +1,6 @@
+import '@fontsource/instrument-sans/400.css';
+import '@fontsource/montserrat/300.css';
+import '@fontsource/montserrat/400.css';
 import { useMemo } from 'react';
 import LenticularSwitch from './Component';
 import type { LenticularSwitchProps } from './Component';

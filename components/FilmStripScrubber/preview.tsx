@@ -1,3 +1,5 @@
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
 import { useMemo } from 'react';
 import FilmStripScrubber from './Component';
 import type { FilmStripPhoto } from './Component';

@@ -10,20 +10,6 @@
   initial-value: #46f59c;
 }
 
-@font-face {
-  font-family: 'Wix Madefor Display';
-  src: url('./fonts/WixMadeforDisplay-Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Wix Madefor Display';
-  src: url('./fonts/WixMadeforDisplay-Bold.ttf') format('truetype');
-  font-weight: 700;
-  font-display: swap;
-}
-
 .frame {
   container: wcm / inline-size;
   inline-size: 100%;

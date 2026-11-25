@@ -51,24 +51,38 @@ export default function ElectricFrame({
     return () => mq.removeEventListener('change', sync);
   }, []);
 
-  // Pause the SMIL clock while off-screen
+  // Drive the offsets from rAF (SMIL on filter primitives starts late in some browsers); pause off-screen
   useEffect(() => {
     const root = rootRef.current;
     const svg = svgRef.current;
-    if (!root || !svg || reduced || typeof IntersectionObserver === 'undefined') return;
+    if (!root || !svg || reduced) return;
+    const offsets = Array.from(svg.querySelectorAll('feOffset'));
+    const periodMs = 6000 / clamp(speed, 0.25, 3);
+    let raf = 0;
+    let visible = true;
+    const tick = (now: number) => {
+      const t = (now % periodMs) / periodMs;
+      offsets.forEach((el, i) => {
+        const dist = i < 2 ? 700 : 490;
+        const v = i % 2 === 0 ? dist * (1 - t) : -dist * t;
+        el.setAttribute(i < 2 ? 'dy' : 'dx', v.toFixed(1));
+      });
+      raf = visible ? requestAnimationFrame(tick) : 0;
+    };
+    raf = requestAnimationFrame(tick);
     const io = new IntersectionObserver(([e]) => {
-      if (!svg.pauseAnimations) return;
-      if (e.isIntersecting) svg.unpauseAnimations();
-      else svg.pauseAnimations();
+      visible = e.isIntersecting;
+      if (visible && !raf) raf = requestAnimationFrame(tick);
     });
     io.observe(root);
-    return () => io.disconnect();
-  }, [reduced]);
+    return () => {
+      cancelAnimationFrame(raf);
+      io.disconnect();
+    };
+  }, [reduced, speed]);
 
   const k = clamp(intensity, 0, 100) / 100;
-  const s = clamp(speed, 0.25, 3);
   const live = !reduced && k > 0;
-  const dur = `${(6 / s).toFixed(2)}s`;
   const scale = (14 + k * 30).toFixed(1);
   const style = {
     '--ef-color': color,
@@ -90,9 +104,7 @@ export default function ElectricFrame({
               ].map((n) => (
                 <Fragment key={n.result}>
                   <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="8" seed={n.seed} result={`${n.result}t`} />
-                  <feOffset in={`${n.result}t`} dx="0" dy="0" result={n.result}>
-                    <animate attributeName={n.attr} values={n.values} dur={dur} repeatCount="indefinite" calcMode="linear" />
-                  </feOffset>
+                  <feOffset in={`${n.result}t`} dx="0" dy="0" result={n.result} />
                 </Fragment>
               ))}
               <feComposite in="n1" in2="n2" result="p1" />
@@ -145,14 +157,6 @@ function Arrow() {
 ```
 
 ```css
-@font-face {
-  font-family: 'Bricolage Grotesque';
-  font-style: normal;
-  font-weight: 200 800;
-  font-display: swap;
-  src: url('./fonts/bricolage.woff2') format('woff2');
-}
-
 .root {
   --ef-color: #7cc4ff;
   --ef-light: var(--ef-color);

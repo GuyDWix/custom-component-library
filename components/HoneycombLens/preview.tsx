@@ -1,3 +1,5 @@
+import '@fontsource/wix-madefor-display/400.css';
+import '@fontsource/wix-madefor-display/700.css';
 import { useMemo } from 'react';
 import HoneycombLens, { defaultPhotos } from './Component';
 import type { HoneycombLensPhoto } from './Component';

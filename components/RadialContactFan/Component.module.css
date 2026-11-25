@@ -1,21 +1,5 @@
 /* Concierge desk: warm ivory surface, navy glass trigger, hairline chips, one top-left light, expo-out motion. */
 
-@font-face {
-  font-family: 'Concierge Bricolage';
-  src: url('./fonts/bricolage-grotesque-latin-var.woff2') format('woff2');
-  font-weight: 400 800;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Concierge Hanken';
-  src: url('./fonts/hanken.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-
 @property --rcf-draw {
   syntax: '<angle>';
   inherits: false;
@@ -35,8 +19,8 @@
   --rcf-ink: color-mix(in srgb, var(--rcf-navy) 82%, #000);
   --rcf-muted: color-mix(in srgb, var(--rcf-navy) 66%, var(--rcf-ivory));
   --rcf-hair: color-mix(in srgb, var(--rcf-brass) 42%, transparent);
-  --rcf-font-display: 'Concierge Bricolage', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --rcf-font-ui: 'Concierge Hanken', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --rcf-font-display: 'Bricolage Grotesque', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --rcf-font-ui: 'Instrument Sans', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --rcf-spring: cubic-bezier(0.34, 1.2, 0.5, 1);
   --rcf-out: cubic-bezier(0.16, 1, 0.3, 1);
 

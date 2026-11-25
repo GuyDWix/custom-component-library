@@ -812,22 +812,6 @@ export default function WatercolourWashField({
 ```
 
 ```css
-@font-face {
-  font-family: 'WashBricolage';
-  src: url('./fonts/bricolage.woff2') format('woff2');
-  font-weight: 200 800;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'WashHanken';
-  src: url('./fonts/hanken.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-
 .root {
   /* re-themable palette: two pigments, paper, ink */
   --wash-color-one: #2e3c8c;
@@ -836,8 +820,8 @@ export default function WatercolourWashField({
   --wash-ink: #29313f;
   --wash-ink-soft: #4d5563;
   --wash-accent: #3f6724;
-  --wash-display-font: 'WashBricolage', 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
-  --wash-body-font: 'WashHanken', 'Segoe UI', system-ui, sans-serif;
+  --wash-display-font: 'Bricolage Grotesque', 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
+  --wash-body-font: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
 
   position: relative;
   isolation: isolate;

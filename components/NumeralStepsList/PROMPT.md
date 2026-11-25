@@ -483,30 +483,6 @@ export default function NumeralStepsList({
 ```
 
 ```css
-@font-face {
-  font-family: 'Bodoni Moda';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400 900;
-  src: url('./fonts/bodoni-moda-latin-wght-normal.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Hanken Grotesk';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url('./fonts/hanken-grotesk-latin-400-normal.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Hanken Grotesk';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 500;
-  src: url('./fonts/hanken-grotesk-latin-500-normal.woff2') format('woff2');
-}
-
 .root {
   --nsl-stage: #ece8e1;
   --nsl-stage-deep: #e0dad1;
@@ -516,7 +492,7 @@ export default function NumeralStepsList({
   --nsl-plum: #8a4d68;
   --nsl-text: #3a322f;
   --nsl-font-numeral: 'Bodoni Moda', 'Didot', 'Bodoni MT', 'Georgia', 'Times New Roman', serif;
-  --nsl-font-body: 'Hanken Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --nsl-font-body: 'Instrument Sans', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --nsl-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.4  0 0 0 0 0.37  0 0 0 0.05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;

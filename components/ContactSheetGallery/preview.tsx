@@ -1,3 +1,5 @@
+import '@fontsource/space-grotesk/400.css';
+import '@fontsource/space-grotesk/600.css';
 import { useMemo } from 'react';
 import ContactSheetGallery, { defaultPhotos } from './Component';
 import type { ContactSheetPhoto } from './Component';

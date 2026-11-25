@@ -327,7 +327,7 @@ export default function InlineImagePillText({
   --ip-pill-h: 0.86em;
   --ip-border: #ffffff;
   --ip-shadow: 44, 36, 72;
-  --ip-font: 'Inter Tight', 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --ip-font: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --ip-font-label: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   --ip-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 

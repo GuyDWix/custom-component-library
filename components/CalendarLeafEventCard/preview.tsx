@@ -1,3 +1,7 @@
+import '@fontsource/oswald/400.css';
+import '@fontsource/oswald/500.css';
+import '@fontsource/oswald/600.css';
+import '@fontsource/oswald/700.css';
 import { useMemo } from 'react';
 import CalendarLeafEventCard from './Component';
 import type { CalendarLeafEventCardProps } from './Component';

@@ -1,3 +1,6 @@
+import '@fontsource/instrument-sans/400.css';
+import '@fontsource/instrument-sans/700.css';
+import '@fontsource/oswald/400.css';
 import { useMemo } from 'react';
 import HangingTagCard from './Component';
 import type { HangingTagCardProps } from './Component';

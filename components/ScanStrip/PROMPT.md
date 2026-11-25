@@ -485,22 +485,6 @@ export default function ScanStrip({
 ```
 
 ```css
-@font-face {
-  font-family: 'Bricolage Grotesque';
-  font-style: normal;
-  font-weight: 500 700;
-  font-display: swap;
-  src: url('./fonts/bricolage-latin.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'DM Mono';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('./fonts/dmmono-latin.woff2') format('woff2');
-}
-
 .root {
   --ss-beam: #ff5b2e;
   --ss-stage: #121410;
@@ -509,7 +493,7 @@ export default function ScanStrip({
   --ss-mute: #4d5448;
   --ss-card: 280px;
   --ss-font-display: 'Bricolage Grotesque', 'Helvetica Neue', Arial, system-ui, sans-serif;
-  --ss-font-mono: 'DM Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --ss-font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   position: relative;
   box-sizing: border-box;

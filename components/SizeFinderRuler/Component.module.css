@@ -1,24 +1,8 @@
 /* Precision instrument: graphite ground, a pale readout panel, one signal-yellow beam. The size is the hero. */
 
-@font-face {
-  font-family: 'SFR Barlow Condensed';
-  src: url('./fonts/barlow-condensed-600.woff2') format('woff2');
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'SFR Plex Sans';
-  src: url('./fonts/ibm-plex-sans-var.woff2') format('woff2');
-  font-weight: 100 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 .root {
-  --sfr-font-display: 'SFR Barlow Condensed', 'Helvetica Neue', Arial, sans-serif;
-  --sfr-font-text: 'SFR Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  --sfr-font-display: 'Barlow', 'Helvetica Neue', Arial, sans-serif;
+  --sfr-font-text: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
   --sfr-ground: #14181a;
   --sfr-paper: #f3f4f2;
   --sfr-paper-soft: rgba(243, 244, 242, 0.7);

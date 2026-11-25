@@ -361,7 +361,7 @@ export default function StoryReel({
   --sr-edge: rgba(244, 240, 232, 0.08);
   --sr-ink: #f3efe6;
   --sr-ink-muted: rgba(243, 239, 230, 0.62);
-  --sr-font: 'Inter Tight', 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --sr-font: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --sr-radius: 24px;
   --sr-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 

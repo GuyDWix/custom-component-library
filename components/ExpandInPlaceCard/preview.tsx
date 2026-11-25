@@ -1,3 +1,6 @@
+import '@fontsource/archivo/400.css';
+import '@fontsource/archivo/500.css';
+import '@fontsource/archivo/700.css';
 import { useMemo } from 'react';
 import ExpandInPlaceCard from './Component';
 import type { ExpandInPlaceCardProps } from './Component';

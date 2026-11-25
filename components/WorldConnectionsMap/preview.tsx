@@ -1,3 +1,7 @@
+import '@fontsource/wix-madefor-display/400.css';
+import '@fontsource/wix-madefor-display/500.css';
+import '@fontsource/wix-madefor-display/600.css';
+import '@fontsource/wix-madefor-display/700.css';
 import type { CSSProperties } from 'react';
 import WorldConnectionsMap, { type MapConnection, type MapLocation } from './Component';
 

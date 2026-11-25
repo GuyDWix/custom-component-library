@@ -9,7 +9,7 @@
   --ft-stage: #f1eef2;
   --ft-ink: #1d1b26;
   --ft-muted: rgba(29, 27, 38, 0.6);
-  --ft-font-display: 'Inter Tight', 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --ft-font-display: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --ft-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --ft-font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   --ft-spectrum: repeating-linear-gradient(

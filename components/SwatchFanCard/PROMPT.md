@@ -629,14 +629,6 @@ export default function SwatchFanCard({
 ```
 
 ```css
-@font-face {
-  font-family: 'SwatchFanInterTight';
-  src: url('./fonts/inter-tight-latin.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-
 .root {
   --sf-counter: #eceae5;
   --sf-counter-deep: #e2dfd8;
@@ -645,8 +637,8 @@ export default function SwatchFanCard({
   --sf-ink: #1d1c1a;
   --sf-muted: #5b5852;
   --sf-hairline: rgba(29, 28, 26, 0.12);
-  --sf-font-display: 'SwatchFanInterTight', 'Helvetica Neue', system-ui, sans-serif;
-  --sf-font-ui: 'SwatchFanInterTight', 'Helvetica Neue', system-ui, sans-serif;
+  --sf-font-display: 'Inter', 'Helvetica Neue', system-ui, sans-serif;
+  --sf-font-ui: 'Inter', 'Helvetica Neue', system-ui, sans-serif;
   --tint: #7d8b6f;
   --cw: 167px;
   --ch: 326px;

@@ -1,3 +1,5 @@
+import '@fontsource/caveat/400.css';
+import '@fontsource/caveat/600.css';
 import { useMemo } from 'react';
 import DevelopingPolaroidRow, { defaultPhotos } from './Component';
 import type { DevelopingPolaroidPhoto } from './Component';

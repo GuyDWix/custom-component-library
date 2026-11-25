@@ -344,28 +344,12 @@ export default function LenticularSwitch({
 ```
 
 ```css
-@font-face {
-  font-family: 'Jost';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 300;
-  src: url('./fonts/jost-latin-300-normal.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Hanken Grotesk';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url('./fonts/hanken-grotesk-latin-400-normal.woff2') format('woff2');
-}
-
 .root {
   --ls-paper: #f5f4f1;
   --ls-ink: #151515;
   --ls-muted: #6b6a66;
-  --ls-font-display: 'Jost', 'Futura', 'Helvetica Neue', system-ui, sans-serif;
-  --ls-font-ui: 'Hanken Grotesk', 'Helvetica Neue', system-ui, sans-serif;
+  --ls-font-display: 'Montserrat', 'Futura', 'Helvetica Neue', system-ui, sans-serif;
+  --ls-font-ui: 'Instrument Sans', 'Helvetica Neue', system-ui, sans-serif;
   --ls-img-a: none;
   --ls-img-b: none;
   --ls-gx: 0;

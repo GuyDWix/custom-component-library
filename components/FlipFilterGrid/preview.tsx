@@ -1,3 +1,13 @@
+import '@fontsource/fraunces/300.css';
+import '@fontsource/fraunces/300-italic.css';
+import '@fontsource/fraunces/400.css';
+import '@fontsource/fraunces/400-italic.css';
+import '@fontsource/jetbrains-mono/300.css';
+import '@fontsource/jetbrains-mono/300-italic.css';
+import '@fontsource/jetbrains-mono/400.css';
+import '@fontsource/jetbrains-mono/400-italic.css';
+import '@fontsource/jetbrains-mono/500.css';
+import '@fontsource/jetbrains-mono/500-italic.css';
 import { useMemo } from 'react';
 import FlipFilterGrid from './Component';
 import type { FlipFilterCategory, FlipFilterItem } from './Component';

@@ -763,14 +763,6 @@ export default function BentoShuffleGallery({
 ```
 
 ```css
-@font-face {
-  font-family: "Bricolage Grotesque";
-  src: url("./fonts/bricolage-grotesque-latin-var.woff2") format("woff2");
-  font-weight: 400 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 .root {
   --bs-radius: 22px;
   --bs-gap: 14px;

@@ -619,22 +619,6 @@ export default function ClassWeekGrid({
 ```css
 /* Studio linen: oat-white weave, sage / clay / denim paper tiles, today's column lifted off the cloth. */
 
-@font-face {
-  font-family: 'Week Bricolage';
-  src: url('./fonts/bricolage-grotesque-latin-var.woff2') format('woff2');
-  font-weight: 400 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Week Hanken';
-  src: url('./fonts/hanken.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-
 .root {
   --cw-ground: #f2eee4;
   --cw-paper: #fdfbf6;
@@ -643,8 +627,8 @@ export default function ClassWeekGrid({
   --cw-hair: rgba(70, 58, 38, 0.16);
   --cw-focus: #2f5d8f;
   --cw-accent: #3d5f86;
-  --cw-font-display: 'Week Bricolage', 'Week Hanken', system-ui, sans-serif;
-  --cw-font-body: 'Week Hanken', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --cw-font-display: 'Bricolage Grotesque', 'Instrument Sans', system-ui, sans-serif;
+  --cw-font-body: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --cw-spring: cubic-bezier(0.3, 1.35, 0.5, 1);
 
   position: relative;

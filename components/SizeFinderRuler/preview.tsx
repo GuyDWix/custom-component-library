@@ -1,3 +1,8 @@
+import '@fontsource/barlow/400.css';
+import '@fontsource/barlow/600.css';
+import '@fontsource/ibm-plex-sans/400.css';
+import '@fontsource/ibm-plex-sans/500.css';
+import '@fontsource/ibm-plex-sans/600.css';
 import { useMemo } from 'react';
 import SizeFinderRuler from './Component';
 import type { SizeFinderRulerProps, SizeRange } from './Component';

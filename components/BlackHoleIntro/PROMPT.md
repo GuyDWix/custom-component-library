@@ -288,14 +288,6 @@ export default function BlackHoleIntro({
 ```
 
 ```css
-@font-face {
-  font-family: 'Hanken Grotesk';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 500;
-  src: url('./fonts/hanken-grotesk-latin-500-normal.woff2') format('woff2');
-}
-
 .root {
   --bh-ink: #06070b;
   --bh-star: #cfd8ff;
@@ -303,7 +295,7 @@ export default function BlackHoleIntro({
   --bh-text: #f2f4ff;
   --bh-muted: #aab0c8;
   --bh-core: 132px;
-  --bh-font: 'Hanken Grotesk', system-ui, sans-serif;
+  --bh-font: 'Instrument Sans', system-ui, sans-serif;
   position: relative;
   isolation: isolate;
   container-type: inline-size;

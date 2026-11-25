@@ -1,3 +1,7 @@
+import '@fontsource/fraunces/400.css';
+import '@fontsource/fraunces/500.css';
+import '@fontsource/fraunces/600.css';
+import '@fontsource/fraunces/700.css';
 import { useMemo } from 'react';
 import CurtainRevealCard from './Component';
 import type { CurtainRevealCardDetail } from './Component';

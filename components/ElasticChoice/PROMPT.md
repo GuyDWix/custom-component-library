@@ -108,7 +108,7 @@ export default function ElasticChoice({
   --ec-bg: #070b1a;
   --ec-ink: #f4f6ff;
   --ec-muted: rgba(244, 246, 255, 0.68);
-  --ec-font: 'Inter Tight', 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --ec-font: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --ec-elastic: linear(0, 1.918 3%, 2.653 6%, 2.129 8%, 1.072 11%, 0.308 14%, 0.217 17%, 0.641 19%, 1.151 22%, 1.405 25%, 1.326 28%, 1.071 31%, 0.853 33%, 0.796 36%, 0.884 39%, 1.016 42%, 1.096 44%, 1.091 47%, 1.031 50%, 0.971 53%, 0.948 56%, 0.965 58%, 0.998 61%, 1.022 64%, 1.024 67%, 1.011 69%, 0.995 72%, 0.987 75%, 0.99 78%, 0.998 81%, 1.005 83%, 1.006 86%, 1.004 89%, 1 92%, 0.997 94%, 0.997 97%, 1);
 
   box-sizing: border-box;

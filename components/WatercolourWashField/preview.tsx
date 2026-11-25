@@ -1,3 +1,8 @@
+import '@fontsource/bricolage-grotesque/400.css';
+import '@fontsource/bricolage-grotesque/600.css';
+import '@fontsource/instrument-sans/400.css';
+import '@fontsource/instrument-sans/600.css';
+import '@fontsource/instrument-sans/700.css';
 import { useMemo } from 'react';
 import WatercolourWashField from './Component';
 import type { WashEdgeStyle } from './Component';
