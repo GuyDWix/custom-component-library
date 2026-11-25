@@ -1,3 +1,6 @@
+import '@fontsource/bricolage-grotesque/400.css';
+import '@fontsource/bricolage-grotesque/600.css';
+import '@fontsource/bricolage-grotesque/700.css';
 import { useMemo } from 'react';
 import ConcertinaFAQ from './Component';
 import type { ConcertinaFAQProps } from './Component';
