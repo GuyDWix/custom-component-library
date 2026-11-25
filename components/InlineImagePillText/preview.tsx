@@ -1,3 +1,5 @@
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
 import { useMemo } from 'react';
 import InlineImagePillText from './Component';
 import type { InlineImagePill } from './Component';
