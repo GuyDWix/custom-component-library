@@ -32,22 +32,14 @@ chk "hard offset shadow" 'box-shadow:[[:space:]]*-?[0-9]+px[[:space:]]+-?[0-9]+p
 n=$(grep -cE '\b(window|document)\.' "$TSX" || true)
 echo "info  window./document. uses in Component.tsx: $n (each must sit inside an effect or event handler, never in render)"
 
-# 3. fonts: every named family used must have an @font-face (or be a system/generic stack member)
-used=$(grep -hoE "font-family:[^;]*|--[a-z0-9-]*font[a-z0-9-]*:[^;]*" "$CSS" | grep -oE "'[^']+'" | tr -d "'" | sort -u)
-loaded=$(grep -A6 '@font-face' "$CSS" | grep -oE "font-family:[[:space:]]*'[^']+'" | grep -oE "'[^']+'" | tr -d "'" | sort -u)
-sys='Helvetica Neue|Segoe UI|SF Mono|Menlo|Consolas|Iowan Old Style|Palatino Linotype|Book Antiqua|Georgia|Arial|Helvetica|Palatino|Times New Roman|Courier New|Trebuchet MS|Verdana|Optima|Avenir Next|Gill Sans|Baskerville|Didot|Futura|Impact|Arial Black|Arial Rounded MT Bold|Apple Color Emoji|Segoe UI Emoji|Cambria|Candara|Rockwell|Hoefler Text|American Typewriter|Courier|Monaco|Noto Sans|Roboto|Ubuntu|Cantarell|Droid Sans'
-missing=""
-while IFS= read -r f; do
-  [ -z "$f" ] && continue
-  echo "$loaded" | grep -qxF "$f" && continue
-  echo "$f" | grep -qE "^($sys)$" && continue
-  missing="$missing [$f]"
-done <<< "$used"
-[ -z "$missing" ] && ok "fonts: every named family is loaded or a system face" \
-  || bad "font families named but never loaded (self-host them):$missing"
-for u in $(grep -hoE "url\(['\"]?\./fonts/[^'\")]+" "$CSS" | sed -E "s/url\(['\"]?//"); do
-  [ -f "$D/$u" ] || bad "font file missing: $u"
-done
+# 3. fonts: Wix catalog families are named, never loaded (codegen loads them; preview.tsx imports @fontsource)
+if grep -qE '@font-face|url\([^)]*\.woff2?' "$CSS"; then
+  bad "fonts: @font-face or font file in the component; name a Wix catalog family instead (skill: wix-fonts.md)"
+else
+  ok "fonts: no @font-face in the component"
+fi
+grep -q "@fontsource/" "$D/preview.tsx" 2>/dev/null \
+  || echo "info  preview.tsx imports no @fontsource package; captures will show a system font if the CSS names a catalog face"
 
 # 4. remote URLs return 200 (images, video)
 urls=$(grep -hoE "https?://[^'\"\`) <>\\\\]+" "$TSX" "$CSS" "$D/preview.tsx" 2>/dev/null | grep -vE 'www\.w3\.org|schema\.org|localhost' | sort -u)
