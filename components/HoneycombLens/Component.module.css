@@ -1,17 +1,3 @@
-@font-face {
-  font-family: 'Wix Madefor Display';
-  src: url('./fonts/WixMadeforDisplay-Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Wix Madefor Display';
-  src: url('./fonts/WixMadeforDisplay-Bold.ttf') format('truetype');
-  font-weight: 700;
-  font-display: swap;
-}
-
 .root {
   --hl-ground: #0b0d12;
   --hl-ink: #e6e9ef;
