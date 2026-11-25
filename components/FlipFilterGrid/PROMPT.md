@@ -496,22 +496,6 @@ export default function FlipFilterGrid({
 ```
 
 ```css
-@font-face {
-  font-family: 'FFG Fraunces';
-  src: url('./fonts/fraunces-latin-variable.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'FFG Mono';
-  src: url('./fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2');
-  font-weight: 100 800;
-  font-style: normal;
-  font-display: swap;
-}
-
 /* Soft-UI tray: clay ground, raised tiles, pressed chips, one accent (chipColor). */
 .root {
   --ffg-ground: #e7e4dc;
@@ -525,8 +509,8 @@ export default function FlipFilterGrid({
   --ffg-raise: 8px 10px 22px var(--ffg-shade), -7px -7px 18px var(--ffg-lit);
   --ffg-press: inset 4px 5px 10px var(--ffg-shade), inset -4px -4px 9px var(--ffg-lit);
   --ffg-plate: #dcd6c6;
-  --ffg-font-display: 'FFG Fraunces', 'Iowan Old Style', 'Georgia', 'Times New Roman', serif;
-  --ffg-font-mono: 'FFG Mono', ui-monospace, 'SF Mono', 'Menlo', 'Consolas', monospace;
+  --ffg-font-display: 'Fraunces', 'Iowan Old Style', 'Georgia', 'Times New Roman', serif;
+  --ffg-font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Menlo', 'Consolas', monospace;
   --ffg-cols: 4;
   --ffg-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 
