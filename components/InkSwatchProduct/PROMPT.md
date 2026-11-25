@@ -888,22 +888,6 @@ export default function InkSwatchProduct({
 ```
 
 ```css
-@font-face {
-  font-family: 'InkBricolage';
-  src: url('./fonts/bricolage.woff2') format('woff2');
-  font-weight: 200 800;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'InkHanken';
-  src: url('./fonts/hanken.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-
 .root {
   --stage: #efeae0;
   --ink: #1f1b16;
@@ -911,8 +895,8 @@ export default function InkSwatchProduct({
   --hairline: rgba(31, 27, 22, 0.16);
   --pig-active: #c8321f;
   --focus: color-mix(in srgb, var(--pig-active) 60%, var(--ink));
-  --font-display: 'InkBricolage', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --font-ui: 'InkHanken', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --font-ui: 'Instrument Sans', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --edge-wide: polygon(100% 0, 100% 100%, 9.62% 100.0%, 10.44% 96.4%, 10.94% 92.9%, 12.2% 89.3%, 12.28% 85.7%, 9.77% 82.1%, 6.99% 78.6%, 6.18% 75.0%, 6.01% 71.4%, 5.04% 67.9%, 4.71% 64.3%, 5.83% 60.7%, 6.06% 57.1%, 4.11% 53.6%, 2.35% 50.0%, 2.63% 46.4%, 3.43% 42.9%, 3.76% 39.3%, 5.34% 35.7%, 8.52% 32.1%, 10.49% 28.6%, 9.98% 25.0%, 9.27% 21.4%, 9.69% 17.9%, 9.62% 14.3%, 8.68% 10.7%, 9.04% 7.1%, 10.86% 3.6%, 11.25% 0.0%);
   --edge-narrow: polygon(0 0, 100% 0, 100.0% 97.44%, 96.4% 97.89%, 92.9% 98.17%, 89.3% 98.86%, 85.7% 98.9%, 82.1% 97.52%, 78.6% 95.99%, 75.0% 95.55%, 71.4% 95.46%, 67.9% 94.92%, 64.3% 94.74%, 60.7% 95.36%, 57.1% 95.48%, 53.6% 94.41%, 50.0% 93.44%, 46.4% 93.6%, 42.9% 94.04%, 39.3% 94.22%, 35.7% 95.09%, 32.1% 96.84%, 28.6% 97.92%, 25.0% 97.64%, 21.4% 97.25%, 17.9% 97.48%, 14.3% 97.44%, 10.7% 96.93%, 7.1% 97.12%, 3.6% 98.12%, 0.0% 98.34%);
   --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
