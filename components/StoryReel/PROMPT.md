@@ -4,7 +4,7 @@ The site owner must be able to change: slides (image, caption), seconds per slid
 
 ```tsx
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
+import type { KeyboardEvent, PointerEvent } from 'react';
 import styles from './Component.module.css';
 
 export interface StoryReelSlide {
