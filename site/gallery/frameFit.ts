@@ -6,25 +6,29 @@ type FrameMessage = { type: 'frame'; box: Box | null; docHeight: number };
 const FILLS_VIEWPORT = 0.92;
 const PAINTED_FILLS = 0.99;
 const PADDING = 0.08;
-const MIN_ZOOM = 0.6;
 const MAX_ZOOM = 2;
 const MAX_CROP = 1.2;
 const MAX_GROW = 1.5;
 
 export const thumbQuery = (scroll?: number) => `thumb=1${scroll ? `&scroll=${scroll}` : ''}`;
 
-/** Frames `box` (frame px) into a `width`×`height` card shown at `base` scale. */
-function fitTransform(box: Box | null, width: number, height: number, base: number): CSSProperties {
+const clamp = (v: number, min: number, max: number) => Math.min(Math.max(v, min), max);
+
+/** Frames `box` (frame px) into a `width`×`height` card shown at `base` scale, never exposing the frame's edges. */
+function fitTransform(box: Box | null, width: number, height: number, frameHeight: number, base: number): CSSProperties {
   const fills = box?.painted ? PAINTED_FILLS : FILLS_VIEWPORT;
   const fillsCard = box && box.w >= width * fills && box.h >= height * fills && box.h <= height / fills;
   if (!box || fillsCard) return { transform: `scale(${base})` };
   const contain = Math.min(width / box.w, height / box.h);
   const cover = Math.max(width / box.w, height / box.h);
   const fit = box.painted ? Math.min(cover, contain * MAX_CROP) : contain * (1 - 2 * PADDING);
-  const zoom = base * Math.min(Math.max(fit, MIN_ZOOM), MAX_ZOOM);
+  const zoom = base * clamp(fit, 1, MAX_ZOOM);
+  const tall = box.h * zoom > height * base;
   const tx = (width * base) / 2 - (box.x + box.w / 2) * zoom;
-  const ty = (height * base) / 2 - (box.y + box.h / 2) * zoom;
-  return { transform: `translate(${tx}px, ${ty}px) scale(${zoom})` };
+  const ty = tall ? -box.y * zoom : (height * base) / 2 - (box.y + box.h / 2) * zoom;
+  const x = clamp(tx, width * base - width * zoom, 0);
+  const y = clamp(ty, height * base - frameHeight * zoom, 0);
+  return { transform: `translate(${x}px, ${y}px) scale(${zoom})` };
 }
 
 const sameBox = (a: Box | null, b: Box | null) =>
@@ -58,6 +62,6 @@ export function useFrameFit(frame: RefObject<HTMLIFrameElement>, { fit, grow, wi
     };
   }, [frame, fit, grow, height]);
 
-  const style = fit ? fitTransform(box, width, height, base) : { transform: `scale(${base})` };
+  const style = fit ? fitTransform(box, width, height, frameHeight, base) : { transform: `scale(${base})` };
   return { style: { width, height: frameHeight, ...style }, frameHeight, ready };
 }
