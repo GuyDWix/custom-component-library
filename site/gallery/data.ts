@@ -10,6 +10,7 @@ export type Entry = {
   job?: string;
   visitorAction?: string;
   ownerSettings: string[];
+  selectableParts: string[];
   siteTypes: string[];
   mobile?: string;
   motion?: string;
@@ -37,6 +38,7 @@ export function toEntry(name: string, meta: RawMeta = {}, inRepo = false): Entry
     job: str(meta.job),
     visitorAction: str(meta.visitor_action),
     ownerSettings: strList(meta.owner_settings),
+    selectableParts: strList(meta.selectable_parts),
     siteTypes: strList(meta.site_types),
     mobile: str(meta.mobile),
     motion: str(meta.motion),

@@ -93,7 +93,7 @@ Craft scale is 1-3 (never 4; a builder once wrote 4). A clean, correct component
 2. **Stub `preview.tsx` FIRST.** The showcase eagerly imports every `components/*/preview.tsx`; a syntax error in yours breaks the page for everyone building. Keep the stub until `Component.tsx` passes tsc.
 3. **Build** `Component.tsx` + `Component.module.css`.
 4. **tsc gate per folder after EVERY edit:** `npx tsc --noEmit 2>&1 | grep "components/<Name>/"` (empty = pass; ignore other folders).
-5. **Write the real `preview.tsx`** (default + `?worst=1`), then `meta.json`.
+5. **Write the real `preview.tsx`** (default + `?worst=1`), then `meta.json`, including `selectable_parts` (this component's own pieces; see file-contract).
 6. **Self-verify with your own headless captures:** `bash scripts/check-component.sh <Name>`, then `bash scripts/shot.sh <Name> <scratch-dir>` and LOOK at all four PNGs plus one mid-motion frame. Fix, re-capture.
 7. **Independent QA sweep** (a different agent; it needs rendered frames, so use a general-purpose agent with captures, never a reviewer that cannot render). It judges against the 8 bar items and the misses list. **QA is a floor; the owner's eye is the standard** (TypeIndexList passed QA, the owner removed it).
 8. **Feedback-fix cycles with a circuit breaker:** at most 2 rounds per component, with the owner's screenshot or words attached. Still below the bar after round 2 means `status: backlog`. Never loop forever.

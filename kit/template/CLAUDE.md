@@ -11,7 +11,7 @@ You are helping a non-technical teammate improve ONE web component for the Wix c
 ## 2. Work
 - Read `skill/SKILL.md` first and follow it. Its paste-safe contract is a hard rule.
 - Edit ONLY files inside `component/`. Never touch anything else in this kit.
-- Keep `component/meta.json` accurate after every change: `display_name` (plain words), `job`, and `owner_settings` (one plain-word entry per prop, matching the props).
+- Keep `component/meta.json` accurate after every change: `display_name` (plain words), `job`, `owner_settings` (one plain-word entry per prop, matching the props) and `selectable_parts` (the pieces of THIS component an owner would click and style on their own, e.g. a title, a button, an image; see `skill/references/file-contract.md`).
 - Check the worst case too: same URL with `?worst=1` added. Fix anything that breaks.
 - The skill's `scripts/shot.sh`, `check-component.sh`, `build-prompts.sh` and `localhost:5188/?c=<Name>` are repo-only and don't exist in this kit; ignore them. Here the preview is this kit's dev page, and the worst case is that page with `?worst=1`.
 - Run `npm run typecheck` before you call a change done.

@@ -110,6 +110,11 @@ function Details({ entry, history }: { entry: Entry; history?: ReactNode }) {
           <ul className="g-list">{entry.ownerSettings.map((s) => <li key={s}>{s}</li>)}</ul>
         </Group>
       )}
+      {entry.selectableParts.length > 0 && (
+        <Group title={`Selectable parts (${entry.selectableParts.length})`} open>
+          <ul className="g-list">{entry.selectableParts.map((s) => <li key={s}>{s}</li>)}</ul>
+        </Group>
+      )}
       {look && (
         <Group title="Look and fit">
           <dl className="g-fields">

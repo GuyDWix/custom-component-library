@@ -58,6 +58,7 @@ m=json.load(open(sys.argv[1]))
 req=["id","name","display_name","owner_settings","scores","art_direction","studio2_tested","checks","status"]
 miss=[k for k in req if k not in m]
 print("ok    meta.json fields complete" if not miss else "FAIL  meta.json missing: "+", ".join(miss))
+if not m.get("selectable_parts"): print("warn  meta.json has no selectable_parts: inner pieces stay unselectable in the editor")
 if miss: sys.exit(1)
 PY
 fi

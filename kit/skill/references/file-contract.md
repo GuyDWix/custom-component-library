@@ -95,6 +95,7 @@ The worst case must include a very long hyphenated name (40+ characters, like Fo
   "job": "one sentence: what the visitor gets",
   "visitor_action": "what the visitor does; keyboard and touch equivalents",
   "owner_settings": ["Image", "Title", "Foil color", "Tilt strength"],
+  "selectable_parts": ["Card image", "Title", "Subtitle", "Detail rows"],
   "site_types": ["store", "portfolio"],
   "mobile": "how it behaves on touch / at 375",
   "motion": "what moves, with physics, plus the reduced-motion state",
@@ -110,6 +111,7 @@ The worst case must include a very long hyphenated name (40+ characters, like Fo
 ```
 - `category`: media | text | cards | data | controls | social | ambient. `tier`: everyday | showpiece. `id` is the concept id from the card (`research/concepts.yaml` in the PM project; not in this repo).
 - `display_name`: plain words ("Foil Tilt Card"), used by `build-prompts.sh`. `owner_settings`: plain-word names that match your props; the script lowercases the first letter of each entry.
+- `selectable_parts`: the inner pieces a site owner would click and style on their own in the editor, in plain words. Pick them from THIS component's markup; there is no fixed list. Include each visible text, button/link/input, image or video frame, and a decoration with its own look (an accent bar, a badge). Leave out layout-only wrappers, states (selected, active, hover) and anything fully styled by its parent; name a repeated item once ("Detail rows", not "Row 1", "Row 2"). The prompt turns this list into a "select and style separately" line. Update it whenever the markup gains or loses a piece.
 - `scores` = the card's judge scores (copy, do not invent); `craft_score` is YOUR advisory 1-3, never 4.
 - `status`: `built` | `rejected:build` | `rejected:render` | `backlog`. `studio2_tested` stays `false` until the owner pastes it.
 - A redesign adds a dated note ("2026-11-23: redesigned to <direction>") and rewrites `motion` and `art_direction`.
