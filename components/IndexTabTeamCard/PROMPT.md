@@ -16,8 +16,6 @@ export interface IndexTabPerson {
 
 export interface IndexTabTeamCardProps {
   people?: IndexTabPerson[];
-  tabColor?: string;
-  cardTone?: string;
   stampText?: string;
   fileLabel?: string;
   roleLabel?: string;
@@ -63,33 +61,6 @@ type Mode = 'solo' | 'under' | 'flipOut' | 'flipIn' | 'sizer';
 const WIDE_FROM = 720;
 const FLIP_FALLBACK_MS = 1600;
 const PHOTO_TILTS = [2.6, -2.1, 3.3, -1.5, 1.9, -2.8];
-
-function parseHex(value: string): [number, number, number] | null {
-  const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(value.trim());
-  if (!m) return null;
-  const h = m[1].length === 3 ? m[1].replace(/./g, (c) => c + c) : m[1];
-  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
-}
-
-function luminance(rgb: [number, number, number]): number {
-  const [r, g, b] = rgb.map((v) => {
-    const s = v / 255;
-    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
-  });
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-
-/** Picks whichever of two inks has more contrast on the given fill. */
-function inkFor(fill: string, dark: string, light: string): string {
-  const rgb = parseHex(fill);
-  if (!rgb) return light;
-  const l = luminance(rgb);
-  const darkL = luminance(parseHex(dark) ?? [0, 0, 0]);
-  const lightL = luminance(parseHex(light) ?? [255, 255, 255]);
-  const withDark = (l + 0.05) / (darkL + 0.05);
-  const withLight = (lightL + 0.05) / (l + 0.05);
-  return withDark >= withLight ? dark : light;
-}
 
 function tabLabel(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -267,8 +238,6 @@ function Card({ person, index, mode, muted, stampText, fileLabel, roleLabel, onF
 
 export default function IndexTabTeamCard({
   people = defaultPeople,
-  tabColor = '#5f6b34',
-  cardTone = '#ebd7a3',
   stampText = 'Staff register',
   fileLabel = 'File no.',
   roleLabel = 'Role',
@@ -418,17 +387,10 @@ export default function IndexTabTeamCard({
     layers.push({ index: current, mode: 'solo' });
   }
 
-  const rootStyle = {
-    '--it-tab': tabColor,
-    '--it-tone': cardTone,
-    '--it-tab-ink': inkFor(tabColor, '#1f2410', '#f7f1d6'),
-    '--it-ink': inkFor(cardTone, '#2b281f', '#f3ecd8'),
-  } as CSSProperties;
-
   const paused = { animationPlayState: inView ? 'running' : 'paused' } as CSSProperties;
 
   return (
-    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
+    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')}>
       <span className={styles.light} aria-hidden="true" />
       <span className={styles.blinds} style={paused} aria-hidden="true" />
       <span className={styles.deskGrain} aria-hidden="true" />
@@ -535,29 +497,9 @@ export default function IndexTabTeamCard({
 
 ```css
 .root {
-  --it-tab: #5f6b34;
-  --it-tab-ink: #f7f1d6;
-  --it-tone: #ebd7a3;
-  --it-ink: #2b281f;
-  --it-desk: #d2d7cb;
-  --it-desk-deep: #bcc3b4;
-  --it-stamp: #2a3a93;
-  --it-rule: #c4584a;
   --it-radius: 7px;
   --it-font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
   --it-font-type: 'IBM Plex Mono', 'Courier New', Courier, monospace;
-
-  --it-ink-soft: color-mix(in srgb, var(--it-ink) 80%, var(--it-tone));
-  --it-ruled: color-mix(in srgb, var(--it-ink) 16%, transparent);
-  --it-tone-hi: color-mix(in srgb, var(--it-tone) 80%, #fff);
-  --it-tone-lo: color-mix(in srgb, var(--it-tone) 88%, #6a4a10);
-  --it-edge: color-mix(in srgb, var(--it-tone) 62%, #4a3208);
-  --it-edge-deep: color-mix(in srgb, var(--it-tone) 42%, #3a2606);
-  --it-tab-deep: color-mix(in srgb, var(--it-tab) 78%, #000);
-  --it-focus: #243587;
-
-  --it-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  --it-fibers: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.9 0.03' numOctaves='2' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.28  0 0 0 0 0.08  0 0 0 1.2 -0.42'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -566,8 +508,8 @@ export default function IndexTabTeamCard({
   box-sizing: border-box;
   inline-size: 100%;
   border-radius: 28px;
-  background: linear-gradient(165deg, color-mix(in srgb, var(--it-desk) 84%, #fff) 0%, var(--it-desk) 46%, var(--it-desk-deep) 100%);
-  color: var(--it-ink);
+  background: linear-gradient(165deg, color-mix(in srgb, #d2d7cb 84%, #fff) 0%, #d2d7cb 46%, #bcc3b4 100%);
+  color: #2b281f;
   font-family: var(--it-font-display);
 }
 
@@ -601,7 +543,7 @@ export default function IndexTabTeamCard({
 
 .deskGrain {
   inset: 0;
-  background-image: var(--it-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.2;
   mix-blend-mode: multiply;
 }
@@ -672,8 +614,8 @@ export default function IndexTabTeamCard({
   padding-block: 8px;
   padding-inline: 18px;
   border-radius: 12px 12px 0 0;
-  background: var(--it-tab);
-  color: var(--it-tab-ink);
+  background: #5f6b34;
+  color: #f7f1d6;
   font-family: var(--it-font-type);
   font-size: 15px;
   line-height: 1;
@@ -696,7 +638,7 @@ export default function IndexTabTeamCard({
 }
 
 .tabOn {
-  background: var(--it-tab-deep);
+  background: color-mix(in srgb, #5f6b34 78%, #000);
   transform: translateY(-9px);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.24),
@@ -706,7 +648,7 @@ export default function IndexTabTeamCard({
 
 .tab:focus-visible,
 .tabOn:focus-visible {
-  outline: 3px solid var(--it-focus);
+  outline: 3px solid #243587;
   outline-offset: 2px;
 }
 
@@ -736,10 +678,10 @@ export default function IndexTabTeamCard({
   z-index: 0;
   pointer-events: none;
   border-radius: var(--it-radius);
-  background: linear-gradient(180deg, var(--it-tone-hi) 0%, var(--it-tone-lo) 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, #ebd7a3 80%, #fff) 0%, color-mix(in srgb, #ebd7a3 88%, #6a4a10) 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    0 1px 0 var(--it-edge),
+    0 1px 0 color-mix(in srgb, #ebd7a3 62%, #4a3208),
     0 8px 14px -8px rgba(24, 32, 20, 0.4);
   animation: nudge 640ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -785,7 +727,7 @@ export default function IndexTabTeamCard({
 }
 
 .deck:focus-visible {
-  outline: 3px solid var(--it-focus);
+  outline: 3px solid #243587;
   outline-offset: 6px;
 }
 
@@ -809,17 +751,17 @@ export default function IndexTabTeamCard({
   padding-block: var(--pad-top) 112px;
   padding-inline: var(--pad-x);
   border-radius: var(--it-radius);
-  background:
-    linear-gradient(172deg, var(--it-tone-hi) 0%, var(--it-tone) 38%, var(--it-tone-lo) 100%);
-  color: var(--it-ink);
+  background-color: #ebd7a3;
+  background-image: linear-gradient(172deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 38%, rgba(106, 74, 16, 0) 38%, rgba(106, 74, 16, 0.12) 100%);
+  color: #2b281f;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transform-origin: 50% 100%;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    0 1px 0 var(--it-edge),
-    0 2px 0 var(--it-edge),
-    0 3px 0 var(--it-edge-deep),
+    0 1px 0 color-mix(in srgb, #ebd7a3 62%, #4a3208),
+    0 2px 0 color-mix(in srgb, #ebd7a3 62%, #4a3208),
+    0 3px 0 color-mix(in srgb, #ebd7a3 42%, #3a2606),
     0 26px 36px -20px rgba(24, 34, 22, 0.55),
     0 8px 14px -8px rgba(24, 34, 22, 0.32);
 }
@@ -843,13 +785,13 @@ export default function IndexTabTeamCard({
 }
 
 .fibers {
-  background-image: var(--it-fibers);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.9 0.03' numOctaves='2' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.28  0 0 0 0 0.08  0 0 0 1.2 -0.42'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>");
   opacity: 0.55;
   mix-blend-mode: multiply;
 }
 
 .grain {
-  background-image: var(--it-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.14;
   mix-blend-mode: multiply;
 }
@@ -868,7 +810,7 @@ export default function IndexTabTeamCard({
   inline-size: 20px;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: var(--it-desk-deep);
+  background: #bcc3b4;
   box-shadow:
     inset 0 3px 4px rgba(24, 24, 12, 0.45),
     0 1px 0 rgba(255, 255, 255, 0.4);
@@ -913,7 +855,7 @@ export default function IndexTabTeamCard({
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.035em;
-  color: var(--it-ink);
+  color: #2b281f;
   /* never break inside a word: wrap only at spaces and hyphens; the size is fitted to the longest piece in the component */
   min-inline-size: 0;
   overflow-wrap: normal;
@@ -926,8 +868,8 @@ export default function IndexTabTeamCard({
 .name::selection,
 .roleValue::selection,
 .bioText::selection {
-  background: color-mix(in srgb, var(--it-stamp) 78%, transparent);
-  color: var(--it-tone-hi);
+  background: color-mix(in srgb, #2a3a93 78%, transparent);
+  color: color-mix(in srgb, #ebd7a3 80%, #fff);
 }
 
 .role {
@@ -937,7 +879,7 @@ export default function IndexTabTeamCard({
   gap: 2px 12px;
   margin: 0;
   padding-block-end: 7px;
-  border-block-end: 1px solid color-mix(in srgb, var(--it-ink) 38%, transparent);
+  border-block-end: 1px solid color-mix(in srgb, #2b281f 38%, transparent);
   animation: rise 560ms cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--lag) + 290ms) both;
 }
 
@@ -946,7 +888,7 @@ export default function IndexTabTeamCard({
   font-size: 13px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--it-ink-soft);
+  color: color-mix(in srgb, #2b281f 80%, #ebd7a3);
 }
 
 .roleValue {
@@ -965,7 +907,7 @@ export default function IndexTabTeamCard({
   block-size: 2px;
   margin-block: 18px 8px;
   border-radius: 1px;
-  background: var(--it-rule);
+  background: #c4584a;
   opacity: 0.72;
 }
 
@@ -977,8 +919,8 @@ export default function IndexTabTeamCard({
     180deg,
     transparent 0,
     transparent calc(var(--lh) - 1px),
-    var(--it-ruled) calc(var(--lh) - 1px),
-    var(--it-ruled) var(--lh)
+    color-mix(in srgb, #2b281f 16%, transparent) calc(var(--lh) - 1px),
+    color-mix(in srgb, #2b281f 16%, transparent) var(--lh)
   );
 }
 
@@ -994,7 +936,7 @@ export default function IndexTabTeamCard({
   font-size: 14.5px;
   line-height: var(--lh);
   letter-spacing: 0.01em;
-  color: var(--it-ink);
+  color: #2b281f;
   overflow-wrap: anywhere;
   text-shadow: 0 0 0.7px currentColor;
   animation: typeIn 1000ms cubic-bezier(0.35, 0.6, 0.3, 1) calc(var(--lag) + 380ms) both;
@@ -1043,11 +985,11 @@ export default function IndexTabTeamCard({
   place-items: center;
   inline-size: 100%;
   block-size: 100%;
-  background: color-mix(in srgb, var(--it-tab) 30%, #f6f2e7);
+  background: color-mix(in srgb, #5f6b34 30%, #f6f2e7);
   font-family: var(--it-font-display);
   font-size: 56px;
   font-weight: 800;
-  color: var(--it-tab-deep);
+  color: color-mix(in srgb, #5f6b34 78%, #000);
 }
 
 .photoTone {
@@ -1097,7 +1039,7 @@ export default function IndexTabTeamCard({
   inset-inline-end: 18px;
   inline-size: 124px;
   block-size: 124px;
-  color: var(--it-stamp);
+  color: #2a3a93;
   opacity: 0.9;
   mix-blend-mode: multiply;
   transform: rotate(-13deg);

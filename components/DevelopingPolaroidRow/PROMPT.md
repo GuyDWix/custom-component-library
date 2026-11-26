@@ -1,6 +1,6 @@
 Create a custom element called "Developing Polaroid Row". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: photos (image, caption), print tilt, develop speed, border tone. Add other settings if they help.
+The site owner must be able to change: photos (image, caption), print tilt, develop speed. Add other settings if they help.
 
 ```tsx
 import { useEffect, useRef, useState } from 'react';
@@ -17,7 +17,6 @@ export interface DevelopingPolaroidRowProps {
   photos?: DevelopingPolaroidPhoto[];
   tilt?: number;
   developSeconds?: number;
-  borderTone?: string;
   className?: string;
 }
 
@@ -70,7 +69,6 @@ export default function DevelopingPolaroidRow({
   photos = defaultPhotos,
   tilt = 5,
   developSeconds = 3.2,
-  borderTone = '#f8f9fb',
   className,
 }: DevelopingPolaroidRowProps) {
   const [reduced, setReduced] = useState(false);
@@ -192,7 +190,6 @@ export default function DevelopingPolaroidRow({
   };
 
   const rootStyle = {
-    '--dp-border': borderTone,
     '--dp-develop': `${clamp(developSeconds, 0.5, 20)}s`,
   } as CSSProperties;
 
@@ -304,23 +301,10 @@ export default function DevelopingPolaroidRow({
 /* Studio flash — instant prints developing on a cool seamless sweep */
 
 .root {
-  --dp-border: #f8f9fb;
-  --dp-table: #dde1e7;
-  --dp-table-deep: #c9ced6;
-  --dp-pool: #f1f3f6;
-  --dp-ink: #25418f;
-  --dp-focus: #25418f;
-  --dp-edge: rgba(70, 80, 96, 0.28);
-  --dp-emulsion: #16211f;
-  --dp-shadow: 34, 42, 56;
-  --dp-teal: 120, 134, 130;
-  --dp-milk-hi: #eef1ee;
-  --dp-milk: #e6eae7;
-  --dp-milk-lo: #dde3df;
+  --accent: #25418f;
   --dp-develop: 3.2s;
   --dp-font-hand: 'Caveat', cursive;
   --dp-font-ui: 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --dp-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.53  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -329,15 +313,22 @@ export default function DevelopingPolaroidRow({
   box-sizing: border-box;
   inline-size: 100%;
   border-radius: 28px;
-  color: var(--dp-ink);
+  color: #25418f;
   font-family: var(--dp-font-ui);
-  background:
-    radial-gradient(70% 80% at 50% 44%, var(--dp-pool) 0%, rgba(241, 243, 246, 0) 80%),
-    linear-gradient(180deg, var(--dp-table) 0%, var(--dp-table-deep) 100%);
+  background: linear-gradient(180deg, #dde1e7 0%, #c9ced6 100%);
+}
+
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  pointer-events: none;
+  background: radial-gradient(70% 80% at 50% 44%, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 80%);
 }
 
 .root ::selection {
-  background-color: rgba(37, 65, 143, 0.22);
+  background-color: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 .grain {
@@ -345,7 +336,7 @@ export default function DevelopingPolaroidRow({
   inset: 0;
   z-index: -2;
   pointer-events: none;
-  background-image: var(--dp-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.53  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.07;
   mix-blend-mode: multiply;
 }
@@ -423,7 +414,7 @@ export default function DevelopingPolaroidRow({
   border: 0;
   border-radius: 3px;
   background: transparent;
-  color: var(--dp-ink);
+  color: #25418f;
   font: inherit;
   text-align: center;
   cursor: pointer;
@@ -433,16 +424,16 @@ export default function DevelopingPolaroidRow({
     rotate(calc((var(--dp-rot, 0deg) + var(--dp-ent, 0deg)) * var(--dp-flat)))
     scale(var(--dp-scale));
   box-shadow:
-    0 0 0 0.5px var(--dp-edge),
-    0 1px 2px rgba(var(--dp-shadow), 0.14),
-    0 6px 12px -6px rgba(var(--dp-shadow), 0.14);
+    0 0 0 0.5px rgba(70, 80, 96, 0.28),
+    0 1px 2px rgba(34, 42, 56, 0.14),
+    0 6px 12px -6px rgba(34, 42, 56, 0.14);
   transition:
     transform 620ms cubic-bezier(0.3, 1.36, 0.42, 1),
     box-shadow 460ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .print:focus-visible {
-  outline: 2px solid var(--dp-focus);
+  outline: 2px solid var(--accent);
   outline-offset: 6px;
 }
 
@@ -457,9 +448,9 @@ export default function DevelopingPolaroidRow({
     --dp-flat: 0;
     --dp-scale: 1.055;
     box-shadow:
-          0 0 0 0.5px var(--dp-edge),
-      0 2px 4px rgba(var(--dp-shadow), 0.12),
-      0 12px 20px -10px rgba(var(--dp-shadow), 0.2);
+          0 0 0 0.5px rgba(70, 80, 96, 0.28),
+      0 2px 4px rgba(34, 42, 56, 0.12),
+      0 12px 20px -10px rgba(34, 42, 56, 0.2);
   }
 
   .print:hover .glass {
@@ -477,9 +468,9 @@ export default function DevelopingPolaroidRow({
   --dp-flat: 0;
   --dp-scale: 1.055;
   box-shadow:
-        0 0 0 0.5px var(--dp-edge),
-    0 2px 4px rgba(var(--dp-shadow), 0.12),
-    0 12px 20px -10px rgba(var(--dp-shadow), 0.2);
+        0 0 0 0.5px rgba(70, 80, 96, 0.28),
+    0 2px 4px rgba(34, 42, 56, 0.12),
+    0 12px 20px -10px rgba(34, 42, 56, 0.2);
 }
 
 .print:focus-visible .body {
@@ -491,9 +482,9 @@ export default function DevelopingPolaroidRow({
   --dp-flat: 0;
   --dp-scale: 1.12;
   box-shadow:
-    0 0 0 0.5px var(--dp-edge),
-    0 3px 6px rgba(var(--dp-shadow), 0.14),
-    0 16px 26px -12px rgba(var(--dp-shadow), 0.24);
+    0 0 0 0.5px rgba(70, 80, 96, 0.28),
+    0 3px 6px rgba(34, 42, 56, 0.14),
+    0 16px 26px -12px rgba(34, 42, 56, 0.24);
 }
 
 .body {
@@ -503,14 +494,10 @@ export default function DevelopingPolaroidRow({
   inline-size: 100%;
   padding: 4.6% 6% 0;
   border-radius: 3px;
-  background:
+  background-color: #f8f9fb;
+  background-image:
     radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, 0.9) 0%, transparent 55%),
-    linear-gradient(
-      155deg,
-      color-mix(in srgb, var(--dp-border) 55%, #fff) 0%,
-      var(--dp-border) 42%,
-      color-mix(in srgb, var(--dp-border) 86%, #97a0ab) 100%
-    );
+    linear-gradient(155deg, rgba(255, 255, 255, 0.45) 0%, transparent 42%, rgba(151, 160, 171, 0.14) 100%);
   transform-origin: 50% 82%;
 }
 
@@ -519,7 +506,7 @@ export default function DevelopingPolaroidRow({
   display: block;
   aspect-ratio: 1;
   overflow: hidden;
-  background: var(--dp-milk);
+  background: #e6eae7;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
@@ -559,8 +546,8 @@ export default function DevelopingPolaroidRow({
 .milk {
   inset: 0;
   background:
-    var(--dp-noise) 0 0 / 120px 120px,
-    linear-gradient(178deg, var(--dp-milk-hi) 0%, var(--dp-milk) 60%, var(--dp-milk-lo) 100%);
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.53  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>") 0 0 / 120px 120px,
+    linear-gradient(178deg, #eef1ee 0%, #e6eae7 60%, #dde3df 100%);
   background-blend-mode: multiply, normal;
   opacity: 1;
   transition: opacity 420ms ease-in;
@@ -568,7 +555,7 @@ export default function DevelopingPolaroidRow({
 
 .rim {
   inset: 0;
-  box-shadow: inset 0 0 0 1px rgba(var(--dp-teal), 0.22);
+  box-shadow: inset 0 0 0 1px rgba(120, 134, 130, 0.22);
 }
 
 .flash {
@@ -615,7 +602,7 @@ export default function DevelopingPolaroidRow({
   font-weight: 600;
   line-height: 1.08;
   letter-spacing: 0.005em;
-  color: var(--dp-ink);
+  color: #25418f;
   overflow-wrap: anywhere;
   text-wrap: balance;
 }

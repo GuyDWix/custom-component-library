@@ -11,8 +11,6 @@ export interface IndexTabPerson {
 
 export interface IndexTabTeamCardProps {
   people?: IndexTabPerson[];
-  tabColor?: string;
-  cardTone?: string;
   stampText?: string;
   fileLabel?: string;
   roleLabel?: string;
@@ -58,33 +56,6 @@ type Mode = 'solo' | 'under' | 'flipOut' | 'flipIn' | 'sizer';
 const WIDE_FROM = 720;
 const FLIP_FALLBACK_MS = 1600;
 const PHOTO_TILTS = [2.6, -2.1, 3.3, -1.5, 1.9, -2.8];
-
-function parseHex(value: string): [number, number, number] | null {
-  const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(value.trim());
-  if (!m) return null;
-  const h = m[1].length === 3 ? m[1].replace(/./g, (c) => c + c) : m[1];
-  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
-}
-
-function luminance(rgb: [number, number, number]): number {
-  const [r, g, b] = rgb.map((v) => {
-    const s = v / 255;
-    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
-  });
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-
-/** Picks whichever of two inks has more contrast on the given fill. */
-function inkFor(fill: string, dark: string, light: string): string {
-  const rgb = parseHex(fill);
-  if (!rgb) return light;
-  const l = luminance(rgb);
-  const darkL = luminance(parseHex(dark) ?? [0, 0, 0]);
-  const lightL = luminance(parseHex(light) ?? [255, 255, 255]);
-  const withDark = (l + 0.05) / (darkL + 0.05);
-  const withLight = (lightL + 0.05) / (l + 0.05);
-  return withDark >= withLight ? dark : light;
-}
 
 function tabLabel(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -262,8 +233,6 @@ function Card({ person, index, mode, muted, stampText, fileLabel, roleLabel, onF
 
 export default function IndexTabTeamCard({
   people = defaultPeople,
-  tabColor = '#5f6b34',
-  cardTone = '#ebd7a3',
   stampText = 'Staff register',
   fileLabel = 'File no.',
   roleLabel = 'Role',
@@ -413,17 +382,10 @@ export default function IndexTabTeamCard({
     layers.push({ index: current, mode: 'solo' });
   }
 
-  const rootStyle = {
-    '--it-tab': tabColor,
-    '--it-tone': cardTone,
-    '--it-tab-ink': inkFor(tabColor, '#1f2410', '#f7f1d6'),
-    '--it-ink': inkFor(cardTone, '#2b281f', '#f3ecd8'),
-  } as CSSProperties;
-
   const paused = { animationPlayState: inView ? 'running' : 'paused' } as CSSProperties;
 
   return (
-    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
+    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')}>
       <span className={styles.light} aria-hidden="true" />
       <span className={styles.blinds} style={paused} aria-hidden="true" />
       <span className={styles.deskGrain} aria-hidden="true" />

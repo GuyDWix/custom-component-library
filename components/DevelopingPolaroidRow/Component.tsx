@@ -12,7 +12,6 @@ export interface DevelopingPolaroidRowProps {
   photos?: DevelopingPolaroidPhoto[];
   tilt?: number;
   developSeconds?: number;
-  borderTone?: string;
   className?: string;
 }
 
@@ -65,7 +64,6 @@ export default function DevelopingPolaroidRow({
   photos = defaultPhotos,
   tilt = 5,
   developSeconds = 3.2,
-  borderTone = '#f8f9fb',
   className,
 }: DevelopingPolaroidRowProps) {
   const [reduced, setReduced] = useState(false);
@@ -187,7 +185,6 @@ export default function DevelopingPolaroidRow({
   };
 
   const rootStyle = {
-    '--dp-border': borderTone,
     '--dp-develop': `${clamp(developSeconds, 0.5, 20)}s`,
   } as CSSProperties;
 

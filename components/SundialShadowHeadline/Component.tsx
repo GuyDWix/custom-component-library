@@ -1,17 +1,11 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
+import type { KeyboardEvent, PointerEvent } from 'react';
 import styles from './Component.module.css';
 
 export type SundialLightMode = 'pointer' | 'auto';
 
 export interface SundialShadowHeadlineProps {
   text?: string;
-  textColor?: string;
-  shadowColor?: string;
-  skyColor?: string;
-  groundColor?: string;
-  sunColor?: string;
-  tickColor?: string;
   lightMode?: SundialLightMode;
   showSun?: boolean;
   className?: string;
@@ -40,8 +34,6 @@ const KEY_STEP = 0.06;
 const DPR_CAP = 2;
 
 const DEFAULT_TEXT = 'High Noon';
-const DEFAULT_TEXT_COLOR = '#c8491f';
-const DEFAULT_SHADOW_COLOR = '#5d2e42';
 const FALLBACK_FONT = "'Archivo Black', 'Arial Black', 'Helvetica Neue', system-ui, sans-serif";
 
 const HELP =
@@ -114,12 +106,6 @@ const balanceTwo = (ctx: CanvasRenderingContext2D, words: string[], maxW: number
 
 export default function SundialShadowHeadline({
   text = DEFAULT_TEXT,
-  textColor = DEFAULT_TEXT_COLOR,
-  shadowColor = DEFAULT_SHADOW_COLOR,
-  skyColor,
-  groundColor,
-  sunColor,
-  tickColor,
   lightMode = 'pointer',
   showSun = true,
   className,
@@ -144,9 +130,9 @@ export default function SundialShadowHeadline({
   const idleStartRef = useRef(0);
   const pausedRef = useRef(false);
   const reducedRef = useRef(false);
-  const propsRef = useRef({ text, textColor, shadowColor, lightMode, showSun });
+  const propsRef = useRef({ text, lightMode, showSun });
 
-  propsRef.current = { text, textColor, shadowColor, lightMode, showSun };
+  propsRef.current = { text, lightMode, showSun };
   pausedRef.current = paused;
   reducedRef.current = reduced;
 
@@ -230,8 +216,10 @@ export default function SundialShadowHeadline({
     const { w, h, dpr } = sizeRef.current;
     if (!root || w < 2 || h < 2) return;
     const p = propsRef.current;
-    const family =
-      getComputedStyle(root).getPropertyValue('--sd-font').trim() || FALLBACK_FONT;
+    const rootStyle = getComputedStyle(root);
+    const family = rootStyle.getPropertyValue('--sd-font').trim() || FALLBACK_FONT;
+    const shadowColor = rootStyle.getPropertyValue('--shadow').trim();
+    const textColor = canvasRef.current ? getComputedStyle(canvasRef.current).color : shadowColor;
     const scratch = document.createElement('canvas');
     const mctx = scratch.getContext('2d');
     if (!mctx) return;
@@ -302,7 +290,7 @@ export default function SundialShadowHeadline({
     const y0 = horizonY - h * 0.05 - lastBaseline;
     const x0 = (w - spriteW) / 2;
 
-    spriteRef.current = { shadow: make(p.shadowColor), text: make(p.textColor), w: spriteW, h: spriteH, x0, y0 };
+    spriteRef.current = { shadow: make(shadowColor), text: make(textColor), w: spriteW, h: spriteH, x0, y0 };
     if (reducedRef.current) drawStatic();
     else drawFrame();
   }, [drawFrame, drawStatic]);
@@ -424,7 +412,7 @@ export default function SundialShadowHeadline({
 
   useEffect(() => {
     rebuild();
-  }, [text, textColor, shadowColor, rebuild]);
+  }, [text, rebuild]);
 
   useEffect(() => {
     if (!reduced) return;
@@ -521,18 +509,10 @@ export default function SundialShadowHeadline({
     }
   };
 
-  const themeVars = {
-    '--sd-ink': shadowColor,
-    ...(skyColor && { '--sd-sky': skyColor }),
-    ...(groundColor && { '--sd-ground': groundColor }),
-    ...(sunColor && { '--sd-sun': sunColor }),
-    ...(tickColor && { '--sd-tick': tickColor }),
-  } as CSSProperties;
 
   return (
     <div
       ref={rootRef}
-      style={themeVars}
       className={[styles.root, className].filter(Boolean).join(' ')}
       tabIndex={0}
       aria-labelledby={titleId}

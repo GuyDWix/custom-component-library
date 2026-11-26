@@ -1,22 +1,16 @@
 Create a custom element called "Sundial Shadow Headline". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: headline text, text color, shadow color, sky color, ground color, sun color, ruler tick color, light direction (follows the pointer or sweeps automatically), show the sun disc. Add other settings if they help.
+The site owner must be able to change: headline text, light direction (follows the pointer or sweeps automatically), show the sun disc. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
+import type { KeyboardEvent, PointerEvent } from 'react';
 import styles from './Component.module.css';
 
 export type SundialLightMode = 'pointer' | 'auto';
 
 export interface SundialShadowHeadlineProps {
   text?: string;
-  textColor?: string;
-  shadowColor?: string;
-  skyColor?: string;
-  groundColor?: string;
-  sunColor?: string;
-  tickColor?: string;
   lightMode?: SundialLightMode;
   showSun?: boolean;
   className?: string;
@@ -45,8 +39,6 @@ const KEY_STEP = 0.06;
 const DPR_CAP = 2;
 
 const DEFAULT_TEXT = 'High Noon';
-const DEFAULT_TEXT_COLOR = '#c8491f';
-const DEFAULT_SHADOW_COLOR = '#5d2e42';
 const FALLBACK_FONT = "'Archivo Black', 'Arial Black', 'Helvetica Neue', system-ui, sans-serif";
 
 const HELP =
@@ -119,12 +111,6 @@ const balanceTwo = (ctx: CanvasRenderingContext2D, words: string[], maxW: number
 
 export default function SundialShadowHeadline({
   text = DEFAULT_TEXT,
-  textColor = DEFAULT_TEXT_COLOR,
-  shadowColor = DEFAULT_SHADOW_COLOR,
-  skyColor,
-  groundColor,
-  sunColor,
-  tickColor,
   lightMode = 'pointer',
   showSun = true,
   className,
@@ -149,9 +135,9 @@ export default function SundialShadowHeadline({
   const idleStartRef = useRef(0);
   const pausedRef = useRef(false);
   const reducedRef = useRef(false);
-  const propsRef = useRef({ text, textColor, shadowColor, lightMode, showSun });
+  const propsRef = useRef({ text, lightMode, showSun });
 
-  propsRef.current = { text, textColor, shadowColor, lightMode, showSun };
+  propsRef.current = { text, lightMode, showSun };
   pausedRef.current = paused;
   reducedRef.current = reduced;
 
@@ -235,8 +221,10 @@ export default function SundialShadowHeadline({
     const { w, h, dpr } = sizeRef.current;
     if (!root || w < 2 || h < 2) return;
     const p = propsRef.current;
-    const family =
-      getComputedStyle(root).getPropertyValue('--sd-font').trim() || FALLBACK_FONT;
+    const rootStyle = getComputedStyle(root);
+    const family = rootStyle.getPropertyValue('--sd-font').trim() || FALLBACK_FONT;
+    const shadowColor = rootStyle.getPropertyValue('--shadow').trim();
+    const textColor = canvasRef.current ? getComputedStyle(canvasRef.current).color : shadowColor;
     const scratch = document.createElement('canvas');
     const mctx = scratch.getContext('2d');
     if (!mctx) return;
@@ -307,7 +295,7 @@ export default function SundialShadowHeadline({
     const y0 = horizonY - h * 0.05 - lastBaseline;
     const x0 = (w - spriteW) / 2;
 
-    spriteRef.current = { shadow: make(p.shadowColor), text: make(p.textColor), w: spriteW, h: spriteH, x0, y0 };
+    spriteRef.current = { shadow: make(shadowColor), text: make(textColor), w: spriteW, h: spriteH, x0, y0 };
     if (reducedRef.current) drawStatic();
     else drawFrame();
   }, [drawFrame, drawStatic]);
@@ -429,7 +417,7 @@ export default function SundialShadowHeadline({
 
   useEffect(() => {
     rebuild();
-  }, [text, textColor, shadowColor, rebuild]);
+  }, [text, rebuild]);
 
   useEffect(() => {
     if (!reduced) return;
@@ -526,18 +514,10 @@ export default function SundialShadowHeadline({
     }
   };
 
-  const themeVars = {
-    '--sd-ink': shadowColor,
-    ...(skyColor && { '--sd-sky': skyColor }),
-    ...(groundColor && { '--sd-ground': groundColor }),
-    ...(sunColor && { '--sd-sun': sunColor }),
-    ...(tickColor && { '--sd-tick': tickColor }),
-  } as CSSProperties;
 
   return (
     <div
       ref={rootRef}
-      style={themeVars}
       className={[styles.root, className].filter(Boolean).join(' ')}
       tabIndex={0}
       aria-labelledby={titleId}
@@ -589,15 +569,7 @@ export default function SundialShadowHeadline({
 
 ```css
 .root {
-  --sd-sky: #f7e9cb;
-  --sd-ground: #ecc978;
-  --sd-horizon: color-mix(in oklch, var(--sd-ground) 90%, #000);
-  --sd-sun: #f0a13a;
-  --sd-sun-ring: color-mix(in oklch, var(--sd-sun) 70%, #c01800);
-  --sd-glow: color-mix(in oklch, var(--sd-sky) 40%, #fff);
-  --sd-tick: #c49149;
-  --sd-ink: #5d2e42;
-  --sd-sun-size: clamp(34px, 9cqw, 74px);
+  --shadow: #5d2e42;
   --sd-font: 'Archivo', 'Arial Black', 'Helvetica Neue', system-ui, sans-serif;
 
   position: relative;
@@ -611,12 +583,12 @@ export default function SundialShadowHeadline({
   background:
     linear-gradient(
       180deg,
-      var(--sd-sky) 0%,
-      var(--sd-sky) calc(68% - 1px),
-      var(--sd-horizon) calc(68% - 1px),
-      var(--sd-horizon) 68%,
-      var(--sd-ground) 68%,
-      var(--sd-ground) 100%
+      #f7e9cb 0%,
+      #f7e9cb calc(68% - 1px),
+      color-mix(in oklch, #ecc978 90%, #000) calc(68% - 1px),
+      color-mix(in oklch, #ecc978 90%, #000) 68%,
+      #ecc978 68%,
+      #ecc978 100%
     );
   font-family: var(--sd-font);
   font-weight: 900;
@@ -626,17 +598,18 @@ export default function SundialShadowHeadline({
 }
 
 .root::selection {
-  background: var(--sd-ink);
-  color: var(--sd-sky);
+  background: var(--shadow);
+  color: #f7e9cb;
 }
 
 .root:focus-visible {
-  outline: 2px solid var(--sd-ink);
+  outline: 2px solid var(--shadow);
   outline-offset: 3px;
 }
 
 .canvas {
   position: absolute;
+  color: #c8491f;
   inset: 0;
   z-index: 2;
   inline-size: 100%;
@@ -646,6 +619,7 @@ export default function SundialShadowHeadline({
 }
 
 .sun {
+  --sd-sun-size: clamp(34px, 9cqw, 74px);
   position: absolute;
   inset-block-start: 0;
   inset-inline-start: 0;
@@ -663,7 +637,7 @@ export default function SundialShadowHeadline({
   inline-size: 64cqw;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--sd-glow) 60%, transparent), transparent 70%);
+  background: radial-gradient(closest-side, color-mix(in srgb, color-mix(in oklch, #f7e9cb 40%, #fff) 60%, transparent), transparent 70%);
   transform: translate(-50%, -50%);
 }
 
@@ -674,7 +648,7 @@ export default function SundialShadowHeadline({
   inline-size: var(--sd-sun-size);
   aspect-ratio: 1;
   border-radius: 50%;
-  background: var(--sd-sun);
+  background: #f0a13a;
   transform: translate(-50%, -50%);
 }
 
@@ -685,7 +659,7 @@ export default function SundialShadowHeadline({
   inline-size: calc(var(--sd-sun-size) + 14px);
   aspect-ratio: 1;
   border-radius: 50%;
-  border: 2px solid color-mix(in srgb, var(--sd-sun-ring) 55%, transparent);
+  border: 2px solid color-mix(in srgb, color-mix(in oklch, #f0a13a 70%, #c01800) 55%, transparent);
   transform: translate(calc(-50% - 7px), calc(-50% + 6px));
 }
 
@@ -697,7 +671,7 @@ export default function SundialShadowHeadline({
   block-size: 15px;
   pointer-events: none;
   opacity: 0.5;
-  background: repeating-linear-gradient(90deg, var(--sd-tick) 0 2px, transparent 2px 4cqw);
+  background: repeating-linear-gradient(90deg, #c49149 0 2px, transparent 2px 4cqw);
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
 }
@@ -722,10 +696,10 @@ export default function SundialShadowHeadline({
   inline-size: 36px;
   aspect-ratio: 1;
   padding: 0;
-  border: 1px solid color-mix(in srgb, var(--sd-ink) 30%, transparent);
+  border: 1px solid color-mix(in srgb, var(--shadow) 30%, transparent);
   border-radius: 50%;
-  background: color-mix(in srgb, var(--sd-sky) 55%, transparent);
-  color: color-mix(in srgb, var(--sd-ink) 85%, transparent);
+  background: color-mix(in srgb, #f7e9cb 55%, transparent);
+  color: color-mix(in srgb, var(--shadow) 85%, transparent);
   cursor: pointer;
   transition:
     background-color 180ms ease,
@@ -733,12 +707,12 @@ export default function SundialShadowHeadline({
 }
 
 .pauseButton:hover {
-  background: color-mix(in srgb, var(--sd-sky) 88%, transparent);
-  border-color: color-mix(in srgb, var(--sd-ink) 50%, transparent);
+  background: color-mix(in srgb, #f7e9cb 88%, transparent);
+  border-color: color-mix(in srgb, var(--shadow) 50%, transparent);
 }
 
 .pauseButton:focus-visible {
-  outline: 2px solid var(--sd-ink);
+  outline: 2px solid var(--shadow);
   outline-offset: 2px;
 }
 
