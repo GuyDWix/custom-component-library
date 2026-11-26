@@ -11,7 +11,6 @@ export interface ScanStripCard {
 
 export interface ScanStripProps {
   cards?: ScanStripCard[];
-  beamColor?: string;
   speed?: number;
   direction?: 'left' | 'right';
   particles?: number;
@@ -93,14 +92,14 @@ function makeSprite(c: Rgb): HTMLCanvasElement {
 function useBeamLayer(
   canvasRef: RefObject<HTMLCanvasElement | null>,
   st: MutableRefObject<{ vel: number; scanning: boolean }>,
-  opts: { active: boolean; color: string; density: number; baseSpeed: number; side: 1 | -1 },
+  opts: { active: boolean; density: number; baseSpeed: number; side: 1 | -1 },
 ) {
-  const { active, color, density, baseSpeed, side } = opts;
+  const { active, density, baseSpeed, side } = opts;
   useEffect(() => {
     const cv = canvasRef.current;
     const ctx = cv?.getContext('2d');
     if (!cv || !ctx) return;
-    const col = parseColor(ctx, color);
+    const col = parseColor(ctx, getComputedStyle(cv).getPropertyValue('--accent'));
     const light = mixWhite(col, 0.6);
     const sprite = makeSprite(col);
     const pool: Dust[] = [];
@@ -247,7 +246,7 @@ function useBeamLayer(
       cancelAnimationFrame(raf);
       ro.disconnect();
     };
-  }, [canvasRef, st, active, color, density, baseSpeed, side]);
+  }, [canvasRef, st, active, density, baseSpeed, side]);
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -256,7 +255,6 @@ type Item = { key: string; i: number; hidden: boolean };
 
 export default function ScanStrip({
   cards = defaultCards,
-  beamColor = '#ff5b2e',
   speed = 70,
   direction = 'left',
   particles = 60,
@@ -368,7 +366,7 @@ export default function ScanStrip({
     return () => cancelAnimationFrame(raf);
   }, [reduced, paused, inView, dims.w, speed, dir, paint]);
 
-  useBeamLayer(canvasRef, st, { active: !reduced && !paused && inView && dims.w > 0, color: beamColor, density: reduced ? 0 : clamp(particles, 0, 100), baseSpeed: Math.max(1, speed), side: dir === -1 ? 1 : -1 });
+  useBeamLayer(canvasRef, st, { active: !reduced && !paused && inView && dims.w > 0, density: reduced ? 0 : clamp(particles, 0, 100), baseSpeed: Math.max(1, speed), side: dir === -1 ? 1 : -1 });
 
   const onDown = (e: PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
@@ -413,7 +411,7 @@ export default function ScanStrip({
     } else st.current.step += d;
   };
 
-  const style = { '--ss-beam': beamColor, '--ss-card': `${dims.card}px` } as CSSProperties;
+  const style = { '--ss-card': `${dims.card}px` } as CSSProperties;
 
   return (
     <div ref={rootRef} className={`${styles.root} ${reduced ? styles.reduced : dir === 1 ? styles.flip : ''} ${className ?? ''}`} style={style}>

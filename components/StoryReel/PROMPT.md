@@ -1,6 +1,6 @@
 Create a custom element called "Story Reel". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: slides (image, caption), seconds per slide, progress colour, start playing automatically, repeat from the start. Add other settings if they help.
+The site owner must be able to change: slides (image, caption), seconds per slide, start playing automatically, repeat from the start. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -16,7 +16,6 @@ export interface StoryReelSlide {
 export interface StoryReelProps {
   slides?: StoryReelSlide[];
   secondsPerSlide?: number;
-  progressColor?: string;
   autoPlay?: boolean;
   loop?: boolean;
   className?: string;
@@ -58,7 +57,6 @@ const REEL_HELP =
 export default function StoryReel({
   slides = defaultSlides,
   secondsPerSlide = 4,
-  progressColor = '#ff6f5e',
   autoPlay = true,
   loop = false,
   className,
@@ -196,7 +194,6 @@ export default function StoryReel({
 
   if (count === 0) return null;
 
-  const rootStyle = { '--sr-progress': progressColor } as CSSProperties;
   const showToggle = autoPlay && count > 1 && !reduced;
   const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -204,7 +201,6 @@ export default function StoryReel({
     <div
       ref={rootRef}
       className={[styles.root, className].filter(Boolean).join(' ')}
-      style={rootStyle}
     >
       <span className={styles.glowCool} aria-hidden="true" />
       <span className={styles.glowCoral} aria-hidden="true" />
@@ -353,17 +349,9 @@ export default function StoryReel({
 
 ```css
 .root {
-  --sr-progress: #ff6f5e;
-  --sr-stage-top: #1a1d22;
-  --sr-stage: #0f1114;
-  --sr-frame: #1d2026;
-  --sr-frame-deep: #181b20;
-  --sr-edge: rgba(244, 240, 232, 0.08);
-  --sr-ink: #f3efe6;
-  --sr-ink-muted: rgba(243, 239, 230, 0.62);
+  --accent: #ff6f5e;
   --sr-font: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --sr-radius: 24px;
-  --sr-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -375,16 +363,24 @@ export default function StoryReel({
   justify-items: center;
   padding-block: 52px;
   padding-inline: 20px;
-  background:
-    repeating-linear-gradient(180deg, rgba(244, 240, 232, 0.018) 0 1px, transparent 1px 11px),
-    radial-gradient(52% 40% at 16% 6%, rgba(148, 166, 190, 0.14) 0%, transparent 70%),
-    linear-gradient(180deg, var(--sr-stage-top) 0%, var(--sr-stage) 100%);
-  color: var(--sr-ink);
+  background: linear-gradient(180deg, #1a1d22 0%, #0f1114 100%);
+  color: #f3efe6;
   font-family: var(--sr-font);
 }
 
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(180deg, rgba(244, 240, 232, 0.018) 0 1px, transparent 1px 11px),
+    radial-gradient(52% 40% at 16% 6%, rgba(148, 166, 190, 0.14) 0%, transparent 70%);
+}
+
 .root ::selection {
-  background: var(--sr-progress);
+  background: var(--accent);
   color: #14161a;
 }
 
@@ -413,14 +409,14 @@ export default function StoryReel({
   inline-size: 60%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--sr-progress) 16%, transparent), transparent);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 16%, transparent), transparent);
   filter: blur(50px);
   animation: drift 32s ease-in-out -13s infinite alternate-reverse;
 }
 
 .grain {
   inset: 0;
-  background-image: var(--sr-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.12;
   mix-blend-mode: overlay;
 }
@@ -446,8 +442,8 @@ export default function StoryReel({
   border-radius: var(--sr-radius);
   background:
     radial-gradient(120% 60% at 50% -10%, #272b31 0%, transparent 60%),
-    linear-gradient(180deg, var(--sr-frame) 0%, var(--sr-frame-deep) 100%);
-  border: 1px solid var(--sr-edge);
+    linear-gradient(180deg, #1d2026 0%, #181b20 100%);
+  border: 1px solid rgba(244, 240, 232, 0.08);
   box-shadow:
     inset 0 1px 0 rgba(244, 240, 232, 0.05),
     0 42px 90px -34px rgba(0, 0, 0, 0.72),
@@ -475,7 +471,7 @@ export default function StoryReel({
   inline-size: 100%;
   block-size: 100%;
   border-radius: inherit;
-  background: var(--sr-progress);
+  background: var(--accent);
   transform-origin: 0 50%;
   transform: scaleX(var(--p));
 }
@@ -486,8 +482,8 @@ export default function StoryReel({
 
 .segActive .segFill {
   box-shadow:
-    0 0 12px color-mix(in srgb, var(--sr-progress) 60%, transparent),
-    0 0 3px color-mix(in srgb, var(--sr-progress) 80%, transparent);
+    0 0 12px color-mix(in srgb, var(--accent) 60%, transparent),
+    0 0 3px color-mix(in srgb, var(--accent) 80%, transparent);
 }
 
 .viewport {
@@ -572,7 +568,7 @@ export default function StoryReel({
   font-size: clamp(13px, 4.4cqi, 16.5px);
   line-height: 1.5;
   letter-spacing: 0.002em;
-  color: var(--sr-ink);
+  color: #f3efe6;
   text-shadow: 0 1px 14px rgba(0, 0, 0, 0.4);
   overflow-wrap: anywhere;
   transform: translateY(12px);
@@ -658,7 +654,7 @@ export default function StoryReel({
   font-variant-numeric: tabular-nums;
   font-size: 12.5px;
   letter-spacing: 0.14em;
-  color: var(--sr-ink-muted);
+  color: rgba(243, 239, 230, 0.62);
 }
 
 .toggle {
@@ -669,7 +665,7 @@ export default function StoryReel({
   border-radius: 50%;
   border: 1px solid rgba(243, 239, 230, 0.16);
   background: rgba(243, 239, 230, 0.06);
-  color: var(--sr-ink-muted);
+  color: rgba(243, 239, 230, 0.62);
   cursor: pointer;
   transition:
     color 200ms ease,
@@ -678,13 +674,13 @@ export default function StoryReel({
 }
 
 .toggle:hover {
-  color: var(--sr-ink);
+  color: #f3efe6;
   border-color: rgba(243, 239, 230, 0.3);
   background: rgba(243, 239, 230, 0.1);
 }
 
 .toggle:focus-visible {
-  outline: 2px solid var(--sr-progress);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 

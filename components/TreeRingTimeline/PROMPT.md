@@ -1,6 +1,6 @@
 Create a custom element called "Tree Ring Timeline". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: milestones (year, title, short note), centre label, wood tone, ring thickness style. Add other settings if they help.
+The site owner must be able to change: milestones (year, title, short note), centre label, ring thickness style. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
@@ -13,14 +13,12 @@ export interface TreeRingMilestone {
   note?: string;
 }
 
-export type WoodTone = 'oak' | 'walnut' | 'ash';
 export type RingThickness = 'natural' | 'even' | 'widening';
 
 export interface TreeRingTimelineProps {
   milestones?: TreeRingMilestone[];
   centreLabel?: string;
   centreCaption?: string;
-  woodTone?: WoodTone;
   ringThickness?: RingThickness;
   ariaLabel?: string;
   className?: string;
@@ -147,7 +145,6 @@ export default function TreeRingTimeline({
   milestones = defaultMilestones,
   centreLabel = 'Since 2009',
   centreCaption = 'Est.',
-  woodTone = 'oak',
   ringThickness = 'natural',
   ariaLabel = 'Years in business',
   className,
@@ -252,8 +249,7 @@ export default function TreeRingTimeline({
   const current = milestones[active];
   const ring = rings[active];
   const stagger = Math.min(110, 1500 / Math.max(count, 1));
-  const toneClass = styles[woodTone] ?? styles.oak;
-  const rootClass = [styles.root, toneClass, visible && styles.play, className].filter(Boolean).join(' ');
+  const rootClass = [styles.root, visible && styles.play, className].filter(Boolean).join(' ');
   const id = (name: string) => `${uid}-${name}`;
 
   return (
@@ -397,18 +393,6 @@ export default function TreeRingTimeline({
 
 ```css
 .root {
-  --trt-ground: #f7f8f5;
-  --trt-surface: #ffffff;
-  --trt-ink: #1d3a2b;
-  --trt-muted: #4f6458;
-  --trt-accent: #2c6a47;
-  --trt-hairline: rgba(29, 58, 43, 0.14);
-  --trt-tint: rgba(44, 106, 71, 0.07);
-  --trt-honey: #e2b878;
-  --trt-walnut: #8a5a34;
-  --trt-latewood: #6b3f22;
-  --trt-bark: #4a2e1c;
-  --trt-bark-edge: #2e1b10;
   --trt-font: Seravek, 'Gill Sans Nova', 'Segoe UI', Ubuntu, Calibri, 'Source Sans 3', system-ui, sans-serif;
 
   position: relative;
@@ -420,9 +404,9 @@ export default function TreeRingTimeline({
   padding-block: 40px;
   padding-inline: 20px;
   border-radius: 24px;
-  border: 1px solid var(--trt-hairline);
-  background: var(--trt-ground);
-  color: var(--trt-ink);
+  border: 1px solid rgba(29, 58, 43, 0.14);
+  background: #f7f8f5;
+  color: #1d3a2b;
   font-family: var(--trt-font);
   -webkit-font-smoothing: antialiased;
 }
@@ -435,24 +419,8 @@ export default function TreeRingTimeline({
 .rowTitle::selection,
 .stampLabel::selection,
 .stampCaption::selection {
-  background: color-mix(in srgb, var(--trt-accent) 22%, transparent);
-  color: var(--trt-ink);
-}
-
-.walnut {
-  --trt-honey: #c08a55;
-  --trt-walnut: #5b3720;
-  --trt-latewood: #3f2414;
-  --trt-bark: #33200f;
-  --trt-bark-edge: #1f130a;
-}
-
-.ash {
-  --trt-honey: #efd9b2;
-  --trt-walnut: #b88f62;
-  --trt-latewood: #8e6743;
-  --trt-bark: #6a5442;
-  --trt-bark-edge: #45352a;
+  background: color-mix(in srgb, #2c6a47 22%, transparent);
+  color: #1d3a2b;
 }
 
 .inner {
@@ -479,7 +447,7 @@ export default function TreeRingTimeline({
 }
 
 .disc:focus-visible {
-  outline: 2px solid var(--trt-accent);
+  outline: 2px solid #2c6a47;
   outline-offset: 6px;
 }
 
@@ -495,26 +463,26 @@ export default function TreeRingTimeline({
 }
 
 .edge {
-  fill: var(--trt-bark-edge);
+  fill: #2e1b10;
 }
 
 .bark {
-  fill: var(--trt-bark);
-  stroke: var(--trt-bark-edge);
+  fill: #4a2e1c;
+  stroke: #2e1b10;
   stroke-width: 1.5;
 }
 
 .cambium {
-  fill: color-mix(in srgb, var(--trt-honey) 55%, #fff6e4);
+  fill: color-mix(in srgb, #e2b878 55%, #fff6e4);
 }
 
 .band {
-  fill: color-mix(in srgb, var(--trt-walnut) var(--heart), var(--trt-honey));
+  fill: color-mix(in srgb, #8a5a34 var(--heart), #e2b878);
   transform-origin: 240px 240px;
 }
 
 .pith {
-  fill: color-mix(in srgb, var(--trt-walnut) 80%, var(--trt-bark));
+  fill: color-mix(in srgb, #8a5a34 80%, #4a2e1c);
 }
 
 .ray {
@@ -526,20 +494,20 @@ export default function TreeRingTimeline({
 
 .growth {
   fill: none;
-  stroke: var(--trt-latewood);
+  stroke: #6b3f22;
   stroke-width: 0.55;
   opacity: 0.32;
 }
 
 .line {
   fill: none;
-  stroke: var(--trt-latewood);
+  stroke: #6b3f22;
   stroke-linejoin: round;
   opacity: 0.82;
 }
 
 .lineActive {
-  stroke: var(--trt-bark-edge);
+  stroke: #2e1b10;
   opacity: 1;
 }
 
@@ -551,7 +519,7 @@ export default function TreeRingTimeline({
 }
 
 .check {
-  fill: var(--trt-bark-edge);
+  fill: #2e1b10;
   opacity: 0.7;
 }
 
@@ -566,8 +534,8 @@ export default function TreeRingTimeline({
 }
 
 .pin {
-  fill: var(--trt-surface);
-  stroke: var(--trt-ink);
+  fill: #ffffff;
+  stroke: #1d3a2b;
   stroke-width: 2;
   pointer-events: none;
   transition: cy 520ms cubic-bezier(0.34, 1.45, 0.5, 1);
@@ -585,9 +553,9 @@ export default function TreeRingTimeline({
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: var(--trt-surface);
+  background: #ffffff;
   box-shadow:
-    0 0 0 1px var(--trt-hairline),
+    0 0 0 1px rgba(29, 58, 43, 0.14),
     0 4px 12px -2px rgba(20, 30, 22, 0.28);
   pointer-events: none;
   text-align: center;
@@ -598,7 +566,7 @@ export default function TreeRingTimeline({
   font-size: 9px;
   font-weight: 500;
   line-height: 1.1;
-  color: var(--trt-muted);
+  color: #4f6458;
 }
 
 .stampLabel {
@@ -611,7 +579,7 @@ export default function TreeRingTimeline({
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.01em;
-  color: var(--trt-ink);
+  color: #1d3a2b;
   overflow-wrap: anywhere;
 }
 
@@ -625,9 +593,9 @@ export default function TreeRingTimeline({
   padding-block: 7px;
   padding-inline: 12px;
   transform: translate(-50%, calc(-100% - 12px));
-  border: 1px solid var(--trt-hairline);
+  border: 1px solid rgba(29, 58, 43, 0.14);
   border-radius: 10px;
-  background: var(--trt-surface);
+  background: #ffffff;
   box-shadow: 0 8px 20px -10px rgba(20, 30, 22, 0.35);
   pointer-events: none;
   white-space: nowrap;
@@ -638,7 +606,7 @@ export default function TreeRingTimeline({
   font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums lining-nums;
-  color: var(--trt-accent);
+  color: #2c6a47;
 }
 
 .tagTitle {
@@ -646,7 +614,7 @@ export default function TreeRingTimeline({
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 14px;
-  color: var(--trt-ink);
+  color: #1d3a2b;
 }
 
 .story {
@@ -668,7 +636,7 @@ export default function TreeRingTimeline({
   line-height: 0.9;
   letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums lining-nums;
-  color: var(--trt-ink);
+  color: #1d3a2b;
   overflow-wrap: anywhere;
 }
 
@@ -687,7 +655,7 @@ export default function TreeRingTimeline({
   max-inline-size: 46ch;
   font-size: 17px;
   line-height: 1.55;
-  color: var(--trt-muted);
+  color: #4f6458;
   text-wrap: pretty;
   overflow-wrap: anywhere;
 }
@@ -698,12 +666,12 @@ export default function TreeRingTimeline({
   margin-inline: -10px;
   padding: 0;
   list-style: none;
-  border-block-start: 1px solid var(--trt-hairline);
-  scrollbar-color: color-mix(in srgb, var(--trt-ink) 28%, transparent) transparent;
+  border-block-start: 1px solid rgba(29, 58, 43, 0.14);
+  scrollbar-color: color-mix(in srgb, #1d3a2b 28%, transparent) transparent;
 }
 
 .item {
-  border-block-end: 1px solid var(--trt-hairline);
+  border-block-end: 1px solid rgba(29, 58, 43, 0.14);
 }
 
 .row {
@@ -718,7 +686,7 @@ export default function TreeRingTimeline({
   border: 0;
   border-radius: 0;
   background: transparent;
-  color: var(--trt-ink);
+  color: #1d3a2b;
   font: inherit;
   text-align: start;
   cursor: pointer;
@@ -728,23 +696,23 @@ export default function TreeRingTimeline({
 }
 
 .row:hover {
-  background: var(--trt-tint);
+  background: rgba(44, 106, 71, 0.07);
 }
 
 .row:focus-visible {
-  outline: 2px solid var(--trt-accent);
+  outline: 2px solid #2c6a47;
   outline-offset: -2px;
 }
 
 .rowActive {
-  background: color-mix(in srgb, var(--trt-accent) 11%, transparent);
+  background: color-mix(in srgb, #2c6a47 11%, transparent);
 }
 
 .rowYear {
   font-size: 15px;
   font-weight: 600;
   font-variant-numeric: tabular-nums lining-nums;
-  color: var(--trt-accent);
+  color: #2c6a47;
   overflow-wrap: anywhere;
 }
 

@@ -1,6 +1,6 @@
 Create a custom element called "Season Ribbon". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: items (name, first month, last month), current month marker on or off, season colours, row labels (season range text on or off). Add other settings if they help.
+The site owner must be able to change: items (name, first month, last month), current month marker on or off, row labels (season range text on or off). Add other settings if they help.
 
 ```tsx
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -18,7 +18,6 @@ export interface SeasonItem {
 export interface SeasonRibbonProps {
   items?: SeasonItem[];
   showCurrentMonth?: boolean;
-  seasonColors?: string[];
   showSeasonRange?: boolean;
   monthNames?: string[];
   nowLabel?: string;
@@ -35,7 +34,7 @@ export const defaultItems: SeasonItem[] = [
 ];
 
 const DEFAULT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const DEFAULT_COLORS = ['var(--sr-leaf)', 'var(--sr-orange)', 'var(--sr-plum)'];
+const TONE_COUNT = 3;
 const MAX_STAGGER = 8;
 
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
@@ -60,7 +59,6 @@ type Phase = 'static' | 'hidden' | 'play';
 export default function SeasonRibbon({
   items = defaultItems,
   showCurrentMonth = true,
-  seasonColors = DEFAULT_COLORS,
   showSeasonRange = true,
   monthNames = DEFAULT_MONTHS,
   nowLabel = 'In season now',
@@ -106,7 +104,6 @@ export default function SeasonRibbon({
   }, [phase]);
 
   const name = (m: number) => monthNames[m - 1] ?? DEFAULT_MONTHS[m - 1];
-  const palette = seasonColors.length ? seasonColors : DEFAULT_COLORS;
 
   const rows = items.map((item, i) => {
     const first = clampMonth(item.firstMonth);
@@ -118,7 +115,7 @@ export default function SeasonRibbon({
     const anchorEnd = 1 - s < e;
     const range = first === last ? name(first) : `${name(first)} – ${name(last)}`;
     const live = now !== null && showCurrentMonth && inSeason(first, last, now);
-    return { item, i, first, last, segs, s, e, anchorEnd, range, live, color: palette[i % palette.length] };
+    return { item, i, first, last, segs, s, e, anchorEnd, range, live };
   });
 
   const active = hovered ?? focused ?? pinned;
@@ -128,7 +125,6 @@ export default function SeasonRibbon({
 
   const rootStyle = {
     '--sr-pin': `${240 + visibleRows * 95 + 700}ms`,
-    ...(activeRow ? { '--sr-ac': activeRow.color } : null),
   } as CSSProperties;
 
   const move = (from: number, dir: number) => {
@@ -157,6 +153,7 @@ export default function SeasonRibbon({
       ref={rootRef}
       className={cx(styles.root, phase === 'hidden' && styles.hidden, phase === 'play' && styles.play, className)}
       style={rootStyle}
+      data-tone={activeRow ? activeRow.i % TONE_COUNT : undefined}
       aria-label={ariaLabel}
     >
       <div className={styles.sheet}>
@@ -197,7 +194,6 @@ export default function SeasonRibbon({
             {rows.map((r) => {
               const rowStyle = {
                 '--sr-i': Math.min(r.i, MAX_STAGGER),
-                '--sr-c': r.color,
                 '--sr-lx': `${r.s * 100}%`,
                 '--sr-rx': `${(1 - r.e) * 100}%`,
                 '--sr-lw': r.anchorEnd ? `${r.e * 100}%` : `${(1 - r.s) * 100}%`,
@@ -272,15 +268,7 @@ export default function SeasonRibbon({
 
 ```css
 .root {
-  --sr-linen: #f5f4ef;
-  --sr-ink: #1b2620;
-  --sr-muted: rgba(27, 38, 32, 0.66);
-  --sr-hair: rgba(27, 38, 32, 0.09);
-  --sr-leaf: #3f7a5c;
-  --sr-orange: #b4673d;
-  --sr-plum: #5f4b78;
   --sr-font: 'Familjen Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --sr-ac: var(--sr-ink);
 
   position: relative;
   isolation: isolate;
@@ -289,11 +277,11 @@ export default function SeasonRibbon({
   box-sizing: border-box;
   inline-size: 100%;
   border-radius: 20px;
-  color: var(--sr-ink);
+  color: #1b2620;
   font-family: var(--sr-font);
   font-variant-numeric: tabular-nums;
   background:
-    linear-gradient(180deg, #fbfaf6 0%, var(--sr-linen) 100%);
+    linear-gradient(180deg, #fbfaf6 0%, #f5f4ef 100%);
   box-shadow:
     0 0 0 1px rgba(27, 38, 32, 0.08),
     0 1px 2px rgba(27, 38, 32, 0.05),
@@ -301,16 +289,29 @@ export default function SeasonRibbon({
 }
 
 .root::selection {
-  background: color-mix(in srgb, var(--sr-leaf) 30%, transparent);
-  color: var(--sr-ink);
+  background: color-mix(in srgb, #3f7a5c 30%, transparent);
+  color: #1b2620;
 }
 
 .sheet {
+  --sr-ac: #1b2620;
   --sr-h: 34px;
   --sr-rad: 9px;
   box-sizing: border-box;
   padding-block: 28px 16px;
   padding-inline: 48px;
+}
+
+.root[data-tone='0'] .sheet {
+  --sr-ac: #3f7a5c;
+}
+
+.root[data-tone='1'] .sheet {
+  --sr-ac: #b4673d;
+}
+
+.root[data-tone='2'] .sheet {
+  --sr-ac: #5f4b78;
 }
 
 .plot {
@@ -330,13 +331,13 @@ export default function SeasonRibbon({
 
 .col {
   position: relative;
-  border-inline-start: 1px solid var(--sr-hair);
+  border-inline-start: 1px solid rgba(27, 38, 32, 0.09);
   transform-origin: top;
   transition: background-color 0.3s ease;
 }
 
 .col:last-child {
-  border-inline-end: 1px solid var(--sr-hair);
+  border-inline-end: 1px solid rgba(27, 38, 32, 0.09);
 }
 
 .colOn {
@@ -347,7 +348,7 @@ export default function SeasonRibbon({
   content: '';
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, var(--sr-ink) 4%, transparent);
+  background: color-mix(in srgb, #1b2620 4%, transparent);
   transform-origin: top;
 }
 
@@ -357,7 +358,7 @@ export default function SeasonRibbon({
   inset-block: 46px 0;
   inset-inline-start: calc(50% - 0.5px);
   inline-size: 1px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--sr-ink) 45%, transparent), color-mix(in srgb, var(--sr-ink) 8%, transparent));
+  background: linear-gradient(180deg, color-mix(in srgb, #1b2620 45%, transparent), color-mix(in srgb, #1b2620 8%, transparent));
   transform-origin: top;
 }
 
@@ -370,12 +371,12 @@ export default function SeasonRibbon({
   grid-template-columns: repeat(12, 1fr);
   align-items: center;
   block-size: 46px;
-  border-block-end: 1px solid color-mix(in srgb, var(--sr-ink) 22%, transparent);
+  border-block-end: 1px solid color-mix(in srgb, #1b2620 22%, transparent);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--sr-muted);
+  color: rgba(27, 38, 32, 0.66);
   text-align: center;
 }
 
@@ -409,8 +410,8 @@ export default function SeasonRibbon({
   place-items: center;
   box-sizing: border-box;
   border-radius: 8px;
-  background: linear-gradient(180deg, #2b3a31, var(--sr-ink));
-  color: var(--sr-linen);
+  background: linear-gradient(180deg, #2b3a31, #1b2620);
+  color: #f5f4ef;
   font-weight: 700;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.14) inset, 0 6px 12px -6px rgba(27, 38, 32, 0.5);
   transform-origin: 50% 100%;
@@ -422,7 +423,7 @@ export default function SeasonRibbon({
   inset-block-end: -5px;
   inset-inline-start: calc(50% - 4px);
   border-inline: 4px solid transparent;
-  border-block-start: 5px solid var(--sr-ink);
+  border-block-start: 5px solid #1b2620;
 }
 
 /* rows ----------------------------------------------------------------- */
@@ -436,13 +437,25 @@ export default function SeasonRibbon({
 }
 
 .row {
-  border-block-end: 1px solid var(--sr-hair);
+  border-block-end: 1px solid rgba(27, 38, 32, 0.09);
   opacity: 1;
   transition: opacity 0.35s ease;
 }
 
+.row:nth-child(3n + 1) {
+  --sr-c: #3f7a5c;
+}
+
+.row:nth-child(3n + 2) {
+  --sr-c: #b4673d;
+}
+
+.row:nth-child(3n + 3) {
+  --sr-c: #5f4b78;
+}
+
 .row:last-child {
-  border-block-end: 1px solid color-mix(in srgb, var(--sr-ink) 28%, transparent);
+  border-block-end: 1px solid color-mix(in srgb, #1b2620 28%, transparent);
 }
 
 .rowDim {
@@ -467,7 +480,7 @@ export default function SeasonRibbon({
 }
 
 .hit:focus-visible {
-  outline: 2px solid var(--sr-ink);
+  outline: 2px solid #1b2620;
   outline-offset: -2px;
   border-radius: 10px;
 }
@@ -601,9 +614,9 @@ export default function SeasonRibbon({
   margin-block-start: -7px;
   margin-inline-start: -7px;
   box-sizing: border-box;
-  border: 3px solid var(--sr-linen);
+  border: 3px solid #f5f4ef;
   border-radius: 50%;
-  background: var(--sr-ink);
+  background: #1b2620;
   box-shadow: 0 0 0 1px rgba(27, 38, 32, 0.4), 0 3px 6px rgba(27, 38, 32, 0.3);
 }
 

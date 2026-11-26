@@ -1,6 +1,6 @@
 Create a custom element called "Size Finder Ruler". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: measurement label, unit (cm or in), size heading, size ranges (from, to, size, note), accent color. Add other settings if they help.
+The site owner must be able to change: measurement label, unit (cm or in), size heading, size ranges (from, to, size, note). Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
@@ -21,7 +21,6 @@ export interface SizeFinderRulerProps {
   unit?: RulerUnit;
   sizeLabel?: string;
   ranges?: SizeRange[];
-  accentColor?: string;
 }
 
 const DEFAULT_RANGES: SizeRange[] = [
@@ -104,7 +103,6 @@ export default function SizeFinderRuler({
   unit = 'cm',
   sizeLabel = 'Your size',
   ranges = DEFAULT_RANGES,
-  accentColor = '#f5e02d',
 }: SizeFinderRulerProps) {
   const model = useMemo(() => buildModel(ranges), [ranges]);
   const { list, lo, min, max, ppu, labelsFit, start, numerals } = model;
@@ -386,7 +384,6 @@ export default function SizeFinderRuler({
   const valueEms = (valueText.length - 1) * 0.5 + 0.25 + 0.42;
   const sizeChars = Math.max(2, active.size.length);
 
-  const rootStyle = { '--sfr-accent': accentColor } as CSSProperties;
   const trackStyle = {
     '--ppu': `${ppu}px`,
     '--off': start - lo,
@@ -402,7 +399,6 @@ export default function SizeFinderRuler({
     <section
       ref={rootRef}
       className={styles.root}
-      style={rootStyle}
       aria-labelledby={labelId}
     >
       <div className={styles.card}>
@@ -490,17 +486,7 @@ export default function SizeFinderRuler({
 .root {
   --sfr-font-display: 'Barlow', 'Helvetica Neue', Arial, sans-serif;
   --sfr-font-text: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
-  --sfr-ground: #14181a;
-  --sfr-paper: #f3f4f2;
-  --sfr-paper-soft: rgba(243, 244, 242, 0.7);
-  --sfr-sheet: #eef0ed;
-  --sfr-sheet-ink: #14171a;
-  --sfr-sheet-muted: #4d5357;
-  --sfr-ink: #14171a;
-  --sfr-alu-hi: #f2f3f1;
-  --sfr-alu: #e6e8e6;
-  --sfr-alu-lo: #d3d7d6;
-  --sfr-accent: #f5e02d;
+  --accent: #f5e02d;
   --sfr-spring: cubic-bezier(0.34, 1.45, 0.5, 1);
   --sfr-ease: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -509,13 +495,13 @@ export default function SizeFinderRuler({
   box-sizing: border-box;
   inline-size: 100%;
   font-family: var(--sfr-font-text);
-  color: var(--sfr-paper);
+  color: #f3f4f2;
   -webkit-font-smoothing: antialiased;
 }
 
 .root::selection {
-  background: var(--sfr-accent);
-  color: var(--sfr-ink);
+  background: var(--accent);
+  color: #14171a;
 }
 
 .card {
@@ -535,7 +521,7 @@ export default function SizeFinderRuler({
   border-radius: 28px;
   overflow: hidden;
   isolation: isolate;
-  background: var(--sfr-ground);
+  background: #14181a;
 }
 
 /* ───────── Paper readout (left of the beam): what is being measured ───────── */
@@ -551,15 +537,15 @@ export default function SizeFinderRuler({
   justify-content: space-between;
   gap: 24px;
   padding: 40px 40px 36px 44px;
-  color: var(--sfr-sheet-ink);
-  background: var(--sfr-sheet);
+  color: #14171a;
+  background: #eef0ed;
 }
 
 .measure {
   margin: 0;
   max-inline-size: 24ch;
   font: 500 16px/1.4 var(--sfr-font-text);
-  color: var(--sfr-sheet-muted);
+  color: #4d5357;
   text-wrap: balance;
 }
 
@@ -573,7 +559,7 @@ export default function SizeFinderRuler({
   font-size: min(var(--num-max), calc(var(--num-avail) / var(--ems)));
   line-height: 0.9;
   white-space: nowrap;
-  color: var(--sfr-sheet-ink);
+  color: #14171a;
 }
 
 .value {
@@ -584,7 +570,7 @@ export default function SizeFinderRuler({
 .unit {
   margin-inline-start: 0.14em;
   font-size: 0.4em;
-  color: var(--sfr-sheet-muted);
+  color: #4d5357;
 }
 
 /* ───────── Size result (right of the beam): the hero ───────── */
@@ -599,7 +585,7 @@ export default function SizeFinderRuler({
   justify-content: space-between;
   gap: 24px;
   padding: 40px 56px 36px 56px;
-  color: var(--sfr-paper);
+  color: #f3f4f2;
 }
 
 .infoLabel {
@@ -629,7 +615,7 @@ export default function SizeFinderRuler({
   font-size: min(var(--glyph-max), calc(var(--avail) / var(--chars) * 1.85));
   line-height: 0.9;
   letter-spacing: -0.02em;
-  color: var(--sfr-paper);
+  color: #f3f4f2;
   text-wrap: balance;
   overflow-wrap: normal;
   word-break: normal;
@@ -674,8 +660,8 @@ export default function SizeFinderRuler({
   inset: 0;
   z-index: 3;
   pointer-events: none;
-  border: 2px solid var(--sfr-paper);
-  box-shadow: inset 0 0 0 2px var(--sfr-ground);
+  border: 2px solid #f3f4f2;
+  box-shadow: inset 0 0 0 2px #14181a;
 }
 
 .track {
@@ -720,7 +706,7 @@ export default function SizeFinderRuler({
 
 .tickMajor {
   block-size: 24px;
-  background-image: linear-gradient(90deg, transparent 0 1px, var(--sfr-paper) 1px 3px, transparent 3px);
+  background-image: linear-gradient(90deg, transparent 0 1px, #f3f4f2 1px 3px, transparent 3px);
   background-size: var(--ppu) 100%;
 }
 
@@ -754,8 +740,8 @@ export default function SizeFinderRuler({
 }
 
 .chipOn {
-  color: var(--sfr-ink);
-  background: var(--sfr-accent);
+  color: #14171a;
+  background: var(--accent);
   box-shadow: none;
   animation: sfrChip 360ms var(--sfr-ease) both;
 }
@@ -775,7 +761,7 @@ export default function SizeFinderRuler({
   inset-block: 0;
   inset-inline-start: calc(var(--needle) - 1.5px);
   inline-size: 3px;
-  background: var(--sfr-accent);
+  background: var(--accent);
   transform-origin: 50% 0;
 }
 

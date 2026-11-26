@@ -1,6 +1,6 @@
 Create a custom element called "Loupe Zoom Image". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: image, image description, zoom level, loupe size, rim color, caption, detail line, photo aspect ratio. Add other settings if they help.
+The site owner must be able to change: image, image description, zoom level, loupe size, caption, detail line, photo aspect ratio. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -14,7 +14,6 @@ export interface LoupeZoomImageProps {
   detail?: string;
   zoom?: number;
   loupeSize?: number;
-  rimColor?: string;
   aspectRatio?: string;
   className?: string;
 }
@@ -141,7 +140,6 @@ export default function LoupeZoomImage({
   detail = 'Polished silver case, enamel dial with a sunburst finish, hand-wound movement',
   zoom = 2.6,
   loupeSize = 320,
-  rimColor = '#b08a3c',
   aspectRatio = '16 / 10',
   className,
 }: LoupeZoomImageProps) {
@@ -408,7 +406,6 @@ export default function LoupeZoomImage({
   const photoAlt = imageAlt || caption || 'Zoomable image';
   const magLabel = `×${zoomLevel % 1 === 0 ? zoomLevel.toFixed(0) : zoomLevel.toFixed(1)}`;
   const rootStyle = {
-    '--lz-rim': rimColor,
     '--lz-size': `${clamp(loupeSize, 140, 440)}px`,
     '--lz-zoom': zoomLevel,
   } as CSSProperties;
@@ -468,13 +465,8 @@ export default function LoupeZoomImage({
 /* Neutral print table — a handleless glass loupe with a thin ring and soft shadow */
 
 .root {
-  --lz-rim: #b08a3c;
   --lz-size: 320px;
   --lz-zoom: 2.6;
-  --lz-linen: #f4f3f1;
-  --lz-linen-deep: #eceae6;
-  --lz-ink: #1d1d1f;
-  --lz-muted: #55555a;
   --lz-font-display: 'Instrument Sans', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --lz-font-ui: 'Instrument Sans', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
 
@@ -486,11 +478,11 @@ export default function LoupeZoomImage({
   inline-size: 100%;
   display: grid;
   border-radius: 22px;
-  background: linear-gradient(180deg, var(--lz-linen) 0%, var(--lz-linen-deep) 100%);
-  color: var(--lz-ink);
+  background: linear-gradient(180deg, #f4f3f1 0%, #eceae6 100%);
+  color: #1d1d1f;
   font-family: var(--lz-font-ui);
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--lz-ink) 10%, transparent),
+    0 0 0 1px color-mix(in srgb, #1d1d1f 10%, transparent),
     0 24px 48px -30px rgba(20, 20, 24, 0.4);
 }
 
@@ -505,7 +497,7 @@ export default function LoupeZoomImage({
 }
 
 .stage:focus-visible {
-  box-shadow: inset 0 0 0 3px var(--lz-linen), inset 0 0 0 5px var(--lz-rim);
+  box-shadow: inset 0 0 0 3px #f4f3f1, inset 0 0 0 5px #b08a3c;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -671,7 +663,7 @@ export default function LoupeZoomImage({
   font-weight: 700;
   line-height: 1.14;
   letter-spacing: -0.02em;
-  color: var(--lz-ink);
+  color: #1d1d1f;
   overflow-wrap: anywhere;
   text-wrap: balance;
 }
@@ -682,7 +674,7 @@ export default function LoupeZoomImage({
   font-size: clamp(14px, 1.9cqi, 16px);
   font-weight: 500;
   line-height: 1.5;
-  color: var(--lz-muted);
+  color: #55555a;
   overflow-wrap: anywhere;
 }
 
@@ -696,13 +688,13 @@ export default function LoupeZoomImage({
   font-weight: 600;
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
-  color: var(--lz-ink);
+  color: #1d1d1f;
   font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   white-space: nowrap;
 }
 
 .captionTitle::selection,
 .captionDetail::selection {
-  background: color-mix(in srgb, var(--lz-rim) 30%, transparent);
+  background: color-mix(in srgb, #b08a3c 30%, transparent);
 }
 ```

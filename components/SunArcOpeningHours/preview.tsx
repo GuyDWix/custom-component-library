@@ -18,7 +18,6 @@ const worst: SunArcOpeningHoursProps = {
     { day: 'Sunday', label: 'Sunday', opens: '09:00', closes: '18:00' },
   ],
   clock: '24h',
-  skyTint: '#b3a2f2',
   timeZone: 'Pacific/Auckland',
   openNowLabel: 'We are open right now',
   closesAtLabel: 'and we close at',

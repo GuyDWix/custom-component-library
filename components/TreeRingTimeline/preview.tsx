@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import TreeRingTimeline from './Component';
-import type { RingThickness, TreeRingMilestone, WoodTone } from './Component';
+import type { RingThickness, TreeRingMilestone } from './Component';
 
 const worstMilestones: TreeRingMilestone[] = Array.from({ length: 36 }, (_, i) => ({
   year: String(1989 + i),
@@ -30,14 +30,12 @@ const stage = {
 export default function Preview() {
   const params = useMemo(() => new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search), []);
   const worst = params.get('worst') === '1';
-  const woodTone = (params.get('tone') as WoodTone | null) ?? 'oak';
   const ringThickness = (params.get('rings') as RingThickness | null) ?? 'natural';
 
   return (
     <div style={stage}>
       <div style={{ width: '100%', maxWidth: 1200 }}>
         <TreeRingTimeline
-          woodTone={woodTone}
           ringThickness={ringThickness}
           {...(worst
             ? {

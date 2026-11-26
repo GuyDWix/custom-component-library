@@ -1,6 +1,6 @@
 Create a custom element called "Numeral Steps List". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: heading, steps (title and text), numeral color, text color, show connecting line. Add other settings if they help.
+The site owner must be able to change: heading, steps (title and text), show connecting line. Add other settings if they help.
 
 ```tsx
 import { useEffect, useId, useRef, useState } from 'react';
@@ -15,8 +15,6 @@ export interface NumeralStepsListStep {
 export interface NumeralStepsListProps {
   heading?: string;
   steps?: NumeralStepsListStep[];
-  numeralColor?: string;
-  textColor?: string;
   showConnectingLine?: boolean;
   className?: string;
 }
@@ -162,8 +160,6 @@ const buildSurface = (L: number, S: number, A: number, phase: number) => {
 export default function NumeralStepsList({
   heading = 'How we bake',
   steps = defaultSteps,
-  numeralColor = '#3f2334',
-  textColor = '#3a322f',
   showConnectingLine = true,
   className,
 }: NumeralStepsListProps) {
@@ -395,13 +391,8 @@ export default function NumeralStepsList({
     li.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
   };
 
-  const rootStyle = {
-    '--nsl-numeral': numeralColor,
-    '--nsl-text': textColor,
-  } as CSSProperties;
-
   return (
-    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
+    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')}>
       <span className={styles.light} aria-hidden="true" />
       <span className={styles.grain} aria-hidden="true" />
       <div className={styles.inner}>
@@ -484,16 +475,9 @@ export default function NumeralStepsList({
 
 ```css
 .root {
-  --nsl-stage: #ece8e1;
-  --nsl-stage-deep: #e0dad1;
-  --nsl-numeral: #3f2334;
-  --nsl-edge: color-mix(in srgb, var(--nsl-numeral) 74%, #000);
-  --nsl-glint: color-mix(in srgb, var(--nsl-numeral) 40%, #fff);
-  --nsl-plum: #8a4d68;
-  --nsl-text: #3a322f;
+  --accent: #3f2334;
   --nsl-font-numeral: 'Bodoni Moda', 'Didot', 'Bodoni MT', 'Georgia', 'Times New Roman', serif;
   --nsl-font-body: 'Instrument Sans', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --nsl-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.4  0 0 0 0 0.37  0 0 0 0.05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -503,14 +487,14 @@ export default function NumeralStepsList({
   border-radius: 24px;
   overflow: clip;
   background:
-    radial-gradient(140% 90% at 50% 0%, color-mix(in srgb, var(--nsl-stage) 72%, #fff) 0%, var(--nsl-stage) 58%, var(--nsl-stage-deep) 100%);
-  color: var(--nsl-text);
+    radial-gradient(140% 90% at 50% 0%, color-mix(in srgb, #ece8e1 72%, #fff) 0%, #ece8e1 58%, #e0dad1 100%);
+  color: #3a322f;
   font-family: var(--nsl-font-body);
   font-synthesis: none;
 }
 
 .root::selection {
-  background: var(--nsl-plum);
+  background: #8a4d68;
   color: #fff;
 }
 
@@ -527,7 +511,7 @@ export default function NumeralStepsList({
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background: var(--nsl-noise);
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.4  0 0 0 0 0.37  0 0 0 0.05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
 /* The numerals are the composition: each is ~42% of the content width, zigzagging down the frame. */
@@ -549,7 +533,7 @@ export default function NumeralStepsList({
   letter-spacing: -0.025em;
   line-height: 1.1;
   text-wrap: balance;
-  color: var(--nsl-text);
+  color: #3a322f;
 }
 
 .list {
@@ -622,7 +606,7 @@ export default function NumeralStepsList({
 }
 
 .numeralButton:focus-visible {
-  outline: 2px solid var(--nsl-plum);
+  outline: 2px solid #8a4d68;
   outline-offset: 4px;
 }
 
@@ -659,7 +643,7 @@ export default function NumeralStepsList({
   inset-block-end: 3%;
   block-size: 0.07em;
   border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--nsl-numeral) 30%, transparent), transparent);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 30%, transparent), transparent);
   opacity: calc(var(--lift) * 0.8);
   transform: scale(calc(0.7 + var(--lift) * 0.3), 1);
   pointer-events: none;
@@ -674,7 +658,7 @@ export default function NumeralStepsList({
 .ghost {
   display: block;
   color: transparent;
-  -webkit-text-stroke: max(1px, 0.007em) color-mix(in srgb, var(--nsl-numeral) 32%, transparent);
+  -webkit-text-stroke: max(1px, 0.007em) color-mix(in srgb, var(--accent) 32%, transparent);
 }
 
 .slice,
@@ -688,7 +672,7 @@ export default function NumeralStepsList({
 
 /* Extrusion: flat, darker cured ink; no gradient. */
 .slice {
-  color: var(--nsl-edge);
+  color: color-mix(in srgb, var(--accent) 74%, #000);
   opacity: min(1, calc(var(--lift) * 5));
   transform: translateZ(calc(var(--lift) * var(--i) * 0.0105em));
 }
@@ -696,7 +680,7 @@ export default function NumeralStepsList({
 /* Face: solid matte ink with one restrained glint band. */
 .ink {
   color: transparent;
-  background-color: var(--nsl-numeral);
+  background-color: var(--accent);
   background-image: linear-gradient(
     103deg,
     transparent calc(var(--gl) * 100% - 7%),
@@ -710,7 +694,7 @@ export default function NumeralStepsList({
 
 /* Wet band just under the surface while it pours; gone once the ink is full. */
 .sheen {
-  color: var(--nsl-glint);
+  color: color-mix(in srgb, var(--accent) 40%, #fff);
   opacity: 0.32;
   clip-path: var(--sheen);
   pointer-events: none;
@@ -750,7 +734,7 @@ export default function NumeralStepsList({
 }
 
 .threadTrack {
-  stroke: color-mix(in srgb, var(--nsl-numeral) 16%, transparent);
+  stroke: color-mix(in srgb, var(--accent) 16%, transparent);
   stroke-width: 4px;
   stroke-linecap: round;
 }
@@ -762,7 +746,7 @@ export default function NumeralStepsList({
 }
 
 .threadInk {
-  stroke: var(--nsl-numeral);
+  stroke: var(--accent);
   stroke-width: 4px;
 }
 
@@ -779,7 +763,7 @@ export default function NumeralStepsList({
   inline-size: 15px;
   block-size: 21px;
   border-radius: 50% 50% 50% 50% / 36% 36% 64% 64%;
-  background: var(--nsl-numeral);
+  background: var(--accent);
   box-shadow: inset 3px -2px 0 -1px rgb(255 255 255 / 0.2);
   opacity: var(--drop);
   transform: translate(calc(var(--px) * 1px - 50%), calc(var(--py) * 1px - 58%)) scale(1, var(--stretch));
@@ -817,7 +801,7 @@ export default function NumeralStepsList({
   line-height: 1.12;
   text-wrap: balance;
   overflow-wrap: break-word;
-  color: var(--nsl-text);
+  color: #3a322f;
 }
 
 .title[data-break] {
@@ -832,7 +816,7 @@ export default function NumeralStepsList({
   font-weight: 400;
   line-height: 1.58;
   overflow-wrap: break-word;
-  color: color-mix(in srgb, var(--nsl-text) 94%, transparent);
+  color: color-mix(in srgb, #3a322f 94%, transparent);
   opacity: clamp(0, calc(var(--q) * 1.8 - 0.8), 1);
 }
 

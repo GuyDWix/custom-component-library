@@ -17,8 +17,6 @@ export interface MapConnection {
 export interface WorldConnectionsMapProps {
   locations?: MapLocation[];
   connections?: MapConnection[];
-  dotColor?: string;
-  arcColor?: string;
   backgroundStyle?: BackgroundStyle;
   showLabels?: boolean;
   mapLabel?: string;
@@ -397,8 +395,6 @@ interface ArcState {
 export default function WorldConnectionsMap({
   locations = DEFAULT_LOCATIONS,
   connections = DEFAULT_CONNECTIONS,
-  dotColor,
-  arcColor,
   backgroundStyle = 'dark',
   showLabels = true,
   mapLabel = 'Map of our locations and the routes between them',
@@ -547,8 +543,8 @@ export default function WorldConnectionsMap({
     const readColors = () => {
       const style = getComputedStyle(root);
       colors = {
-        dot: style.getPropertyValue('--wcm-dot-color').trim() || colors.dot,
-        arc: style.getPropertyValue('--wcm-arc-color').trim() || colors.arc,
+        dot: getComputedStyle(base).color || colors.dot,
+        arc: style.getPropertyValue('--accent').trim() || colors.arc,
         core: style.getPropertyValue('--wcm-core').trim() || colors.core,
         additive: style.getPropertyValue('--wcm-additive').trim() !== '0',
       };
@@ -951,12 +947,7 @@ export default function WorldConnectionsMap({
 
   useEffect(() => {
     kickRef.current();
-  }, [active, isPlayOn, backgroundStyle, dotColor, arcColor, locations, arcs]);
-
-  const rootStyle = {
-    ...(dotColor ? { '--wcm-dot-color': dotColor } : {}),
-    ...(arcColor ? { '--wcm-arc-color': arcColor } : {}),
-  } as CSSProperties;
+  }, [active, isPlayOn, backgroundStyle, locations, arcs]);
 
   const rootClass = [
     styles.root,
@@ -977,7 +968,6 @@ export default function WorldConnectionsMap({
       <div
         ref={rootRef}
         className={rootClass}
-        style={rootStyle}
         role="group"
         aria-label={mapLabel}
         onPointerDown={(event) => {

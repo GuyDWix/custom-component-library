@@ -9,7 +9,6 @@ export interface LoupeZoomImageProps {
   detail?: string;
   zoom?: number;
   loupeSize?: number;
-  rimColor?: string;
   aspectRatio?: string;
   className?: string;
 }
@@ -136,7 +135,6 @@ export default function LoupeZoomImage({
   detail = 'Polished silver case, enamel dial with a sunburst finish, hand-wound movement',
   zoom = 2.6,
   loupeSize = 320,
-  rimColor = '#b08a3c',
   aspectRatio = '16 / 10',
   className,
 }: LoupeZoomImageProps) {
@@ -403,7 +401,6 @@ export default function LoupeZoomImage({
   const photoAlt = imageAlt || caption || 'Zoomable image';
   const magLabel = `×${zoomLevel % 1 === 0 ? zoomLevel.toFixed(0) : zoomLevel.toFixed(1)}`;
   const rootStyle = {
-    '--lz-rim': rimColor,
     '--lz-size': `${clamp(loupeSize, 140, 440)}px`,
     '--lz-zoom': zoomLevel,
   } as CSSProperties;

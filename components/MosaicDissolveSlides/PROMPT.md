@@ -608,11 +608,6 @@ export default function MosaicDissolveSlides({
 
 ```css
 .root {
-  --md-ink: #0c0d0f;
-  --md-paper: #ecebe6;
-  --md-dim: #9a9b98;
-  --md-line: #2a2c2f;
-  --md-signal: #c8ff3a;
   --md-font: 'Space Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
 
   position: relative;
@@ -620,8 +615,8 @@ export default function MosaicDissolveSlides({
   box-sizing: border-box;
   inline-size: 100%;
   overflow: clip;
-  background: var(--md-ink);
-  color: var(--md-paper);
+  background: #0c0d0f;
+  color: #ecebe6;
   font-family: var(--md-font);
   font-weight: 500;
   font-synthesis: none;
@@ -634,7 +629,7 @@ export default function MosaicDissolveSlides({
   overflow: hidden;
   cursor: pointer;
   touch-action: pan-y;
-  background: var(--md-ink);
+  background: #0c0d0f;
 }
 
 .base {
@@ -693,7 +688,7 @@ export default function MosaicDissolveSlides({
 .counterTotal {
   font-size: clamp(14px, 1.8cqi, 18px);
   letter-spacing: 0;
-  color: var(--md-dim);
+  color: #9a9b98;
 }
 
 .caption {
@@ -701,7 +696,7 @@ export default function MosaicDissolveSlides({
   align-self: end;
   font-size: clamp(14px, 1.9cqi, 17px);
   line-height: 1.35;
-  color: var(--md-paper);
+  color: #ecebe6;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -738,10 +733,10 @@ export default function MosaicDissolveSlides({
   min-inline-size: 44px;
   block-size: 44px;
   padding: 0;
-  border: 1px solid var(--md-line);
+  border: 1px solid #2a2c2f;
   border-radius: 0;
   background: transparent;
-  color: var(--md-paper);
+  color: #ecebe6;
   font: inherit;
   font-size: 13px;
   cursor: pointer;
@@ -753,7 +748,7 @@ export default function MosaicDissolveSlides({
 
 .ctrlText {
   padding-inline: 14px;
-  color: var(--md-dim);
+  color: #9a9b98;
 }
 
 .ctrlIcon {
@@ -763,19 +758,19 @@ export default function MosaicDissolveSlides({
 
 @media (hover: hover) {
   .ctrl:hover {
-    background: var(--md-paper);
-    border-color: var(--md-paper);
-    color: var(--md-ink);
+    background: #ecebe6;
+    border-color: #ecebe6;
+    color: #0c0d0f;
   }
 }
 
 .ctrl:active {
-  background: var(--md-paper);
-  color: var(--md-ink);
+  background: #ecebe6;
+  color: #0c0d0f;
 }
 
 .ctrl:focus-visible {
-  outline: 2px solid var(--md-signal);
+  outline: 2px solid #c8ff3a;
   outline-offset: 2px;
 }
 
@@ -789,13 +784,13 @@ export default function MosaicDissolveSlides({
   position: relative;
   flex: 1 1 0;
   block-size: 2px;
-  background: var(--md-line);
+  background: #2a2c2f;
   overflow: hidden;
 }
 
 .segDone,
 .segFill {
-  background: var(--md-paper);
+  background: #ecebe6;
 }
 
 .segDone {
@@ -808,7 +803,7 @@ export default function MosaicDissolveSlides({
 }
 
 .segFillRun {
-  background: var(--md-signal);
+  background: #c8ff3a;
   transform-origin: left center;
   animation: md-progress linear both;
 }

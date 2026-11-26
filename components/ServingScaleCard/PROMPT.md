@@ -1,6 +1,6 @@
 Create a custom element called "Serving Scale Card". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: title and subtitle, photo, base servings, ingredients (name, amount and unit), method note, section labels (servings, ingredients, method), accent, panel and background colors. Add other settings if they help.
+The site owner must be able to change: title and subtitle, photo, base servings, ingredients (name, amount and unit), method note, section labels (servings, ingredients, method). Add other settings if they help.
 
 ```tsx
 import { useEffect, useId, useRef, useState } from 'react';
@@ -24,9 +24,6 @@ export interface ServingScaleCardProps {
   ingredients?: ServingScaleIngredient[];
   methodLabel?: string;
   methodNote?: string;
-  accentColor?: string;
-  panelColor?: string;
-  backgroundColor?: string;
   className?: string;
 }
 
@@ -122,9 +119,6 @@ export default function ServingScaleCard({
   ingredients = defaultIngredients,
   methodLabel = 'Method',
   methodNote = 'Cook the farfalle until just tender and keep a cup of the water. Loosen the pesto with lemon and a splash of that water, toss through the pasta, then fold in the tomatoes and leaves. Finish with parmesan.',
-  accentColor = '#ff6b4a',
-  panelColor = '#1c4a2d',
-  backgroundColor = '#0a120d',
   className,
 }: ServingScaleCardProps) {
   const base = clampServings(baseServings || 1);
@@ -197,9 +191,6 @@ export default function ServingScaleCard({
   };
 
   const rootStyle = {
-    '--ss-accent': accentColor,
-    '--ss-panel': panelColor,
-    '--ss-bg': backgroundColor,
     '--ss-gap': `${TICK_GAP}px`,
   } as CSSProperties;
 
@@ -365,18 +356,11 @@ export default function ServingScaleCard({
 
 ```css
 .root {
-  --ss-accent: #ff6b4a;
-  --ss-panel: #1c4a2d;
-  --ss-bg: #0a120d;
-  --ss-ink: #f4f7f1;
-  --ss-ink-2: color-mix(in srgb, var(--ss-ink) 78%, var(--ss-panel));
-  --ss-ink-3: color-mix(in srgb, var(--ss-ink) 62%, var(--ss-panel));
-  --ss-line: color-mix(in srgb, var(--ss-ink) 13%, transparent);
+  --accent: #ff6b4a;
   --ss-font-display: 'Inter', 'SF Pro Display', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --ss-font-ui: 'Inter', 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --ss-roll: cubic-bezier(0.2, 1.18, 0.32, 1);
   --ss-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ss-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
   --ss-stage: 440px;
 
   position: relative;
@@ -386,18 +370,25 @@ export default function ServingScaleCard({
   box-sizing: border-box;
   inline-size: 100%;
   border-radius: 28px;
-  background:
-    radial-gradient(90% 70% at 20% 100%, color-mix(in srgb, var(--ss-panel) 55%, transparent) 0%, transparent 70%),
-    var(--ss-bg);
-  color: var(--ss-ink);
+  background: #0a120d;
+  color: #f4f7f1;
   font-family: var(--ss-font-ui);
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.2),
     0 40px 80px -36px rgba(6, 18, 10, 0.55);
 }
 
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(90% 70% at 20% 100%, color-mix(in srgb, #1c4a2d 55%, transparent) 0%, transparent 70%);
+}
+
 .root ::selection {
-  background: var(--ss-accent);
+  background: var(--accent);
   color: #fff;
 }
 
@@ -413,7 +404,7 @@ export default function ServingScaleCard({
   inset-inline: 0;
   block-size: var(--ss-stage);
   overflow: hidden;
-  background: color-mix(in srgb, var(--ss-panel) 40%, var(--ss-bg));
+  background: color-mix(in srgb, #1c4a2d 40%, #0a120d);
 }
 
 .photo {
@@ -439,9 +430,9 @@ export default function ServingScaleCard({
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(0deg, var(--ss-bg) 0%, color-mix(in srgb, var(--ss-bg) 86%, transparent) 30%, color-mix(in srgb, var(--ss-bg) 40%, transparent) 58%, transparent 78%),
-    linear-gradient(90deg, color-mix(in srgb, var(--ss-bg) 55%, transparent) 0%, transparent 60%),
-    radial-gradient(130% 90% at 50% 40%, transparent 55%, color-mix(in srgb, var(--ss-bg) 45%, transparent) 100%);
+    linear-gradient(0deg, #0a120d 0%, color-mix(in srgb, #0a120d 86%, transparent) 30%, color-mix(in srgb, #0a120d 40%, transparent) 58%, transparent 78%),
+    linear-gradient(90deg, color-mix(in srgb, #0a120d 55%, transparent) 0%, transparent 60%),
+    radial-gradient(130% 90% at 50% 40%, transparent 55%, color-mix(in srgb, #0a120d 45%, transparent) 100%);
 }
 
 .hero {
@@ -467,7 +458,7 @@ export default function ServingScaleCard({
   font-size: 16px;
   font-weight: 600;
   letter-spacing: -0.005em;
-  color: var(--ss-ink);
+  color: #f4f7f1;
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.45);
   overflow-wrap: anywhere;
 }
@@ -479,9 +470,9 @@ export default function ServingScaleCard({
   font-size: 14px;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
-  color: var(--ss-ink-2);
-  background: color-mix(in srgb, var(--ss-ink) 12%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ss-ink) 16%, transparent);
+  color: color-mix(in srgb, #f4f7f1 78%, #1c4a2d);
+  background: color-mix(in srgb, #f4f7f1 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #f4f7f1 16%, transparent);
   transition:
     background-color 240ms ease,
     color 240ms ease,
@@ -490,8 +481,8 @@ export default function ServingScaleCard({
 
 .factor[data-on] {
   color: #fff;
-  background: var(--ss-accent);
-  box-shadow: 0 6px 18px -8px var(--ss-accent);
+  background: var(--accent);
+  box-shadow: 0 6px 18px -8px var(--accent);
 }
 
 .factor[data-beat='a'] {
@@ -511,13 +502,13 @@ export default function ServingScaleCard({
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;
-  color: var(--ss-ink);
+  color: #f4f7f1;
   outline: none;
   cursor: default;
 }
 
 .count:focus-visible {
-  box-shadow: 0 0 0 3px var(--ss-bg), 0 0 0 5px var(--ss-accent);
+  box-shadow: 0 0 0 3px #0a120d, 0 0 0 5px var(--accent);
 }
 
 .numeral {
@@ -550,9 +541,9 @@ export default function ServingScaleCard({
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--ss-ink) 10%, transparent);
-  color: var(--ss-ink);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ss-ink) 22%, transparent);
+  background: color-mix(in srgb, #f4f7f1 10%, transparent);
+  color: #f4f7f1;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #f4f7f1 22%, transparent);
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -563,7 +554,7 @@ export default function ServingScaleCard({
 }
 
 .btn:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--ss-ink) 18%, transparent);
+  background: color-mix(in srgb, #f4f7f1 18%, transparent);
 }
 
 .btn:active:not(:disabled) {
@@ -612,7 +603,7 @@ export default function ServingScaleCard({
   inline-size: 1px;
   block-size: 12px;
   margin-left: -0.5px;
-  background: color-mix(in srgb, var(--ss-ink) 32%, transparent);
+  background: color-mix(in srgb, #f4f7f1 32%, transparent);
   transition: background-color 200ms ease, transform 420ms var(--ss-roll);
   transform-origin: 50% 0;
 }
@@ -622,12 +613,12 @@ export default function ServingScaleCard({
   margin-left: -1px;
   block-size: 20px;
   border-radius: 1px;
-  background: color-mix(in srgb, var(--ss-ink) 62%, transparent);
+  background: color-mix(in srgb, #f4f7f1 62%, transparent);
 }
 
 .tick[data-on],
 .tickMajor[data-on] {
-  background: var(--ss-ink);
+  background: #f4f7f1;
   transform: scaleY(1.35);
 }
 
@@ -639,11 +630,11 @@ export default function ServingScaleCard({
   font-size: 13px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: var(--ss-ink-3);
+  color: color-mix(in srgb, #f4f7f1 62%, #1c4a2d);
 }
 
 .tickMajor[data-on] .tickNum {
-  color: var(--ss-ink);
+  color: #f4f7f1;
   transform: translateX(-50%) scaleY(0.74);
 }
 
@@ -655,8 +646,8 @@ export default function ServingScaleCard({
   block-size: 30px;
   margin-left: -1.5px;
   border-radius: 2px;
-  background: var(--ss-accent);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--ss-accent) 70%, transparent);
+  background: var(--accent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 70%, transparent);
 }
 
 .panel {
@@ -670,10 +661,17 @@ export default function ServingScaleCard({
   padding-block: 28px 30px;
   padding-inline: 22px;
   overflow: clip;
-  background:
-    radial-gradient(120% 60% at 100% 0%, color-mix(in srgb, var(--ss-panel) 82%, #c9f2b8) 0%, transparent 62%),
-    linear-gradient(180deg, var(--ss-panel) 0%, color-mix(in srgb, var(--ss-panel) 78%, #000) 100%);
+  background: linear-gradient(180deg, #1c4a2d 0%, color-mix(in srgb, #1c4a2d 78%, #000) 100%);
   box-shadow: none;
+}
+
+.panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background: radial-gradient(120% 60% at 100% 0%, color-mix(in srgb, #1c4a2d 82%, #c9f2b8) 0%, transparent 62%);
 }
 
 .grain {
@@ -681,7 +679,7 @@ export default function ServingScaleCard({
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-image: var(--ss-grain);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
   opacity: 0.07;
   mix-blend-mode: overlay;
 }
@@ -706,7 +704,7 @@ export default function ServingScaleCard({
   margin: 0;
   font-size: 15px;
   font-weight: 500;
-  color: var(--ss-ink-2);
+  color: color-mix(in srgb, #f4f7f1 78%, #1c4a2d);
   overflow-wrap: anywhere;
 }
 
@@ -721,8 +719,8 @@ export default function ServingScaleCard({
   font-size: 15px;
   font-weight: 650;
   letter-spacing: -0.005em;
-  color: var(--ss-ink);
-  border-block-end: 1px solid color-mix(in srgb, var(--ss-ink) 26%, transparent);
+  color: #f4f7f1;
+  border-block-end: 1px solid color-mix(in srgb, #f4f7f1 26%, transparent);
 }
 
 .list {
@@ -737,7 +735,7 @@ export default function ServingScaleCard({
   align-items: baseline;
   gap: 0 10px;
   padding-block: 11px;
-  border-block-end: 1px solid var(--ss-line);
+  border-block-end: 1px solid color-mix(in srgb, #f4f7f1 13%, transparent);
 }
 
 .row:last-child {
@@ -756,7 +754,7 @@ export default function ServingScaleCard({
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.01em;
-  color: var(--ss-ink);
+  color: #f4f7f1;
 }
 
 .amount .strip {
@@ -769,7 +767,7 @@ export default function ServingScaleCard({
   inset-block-end: -5px;
   block-size: 2px;
   border-radius: 2px;
-  background: var(--ss-accent);
+  background: var(--accent);
   transform-origin: 0 50%;
   transform: scaleX(0);
   opacity: 0;
@@ -780,7 +778,7 @@ export default function ServingScaleCard({
 .unitOnly {
   font-size: 14px;
   font-weight: 500;
-  color: var(--ss-ink-3);
+  color: color-mix(in srgb, #f4f7f1 62%, #1c4a2d);
   overflow-wrap: anywhere;
 }
 
@@ -793,7 +791,7 @@ export default function ServingScaleCard({
   min-inline-size: 0;
   font-size: 16px;
   line-height: 1.4;
-  color: var(--ss-ink);
+  color: #f4f7f1;
   overflow-wrap: anywhere;
 }
 
@@ -807,7 +805,7 @@ export default function ServingScaleCard({
   max-inline-size: 62ch;
   font-size: 15px;
   line-height: 1.6;
-  color: var(--ss-ink-2);
+  color: color-mix(in srgb, #f4f7f1 78%, #1c4a2d);
   overflow-wrap: break-word;
 }
 
@@ -952,9 +950,9 @@ export default function ServingScaleCard({
   18% {
     filter: blur(1.2px);
     text-shadow:
-      0 calc(var(--sd) * 0.07em) 0.02em color-mix(in srgb, var(--ss-ink) 45%, transparent),
-      0 calc(var(--sd) * 0.16em) 0.05em color-mix(in srgb, var(--ss-ink) 22%, transparent),
-      0 calc(var(--sd) * 0.27em) 0.08em color-mix(in srgb, var(--ss-ink) 9%, transparent);
+      0 calc(var(--sd) * 0.07em) 0.02em color-mix(in srgb, #f4f7f1 45%, transparent),
+      0 calc(var(--sd) * 0.16em) 0.05em color-mix(in srgb, #f4f7f1 22%, transparent),
+      0 calc(var(--sd) * 0.27em) 0.08em color-mix(in srgb, #f4f7f1 9%, transparent);
     transform: scaleY(1.04);
   }
 }
@@ -963,9 +961,9 @@ export default function ServingScaleCard({
   18% {
     filter: blur(1.2px);
     text-shadow:
-      0 calc(var(--sd) * 0.07em) 0.02em color-mix(in srgb, var(--ss-ink) 45%, transparent),
-      0 calc(var(--sd) * 0.16em) 0.05em color-mix(in srgb, var(--ss-ink) 22%, transparent),
-      0 calc(var(--sd) * 0.27em) 0.08em color-mix(in srgb, var(--ss-ink) 9%, transparent);
+      0 calc(var(--sd) * 0.07em) 0.02em color-mix(in srgb, #f4f7f1 45%, transparent),
+      0 calc(var(--sd) * 0.16em) 0.05em color-mix(in srgb, #f4f7f1 22%, transparent),
+      0 calc(var(--sd) * 0.27em) 0.08em color-mix(in srgb, #f4f7f1 9%, transparent);
     transform: scaleY(1.04);
   }
 }

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
+import type { KeyboardEvent, PointerEvent } from 'react';
 import styles from './Component.module.css';
 
 export interface StoryReelSlide {
@@ -11,7 +11,6 @@ export interface StoryReelSlide {
 export interface StoryReelProps {
   slides?: StoryReelSlide[];
   secondsPerSlide?: number;
-  progressColor?: string;
   autoPlay?: boolean;
   loop?: boolean;
   className?: string;
@@ -53,7 +52,6 @@ const REEL_HELP =
 export default function StoryReel({
   slides = defaultSlides,
   secondsPerSlide = 4,
-  progressColor = '#ff6f5e',
   autoPlay = true,
   loop = false,
   className,
@@ -191,7 +189,6 @@ export default function StoryReel({
 
   if (count === 0) return null;
 
-  const rootStyle = { '--sr-progress': progressColor } as CSSProperties;
   const showToggle = autoPlay && count > 1 && !reduced;
   const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -199,7 +196,6 @@ export default function StoryReel({
     <div
       ref={rootRef}
       className={[styles.root, className].filter(Boolean).join(' ')}
-      style={rootStyle}
     >
       <span className={styles.glowCool} aria-hidden="true" />
       <span className={styles.glowCoral} aria-hidden="true" />

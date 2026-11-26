@@ -16,7 +16,6 @@ export interface SizeFinderRulerProps {
   unit?: RulerUnit;
   sizeLabel?: string;
   ranges?: SizeRange[];
-  accentColor?: string;
 }
 
 const DEFAULT_RANGES: SizeRange[] = [
@@ -99,7 +98,6 @@ export default function SizeFinderRuler({
   unit = 'cm',
   sizeLabel = 'Your size',
   ranges = DEFAULT_RANGES,
-  accentColor = '#f5e02d',
 }: SizeFinderRulerProps) {
   const model = useMemo(() => buildModel(ranges), [ranges]);
   const { list, lo, min, max, ppu, labelsFit, start, numerals } = model;
@@ -381,7 +379,6 @@ export default function SizeFinderRuler({
   const valueEms = (valueText.length - 1) * 0.5 + 0.25 + 0.42;
   const sizeChars = Math.max(2, active.size.length);
 
-  const rootStyle = { '--sfr-accent': accentColor } as CSSProperties;
   const trackStyle = {
     '--ppu': `${ppu}px`,
     '--off': start - lo,
@@ -397,7 +394,6 @@ export default function SizeFinderRuler({
     <section
       ref={rootRef}
       className={styles.root}
-      style={rootStyle}
       aria-labelledby={labelId}
     >
       <div className={styles.card}>

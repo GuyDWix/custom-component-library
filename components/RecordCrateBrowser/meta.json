@@ -8,7 +8,6 @@
   "visitor_action": "prev/next buttons, arrow keys, wheel or swipe, click a neighbouring sleeve or the 02 / 06 counter to jump; click the front sleeve to open",
   "owner_settings": [
     "Items (image, title, subtitle)",
-    "Crate colour",
     "Sleeve count visible"
   ],
   "site_types": [

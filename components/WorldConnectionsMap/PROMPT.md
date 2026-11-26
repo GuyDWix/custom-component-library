@@ -1,6 +1,6 @@
 Create a custom element called "World Connections Map". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: locations (name, latitude, longitude), connections (from location, to location), dot color, arc color, background style (dark | light), show labels. Add other settings if they help.
+The site owner must be able to change: locations (name, latitude, longitude), connections (from location, to location), background style (dark | light), show labels. Add other settings if they help.
 
 ```tsx
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
@@ -22,8 +22,6 @@ export interface MapConnection {
 export interface WorldConnectionsMapProps {
   locations?: MapLocation[];
   connections?: MapConnection[];
-  dotColor?: string;
-  arcColor?: string;
   backgroundStyle?: BackgroundStyle;
   showLabels?: boolean;
   mapLabel?: string;
@@ -402,8 +400,6 @@ interface ArcState {
 export default function WorldConnectionsMap({
   locations = DEFAULT_LOCATIONS,
   connections = DEFAULT_CONNECTIONS,
-  dotColor,
-  arcColor,
   backgroundStyle = 'dark',
   showLabels = true,
   mapLabel = 'Map of our locations and the routes between them',
@@ -552,8 +548,8 @@ export default function WorldConnectionsMap({
     const readColors = () => {
       const style = getComputedStyle(root);
       colors = {
-        dot: style.getPropertyValue('--wcm-dot-color').trim() || colors.dot,
-        arc: style.getPropertyValue('--wcm-arc-color').trim() || colors.arc,
+        dot: getComputedStyle(base).color || colors.dot,
+        arc: style.getPropertyValue('--accent').trim() || colors.arc,
         core: style.getPropertyValue('--wcm-core').trim() || colors.core,
         additive: style.getPropertyValue('--wcm-additive').trim() !== '0',
       };
@@ -956,12 +952,7 @@ export default function WorldConnectionsMap({
 
   useEffect(() => {
     kickRef.current();
-  }, [active, isPlayOn, backgroundStyle, dotColor, arcColor, locations, arcs]);
-
-  const rootStyle = {
-    ...(dotColor ? { '--wcm-dot-color': dotColor } : {}),
-    ...(arcColor ? { '--wcm-arc-color': arcColor } : {}),
-  } as CSSProperties;
+  }, [active, isPlayOn, backgroundStyle, locations, arcs]);
 
   const rootClass = [
     styles.root,
@@ -982,7 +973,6 @@ export default function WorldConnectionsMap({
       <div
         ref={rootRef}
         className={rootClass}
-        style={rootStyle}
         role="group"
         aria-label={mapLabel}
         onPointerDown={(event) => {
@@ -1117,29 +1107,17 @@ export default function WorldConnectionsMap({
 ```
 
 ```css
-@property --wcm-dot-color {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: #46536b;
-}
-
-@property --wcm-arc-color {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: #46f59c;
-}
-
 .frame {
   container: wcm / inline-size;
   inline-size: 100%;
 }
 
 .root {
+  --accent: #46f59c;
   --wcm-font: 'Wix Madefor Display', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
   --wcm-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
   --wcm-play: paused;
   --wcm-motion-display: block;
-  --wcm-vignette: inset 0 0 110px 26px rgba(0, 3, 8, 0.55);
 
   position: relative;
   isolation: isolate;
@@ -1148,60 +1126,50 @@ export default function WorldConnectionsMap({
   aspect-ratio: 2.05 / 1;
   min-block-size: 308px;
   border-radius: 22px;
-  background-color: var(--wcm-bg);
-  background-image:
-    radial-gradient(85% 62% at 40% 14%, var(--wcm-surface-hi) 0%, transparent 72%),
-    linear-gradient(180deg, transparent 58%, var(--wcm-floor) 100%);
-  border: 1px solid var(--wcm-frame);
-  box-shadow: var(--wcm-shadow);
-  color: var(--wcm-ink);
+  background: #04070d;
+  border: 1px solid rgba(140, 255, 190, 0.1);
+  box-shadow: inset 0 1px 0 rgba(190, 255, 220, 0.06), 0 46px 90px -52px rgba(0, 4, 10, 0.92);
+  color: #ecf4ef;
   font-family: var(--wcm-font);
   -webkit-tap-highlight-color: transparent;
 }
 
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(85% 62% at 40% 14%, rgba(70, 245, 156, 0.05) 0%, transparent 72%),
+    linear-gradient(180deg, transparent 58%, #01030a 100%);
+}
+
 .root ::selection {
-  background: color-mix(in srgb, var(--wcm-arc-color) 30%, transparent);
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .themeDark {
-  --wcm-bg: #04070d;
-  --wcm-surface-hi: rgba(70, 245, 156, 0.05);
-  --wcm-floor: #01030a;
-  --wcm-frame: rgba(140, 255, 190, 0.1);
-  --wcm-shadow: inset 0 1px 0 rgba(190, 255, 220, 0.06), 0 46px 90px -52px rgba(0, 4, 10, 0.92);
-  --wcm-dot-color: #46536b;
-  --wcm-arc-color: #46f59c;
-  --wcm-pulse-color: color-mix(in srgb, var(--wcm-arc-color) 14%, #ffffff);
-  --wcm-ink: #ecf4ef;
-  --wcm-ink-muted: rgba(199, 216, 206, 0.74);
-  --wcm-data: rgba(151, 235, 192, 0.82);
-  --wcm-chip-bg: rgba(6, 12, 18, 0.92);
-  --wcm-chip-border: rgba(140, 255, 190, 0.14);
-  --wcm-chip-active: color-mix(in srgb, var(--wcm-arc-color) 42%, transparent);
   --wcm-additive: 1;
   --wcm-grain-opacity: 0.06;
   --wcm-scan-opacity: 0.035;
 }
 
 .themeLight {
-  --wcm-bg: #e8edf1;
-  --wcm-surface-hi: #f9fcfd;
-  --wcm-floor: #d5dde4;
-  --wcm-frame: rgba(23, 42, 62, 0.12);
-  --wcm-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 46px 90px -56px rgba(18, 40, 62, 0.42);
-  --wcm-dot-color: #33415c;
-  --wcm-arc-color: #0b7d4f;
-  --wcm-pulse-color: color-mix(in srgb, var(--wcm-arc-color) 58%, #001c10);
-  --wcm-ink: #16243a;
-  --wcm-ink-muted: rgba(22, 36, 58, 0.7);
-  --wcm-data: #2e5a7a;
-  --wcm-chip-bg: rgba(249, 252, 253, 0.94);
-  --wcm-chip-border: rgba(23, 42, 62, 0.14);
-  --wcm-chip-active: color-mix(in srgb, var(--wcm-arc-color) 45%, transparent);
+  --accent: #0b7d4f;
   --wcm-additive: 0;
   --wcm-grain-opacity: 0.05;
   --wcm-scan-opacity: 0;
-  --wcm-vignette: inset 0 0 90px 18px rgba(30, 52, 74, 0.14);
+  background: #e8edf1;
+  border-color: rgba(23, 42, 62, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 46px 90px -56px rgba(18, 40, 62, 0.42);
+  color: #16243a;
+}
+
+.themeLight::before {
+  background:
+    radial-gradient(85% 62% at 40% 14%, #f9fcfd 0%, transparent 72%),
+    linear-gradient(180deg, transparent 58%, #d5dde4 100%);
 }
 
 .revealed {
@@ -1216,16 +1184,17 @@ export default function WorldConnectionsMap({
   --wcm-motion-display: none;
 }
 
-.focusMode {
-  --wcm-vignette: inset 0 0 130px 42px rgba(0, 3, 8, 0.64);
-}
-
 .canvas {
   position: absolute;
   inset: 0;
   inline-size: 100%;
   block-size: 100%;
   pointer-events: none;
+  color: #46536b;
+}
+
+.themeLight .canvas {
+  color: #33415c;
 }
 
 .vignette {
@@ -1233,8 +1202,16 @@ export default function WorldConnectionsMap({
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  box-shadow: var(--wcm-vignette);
+  box-shadow: inset 0 0 110px 26px rgba(0, 3, 8, 0.55);
   transition: box-shadow 0.6s ease;
+}
+
+.themeLight .vignette {
+  box-shadow: inset 0 0 90px 18px rgba(30, 52, 74, 0.14);
+}
+
+.focusMode .vignette {
+  box-shadow: inset 0 0 130px 42px rgba(0, 3, 8, 0.64);
 }
 
 .marker {
@@ -1267,7 +1244,11 @@ export default function WorldConnectionsMap({
 }
 
 .marker:focus-visible {
-  box-shadow: 0 0 0 2px var(--wcm-chip-active), 0 0 0 4px var(--wcm-chip-bg);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 42%, transparent), 0 0 0 4px rgba(6, 12, 18, 0.92);
+}
+
+.themeLight .marker:focus-visible {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent), 0 0 0 4px rgba(249, 252, 253, 0.94);
 }
 
 .markerLinked {
@@ -1286,7 +1267,7 @@ export default function WorldConnectionsMap({
 }
 
 .reticle {
-  --reticle-c: color-mix(in srgb, var(--wcm-arc-color) 62%, #ffffff 38%);
+  --reticle-c: color-mix(in srgb, var(--accent) 62%, #ffffff 38%);
 
   position: absolute;
   inset-block-start: 50%;
@@ -1333,15 +1314,23 @@ export default function WorldConnectionsMap({
   margin-inline-start: -4.5px;
   border-radius: 50%;
   pointer-events: none;
-  background: radial-gradient(circle at 35% 30%, var(--wcm-pulse-color), var(--wcm-arc-color) 62%);
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--accent) 14%, #ffffff), var(--accent) 62%);
   box-shadow:
-    0 0 0 2.5px var(--wcm-bg),
-    0 0 0 3.5px var(--wcm-chip-active),
-    0 0 16px 3px color-mix(in srgb, var(--wcm-arc-color) 55%, transparent);
+    0 0 0 2.5px #04070d,
+    0 0 0 3.5px color-mix(in srgb, var(--accent) 42%, transparent),
+    0 0 16px 3px color-mix(in srgb, var(--accent) 55%, transparent);
   transform: scale(var(--core-scale));
   transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
   animation: wcmCoreIn 0.66s cubic-bezier(0.16, 1, 0.3, 1) calc(var(--pop, 0s) + 0.06s) backwards;
   animation-play-state: var(--wcm-play);
+}
+
+.themeLight .core {
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--accent) 58%, #001c10), var(--accent) 62%);
+  box-shadow:
+    0 0 0 2.5px #e8edf1,
+    0 0 0 3.5px color-mix(in srgb, var(--accent) 45%, transparent),
+    0 0 16px 3px color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 .ring {
@@ -1353,7 +1342,7 @@ export default function WorldConnectionsMap({
   margin-block-start: -4.5px;
   margin-inline-start: -4.5px;
   display: var(--wcm-motion-display);
-  border: 1.5px solid var(--wcm-arc-color);
+  border: 1.5px solid var(--accent);
   border-radius: 50%;
   pointer-events: none;
   opacity: 0;
@@ -1369,10 +1358,10 @@ export default function WorldConnectionsMap({
   max-inline-size: 22ch;
   padding-block: 5px;
   padding-inline: 9px 10px;
-  border: 1px solid var(--wcm-chip-border);
+  border: 1px solid rgba(140, 255, 190, 0.14);
   border-radius: 8px;
-  background: var(--wcm-chip-bg);
-  color: var(--wcm-ink);
+  background: rgba(6, 12, 18, 0.92);
+  color: #ecf4ef;
   font-size: 13px;
   font-weight: 600;
   line-height: 1.25;
@@ -1389,6 +1378,12 @@ export default function WorldConnectionsMap({
     border-color 0.28s ease;
 }
 
+.themeLight .label {
+  border: 1px solid rgba(23, 42, 62, 0.14);
+  background: rgba(249, 252, 253, 0.94);
+  color: #16243a;
+}
+
 .labelShown {
   opacity: 1;
   transform: none;
@@ -1398,7 +1393,11 @@ export default function WorldConnectionsMap({
   opacity: 1;
   transform: none;
   max-inline-size: 30ch;
-  border-color: var(--wcm-chip-active);
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+}
+
+.themeLight .labelActive {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
 .hud {
@@ -1408,9 +1407,9 @@ export default function WorldConnectionsMap({
   z-index: 5;
   inline-size: min(320px, calc(100% - 88px));
   padding: 14px 16px 13px;
-  border: 1px solid var(--wcm-chip-border);
+  border: 1px solid rgba(140, 255, 190, 0.14);
   border-radius: 12px;
-  background: var(--wcm-chip-bg);
+  background: rgba(6, 12, 18, 0.92);
   box-shadow: 0 20px 44px -22px rgba(0, 0, 0, 0.62);
   pointer-events: none;
   opacity: 0;
@@ -1418,6 +1417,11 @@ export default function WorldConnectionsMap({
   transition:
     opacity 0.3s ease,
     transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.themeLight .hud {
+  border: 1px solid rgba(23, 42, 62, 0.14);
+  background: rgba(249, 252, 253, 0.94);
 }
 
 .hudShown {
@@ -1437,8 +1441,12 @@ export default function WorldConnectionsMap({
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.012em;
-  color: var(--wcm-ink);
+  color: #ecf4ef;
   animation: wcmHudIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.themeLight .hudName {
+  color: #16243a;
 }
 
 .hudCoords {
@@ -1448,19 +1456,27 @@ export default function WorldConnectionsMap({
   font-weight: 500;
   letter-spacing: 0.05em;
   line-height: 1.4;
-  color: var(--wcm-data);
+  color: rgba(151, 235, 192, 0.82);
   font-variant-numeric: tabular-nums;
   animation: wcmHudIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) 40ms both;
+}
+
+.themeLight .hudCoords {
+  color: #2e5a7a;
 }
 
 .hudRoutes {
   margin: 9px 0 0;
   padding: 9px 0 0;
-  border-block-start: 1px solid var(--wcm-chip-border);
+  border-block-start: 1px solid rgba(140, 255, 190, 0.14);
   list-style: none;
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.themeLight .hudRoutes {
+  border-block-start: 1px solid rgba(23, 42, 62, 0.14);
 }
 
 .hudRoute {
@@ -1479,7 +1495,11 @@ export default function WorldConnectionsMap({
   font-weight: 600;
   line-height: 1.3;
   letter-spacing: -0.005em;
-  color: var(--wcm-ink);
+  color: #ecf4ef;
+}
+
+.themeLight .hudRouteName {
+  color: #16243a;
 }
 
 .hudRouteKm {
@@ -1490,8 +1510,12 @@ export default function WorldConnectionsMap({
   letter-spacing: 0.03em;
   line-height: 1.3;
   white-space: nowrap;
-  color: var(--wcm-data);
+  color: rgba(151, 235, 192, 0.82);
   font-variant-numeric: tabular-nums;
+}
+
+.themeLight .hudRouteKm {
+  color: #2e5a7a;
 }
 
 .playToggle {
@@ -1504,10 +1528,10 @@ export default function WorldConnectionsMap({
   inline-size: 44px;
   block-size: 44px;
   padding: 0;
-  border: 1px solid var(--wcm-chip-border);
+  border: 1px solid rgba(140, 255, 190, 0.14);
   border-radius: 50%;
-  background: var(--wcm-chip-bg);
-  color: var(--wcm-ink);
+  background: rgba(6, 12, 18, 0.92);
+  color: #ecf4ef;
   cursor: pointer;
   opacity: 0.6;
   transition:
@@ -1516,9 +1540,19 @@ export default function WorldConnectionsMap({
     border-color 0.25s ease;
 }
 
+.themeLight .playToggle {
+  border: 1px solid rgba(23, 42, 62, 0.14);
+  background: rgba(249, 252, 253, 0.94);
+  color: #16243a;
+}
+
 .playToggle:hover {
   opacity: 1;
-  border-color: var(--wcm-chip-active);
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+}
+
+.themeLight .playToggle:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
 .playToggle:active {
@@ -1527,7 +1561,7 @@ export default function WorldConnectionsMap({
 
 .playToggle:focus-visible {
   opacity: 1;
-  outline: 2px solid var(--wcm-arc-color);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 

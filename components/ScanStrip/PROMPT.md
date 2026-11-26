@@ -1,6 +1,6 @@
 Create a custom element called "Scan Strip". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: cards (photo, alt text, spec title, spec lines), beam colour, particle density, scroll speed, scroll direction. Add other settings if they help.
+The site owner must be able to change: cards (photo, alt text, spec title, spec lines), particle density, scroll speed, scroll direction. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -16,7 +16,6 @@ export interface ScanStripCard {
 
 export interface ScanStripProps {
   cards?: ScanStripCard[];
-  beamColor?: string;
   speed?: number;
   direction?: 'left' | 'right';
   particles?: number;
@@ -98,14 +97,14 @@ function makeSprite(c: Rgb): HTMLCanvasElement {
 function useBeamLayer(
   canvasRef: RefObject<HTMLCanvasElement | null>,
   st: MutableRefObject<{ vel: number; scanning: boolean }>,
-  opts: { active: boolean; color: string; density: number; baseSpeed: number; side: 1 | -1 },
+  opts: { active: boolean; density: number; baseSpeed: number; side: 1 | -1 },
 ) {
-  const { active, color, density, baseSpeed, side } = opts;
+  const { active, density, baseSpeed, side } = opts;
   useEffect(() => {
     const cv = canvasRef.current;
     const ctx = cv?.getContext('2d');
     if (!cv || !ctx) return;
-    const col = parseColor(ctx, color);
+    const col = parseColor(ctx, getComputedStyle(cv).getPropertyValue('--accent'));
     const light = mixWhite(col, 0.6);
     const sprite = makeSprite(col);
     const pool: Dust[] = [];
@@ -252,7 +251,7 @@ function useBeamLayer(
       cancelAnimationFrame(raf);
       ro.disconnect();
     };
-  }, [canvasRef, st, active, color, density, baseSpeed, side]);
+  }, [canvasRef, st, active, density, baseSpeed, side]);
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -261,7 +260,6 @@ type Item = { key: string; i: number; hidden: boolean };
 
 export default function ScanStrip({
   cards = defaultCards,
-  beamColor = '#ff5b2e',
   speed = 70,
   direction = 'left',
   particles = 60,
@@ -373,7 +371,7 @@ export default function ScanStrip({
     return () => cancelAnimationFrame(raf);
   }, [reduced, paused, inView, dims.w, speed, dir, paint]);
 
-  useBeamLayer(canvasRef, st, { active: !reduced && !paused && inView && dims.w > 0, color: beamColor, density: reduced ? 0 : clamp(particles, 0, 100), baseSpeed: Math.max(1, speed), side: dir === -1 ? 1 : -1 });
+  useBeamLayer(canvasRef, st, { active: !reduced && !paused && inView && dims.w > 0, density: reduced ? 0 : clamp(particles, 0, 100), baseSpeed: Math.max(1, speed), side: dir === -1 ? 1 : -1 });
 
   const onDown = (e: PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
@@ -418,7 +416,7 @@ export default function ScanStrip({
     } else st.current.step += d;
   };
 
-  const style = { '--ss-beam': beamColor, '--ss-card': `${dims.card}px` } as CSSProperties;
+  const style = { '--ss-card': `${dims.card}px` } as CSSProperties;
 
   return (
     <div ref={rootRef} className={`${styles.root} ${reduced ? styles.reduced : dir === 1 ? styles.flip : ''} ${className ?? ''}`} style={style}>
@@ -486,11 +484,7 @@ export default function ScanStrip({
 
 ```css
 .root {
-  --ss-beam: #ff5b2e;
-  --ss-stage: #121410;
-  --ss-sheet: #e8ebdf;
-  --ss-ink: #161a14;
-  --ss-mute: #4d5448;
+  --accent: #ff5b2e;
   --ss-card: 280px;
   --ss-font-display: 'Bricolage Grotesque', 'Helvetica Neue', Arial, system-ui, sans-serif;
   --ss-font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
@@ -500,10 +494,18 @@ export default function ScanStrip({
   inline-size: 100%;
   overflow: clip;
   border-radius: 24px;
-  background:
-    radial-gradient(70% 90% at 50% 50%, color-mix(in srgb, var(--ss-beam) 9%, transparent), transparent 70%),
-    var(--ss-stage);
+  isolation: isolate;
+  background: #121410;
   padding-block: 96px;
+}
+
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(70% 90% at 50% 50%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%);
 }
 
 .viewport {
@@ -520,7 +522,7 @@ export default function ScanStrip({
 }
 
 .viewport:focus-visible {
-  outline: 2px solid var(--ss-beam);
+  outline: 2px solid var(--accent);
   outline-offset: 6px;
   border-radius: 12px;
 }
@@ -539,7 +541,7 @@ export default function ScanStrip({
 }
 
 .card:focus-visible {
-  outline: 2px solid var(--ss-beam);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -565,11 +567,11 @@ export default function ScanStrip({
   display: flex;
   flex-direction: column;
   gap: 10px;
-  color: var(--ss-ink);
-  background-color: var(--ss-sheet);
+  color: #161a14;
+  background-color: #e8ebdf;
   background-image:
-    linear-gradient(color-mix(in srgb, var(--ss-ink) 9%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--ss-ink) 9%, transparent) 1px, transparent 1px);
+    linear-gradient(color-mix(in srgb, #161a14 9%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, #161a14 9%, transparent) 1px, transparent 1px);
   background-size: 20px 20px;
   clip-path: inset(0 calc(100% - var(--cut-l)) 0 0);
 }
@@ -608,15 +610,15 @@ export default function ScanStrip({
   inset-inline-end: 12px;
   inline-size: 22px;
   block-size: 22px;
-  border-block-start: 2px solid var(--ss-ink);
-  border-inline-end: 2px solid var(--ss-ink);
+  border-block-start: 2px solid #161a14;
+  border-inline-end: 2px solid #161a14;
 }
 
 .twinIdx {
   margin: 0;
   font: 400 12px/1 var(--ss-font-mono);
   letter-spacing: 0.12em;
-  color: var(--ss-mute);
+  color: #4d5448;
 }
 
 .twinTitle {
@@ -633,7 +635,7 @@ export default function ScanStrip({
   list-style: none;
   display: grid;
   gap: 0;
-  border-block-start: 2px solid var(--ss-ink);
+  border-block-start: 2px solid #161a14;
 }
 
 .line {
@@ -641,14 +643,14 @@ export default function ScanStrip({
   gap: 12px;
   align-items: baseline;
   padding-block: 8px;
-  border-block-end: 1px solid color-mix(in srgb, var(--ss-ink) 28%, transparent);
+  border-block-end: 1px solid color-mix(in srgb, #161a14 28%, transparent);
   font: 400 13px/1.3 var(--ss-font-mono);
   overflow-wrap: anywhere;
 }
 
 .lineNo {
   flex: none;
-  color: color-mix(in srgb, var(--ss-beam) 70%, var(--ss-ink));
+  color: color-mix(in srgb, var(--accent) 70%, #161a14);
   font-size: 12px;
 }
 
@@ -668,7 +670,7 @@ export default function ScanStrip({
   inset: 0;
   border-radius: 14px;
   pointer-events: none;
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--ss-beam) 45%, transparent), transparent);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 45%, transparent), transparent);
   animation: sweep 0.7s ease-out forwards;
 }
 
@@ -695,7 +697,7 @@ export default function ScanStrip({
 }
 
 .pause:focus-visible {
-  outline: 2px solid var(--ss-beam);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   opacity: 1;
 }

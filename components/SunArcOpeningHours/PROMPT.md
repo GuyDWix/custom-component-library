@@ -1,6 +1,6 @@
 Create a custom element called "Sun Arc Opening Hours". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: hours per weekday (day, opens, closes), closed days, open-now badge on/off, sky tint, time zone, 12-hour or 24-hour clock, title and badge wording, day selection trigger: click (default) or hover (selectTrigger). Add other settings if they help.
+The site owner must be able to change: hours per weekday (day, opens, closes), closed days, open-now badge on/off, time zone, 12-hour or 24-hour clock, title and badge wording, day selection trigger: click (default) or hover (selectTrigger). Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -19,7 +19,6 @@ export interface SunArcOpeningHoursProps {
   hours?: SunArcDay[];
   title?: string;
   showOpenNow?: boolean;
-  skyTint?: string;
   timeZone?: string;
   clock?: '12h' | '24h';
   openNowLabel?: string;
@@ -234,7 +233,6 @@ export default function SunArcOpeningHours({
   hours = defaultHours,
   title = 'Opening hours',
   showOpenNow = true,
-  skyTint = '#9ba7f5',
   timeZone = 'Europe/Lisbon',
   clock = '12h',
   openNowLabel = 'Open now',
@@ -609,7 +607,6 @@ export default function SunArcOpeningHours({
   const showReadoutAnim = !reduced;
 
   const rootStyle = {
-    '--sa-tint': skyTint,
     '--sa-pad': `${g.pad.toFixed(1)}px`,
     '--sa-R': `${g.R.toFixed(1)}px`,
     '--sa-ref': `${g.ref}px`,
@@ -801,15 +798,8 @@ export default function SunArcOpeningHours({
 
 ```css
 .root {
-  --sa-ink: #171a3d;
-  --sa-tint: #9ba7f5;
-  --sa-peach: #f4cfb4;
-  --sa-dusk: #e9a79a;
-  --sa-butter: #f6dca2;
-  --sa-foam: #f4f1fa;
   --sa-gap: 6px;
   --sa-font: 'Instrument Sans', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --sa-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.11  0 0 0 0 0.10  0 0 0 0 0.34  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -818,8 +808,8 @@ export default function SunArcOpeningHours({
   box-sizing: border-box;
   inline-size: 100%;
   border-radius: 24px;
-  background: var(--sa-ink);
-  color: var(--sa-ink);
+  background: #171a3d;
+  color: #171a3d;
   font-family: var(--sa-font);
   box-shadow:
     0 30px 60px -34px rgba(23, 26, 61, 0.55),
@@ -827,8 +817,8 @@ export default function SunArcOpeningHours({
 }
 
 .root::selection {
-  background: var(--sa-butter);
-  color: var(--sa-ink);
+  background: #f6dca2;
+  color: #171a3d;
 }
 
 .rootCompact {
@@ -849,17 +839,17 @@ export default function SunArcOpeningHours({
     180deg,
     color-mix(
         in oklab,
-        color-mix(in oklab, var(--sa-tint) 70%, #fff) calc((1 - var(--phase, 0.3)) * 100%),
-        color-mix(in oklab, var(--sa-tint) 55%, #1d2052)
+        color-mix(in oklab, #9ba7f5 70%, #fff) calc((1 - var(--phase, 0.3)) * 100%),
+        color-mix(in oklab, #9ba7f5 55%, #1d2052)
       )
       0%,
     color-mix(
         in oklab,
-        color-mix(in oklab, var(--sa-tint) 45%, var(--sa-peach)) calc((1 - var(--phase, 0.3)) * 100%),
-        color-mix(in oklab, var(--sa-tint) 50%, var(--sa-dusk))
+        color-mix(in oklab, #9ba7f5 45%, #f4cfb4) calc((1 - var(--phase, 0.3)) * 100%),
+        color-mix(in oklab, #9ba7f5 50%, #e9a79a)
       )
       62%,
-    color-mix(in oklab, var(--sa-peach) calc((1 - var(--phase, 0.3)) * 100%), var(--sa-dusk)) 100%
+    color-mix(in oklab, #f4cfb4 calc((1 - var(--phase, 0.3)) * 100%), #e9a79a) 100%
   );
 }
 
@@ -928,12 +918,12 @@ export default function SunArcOpeningHours({
 }
 
 .dotOpen {
-  background: var(--sa-ink);
+  background: #171a3d;
   box-shadow: 0 0 0 3px rgba(23, 26, 61, 0.16);
 }
 
 .dotClosed {
-  box-shadow: inset 0 0 0 1.5px var(--sa-ink);
+  box-shadow: inset 0 0 0 1.5px #171a3d;
 }
 
 /* ---------- stage (the arc) ---------- */
@@ -950,18 +940,18 @@ export default function SunArcOpeningHours({
   inset-inline-start: 0;
   overflow: visible;
   pointer-events: none;
-  color: var(--sa-ink);
+  color: #171a3d;
 }
 
 .track {
   fill: none;
-  stroke: var(--sa-ink);
+  stroke: #171a3d;
   stroke-opacity: 0.3;
   stroke-width: 1;
 }
 
 .dots {
-  color: var(--sa-ink);
+  color: #171a3d;
 }
 
 .sunLayer {
@@ -1015,7 +1005,7 @@ export default function SunArcOpeningHours({
   flex-direction: column;
   gap: 6px;
   box-sizing: border-box;
-  color: var(--sa-ink);
+  color: #171a3d;
   transition: opacity 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
@@ -1023,7 +1013,7 @@ export default function SunArcOpeningHours({
   position: relative;
   gap: 2px;
   margin-block: 6px 18px;
-  color: var(--sa-foam);
+  color: #f4f1fa;
 }
 
 .dayName {
@@ -1080,10 +1070,10 @@ export default function SunArcOpeningHours({
   border-block-start: 1px solid rgba(255, 255, 255, 0.28);
   background: linear-gradient(
     180deg,
-    color-mix(in oklab, var(--sa-tint) 28%, var(--sa-ink)) 0%,
-    var(--sa-ink) 100%
+    color-mix(in oklab, #9ba7f5 28%, #171a3d) 0%,
+    #171a3d 100%
   );
-  color: var(--sa-foam);
+  color: #f4f1fa;
 }
 
 /* ---------- weekday chips ---------- */
@@ -1101,7 +1091,7 @@ export default function SunArcOpeningHours({
   inset-inline-start: 0;
   inline-size: calc((100% - (var(--n, 7) - 1) * var(--sa-gap)) / var(--n, 7));
   border-radius: 10px;
-  background: linear-gradient(180deg, #fffaf0, var(--sa-butter));
+  background: linear-gradient(180deg, #fffaf0, #f6dca2);
   box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.5);
   transform: translateX(calc(var(--i, 0) * (100% + var(--sa-gap))));
   transition: transform 560ms cubic-bezier(0.3, 1.15, 0.45, 1);
@@ -1123,7 +1113,7 @@ export default function SunArcOpeningHours({
   border: 1px solid rgba(244, 241, 250, 0.2);
   border-radius: 10px;
   background: transparent;
-  color: var(--sa-foam);
+  color: #f4f1fa;
   font: inherit;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -1139,7 +1129,7 @@ export default function SunArcOpeningHours({
 }
 
 .chip:focus-visible {
-  outline: 2px solid var(--sa-butter);
+  outline: 2px solid #f6dca2;
   outline-offset: 3px;
 }
 
@@ -1152,7 +1142,7 @@ export default function SunArcOpeningHours({
 .chipOn {
   border-color: transparent;
   background: transparent;
-  color: var(--sa-ink);
+  color: #171a3d;
 }
 
 .chipOn:hover {
@@ -1194,11 +1184,11 @@ export default function SunArcOpeningHours({
 }
 
 .todayDot {
-  background: var(--sa-butter);
+  background: #f6dca2;
 }
 
 .todayDotOn {
-  background: var(--sa-ink);
+  background: #171a3d;
 }
 
 /* ---------- finish ---------- */
@@ -1208,7 +1198,7 @@ export default function SunArcOpeningHours({
   inset: 0;
   z-index: 5;
   pointer-events: none;
-  background-image: var(--sa-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.11  0 0 0 0 0.10  0 0 0 0 0.34  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   background-size: 180px 180px;
   mix-blend-mode: multiply;
   opacity: 0.06;

@@ -9,8 +9,7 @@
   "owner_settings": [
     "Reviews (message, name, town)",
     "Card heading (e.g. Greetings from)",
-    "Stamp icon (shell, wave, sun, anchor)",
-    "Card colours (border, accent, card stock, ink, table)"
+    "Stamp icon (shell, wave, sun, anchor)"
   ],
   "site_types": [
     "restaurant",

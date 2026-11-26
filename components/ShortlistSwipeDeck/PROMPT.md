@@ -1,6 +1,6 @@
 Create a custom element called "Shortlist Swipe Deck". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: items (photo, title, note), keep label, skip label, enquire link, enquire button label, small heading, shortlist title and empty-shortlist text, end-of-deck title and restart label, accent color, card color. Add other settings if they help.
+The site owner must be able to change: items (photo, title, note), keep label, skip label, enquire link, enquire button label, small heading, shortlist title and empty-shortlist text, end-of-deck title and restart label. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
@@ -24,8 +24,6 @@ export interface ShortlistSwipeDeckProps {
   enquireLink?: string;
   doneTitle?: string;
   restartLabel?: string;
-  accentColor?: string;
-  cardColor?: string;
   className?: string;
 }
 
@@ -90,8 +88,6 @@ export default function ShortlistSwipeDeck({
   enquireLink = 'mailto:studio@example.com',
   doneTitle = 'That is the whole collection',
   restartLabel = 'Start again',
-  accentColor = '#2343d0',
-  cardColor = '#efc5b6',
   className,
 }: ShortlistSwipeDeckProps) {
   const count = items.length;
@@ -333,11 +329,10 @@ export default function ShortlistSwipeDeck({
 
   const done = cursor >= count;
   const keptItems = kept.map((i) => items[i]).filter(Boolean);
-  const rootStyle = { '--sd-accent': accentColor, '--sd-clay': cardColor } as CSSProperties;
   const cls = (...c: (string | false | undefined)[]) => c.filter(Boolean).join(' ');
 
   return (
-    <section ref={rootRef} className={cls(styles.root, className)} style={rootStyle} aria-label={eyebrow || trayTitle}>
+    <section ref={rootRef} className={cls(styles.root, className)} aria-label={eyebrow || trayTitle}>
       <span className={cls(styles.glowClay, !inView && styles.still)} aria-hidden="true" />
       <span className={cls(styles.glowCobalt, !inView && styles.still)} aria-hidden="true" />
       <span className={styles.grain} aria-hidden="true" />
@@ -527,18 +522,10 @@ function Arrow() {
 
 ```css
 .root {
-  --sd-accent: #2343d0;
-  --sd-clay: #efc5b6;
-  --sd-clay-deep: color-mix(in srgb, var(--sd-clay) 72%, #a8523c);
-  --sd-stage: #f7f2ed;
-  --sd-paper: #fffdfb;
-  --sd-ink: #2b1b17;
-  --sd-muted: rgba(43, 27, 23, 0.66);
-  --sd-on-accent: #ffffff;
+  --accent: #2343d0;
   --sd-font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
   --sd-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --sd-font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  --sd-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.4  0 0 0 0 0.35  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   --keep-lean: 0;
   --skip-lean: 0;
 
@@ -551,11 +538,18 @@ function Arrow() {
   padding-block: 32px 28px;
   padding-inline: 18px;
   border-radius: 32px;
-  background:
-    radial-gradient(70% 55% at 50% 0%, #fff 0%, transparent 70%),
-    linear-gradient(180deg, var(--sd-stage) 0%, color-mix(in srgb, var(--sd-stage) 88%, var(--sd-clay)) 100%);
-  color: var(--sd-ink);
+  background: linear-gradient(180deg, #f7f2ed 0%, color-mix(in srgb, #f7f2ed 88%, #efc5b6) 100%);
+  color: #2b1b17;
   font-family: var(--sd-font-ui);
+}
+
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background: radial-gradient(70% 55% at 50% 0%, #fff 0%, transparent 70%);
 }
 
 .glowClay,
@@ -572,7 +566,7 @@ function Arrow() {
   inline-size: 70%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--sd-clay) 85%, transparent), transparent);
+  background: radial-gradient(closest-side, color-mix(in srgb, #efc5b6 85%, transparent), transparent);
   filter: blur(46px);
   animation: drift 26s ease-in-out infinite alternate;
 }
@@ -583,7 +577,7 @@ function Arrow() {
   inline-size: 56%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--sd-accent) 22%, transparent), transparent);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 22%, transparent), transparent);
   filter: blur(50px);
   animation: drift 32s ease-in-out -12s infinite alternate-reverse;
 }
@@ -594,7 +588,7 @@ function Arrow() {
 
 .grain {
   inset: 0;
-  background-image: var(--sd-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.4  0 0 0 0 0.35  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.2;
   mix-blend-mode: multiply;
 }
@@ -629,7 +623,7 @@ function Arrow() {
   font-size: 11px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--sd-muted);
+  color: rgba(43, 27, 23, 0.66);
 }
 
 .eyebrow {
@@ -639,7 +633,7 @@ function Arrow() {
 
 .counter {
   flex: none;
-  color: var(--sd-ink);
+  color: #2b1b17;
   font-variant-numeric: tabular-nums;
 }
 
@@ -685,8 +679,8 @@ function Arrow() {
 
 .card:focus-visible {
   box-shadow:
-    0 0 0 3px var(--sd-stage),
-    0 0 0 5px var(--sd-accent),
+    0 0 0 3px #f7f2ed,
+    0 0 0 5px var(--accent),
     0 30px 50px -28px rgba(122, 52, 34, 0.42);
 }
 
@@ -702,26 +696,26 @@ function Arrow() {
 
 .cardStock {
   background:
-    radial-gradient(120% 70% at 15% 0%, color-mix(in srgb, var(--sd-clay) 70%, #fff) 0%, transparent 65%),
-    linear-gradient(170deg, var(--sd-clay) 0%, color-mix(in srgb, var(--sd-clay) 82%, var(--sd-clay-deep)) 100%);
+    radial-gradient(120% 70% at 15% 0%, color-mix(in srgb, #efc5b6 70%, #fff) 0%, transparent 65%),
+    linear-gradient(170deg, #efc5b6 0%, color-mix(in srgb, #efc5b6 82%, color-mix(in srgb, #efc5b6 72%, #a8523c)) 100%);
 }
 
 .cardGrain {
   z-index: 3;
-  background-image: var(--sd-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.4  0 0 0 0 0.35  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.22;
   mix-blend-mode: multiply;
 }
 
 .cardShade {
   z-index: 4;
-  background: var(--sd-ink);
+  background: #2b1b17;
   opacity: calc(var(--depth) * 0.07);
 }
 
 .cardEdge {
   z-index: 5;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sd-clay-deep) 38%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, color-mix(in srgb, #efc5b6 72%, #a8523c) 38%, transparent);
 }
 
 .photoWrap {
@@ -731,7 +725,7 @@ function Arrow() {
   min-block-size: 0;
   overflow: hidden;
   border-radius: 18px;
-  background: linear-gradient(160deg, color-mix(in srgb, var(--sd-clay) 60%, #fff), var(--sd-clay-deep));
+  background: linear-gradient(160deg, color-mix(in srgb, #efc5b6 60%, #fff), color-mix(in srgb, #efc5b6 72%, #a8523c));
 }
 
 .photo {
@@ -750,7 +744,7 @@ function Arrow() {
   font-size: 120px;
   font-weight: 600;
   line-height: 1;
-  color: color-mix(in srgb, var(--sd-ink) 30%, transparent);
+  color: color-mix(in srgb, #2b1b17 30%, transparent);
 }
 
 .photoGloss {
@@ -784,14 +778,14 @@ function Arrow() {
 
 .stampKeep {
   inset-inline-start: 16px;
-  color: var(--sd-accent);
+  color: var(--accent);
   opacity: var(--keep);
   transform: rotate(-12deg) scale(calc(0.7 + var(--keep) * 0.3));
 }
 
 .stampSkip {
   inset-inline-end: 16px;
-  color: var(--sd-ink);
+  color: #2b1b17;
   opacity: var(--skip);
   transform: rotate(12deg) scale(calc(0.7 + var(--skip) * 0.3));
 }
@@ -811,7 +805,7 @@ function Arrow() {
   font-weight: 600;
   line-height: 1.08;
   letter-spacing: -0.025em;
-  color: var(--sd-ink);
+  color: #2b1b17;
   overflow-wrap: anywhere;
   text-wrap: balance;
   display: -webkit-box;
@@ -824,7 +818,7 @@ function Arrow() {
   margin: 0;
   font-size: 14px;
   line-height: 1.42;
-  color: color-mix(in srgb, var(--sd-ink) 78%, var(--sd-clay));
+  color: color-mix(in srgb, #2b1b17 78%, #efc5b6);
   overflow-wrap: anywhere;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -844,8 +838,8 @@ function Arrow() {
   gap: 16px;
   padding: 28px;
   border-radius: 26px;
-  border: 1.5px dashed color-mix(in srgb, var(--sd-clay-deep) 70%, transparent);
-  background: color-mix(in srgb, var(--sd-paper) 60%, transparent);
+  border: 1.5px dashed color-mix(in srgb, color-mix(in srgb, #efc5b6 72%, #a8523c) 70%, transparent);
+  background: color-mix(in srgb, #fffdfb 60%, transparent);
   text-align: center;
   opacity: 0;
   transform: scale(0.94);
@@ -869,8 +863,8 @@ function Arrow() {
   inline-size: 56px;
   aspect-ratio: 1;
   border-radius: 50%;
-  color: var(--sd-on-accent);
-  background: var(--sd-accent);
+  color: #ffffff;
+  background: var(--accent);
 }
 
 .doneTitle {
@@ -887,10 +881,10 @@ function Arrow() {
 .restart {
   min-block-size: 44px;
   padding-inline: 20px;
-  border: 1.5px solid color-mix(in srgb, var(--sd-ink) 22%, transparent);
+  border: 1.5px solid color-mix(in srgb, #2b1b17 22%, transparent);
   border-radius: 999px;
-  background: var(--sd-paper);
-  color: var(--sd-ink);
+  background: #fffdfb;
+  color: #2b1b17;
   font: 600 15px/1.2 var(--sd-font-ui);
   cursor: pointer;
   overflow-wrap: anywhere;
@@ -898,11 +892,11 @@ function Arrow() {
 }
 
 .restart:hover {
-  border-color: var(--sd-ink);
+  border-color: #2b1b17;
 }
 
 .restart:focus-visible {
-  outline: 2px solid var(--sd-accent);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -935,26 +929,26 @@ function Arrow() {
 }
 
 .skip {
-  border: 1px solid color-mix(in srgb, var(--sd-ink) 14%, transparent);
-  background: var(--sd-paper);
-  color: var(--sd-ink);
+  border: 1px solid color-mix(in srgb, #2b1b17 14%, transparent);
+  background: #fffdfb;
+  color: #2b1b17;
   transform: scale(calc(1 + var(--skip-lean) * 0.07));
 }
 
 .keep {
   border: 1px solid transparent;
-  background: var(--sd-ink);
-  color: var(--sd-paper);
-  box-shadow: 0 8px 18px -12px color-mix(in srgb, var(--sd-ink) 80%, transparent);
+  background: #2b1b17;
+  color: #fffdfb;
+  box-shadow: 0 8px 18px -12px color-mix(in srgb, #2b1b17 80%, transparent);
   transform: scale(calc(1 + var(--keep-lean) * 0.07));
 }
 
 .skip:hover {
-  border-color: color-mix(in srgb, var(--sd-ink) 40%, transparent);
+  border-color: color-mix(in srgb, #2b1b17 40%, transparent);
 }
 
 .keep:hover {
-  background: color-mix(in srgb, var(--sd-ink) 86%, var(--sd-clay));
+  background: color-mix(in srgb, #2b1b17 86%, #efc5b6);
 }
 
 .skip:active,
@@ -964,7 +958,7 @@ function Arrow() {
 
 .skip:focus-visible,
 .keep:focus-visible {
-  outline: 2px solid var(--sd-accent);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -993,8 +987,8 @@ function Arrow() {
   gap: 10px;
   padding: 10px;
   border-radius: 22px;
-  background: color-mix(in srgb, var(--sd-paper) 58%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sd-ink) 10%, transparent);
+  background: color-mix(in srgb, #fffdfb 58%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #2b1b17 10%, transparent);
 }
 
 .trayHead {
@@ -1006,14 +1000,14 @@ function Arrow() {
   border: 0;
   border-radius: 12px;
   background: transparent;
-  color: var(--sd-ink);
+  color: #2b1b17;
   font: inherit;
   text-align: start;
   cursor: pointer;
 }
 
 .trayHead:focus-visible {
-  outline: 2px solid var(--sd-accent);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -1032,15 +1026,15 @@ function Arrow() {
   aspect-ratio: 1;
   margin-inline-start: -8px;
   border-radius: 50%;
-  background: var(--sd-clay);
-  box-shadow: 0 0 0 2px var(--sd-paper);
+  background: #efc5b6;
+  box-shadow: 0 0 0 2px #fffdfb;
   font: 600 14px/1 var(--sd-font-display);
   animation: pop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .thumbEmpty {
   background: transparent;
-  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--sd-clay-deep) 70%, transparent);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, color-mix(in srgb, #efc5b6 72%, #a8523c) 70%, transparent);
   animation: none;
 }
 
@@ -1081,8 +1075,8 @@ function Arrow() {
   padding-inline: 7px;
   box-sizing: border-box;
   border-radius: 999px;
-  background: var(--sd-accent);
-  color: var(--sd-on-accent);
+  background: var(--accent);
+  color: #ffffff;
   font: 700 13px/1 var(--sd-font-ui);
   font-variant-numeric: tabular-nums;
   animation: pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
@@ -1092,7 +1086,7 @@ function Arrow() {
   flex: none;
   inline-size: 20px;
   block-size: 20px;
-  color: var(--sd-muted);
+  color: rgba(43, 27, 23, 0.66);
   transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -1115,7 +1109,7 @@ function Arrow() {
   padding: 2px 4px 4px;
   font-size: 14px;
   line-height: 1.45;
-  color: var(--sd-muted);
+  color: rgba(43, 27, 23, 0.66);
   overflow-wrap: anywhere;
 }
 
@@ -1140,7 +1134,7 @@ function Arrow() {
 .slot {
   block-size: 56px;
   border-radius: 14px;
-  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--sd-clay-deep) 45%, transparent);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, color-mix(in srgb, #efc5b6 72%, #a8523c) 45%, transparent);
   opacity: 0.7;
 }
 
@@ -1157,7 +1151,7 @@ function Arrow() {
   gap: 10px;
   padding: 6px;
   border-radius: 14px;
-  background: color-mix(in srgb, var(--sd-clay) 34%, var(--sd-paper));
+  background: color-mix(in srgb, #efc5b6 34%, #fffdfb);
   animation: rowIn 460ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
@@ -1180,7 +1174,7 @@ function Arrow() {
   inline-size: 40px;
   aspect-ratio: 1;
   border-radius: 10px;
-  background: var(--sd-clay);
+  background: #efc5b6;
   font: 600 16px/1 var(--sd-font-display);
 }
 
@@ -1202,18 +1196,18 @@ function Arrow() {
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--sd-muted);
+  color: rgba(43, 27, 23, 0.66);
   cursor: pointer;
   transition: background-color 180ms ease, color 180ms ease;
 }
 
 .remove:hover {
-  background: color-mix(in srgb, var(--sd-ink) 8%, transparent);
-  color: var(--sd-ink);
+  background: color-mix(in srgb, #2b1b17 8%, transparent);
+  color: #2b1b17;
 }
 
 .remove:focus-visible {
-  outline: 2px solid var(--sd-accent);
+  outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
 
@@ -1226,13 +1220,13 @@ function Arrow() {
   padding: 12px 24px;
   border: 0;
   border-radius: 999px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--sd-accent) 88%, #fff), var(--sd-accent));
-  color: var(--sd-on-accent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, #fff), var(--accent));
+  color: #ffffff;
   font: 700 16px/1.2 var(--sd-font-ui);
   letter-spacing: -0.01em;
   text-decoration: none;
   box-shadow:
-    0 14px 30px -12px color-mix(in srgb, var(--sd-accent) 75%, transparent),
+    0 14px 30px -12px color-mix(in srgb, var(--accent) 75%, transparent),
     inset 0 1px 0 rgb(255 255 255 / 0.28);
   cursor: pointer;
   transition: background-color 180ms ease, box-shadow 180ms ease, transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -1240,8 +1234,8 @@ function Arrow() {
 
 .enquire:disabled {
   background: none;
-  color: var(--sd-muted);
-  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--sd-ink) 18%, transparent);
+  color: rgba(43, 27, 23, 0.66);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, #2b1b17 18%, transparent);
   cursor: not-allowed;
 }
 
@@ -1250,11 +1244,11 @@ function Arrow() {
 }
 
 .enquire:not(:disabled):hover {
-  background: color-mix(in srgb, var(--sd-accent) 90%, #000);
+  background: color-mix(in srgb, var(--accent) 90%, #000);
 }
 
 .enquire:focus-visible {
-  outline: 2px solid var(--sd-accent);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -1333,7 +1327,7 @@ function Arrow() {
     font-size: 11px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--sd-muted);
+    color: rgba(43, 27, 23, 0.66);
   }
 
   .badge {
@@ -1341,7 +1335,7 @@ function Arrow() {
     block-size: auto;
     padding: 0;
     background: none;
-    color: var(--sd-ink);
+    color: #2b1b17;
     font: inherit;
     font-size: 11px;
     letter-spacing: 0.16em;
@@ -1369,19 +1363,19 @@ function Arrow() {
     min-block-size: 0;
     gap: 0;
     overscroll-behavior: contain;
-    border-block-start: 1px solid color-mix(in srgb, var(--sd-ink) 14%, transparent);
+    border-block-start: 1px solid color-mix(in srgb, #2b1b17 14%, transparent);
   }
 
   .row {
     padding: 10px 0;
     border-radius: 0;
     background: none;
-    border-block-end: 1px solid color-mix(in srgb, var(--sd-ink) 14%, transparent);
+    border-block-end: 1px solid color-mix(in srgb, #2b1b17 14%, transparent);
   }
 
   .trayEmpty {
     padding: 14px 0 0;
-    border-block-start: 1px solid color-mix(in srgb, var(--sd-ink) 14%, transparent);
+    border-block-start: 1px solid color-mix(in srgb, #2b1b17 14%, transparent);
     font-family: var(--sd-font-display);
     font-size: 20px;
     line-height: 1.3;

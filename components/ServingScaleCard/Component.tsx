@@ -19,9 +19,6 @@ export interface ServingScaleCardProps {
   ingredients?: ServingScaleIngredient[];
   methodLabel?: string;
   methodNote?: string;
-  accentColor?: string;
-  panelColor?: string;
-  backgroundColor?: string;
   className?: string;
 }
 
@@ -117,9 +114,6 @@ export default function ServingScaleCard({
   ingredients = defaultIngredients,
   methodLabel = 'Method',
   methodNote = 'Cook the farfalle until just tender and keep a cup of the water. Loosen the pesto with lemon and a splash of that water, toss through the pasta, then fold in the tomatoes and leaves. Finish with parmesan.',
-  accentColor = '#ff6b4a',
-  panelColor = '#1c4a2d',
-  backgroundColor = '#0a120d',
   className,
 }: ServingScaleCardProps) {
   const base = clampServings(baseServings || 1);
@@ -192,9 +186,6 @@ export default function ServingScaleCard({
   };
 
   const rootStyle = {
-    '--ss-accent': accentColor,
-    '--ss-panel': panelColor,
-    '--ss-bg': backgroundColor,
     '--ss-gap': `${TICK_GAP}px`,
   } as CSSProperties;
 

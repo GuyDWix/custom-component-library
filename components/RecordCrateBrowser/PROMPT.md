@@ -1,6 +1,6 @@
 Create a custom element called "Record Crate Browser". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: items (image, title, subtitle), crate colour, sleeve count visible. Add other settings if they help.
+The site owner must be able to change: items (image, title, subtitle), sleeve count visible. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -15,7 +15,6 @@ export interface CrateItem {
 
 export interface RecordCrateBrowserProps {
   items?: CrateItem[];
-  crateColor?: string;
   visibleCount?: number;
   className?: string;
 }
@@ -75,7 +74,6 @@ const cx = (...parts: Array<string | false | undefined>) => parts.filter(Boolean
 
 export default function RecordCrateBrowser({
   items = DEFAULT_ITEMS,
-  crateColor,
   visibleCount = 5,
   className,
 }: RecordCrateBrowserProps) {
@@ -240,7 +238,6 @@ export default function RecordCrateBrowser({
     advance(fwd ? 1 : -1);
   };
 
-  const rootStyle = { '--rc-crate': crateColor } as CSSProperties;
 
   const renderFace = (item: CrateItem, visible: boolean) => (
     <>
@@ -266,7 +263,6 @@ export default function RecordCrateBrowser({
     <div
       ref={rootRef}
       className={cx(styles.root, !inView && styles.rootPaused, reduced && styles.rootReduced, className)}
-      style={rootStyle}
       onKeyDown={onRootKey}
     >
       <span className={styles.bulb} aria-hidden="true" />
@@ -421,17 +417,9 @@ export default function RecordCrateBrowser({
 
 ```css
 .root {
-  --rc-crate: #3a3631;
-  --rc-mustard: #e0a32e;
-  --rc-teal: #3aa08c;
-  --rc-stage: #241f1a;
-  --rc-stage-deep: #16120d;
-  --rc-cream: #f2e8d4;
-  --rc-ink: #241c10;
   --rc-font-display: 'Futura', 'Avenir Next', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --rc-font-ui: 'Avenir Next', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --sleeve: clamp(170px, 34cqi, 300px);
-  --rc-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -441,12 +429,20 @@ export default function RecordCrateBrowser({
   inline-size: 100%;
   padding: clamp(20px, 5cqi, 56px) clamp(12px, 3cqi, 32px);
   border-radius: 24px;
+  background: linear-gradient(180deg, #241f1a 0%, #16120d 100%);
+  color: #f2e8d4;
+  font-family: var(--rc-font-ui);
+}
+
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
   background:
     radial-gradient(56% 42% at 50% 0%, rgba(224, 163, 46, 0.1) 0%, transparent 70%),
-    radial-gradient(120% 90% at 50% 110%, rgba(0, 0, 0, 0.55), transparent 62%),
-    linear-gradient(180deg, var(--rc-stage) 0%, var(--rc-stage-deep) 100%);
-  color: var(--rc-cream);
-  font-family: var(--rc-font-ui);
+    radial-gradient(120% 90% at 50% 110%, rgba(0, 0, 0, 0.55), transparent 62%);
 }
 
 .bulb {
@@ -463,7 +459,7 @@ export default function RecordCrateBrowser({
   position: absolute;
   inset: 0;
   z-index: 60;
-  background-image: var(--rc-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.06;
   mix-blend-mode: overlay;
   pointer-events: none;
@@ -505,7 +501,7 @@ export default function RecordCrateBrowser({
   text-align: center;
   text-transform: uppercase;
   text-wrap: balance;
-  color: color-mix(in srgb, var(--rc-mustard) 15%, transparent);
+  color: color-mix(in srgb, #e0a32e 15%, transparent);
   animation: typeIn 720ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
@@ -572,7 +568,7 @@ export default function RecordCrateBrowser({
 }
 
 .isFront:focus-visible {
-  outline: 3px solid var(--rc-teal);
+  outline: 3px solid #3aa08c;
   outline-offset: 5px;
   border-radius: 10px;
 }
@@ -644,7 +640,7 @@ export default function RecordCrateBrowser({
   max-inline-size: 62%;
   padding: 5px 9px 6px;
   border-radius: 3px;
-  background: var(--rc-mustard);
+  background: #e0a32e;
   color: #231703;
   box-shadow: 0 2px 6px -2px rgba(20, 12, 2, 0.5);
   pointer-events: none;
@@ -678,7 +674,7 @@ export default function RecordCrateBrowser({
 
 .stickerText::selection {
   background: #231703;
-  color: var(--rc-mustard);
+  color: #e0a32e;
 }
 
 .disc {
@@ -716,9 +712,9 @@ export default function RecordCrateBrowser({
   border-radius: 50%;
   background: radial-gradient(
     circle at 42% 36%,
-    color-mix(in srgb, var(--rc-teal) 70%, #fff) 0%,
-    var(--rc-teal) 55%,
-    color-mix(in srgb, var(--rc-teal) 72%, #0c2a22) 100%
+    color-mix(in srgb, #3aa08c 70%, #fff) 0%,
+    #3aa08c 55%,
+    color-mix(in srgb, #3aa08c 72%, #0c2a22) 100%
   );
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
 }
@@ -727,7 +723,7 @@ export default function RecordCrateBrowser({
   position: absolute;
   inset: 46%;
   border-radius: 50%;
-  background: var(--rc-stage);
+  background: #241f1a;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5);
 }
 
@@ -774,9 +770,9 @@ export default function RecordCrateBrowser({
   border-radius: 14px;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--rc-crate) 90%, #fff) 0%,
-    var(--rc-crate) 30%,
-    color-mix(in srgb, var(--rc-crate) 82%, #000) 100%
+    color-mix(in srgb, #3a3631 90%, #fff) 0%,
+    #3a3631 30%,
+    color-mix(in srgb, #3a3631 82%, #000) 100%
   );
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.06),
@@ -822,7 +818,7 @@ export default function RecordCrateBrowser({
   border: 1px solid rgba(242, 232, 212, 0.2);
   border-radius: 50%;
   background: transparent;
-  color: var(--rc-cream);
+  color: #f2e8d4;
   cursor: pointer;
   transition:
     background-color 160ms ease,
@@ -848,7 +844,7 @@ export default function RecordCrateBrowser({
 .navBtn:focus-visible,
 .navCount:focus-visible,
 .jumpItem:focus-visible {
-  outline: 2px solid var(--rc-teal);
+  outline: 2px solid #3aa08c;
   outline-offset: 3px;
 }
 
@@ -879,7 +875,7 @@ export default function RecordCrateBrowser({
   font-weight: 700;
   letter-spacing: -0.015em;
   line-height: 1.2;
-  color: var(--rc-cream);
+  color: #f2e8d4;
   overflow-wrap: anywhere;
   text-wrap: balance;
 }
@@ -890,7 +886,7 @@ export default function RecordCrateBrowser({
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: color-mix(in srgb, var(--rc-cream) 72%, transparent);
+  color: color-mix(in srgb, #f2e8d4 72%, transparent);
   font: inherit;
   font-size: 13px;
   letter-spacing: 0.2em;
@@ -901,7 +897,7 @@ export default function RecordCrateBrowser({
 
 .navCount:hover:not(:disabled),
 .navCount[aria-expanded='true'] {
-  color: var(--rc-cream);
+  color: #f2e8d4;
 }
 
 .jump {
@@ -931,7 +927,7 @@ export default function RecordCrateBrowser({
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: color-mix(in srgb, var(--rc-cream) 78%, transparent);
+  color: color-mix(in srgb, #f2e8d4 78%, transparent);
   font: inherit;
   font-size: 14px;
   text-align: start;
@@ -940,12 +936,12 @@ export default function RecordCrateBrowser({
 
 .jumpItem:hover {
   background: rgba(242, 232, 212, 0.07);
-  color: var(--rc-cream);
+  color: #f2e8d4;
 }
 
 .jumpItem[aria-current='true'] {
   background: rgba(242, 232, 212, 0.1);
-  color: var(--rc-cream);
+  color: #f2e8d4;
 }
 
 .jumpNum {
@@ -953,7 +949,7 @@ export default function RecordCrateBrowser({
   font-size: 12px;
   letter-spacing: 0.12em;
   font-variant-numeric: tabular-nums;
-  color: var(--rc-mustard);
+  color: #e0a32e;
 }
 
 .jumpTitle {

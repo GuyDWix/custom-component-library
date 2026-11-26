@@ -13,10 +13,7 @@
     "Line items (name, price)",
     "Total label",
     "Currency symbol",
-    "Footer note",
-    "Paper tint",
-    "Ink color",
-    "Background color"
+    "Footer note"
   ],
   "site_types": [
     "restaurant",

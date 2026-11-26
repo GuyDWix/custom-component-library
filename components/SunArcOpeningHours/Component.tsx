@@ -14,7 +14,6 @@ export interface SunArcOpeningHoursProps {
   hours?: SunArcDay[];
   title?: string;
   showOpenNow?: boolean;
-  skyTint?: string;
   timeZone?: string;
   clock?: '12h' | '24h';
   openNowLabel?: string;
@@ -229,7 +228,6 @@ export default function SunArcOpeningHours({
   hours = defaultHours,
   title = 'Opening hours',
   showOpenNow = true,
-  skyTint = '#9ba7f5',
   timeZone = 'Europe/Lisbon',
   clock = '12h',
   openNowLabel = 'Open now',
@@ -604,7 +602,6 @@ export default function SunArcOpeningHours({
   const showReadoutAnim = !reduced;
 
   const rootStyle = {
-    '--sa-tint': skyTint,
     '--sa-pad': `${g.pad.toFixed(1)}px`,
     '--sa-R': `${g.R.toFixed(1)}px`,
     '--sa-ref': `${g.ref}px`,

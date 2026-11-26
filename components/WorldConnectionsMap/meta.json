@@ -9,8 +9,6 @@
   "owner_settings": [
     "Locations (name, latitude, longitude)",
     "Connections (from location, to location)",
-    "Dot color",
-    "Arc color",
     "Background style (dark | light)",
     "Show labels"
   ],

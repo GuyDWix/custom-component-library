@@ -1,6 +1,6 @@
 Create a custom element called "Portrait Callouts". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: portrait photo, name and role, callouts (label and text, up to 5), line colour. Add other settings if they help.
+The site owner must be able to change: portrait photo, name and role, callouts (label and text, up to 5). Add other settings if they help.
 
 ```tsx
 import { Fragment, useCallback, useEffect, useId, useRef, useState } from 'react';
@@ -18,7 +18,6 @@ export interface PortraitCalloutsProps {
   name?: string;
   role?: string;
   callouts?: PortraitCallout[];
-  lineColor?: string;
   className?: string;
 }
 
@@ -71,7 +70,6 @@ export default function PortraitCallouts({
   name = 'Tomás Ibarra',
   role = 'Master cabinetmaker, Ibarra & Daughters',
   callouts = defaultCallouts,
-  lineColor = '#ffffff',
   className,
 }: PortraitCalloutsProps) {
   const items = callouts.slice(0, MAX_CALLOUTS);
@@ -200,7 +198,6 @@ export default function PortraitCallouts({
     .map((w) => w.charAt(0).toUpperCase())
     .join('');
   const rootStyle = {
-    '--pc-line': lineColor,
     '--pc-sx': `${(spot.fx * 100).toFixed(1)}%`,
     '--pc-sy': `${(spot.fy * 100).toFixed(1)}%`,
   } as CSSProperties;
@@ -369,17 +366,8 @@ export default function PortraitCallouts({
 }
 
 .root {
-  --pc-line: #ffffff;
-  --pc-cobalt: #1c3fd6;
-  --pc-cobalt-deep: #0a1a78;
-  --pc-cobalt-light: #4f74ff;
-  --pc-accent: #e3ff5a;
-  --pc-ink: #ffffff;
-  --pc-label: #c4cfff;
-  --pc-muted: #d5dcff;
   --pc-font-display: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --pc-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --pc-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .8 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   --pc-out: cubic-bezier(0.16, 1, 0.3, 1);
   --pc-inout: cubic-bezier(0.65, 0, 0.35, 1);
 
@@ -392,10 +380,10 @@ export default function PortraitCallouts({
   padding-block: 40px 44px;
   padding-inline: 20px;
   border-radius: 28px;
-  background: var(--pc-cobalt);
-  color: var(--pc-ink);
+  background: #1c3fd6;
+  color: #ffffff;
   font-family: var(--pc-font-ui);
-  accent-color: var(--pc-accent);
+  accent-color: #e3ff5a;
 }
 
 .root::selection,
@@ -404,8 +392,8 @@ export default function PortraitCallouts({
 .role::selection,
 .label::selection,
 .text::selection {
-  background: var(--pc-accent);
-  color: var(--pc-cobalt-deep);
+  background: #e3ff5a;
+  color: #0a1a78;
 }
 
 .keylight,
@@ -421,20 +409,20 @@ export default function PortraitCallouts({
   inset-inline-start: 0;
   inline-size: 100%;
   block-size: 85%;
-  background: radial-gradient(46% 62% at 46% 30%, color-mix(in srgb, var(--pc-cobalt-light) 80%, #fff 8%) 0%, transparent 72%);
+  background: radial-gradient(46% 62% at 46% 30%, color-mix(in srgb, #4f74ff 80%, #fff 8%) 0%, transparent 72%);
   transform-origin: 46% 30%;
 }
 
 .sweep {
   inset: 0;
   background:
-    linear-gradient(180deg, transparent 58%, color-mix(in srgb, var(--pc-cobalt-deep) 55%, transparent) 100%),
-    radial-gradient(130% 100% at 50% 40%, transparent 55%, color-mix(in srgb, var(--pc-cobalt-deep) 70%, transparent) 100%);
+    linear-gradient(180deg, transparent 58%, color-mix(in srgb, #0a1a78 55%, transparent) 100%),
+    radial-gradient(130% 100% at 50% 40%, transparent 55%, color-mix(in srgb, #0a1a78 70%, transparent) 100%);
 }
 
 .grain {
   inset: 0;
-  background-image: var(--pc-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .8 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.2;
   mix-blend-mode: soft-light;
 }
@@ -475,7 +463,7 @@ export default function PortraitCallouts({
   aspect-ratio: 4 / 5;
   border-radius: 6px;
   overflow: hidden;
-  background: var(--pc-cobalt-deep);
+  background: #0a1a78;
   box-shadow:
     0 2px 4px rgba(3, 9, 58, 0.35),
     0 30px 60px -24px rgba(3, 9, 58, 0.8);
@@ -512,10 +500,10 @@ export default function PortraitCallouts({
   font-size: 112px;
   font-weight: 600;
   letter-spacing: -0.04em;
-  color: color-mix(in srgb, var(--pc-ink) 85%, transparent);
+  color: color-mix(in srgb, #ffffff 85%, transparent);
   background:
-    radial-gradient(70% 55% at 30% 20%, color-mix(in srgb, var(--pc-cobalt-light) 70%, transparent), transparent 70%),
-    linear-gradient(160deg, var(--pc-cobalt) 0%, var(--pc-cobalt-deep) 100%);
+    radial-gradient(70% 55% at 30% 20%, color-mix(in srgb, #4f74ff 70%, transparent), transparent 70%),
+    linear-gradient(160deg, #1c3fd6 0%, #0a1a78 100%);
 }
 
 .spill {
@@ -523,8 +511,8 @@ export default function PortraitCallouts({
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(90deg, color-mix(in srgb, var(--pc-cobalt) 34%, transparent) 0%, transparent 22%, transparent 78%, color-mix(in srgb, var(--pc-cobalt) 34%, transparent) 100%),
-    linear-gradient(180deg, transparent 62%, color-mix(in srgb, var(--pc-cobalt-deep) 48%, transparent) 100%);
+    linear-gradient(90deg, color-mix(in srgb, #1c3fd6 34%, transparent) 0%, transparent 22%, transparent 78%, color-mix(in srgb, #1c3fd6 34%, transparent) 100%),
+    linear-gradient(180deg, transparent 62%, color-mix(in srgb, #0a1a78 48%, transparent) 100%);
   mix-blend-mode: multiply;
 }
 
@@ -532,7 +520,7 @@ export default function PortraitCallouts({
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: color-mix(in srgb, var(--pc-cobalt-deep) 72%, transparent);
+  background: color-mix(in srgb, #0a1a78 72%, transparent);
   mask-image: radial-gradient(ellipse 24% 19.2% at var(--pc-sx) var(--pc-sy), transparent 62%, #000 100%);
   opacity: 0;
   transition:
@@ -552,7 +540,7 @@ export default function PortraitCallouts({
   inline-size: 36%;
   aspect-ratio: 1;
   border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--pc-line) 80%, transparent);
+  border: 1px solid color-mix(in srgb, #ffffff 80%, transparent);
   box-shadow: 0 0 0 1px rgba(3, 9, 58, 0.18);
   pointer-events: none;
   opacity: 0;
@@ -577,10 +565,10 @@ export default function PortraitCallouts({
   margin-inline-start: -13px;
   margin-block-start: -13px;
   border-radius: 50%;
-  background: var(--pc-accent);
-  color: var(--pc-cobalt-deep);
+  background: #e3ff5a;
+  color: #0a1a78;
   box-shadow:
-    0 0 0 1.5px var(--pc-cobalt-deep),
+    0 0 0 1.5px #0a1a78,
     0 4px 10px -2px rgba(3, 9, 58, 0.55);
   transition: transform 420ms var(--pc-out);
 }
@@ -600,7 +588,7 @@ export default function PortraitCallouts({
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 1px solid var(--pc-accent);
+  border: 1px solid #e3ff5a;
   opacity: 0;
 }
 
@@ -618,7 +606,7 @@ export default function PortraitCallouts({
   position: absolute;
   inset: -14px;
   pointer-events: none;
-  --m: color-mix(in srgb, var(--pc-ink) 55%, transparent);
+  --m: color-mix(in srgb, #ffffff 55%, transparent);
   background:
     linear-gradient(var(--m), var(--m)) top left / 14px 1px no-repeat,
     linear-gradient(var(--m), var(--m)) top left / 1px 14px no-repeat,
@@ -670,7 +658,7 @@ export default function PortraitCallouts({
   max-inline-size: 34ch;
   font-size: 17px;
   line-height: 1.45;
-  color: var(--pc-muted);
+  color: #d5dcff;
   text-wrap: pretty;
   overflow-wrap: anywhere;
 }
@@ -688,7 +676,7 @@ export default function PortraitCallouts({
 .columnStart {
   grid-area: start;
   margin-block-start: 28px;
-  border-block-start: 1px solid color-mix(in srgb, var(--pc-ink) 18%, transparent);
+  border-block-start: 1px solid color-mix(in srgb, #ffffff 18%, transparent);
 }
 
 .columnEnd {
@@ -697,7 +685,7 @@ export default function PortraitCallouts({
 
 .item {
   display: block;
-  border-block-end: 1px solid color-mix(in srgb, var(--pc-ink) 18%, transparent);
+  border-block-end: 1px solid color-mix(in srgb, #ffffff 18%, transparent);
 }
 
 
@@ -724,7 +712,7 @@ export default function PortraitCallouts({
 }
 
 .callout:focus-visible {
-  outline: 2px solid var(--pc-accent);
+  outline: 2px solid #e3ff5a;
   outline-offset: 4px;
   border-radius: 4px;
 }
@@ -743,8 +731,8 @@ export default function PortraitCallouts({
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  color: var(--pc-cobalt-deep);
-  background: var(--pc-accent);
+  color: #0a1a78;
+  background: #e3ff5a;
   transition: transform 420ms var(--pc-out);
 }
 
@@ -767,13 +755,13 @@ export default function PortraitCallouts({
   font-weight: 500;
   line-height: 1.35;
   letter-spacing: 0.005em;
-  color: var(--pc-label);
+  color: #c4cfff;
   overflow-wrap: anywhere;
   transition: color 320ms var(--pc-out);
 }
 
 .labelActive {
-  color: var(--pc-accent);
+  color: #e3ff5a;
 }
 
 .text {
@@ -781,7 +769,7 @@ export default function PortraitCallouts({
   font-weight: 500;
   line-height: 1.3;
   letter-spacing: -0.012em;
-  color: var(--pc-ink);
+  color: #ffffff;
   text-wrap: pretty;
   overflow-wrap: anywhere;
 }
@@ -805,7 +793,7 @@ export default function PortraitCallouts({
 
 .halo {
   fill: none;
-  stroke: var(--pc-cobalt-deep);
+  stroke: #0a1a78;
   stroke-opacity: 0.35;
   stroke-width: 3;
   stroke-linejoin: miter;
@@ -813,7 +801,7 @@ export default function PortraitCallouts({
 
 .line {
   fill: none;
-  stroke: var(--pc-line);
+  stroke: #ffffff;
   stroke-width: 1;
   stroke-linejoin: miter;
   stroke-dasharray: 1;
@@ -826,16 +814,16 @@ export default function PortraitCallouts({
 }
 
 .joint {
-  fill: var(--pc-cobalt);
-  stroke: var(--pc-line);
+  fill: #1c3fd6;
+  stroke: #ffffff;
   stroke-width: 1;
   transform-box: fill-box;
   transform-origin: center;
 }
 
 .terminal {
-  fill: var(--pc-accent);
-  stroke: var(--pc-cobalt-deep);
+  fill: #e3ff5a;
+  stroke: #0a1a78;
   stroke-width: 1.25;
   transform-box: fill-box;
   transform-origin: center;
@@ -1113,11 +1101,11 @@ export default function PortraitCallouts({
     block-size: 14px;
     margin-inline-start: -7px;
     margin-block-start: -7px;
-    background: var(--pc-cobalt-deep);
+    background: #0a1a78;
     box-shadow:
-      inset 0 0 0 1.5px var(--pc-line),
-      inset 0 0 0 4px var(--pc-cobalt-deep),
-      inset 0 0 0 7px var(--pc-accent),
+      inset 0 0 0 1.5px #ffffff,
+      inset 0 0 0 4px #0a1a78,
+      inset 0 0 0 7px #e3ff5a,
       0 2px 6px rgba(3, 9, 58, 0.5);
   }
 

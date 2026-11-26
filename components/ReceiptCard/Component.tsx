@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { CSSProperties } from 'react';
 import styles from './Component.module.css';
 
 export interface ReceiptItem {
@@ -15,9 +14,6 @@ export interface ReceiptCardProps {
   totalLabel?: string;
   currency?: string;
   footerNote?: string;
-  paperTint?: string;
-  inkColor?: string;
-  groundColor?: string;
   ariaLabel?: string;
   className?: string;
 }
@@ -58,9 +54,6 @@ export default function ReceiptCard({
   totalLabel = 'Total',
   currency = '$',
   footerNote = 'Thank you, come back soon!',
-  paperTint = '#fbf8f1',
-  inkColor = '#34312c',
-  groundColor = '#b8875a',
   ariaLabel = 'Receipt',
   className,
 }: ReceiptCardProps) {
@@ -212,17 +205,10 @@ export default function ReceiptCard({
     };
   }, [halt, measure, paint, run]);
 
-  const rootStyle = {
-    '--rc-paper': paperTint,
-    '--rc-ink': inkColor,
-    '--rc-ground': groundColor,
-  } as CSSProperties;
-
   return (
     <section
       ref={rootRef}
       className={[styles.root, className].filter(Boolean).join(' ')}
-      style={rootStyle}
       aria-label={ariaLabel}
     >
       <span className={styles.light} aria-hidden="true" />

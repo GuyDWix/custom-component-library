@@ -10,7 +10,6 @@ export interface CrateItem {
 
 export interface RecordCrateBrowserProps {
   items?: CrateItem[];
-  crateColor?: string;
   visibleCount?: number;
   className?: string;
 }
@@ -70,7 +69,6 @@ const cx = (...parts: Array<string | false | undefined>) => parts.filter(Boolean
 
 export default function RecordCrateBrowser({
   items = DEFAULT_ITEMS,
-  crateColor,
   visibleCount = 5,
   className,
 }: RecordCrateBrowserProps) {
@@ -235,7 +233,6 @@ export default function RecordCrateBrowser({
     advance(fwd ? 1 : -1);
   };
 
-  const rootStyle = { '--rc-crate': crateColor } as CSSProperties;
 
   const renderFace = (item: CrateItem, visible: boolean) => (
     <>
@@ -261,7 +258,6 @@ export default function RecordCrateBrowser({
     <div
       ref={rootRef}
       className={cx(styles.root, !inView && styles.rootPaused, reduced && styles.rootReduced, className)}
-      style={rootStyle}
       onKeyDown={onRootKey}
     >
       <span className={styles.bulb} aria-hidden="true" />

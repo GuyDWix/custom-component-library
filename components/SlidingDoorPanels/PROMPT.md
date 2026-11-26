@@ -412,10 +412,6 @@ export default function SlidingDoorPanels({
 ```css
 /* Dark cinematic architecture: full-bleed photo, smoked-glass slabs, one pale ink */
 .root {
-  --sd-night: #07080a;
-  --sd-smoke: linear-gradient(180deg, #151920 0%, #0b0d11 100%);
-  --sd-ink: #f1efe9;
-  --sd-ink-dim: rgba(241, 239, 233, 0.66);
   --sd-font-display: 'Montserrat', system-ui, sans-serif;
   --sd-font-ui: 'Space Grotesk', ui-monospace, Menlo, sans-serif;
   --sd-gutter: clamp(18px, 4cqi, 56px);
@@ -428,8 +424,8 @@ export default function SlidingDoorPanels({
   inline-size: 100%;
   container-type: inline-size;
   overflow: clip;
-  background: var(--sd-night);
-  color: var(--sd-ink);
+  background: #07080a;
+  color: #f1efe9;
   font-family: var(--sd-font-ui);
   outline: none;
 }
@@ -440,7 +436,7 @@ export default function SlidingDoorPanels({
 }
 
 .root:focus-visible {
-  outline: 2px solid var(--sd-ink);
+  outline: 2px solid #f1efe9;
   outline-offset: -4px;
 }
 
@@ -449,7 +445,7 @@ export default function SlidingDoorPanels({
   direction: ltr;
   aspect-ratio: 21 / 9;
   overflow: clip;
-  background: var(--sd-night);
+  background: #07080a;
   touch-action: pan-y;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -533,7 +529,7 @@ export default function SlidingDoorPanels({
   margin-inline-end: -1px;
   box-sizing: content-box;
   padding-inline-end: 1px;
-  background: var(--sd-smoke);
+  background: linear-gradient(180deg, #151920 0%, #0b0d11 100%);
   will-change: transform;
   transition: transform var(--sd-dur, 700ms) cubic-bezier(0.76, 0, 0.18, 1) var(--sd-d, 0ms);
 }
@@ -582,7 +578,7 @@ export default function SlidingDoorPanels({
   -webkit-line-clamp: 3;
   line-clamp: 3;
   overflow: hidden;
-  color: var(--sd-ink);
+  color: #f1efe9;
   opacity: 0;
   transform: translateY(0.35em);
   transition: opacity 700ms ease, transform 900ms cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -607,12 +603,12 @@ export default function SlidingDoorPanels({
   font-size: 13px;
   letter-spacing: 0.1em;
   font-variant-numeric: tabular-nums;
-  color: var(--sd-ink);
+  color: #f1efe9;
   white-space: nowrap;
 }
 
 .countSep {
-  color: var(--sd-ink-dim);
+  color: rgba(241, 239, 233, 0.66);
 }
 
 .pauseBtn,
@@ -626,7 +622,7 @@ export default function SlidingDoorPanels({
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--sd-ink);
+  color: #f1efe9;
   cursor: pointer;
   transition: background-color 200ms ease, transform 200ms ease;
   -webkit-tap-highlight-color: transparent;
@@ -652,7 +648,7 @@ export default function SlidingDoorPanels({
 
 .pauseBtn:focus-visible,
 .nav:focus-visible {
-  outline: 2px solid var(--sd-ink);
+  outline: 2px solid #f1efe9;
   outline-offset: 1px;
 }
 

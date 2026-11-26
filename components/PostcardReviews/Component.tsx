@@ -14,11 +14,6 @@ export interface PostcardReviewsProps {
   reviews?: PostcardReview[];
   greeting?: string;
   stampIcon?: StampIcon;
-  borderColor?: string;
-  accentColor?: string;
-  cardColor?: string;
-  inkColor?: string;
-  tableColor?: string;
   className?: string;
 }
 
@@ -131,11 +126,6 @@ export default function PostcardReviews({
   reviews = defaultReviews,
   greeting = 'Greetings from',
   stampIcon = 'shell',
-  borderColor = '#7fb7b2',
-  accentColor = '#e98a72',
-  cardColor = '#f7f0e1',
-  inkColor = '#1f2a44',
-  tableColor = '#d5e2dd',
   className,
 }: PostcardReviewsProps) {
   const uid = useId();
@@ -217,18 +207,9 @@ export default function PostcardReviews({
     openCard(step(i, delta));
   };
 
-  const rootStyle = {
-    '--pr-border': borderColor,
-    '--pr-accent': accentColor,
-    '--pr-card': cardColor,
-    '--pr-ink': inkColor,
-    '--pr-table': tableColor,
-  } as CSSProperties;
-
   return (
     <section
       className={cx(styles.root, className)}
-      style={rootStyle}
       aria-label="Customer postcards"
     >
       <svg className={styles.defs} aria-hidden="true" focusable="false">

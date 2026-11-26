@@ -8,7 +8,6 @@
   "visitor_action": "watch, drag or flick the strip, scroll the wheel to nudge it, arrow keys to step",
   "owner_settings": [
     "Cards (photo, alt text, spec title, spec lines)",
-    "Beam colour",
     "Particle density",
     "Scroll speed",
     "Scroll direction"

@@ -10,8 +10,7 @@
     "Measurement label",
     "Unit (cm or in)",
     "Size heading",
-    "Size ranges (from, to, size, note)",
-    "Accent color"
+    "Size ranges (from, to, size, note)"
   ],
   "site_types": [
     "store",

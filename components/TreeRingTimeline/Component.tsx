@@ -8,14 +8,12 @@ export interface TreeRingMilestone {
   note?: string;
 }
 
-export type WoodTone = 'oak' | 'walnut' | 'ash';
 export type RingThickness = 'natural' | 'even' | 'widening';
 
 export interface TreeRingTimelineProps {
   milestones?: TreeRingMilestone[];
   centreLabel?: string;
   centreCaption?: string;
-  woodTone?: WoodTone;
   ringThickness?: RingThickness;
   ariaLabel?: string;
   className?: string;
@@ -142,7 +140,6 @@ export default function TreeRingTimeline({
   milestones = defaultMilestones,
   centreLabel = 'Since 2009',
   centreCaption = 'Est.',
-  woodTone = 'oak',
   ringThickness = 'natural',
   ariaLabel = 'Years in business',
   className,
@@ -247,8 +244,7 @@ export default function TreeRingTimeline({
   const current = milestones[active];
   const ring = rings[active];
   const stagger = Math.min(110, 1500 / Math.max(count, 1));
-  const toneClass = styles[woodTone] ?? styles.oak;
-  const rootClass = [styles.root, toneClass, visible && styles.play, className].filter(Boolean).join(' ');
+  const rootClass = [styles.root, visible && styles.play, className].filter(Boolean).join(' ');
   const id = (name: string) => `${uid}-${name}`;
 
   return (

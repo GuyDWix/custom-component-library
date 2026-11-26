@@ -1,6 +1,6 @@
 Create a custom element called "Postcard Reviews". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: reviews (message, name, town), card heading (e.g. Greetings from), stamp icon (shell, wave, sun, anchor), card colours (border, accent, card stock, ink, table). Add other settings if they help.
+The site owner must be able to change: reviews (message, name, town), card heading (e.g. Greetings from), stamp icon (shell, wave, sun, anchor). Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
@@ -19,11 +19,6 @@ export interface PostcardReviewsProps {
   reviews?: PostcardReview[];
   greeting?: string;
   stampIcon?: StampIcon;
-  borderColor?: string;
-  accentColor?: string;
-  cardColor?: string;
-  inkColor?: string;
-  tableColor?: string;
   className?: string;
 }
 
@@ -136,11 +131,6 @@ export default function PostcardReviews({
   reviews = defaultReviews,
   greeting = 'Greetings from',
   stampIcon = 'shell',
-  borderColor = '#7fb7b2',
-  accentColor = '#e98a72',
-  cardColor = '#f7f0e1',
-  inkColor = '#1f2a44',
-  tableColor = '#d5e2dd',
   className,
 }: PostcardReviewsProps) {
   const uid = useId();
@@ -222,18 +212,9 @@ export default function PostcardReviews({
     openCard(step(i, delta));
   };
 
-  const rootStyle = {
-    '--pr-border': borderColor,
-    '--pr-accent': accentColor,
-    '--pr-card': cardColor,
-    '--pr-ink': inkColor,
-    '--pr-table': tableColor,
-  } as CSSProperties;
-
   return (
     <section
       className={cx(styles.root, className)}
-      style={rootStyle}
       aria-label="Customer postcards"
     >
       <svg className={styles.defs} aria-hidden="true" focusable="false">
@@ -340,23 +321,17 @@ export default function PostcardReviews({
 
 ```css
 .root {
-  --pr-border: #7fb7b2;
-  --pr-accent: #e98a72;
-  --pr-card: #f7f0e1;
-  --pr-ink: #1f2a44;
-  --pr-table: #d5e2dd;
   --pr-font-script: 'Caveat', 'Bradley Hand', 'Segoe Print', 'Noteworthy', cursive;
   --pr-font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
   --pr-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --pr-spring: linear(0, 0.046, 0.159, 0.307, 0.466, 0.618, 0.753, 0.864, 0.95, 1.012, 1.052, 1.075, 1.083, 1.082, 1.074, 1.062, 1.049, 1.036, 1.024, 1.014, 1.006, 1, 0.996, 0.994, 0.993, 0.993, 0.994, 0.995, 1);
   --pr-settle: cubic-bezier(0.22, 1, 0.36, 1);
-  --pr-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.42  0 0 0 0 0.36  0 0 0 .75 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  color: var(--pr-ink);
+  color: #1f2a44;
   font-family: var(--pr-font-ui);
 }
 
@@ -375,17 +350,25 @@ export default function PostcardReviews({
   padding-block: 40px 52px;
   padding-inline: 20px;
   border-radius: 28px;
+  background: #d5e2dd;
+}
+
+.table::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
   background:
     radial-gradient(70% 60% at 30% 10%, color-mix(in srgb, #fff 55%, transparent) 0%, transparent 70%),
-    radial-gradient(90% 80% at 50% 120%, color-mix(in srgb, var(--pr-border) 30%, transparent) 0%, transparent 70%),
-    var(--pr-table);
+    radial-gradient(90% 80% at 50% 120%, color-mix(in srgb, #7fb7b2 30%, transparent) 0%, transparent 70%);
 }
 
 .grain {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background-image: var(--pr-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.42  0 0 0 0 0.36  0 0 0 .75 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.3;
   mix-blend-mode: multiply;
   pointer-events: none;
@@ -395,7 +378,7 @@ export default function PostcardReviews({
   position: absolute;
   inset: 0;
   z-index: 10;
-  background: color-mix(in srgb, var(--pr-table) 62%, transparent);
+  background: color-mix(in srgb, #d5e2dd 62%, transparent);
   backdrop-filter: blur(3px) saturate(0.85);
   opacity: 0;
   pointer-events: none;
@@ -462,7 +445,7 @@ export default function PostcardReviews({
   inset: 6% 3% -4%;
   z-index: -1;
   border-radius: 10px;
-  background: color-mix(in srgb, var(--pr-ink) 40%, transparent);
+  background: color-mix(in srgb, #1f2a44 40%, transparent);
   filter: blur(14px);
   opacity: 0.35;
   transform: translateY(6px);
@@ -499,12 +482,12 @@ export default function PostcardReviews({
   border-radius: 7px;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  color: var(--pr-ink);
+  color: #1f2a44;
   font: inherit;
   text-align: start;
   box-shadow:
-    0 1px 1px color-mix(in srgb, var(--pr-ink) 14%, transparent),
-    0 6px 14px -8px color-mix(in srgb, var(--pr-ink) 40%, transparent);
+    0 1px 1px color-mix(in srgb, #1f2a44 14%, transparent),
+    0 6px 14px -8px color-mix(in srgb, #1f2a44 40%, transparent);
   outline: none;
   -webkit-tap-highlight-color: transparent;
 }
@@ -513,7 +496,7 @@ export default function PostcardReviews({
   display: block;
   inline-size: 100%;
   cursor: pointer;
-  background: var(--pr-card);
+  background: #f7f0e1;
   transition:
     transform 320ms var(--pr-settle),
     box-shadow 320ms var(--pr-settle);
@@ -522,21 +505,21 @@ export default function PostcardReviews({
 .front:hover {
   transform: translateY(-4px) rotate(calc(var(--tilt) * -0.25));
   box-shadow:
-    0 1px 1px color-mix(in srgb, var(--pr-ink) 14%, transparent),
-    0 18px 26px -14px color-mix(in srgb, var(--pr-ink) 45%, transparent);
+    0 1px 1px color-mix(in srgb, #1f2a44 14%, transparent),
+    0 18px 26px -14px color-mix(in srgb, #1f2a44 45%, transparent);
 }
 
 .front:focus-visible,
 .back:focus-visible {
   box-shadow:
-    0 0 0 2px var(--pr-card),
-    0 0 0 4px var(--pr-ink);
+    0 0 0 2px #f7f0e1,
+    0 0 0 4px #1f2a44;
 }
 
 .back {
   transform: rotateY(180deg);
   cursor: pointer;
-  background: var(--pr-card);
+  background: #f7f0e1;
 }
 
 .frame {
@@ -545,10 +528,10 @@ export default function PostcardReviews({
   border-radius: inherit;
   background: repeating-linear-gradient(
     -45deg,
-    var(--pr-accent) 0 9px,
-    var(--pr-card) 9px 13px,
-    var(--pr-border) 13px 22px,
-    var(--pr-card) 22px 26px
+    #e98a72 0 9px,
+    #f7f0e1 9px 13px,
+    #7fb7b2 13px 22px,
+    #f7f0e1 22px 26px
   );
   opacity: 0.85;
 }
@@ -559,8 +542,8 @@ export default function PostcardReviews({
   border-radius: 3px;
   background:
     radial-gradient(120% 80% at 15% 0%, color-mix(in srgb, #fff 45%, transparent) 0%, transparent 60%),
-    linear-gradient(170deg, var(--pr-card) 0%, color-mix(in srgb, var(--pr-card) 88%, var(--pr-ink)) 140%);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--pr-ink) 8%, transparent);
+    linear-gradient(170deg, #f7f0e1 0%, color-mix(in srgb, #f7f0e1 88%, #1f2a44) 140%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, #1f2a44 8%, transparent);
 }
 
 .stock::after {
@@ -568,7 +551,7 @@ export default function PostcardReviews({
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background-image: var(--pr-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.42  0 0 0 0 0.36  0 0 0 .75 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.32;
   mix-blend-mode: multiply;
 }
@@ -587,7 +570,7 @@ export default function PostcardReviews({
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--pr-ink) 62%, transparent);
+  color: color-mix(in srgb, #1f2a44 62%, transparent);
   padding-inline-end: 26cqi;
   white-space: nowrap;
   overflow: hidden;
@@ -607,7 +590,7 @@ export default function PostcardReviews({
   font-weight: 600;
   line-height: 1;
   letter-spacing: -0.03em;
-  color: var(--pr-ink);
+  color: #1f2a44;
   overflow-wrap: anywhere;
   text-wrap: balance;
 }
@@ -617,7 +600,7 @@ export default function PostcardReviews({
   font-family: var(--pr-font-script);
   font-size: 6.4cqi;
   line-height: 1.1;
-  color: color-mix(in srgb, var(--pr-ink) 88%, var(--pr-border));
+  color: color-mix(in srgb, #1f2a44 88%, #7fb7b2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -641,7 +624,7 @@ export default function PostcardReviews({
   mask:
     linear-gradient(#000 0 0) content-box,
     radial-gradient(circle, transparent 0.6cqi, #000 0.7cqi) -0.65cqi -0.65cqi / 1.3cqi 1.3cqi;
-  filter: drop-shadow(0 1px 1.5px color-mix(in srgb, var(--pr-ink) 30%, transparent));
+  filter: drop-shadow(0 1px 1.5px color-mix(in srgb, #1f2a44 30%, transparent));
 }
 
 .stampBack {
@@ -659,11 +642,11 @@ export default function PostcardReviews({
 }
 
 .toneAccent {
-  --stamp-fill: var(--pr-accent);
+  --stamp-fill: #e98a72;
 }
 
 .toneBorder {
-  --stamp-fill: var(--pr-border);
+  --stamp-fill: #7fb7b2;
 }
 
 .stampArt {
@@ -691,18 +674,18 @@ export default function PostcardReviews({
 
 .ink {
   fill: none;
-  stroke: var(--pr-ink);
+  stroke: #1f2a44;
   stroke-width: 2.4;
   stroke-linecap: round;
 }
 
 .inkFill {
-  fill: var(--pr-ink);
+  fill: #1f2a44;
   stroke: none;
 }
 
 .postmarkText {
-  fill: var(--pr-ink);
+  fill: #1f2a44;
   stroke: none;
   font-family: var(--pr-font-ui);
   font-size: 13px;
@@ -747,7 +730,7 @@ export default function PostcardReviews({
   -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 1.4em), transparent);
   mask-image: linear-gradient(to bottom, #000 calc(100% - 1.4em), transparent);
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--pr-ink) 30%, transparent) transparent;
+  scrollbar-color: color-mix(in srgb, #1f2a44 30%, transparent) transparent;
 }
 
 .messageText {
@@ -755,12 +738,12 @@ export default function PostcardReviews({
   font-family: var(--pr-font-script);
   font-size: 5cqi;
   line-height: 1.5;
-  color: var(--pr-ink);
+  color: #1f2a44;
   overflow-wrap: anywhere;
   background-image: linear-gradient(
     to bottom,
     transparent calc(100% - 1px),
-    color-mix(in srgb, var(--pr-border) 45%, transparent) calc(100% - 1px)
+    color-mix(in srgb, #7fb7b2 45%, transparent) calc(100% - 1px)
   );
   background-size: 100% 1.5em;
   background-position: 0 -0.12em;
@@ -780,7 +763,7 @@ export default function PostcardReviews({
   gap: 0 2.4cqi;
   margin: 2cqi 0 0;
   padding-block-start: 2cqi;
-  border-block-start: 1px solid color-mix(in srgb, var(--pr-ink) 14%, transparent);
+  border-block-start: 1px solid color-mix(in srgb, #1f2a44 14%, transparent);
 }
 
 .signName {
@@ -797,7 +780,7 @@ export default function PostcardReviews({
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--pr-ink) 60%, transparent);
+  color: color-mix(in srgb, #1f2a44 60%, transparent);
   overflow-wrap: anywhere;
 }
 

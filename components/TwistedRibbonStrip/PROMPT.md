@@ -390,29 +390,20 @@ export default function TwistedRibbonStrip({
    soft studio light, long gentle shadows. */
 
 .root {
-  --ground-1: #f7f4ec;
-  --ground-2: #e2ded3;
-  --ink: #242f2d;
-  --ink-soft: rgba(36, 47, 45, 0.66);
-  --cream-1: #fbf5e6;
-  --cream-2: #e9dfc8;
-  --mat-edge: rgba(84, 70, 40, 0.16);
-  --teal: #12494d;
-  --teal-deep: #0b3336;
   --font: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
 
   position: relative;
   isolation: isolate;
   font-family: var(--font);
-  color: var(--ink);
-  background: radial-gradient(130% 100% at 50% -12%, var(--ground-1) 0%, var(--ground-1) 46%, var(--ground-2) 100%);
+  color: #242f2d;
+  background: radial-gradient(130% 100% at 50% -12%, #f7f4ec 0%, #f7f4ec 46%, #e2ded3 100%);
   padding-block: 44px 10px;
   overflow: clip;
 }
 
 .root ::selection {
-  background: var(--teal);
-  color: var(--cream-1);
+  background: #12494d;
+  color: #fbf5e6;
 }
 
 .grain {
@@ -438,7 +429,7 @@ export default function TwistedRibbonStrip({
 }
 
 .stage:focus-visible {
-  outline: 2px solid var(--teal);
+  outline: 2px solid #12494d;
   outline-offset: -2px;
 }
 
@@ -485,8 +476,8 @@ export default function TwistedRibbonStrip({
 }
 
 .faceFront {
-  background: linear-gradient(155deg, var(--cream-1) 0%, #f2e9d6 55%, var(--cream-2) 100%);
-  box-shadow: inset 0 0 0 1px var(--mat-edge), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  background: linear-gradient(155deg, #fbf5e6 0%, #f2e9d6 55%, #e9dfc8 100%);
+  box-shadow: inset 0 0 0 1px rgba(84, 70, 40, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.5);
   padding: calc(var(--pw) * 0.045);
   padding-block-end: calc(var(--pw) * 0.075);
 }
@@ -495,7 +486,7 @@ export default function TwistedRibbonStrip({
   transform: rotateY(180deg);
   background:
     repeating-linear-gradient(72deg, rgba(255, 255, 255, 0.05) 0 1px, rgba(255, 255, 255, 0) 1px 3px),
-    linear-gradient(160deg, #17545a 0%, var(--teal) 45%, var(--teal-deep) 100%);
+    linear-gradient(160deg, #17545a 0%, #12494d 45%, #0b3336 100%);
   box-shadow: inset 0 0 0 1px rgba(5, 26, 28, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
@@ -524,7 +515,7 @@ export default function TwistedRibbonStrip({
   text-align: center;
   font-size: 13px;
   line-height: 1.45;
-  color: var(--teal);
+  color: #12494d;
   background: linear-gradient(150deg, #eef3f0, #dde6e2);
 }
 
@@ -563,7 +554,7 @@ export default function TwistedRibbonStrip({
   font-weight: 500;
   letter-spacing: 0.01em;
   line-height: 1.4;
-  color: var(--ink-soft);
+  color: rgba(36, 47, 45, 0.66);
   max-inline-size: 56ch;
   text-wrap: balance;
   animation: caption-in 0.45s ease-out both;
@@ -575,7 +566,7 @@ export default function TwistedRibbonStrip({
   font-size: 12px;
   letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
-  color: var(--teal);
+  color: #12494d;
 }
 
 @keyframes caption-in {
@@ -596,7 +587,7 @@ export default function TwistedRibbonStrip({
   border-radius: 50%;
   border: 1px solid rgba(18, 73, 77, 0.2);
   background: rgba(251, 245, 230, 0.92);
-  color: var(--teal);
+  color: #12494d;
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -611,12 +602,12 @@ export default function TwistedRibbonStrip({
 }
 
 .pauseButton:hover {
-  background: var(--cream-1);
+  background: #fbf5e6;
 }
 
 .pauseButton:focus-visible {
   opacity: 1;
-  outline: 2px solid var(--teal);
+  outline: 2px solid #12494d;
   outline-offset: 2px;
 }
 
@@ -636,12 +627,12 @@ export default function TwistedRibbonStrip({
   scroll-snap-type: x mandatory;
   padding: 8px 16px 14px;
   scrollbar-width: thin;
-  scrollbar-color: var(--teal) transparent;
+  scrollbar-color: #12494d transparent;
   outline: none;
 }
 
 .staticScroll:focus-visible {
-  outline: 2px solid var(--teal);
+  outline: 2px solid #12494d;
   outline-offset: -2px;
   border-radius: 12px;
 }
@@ -655,8 +646,8 @@ export default function TwistedRibbonStrip({
 
 .staticMat {
   border-radius: 10px;
-  background: linear-gradient(155deg, var(--cream-1) 0%, #f2e9d6 55%, var(--cream-2) 100%);
-  box-shadow: inset 0 0 0 1px var(--mat-edge), 0 22px 32px -20px rgba(19, 32, 33, 0.4), 0 2px 6px rgba(19, 32, 33, 0.08);
+  background: linear-gradient(155deg, #fbf5e6 0%, #f2e9d6 55%, #e9dfc8 100%);
+  box-shadow: inset 0 0 0 1px rgba(84, 70, 40, 0.16), 0 22px 32px -20px rgba(19, 32, 33, 0.4), 0 2px 6px rgba(19, 32, 33, 0.08);
   padding: 12px;
   padding-block-end: 20px;
 }
@@ -678,7 +669,7 @@ export default function TwistedRibbonStrip({
   text-align: center;
   font-size: 13px;
   line-height: 1.45;
-  color: var(--teal);
+  color: #12494d;
   background: linear-gradient(150deg, #eef3f0, #dde6e2);
   border-radius: 3px;
 }
@@ -690,7 +681,7 @@ export default function TwistedRibbonStrip({
   padding: 10px 2px 4px;
   font-size: 13px;
   line-height: 1.4;
-  color: var(--ink-soft);
+  color: rgba(36, 47, 45, 0.66);
 }
 
 @media (prefers-reduced-motion: reduce) {

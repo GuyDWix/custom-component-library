@@ -10,8 +10,6 @@ export interface NumeralStepsListStep {
 export interface NumeralStepsListProps {
   heading?: string;
   steps?: NumeralStepsListStep[];
-  numeralColor?: string;
-  textColor?: string;
   showConnectingLine?: boolean;
   className?: string;
 }
@@ -157,8 +155,6 @@ const buildSurface = (L: number, S: number, A: number, phase: number) => {
 export default function NumeralStepsList({
   heading = 'How we bake',
   steps = defaultSteps,
-  numeralColor = '#3f2334',
-  textColor = '#3a322f',
   showConnectingLine = true,
   className,
 }: NumeralStepsListProps) {
@@ -390,13 +386,8 @@ export default function NumeralStepsList({
     li.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
   };
 
-  const rootStyle = {
-    '--nsl-numeral': numeralColor,
-    '--nsl-text': textColor,
-  } as CSSProperties;
-
   return (
-    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
+    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')}>
       <span className={styles.light} aria-hidden="true" />
       <span className={styles.grain} aria-hidden="true" />
       <div className={styles.inner}>

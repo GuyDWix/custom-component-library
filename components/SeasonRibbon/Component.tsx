@@ -13,7 +13,6 @@ export interface SeasonItem {
 export interface SeasonRibbonProps {
   items?: SeasonItem[];
   showCurrentMonth?: boolean;
-  seasonColors?: string[];
   showSeasonRange?: boolean;
   monthNames?: string[];
   nowLabel?: string;
@@ -30,7 +29,7 @@ export const defaultItems: SeasonItem[] = [
 ];
 
 const DEFAULT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const DEFAULT_COLORS = ['var(--sr-leaf)', 'var(--sr-orange)', 'var(--sr-plum)'];
+const TONE_COUNT = 3;
 const MAX_STAGGER = 8;
 
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
@@ -55,7 +54,6 @@ type Phase = 'static' | 'hidden' | 'play';
 export default function SeasonRibbon({
   items = defaultItems,
   showCurrentMonth = true,
-  seasonColors = DEFAULT_COLORS,
   showSeasonRange = true,
   monthNames = DEFAULT_MONTHS,
   nowLabel = 'In season now',
@@ -101,7 +99,6 @@ export default function SeasonRibbon({
   }, [phase]);
 
   const name = (m: number) => monthNames[m - 1] ?? DEFAULT_MONTHS[m - 1];
-  const palette = seasonColors.length ? seasonColors : DEFAULT_COLORS;
 
   const rows = items.map((item, i) => {
     const first = clampMonth(item.firstMonth);
@@ -113,7 +110,7 @@ export default function SeasonRibbon({
     const anchorEnd = 1 - s < e;
     const range = first === last ? name(first) : `${name(first)} – ${name(last)}`;
     const live = now !== null && showCurrentMonth && inSeason(first, last, now);
-    return { item, i, first, last, segs, s, e, anchorEnd, range, live, color: palette[i % palette.length] };
+    return { item, i, first, last, segs, s, e, anchorEnd, range, live };
   });
 
   const active = hovered ?? focused ?? pinned;
@@ -123,7 +120,6 @@ export default function SeasonRibbon({
 
   const rootStyle = {
     '--sr-pin': `${240 + visibleRows * 95 + 700}ms`,
-    ...(activeRow ? { '--sr-ac': activeRow.color } : null),
   } as CSSProperties;
 
   const move = (from: number, dir: number) => {
@@ -152,6 +148,7 @@ export default function SeasonRibbon({
       ref={rootRef}
       className={cx(styles.root, phase === 'hidden' && styles.hidden, phase === 'play' && styles.play, className)}
       style={rootStyle}
+      data-tone={activeRow ? activeRow.i % TONE_COUNT : undefined}
       aria-label={ariaLabel}
     >
       <div className={styles.sheet}>
@@ -192,7 +189,6 @@ export default function SeasonRibbon({
             {rows.map((r) => {
               const rowStyle = {
                 '--sr-i': Math.min(r.i, MAX_STAGGER),
-                '--sr-c': r.color,
                 '--sr-lx': `${r.s * 100}%`,
                 '--sr-rx': `${(1 - r.e) * 100}%`,
                 '--sr-lw': r.anchorEnd ? `${r.e * 100}%` : `${(1 - r.s) * 100}%`,

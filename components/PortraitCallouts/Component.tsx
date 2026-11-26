@@ -13,7 +13,6 @@ export interface PortraitCalloutsProps {
   name?: string;
   role?: string;
   callouts?: PortraitCallout[];
-  lineColor?: string;
   className?: string;
 }
 
@@ -66,7 +65,6 @@ export default function PortraitCallouts({
   name = 'Tomás Ibarra',
   role = 'Master cabinetmaker, Ibarra & Daughters',
   callouts = defaultCallouts,
-  lineColor = '#ffffff',
   className,
 }: PortraitCalloutsProps) {
   const items = callouts.slice(0, MAX_CALLOUTS);
@@ -195,7 +193,6 @@ export default function PortraitCallouts({
     .map((w) => w.charAt(0).toUpperCase())
     .join('');
   const rootStyle = {
-    '--pc-line': lineColor,
     '--pc-sx': `${(spot.fx * 100).toFixed(1)}%`,
     '--pc-sy': `${(spot.fy * 100).toFixed(1)}%`,
   } as CSSProperties;

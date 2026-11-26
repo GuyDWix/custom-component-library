@@ -19,8 +19,6 @@ export interface ShortlistSwipeDeckProps {
   enquireLink?: string;
   doneTitle?: string;
   restartLabel?: string;
-  accentColor?: string;
-  cardColor?: string;
   className?: string;
 }
 
@@ -85,8 +83,6 @@ export default function ShortlistSwipeDeck({
   enquireLink = 'mailto:studio@example.com',
   doneTitle = 'That is the whole collection',
   restartLabel = 'Start again',
-  accentColor = '#2343d0',
-  cardColor = '#efc5b6',
   className,
 }: ShortlistSwipeDeckProps) {
   const count = items.length;
@@ -328,11 +324,10 @@ export default function ShortlistSwipeDeck({
 
   const done = cursor >= count;
   const keptItems = kept.map((i) => items[i]).filter(Boolean);
-  const rootStyle = { '--sd-accent': accentColor, '--sd-clay': cardColor } as CSSProperties;
   const cls = (...c: (string | false | undefined)[]) => c.filter(Boolean).join(' ');
 
   return (
-    <section ref={rootRef} className={cls(styles.root, className)} style={rootStyle} aria-label={eyebrow || trayTitle}>
+    <section ref={rootRef} className={cls(styles.root, className)} aria-label={eyebrow || trayTitle}>
       <span className={cls(styles.glowClay, !inView && styles.still)} aria-hidden="true" />
       <span className={cls(styles.glowCobalt, !inView && styles.still)} aria-hidden="true" />
       <span className={styles.grain} aria-hidden="true" />
