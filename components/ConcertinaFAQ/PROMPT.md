@@ -1,6 +1,6 @@
 Create a custom element called "Concertina FAQ". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: questions (question, answer), paper color, accent color, allow multiple open. Add other settings if they help.
+The site owner must be able to change: questions (question, answer), allow multiple open. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
@@ -14,8 +14,6 @@ export interface ConcertinaFAQQuestion {
 
 export interface ConcertinaFAQProps {
   questions?: ConcertinaFAQQuestion[];
-  paperColor?: string;
-  accentColor?: string;
   allowMultipleOpen?: boolean;
 }
 
@@ -75,8 +73,6 @@ function pose(p: number, n: number): number[] {
 
 export default function ConcertinaFAQ({
   questions = defaultQuestions,
-  paperColor = '#f1ebdf',
-  accentColor = '#2b3a8c',
   allowMultipleOpen = false,
 }: ConcertinaFAQProps) {
   const items = questions.filter((q) => q.question);
@@ -314,10 +310,9 @@ export default function ConcertinaFAQ({
     </div>
   );
 
-  const rootStyle = { '--cf-paper': paperColor, '--cf-accent': accentColor } as CSSProperties;
 
   return (
-    <div ref={rootRef} className={styles.root} style={rootStyle}>
+    <div ref={rootRef} className={styles.root}>
       <div className={styles.frame}>
         <ul
           className={styles.list}
@@ -389,16 +384,6 @@ export default function ConcertinaFAQ({
 
 ```css
 .root {
-  --cf-paper: #f1ebdf;
-  --cf-accent: #2b3a8c;
-  --cf-ink: color-mix(in srgb, var(--cf-accent) 14%, #15130f);
-  --cf-paper-hi: color-mix(in srgb, var(--cf-paper) 72%, #ffffff);
-  --cf-paper-lo: color-mix(in srgb, var(--cf-paper) 93%, var(--cf-ink));
-  --cf-fold: color-mix(in srgb, var(--cf-paper) 80%, var(--cf-ink));
-  --cf-cream: color-mix(in srgb, var(--cf-paper) 55%, #ffffff);
-  --cf-shadow: color-mix(in srgb, var(--cf-ink) 80%, #000000);
-  --cf-surface-hi: color-mix(in srgb, var(--cf-paper) 86%, var(--cf-ink));
-  --cf-surface-lo: var(--cf-surface-hi);
   --cf-font: 'Bricolage Grotesque', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   position: relative;
   isolation: isolate;
@@ -407,12 +392,12 @@ export default function ConcertinaFAQ({
   box-sizing: border-box;
   inline-size: 100%;
   border-radius: 20px;
-  background: var(--cf-surface-hi);
-  color: var(--cf-ink);
+  background: color-mix(in srgb, #f1ebdf 86%, color-mix(in srgb, #2b3a8c 14%, #15130f));
+  color: color-mix(in srgb, #2b3a8c 14%, #15130f);
   font-family: var(--cf-font);
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--cf-ink) 12%, transparent),
-    0 24px 36px -30px color-mix(in srgb, var(--cf-shadow) 40%, transparent);
+    0 0 0 1px color-mix(in srgb, color-mix(in srgb, #2b3a8c 14%, #15130f) 12%, transparent),
+    0 24px 36px -30px color-mix(in srgb, color-mix(in srgb, color-mix(in srgb, #2b3a8c 14%, #15130f) 80%, #000000) 40%, transparent);
 }
 
 .frame {
@@ -464,22 +449,22 @@ export default function ConcertinaFAQ({
   padding-inline: var(--cf-pad) clamp(1rem, 3.5cqi, 2.5rem);
   border: 0;
   border-radius: 0;
-  color: var(--cf-ink);
+  color: color-mix(in srgb, #2b3a8c 14%, #15130f);
   font-family: var(--cf-font);
   text-align: start;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    inset 0 -1px 0 color-mix(in srgb, var(--cf-fold) 60%, transparent);
+    inset 0 -1px 0 color-mix(in srgb, color-mix(in srgb, #f1ebdf 80%, color-mix(in srgb, #2b3a8c 14%, #15130f)) 60%, transparent);
 }
 
 .bandEven {
-  background: linear-gradient(180deg, var(--cf-paper-hi) 0%, var(--cf-paper) 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, #f1ebdf 72%, #ffffff) 0%, #f1ebdf 100%);
 }
 
 .bandOdd {
-  background: linear-gradient(180deg, var(--cf-paper-lo) 0%, var(--cf-paper) 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, #f1ebdf 93%, color-mix(in srgb, #2b3a8c 14%, #15130f)) 0%, #f1ebdf 100%);
 }
 
 .item:first-child .band {
@@ -510,7 +495,7 @@ export default function ConcertinaFAQ({
 }
 
 .band:focus-visible {
-  outline: 3px solid var(--cf-accent);
+  outline: 3px solid #2b3a8c;
   outline-offset: -6px;
 }
 
@@ -532,8 +517,8 @@ export default function ConcertinaFAQ({
 }
 
 .qText::selection {
-  background: var(--cf-accent);
-  color: var(--cf-cream);
+  background: #2b3a8c;
+  color: color-mix(in srgb, #f1ebdf 55%, #ffffff);
 }
 
 .mark {
@@ -544,7 +529,7 @@ export default function ConcertinaFAQ({
   place-items: center;
   inline-size: 2rem;
   block-size: 2rem;
-  color: var(--cf-accent);
+  color: #2b3a8c;
   opacity: calc(0.8 + var(--hv) * 0.28);
   transition: opacity 0.2s ease-out;
 }
@@ -605,9 +590,9 @@ export default function ConcertinaFAQ({
   pointer-events: none;
   opacity: var(--sd, 1);
   box-shadow:
-    0 1px 0 color-mix(in srgb, var(--cf-shadow) 50%, transparent),
-    0 0.3rem 0.8rem -0.3rem color-mix(in srgb, var(--cf-shadow) 45%, transparent),
-    0 1.5rem 2rem -1.2rem color-mix(in srgb, var(--cf-shadow) 55%, transparent);
+    0 1px 0 color-mix(in srgb, color-mix(in srgb, color-mix(in srgb, #2b3a8c 14%, #15130f) 80%, #000000) 50%, transparent),
+    0 0.3rem 0.8rem -0.3rem color-mix(in srgb, color-mix(in srgb, color-mix(in srgb, #2b3a8c 14%, #15130f) 80%, #000000) 45%, transparent),
+    0 1.5rem 2rem -1.2rem color-mix(in srgb, color-mix(in srgb, color-mix(in srgb, #2b3a8c 14%, #15130f) 80%, #000000) 55%, transparent);
 }
 
 .facet {
@@ -627,7 +612,7 @@ export default function ConcertinaFAQ({
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: var(--cf-cream);
+  background: color-mix(in srgb, #f1ebdf 55%, #ffffff);
 }
 
 .sliceLast {
@@ -646,7 +631,7 @@ export default function ConcertinaFAQ({
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--cf-shadow) 26%, transparent) 0%,
+    color-mix(in srgb, color-mix(in srgb, color-mix(in srgb, #2b3a8c 14%, #15130f) 80%, #000000) 26%, transparent) 0%,
     transparent 100%
   );
 }
@@ -658,7 +643,7 @@ export default function ConcertinaFAQ({
   box-sizing: border-box;
   padding-block: clamp(1.25rem, 3cqi, 2rem) clamp(1.5rem, 3.6cqi, 2.4rem);
   padding-inline: var(--cf-pad) clamp(1rem, 4cqi, 3rem);
-  color: var(--cf-ink);
+  color: color-mix(in srgb, #2b3a8c 14%, #15130f);
   opacity: var(--tx, 1);
 }
 
@@ -674,15 +659,15 @@ export default function ConcertinaFAQ({
   font-size: clamp(1rem, 0.94rem + 0.32cqi, 1.1875rem);
   line-height: 1.65;
   letter-spacing: -0.003em;
-  color: var(--cf-ink);
+  color: color-mix(in srgb, #2b3a8c 14%, #15130f);
   text-wrap: pretty;
   overflow-wrap: break-word;
   hyphens: manual;
 }
 
 .answerText::selection {
-  background: var(--cf-accent);
-  color: var(--cf-cream);
+  background: #2b3a8c;
+  color: color-mix(in srgb, #f1ebdf 55%, #ffffff);
 }
 
 /* Pleat shading: facets turned up catch the light, facets turned down fall into shade. */
@@ -701,7 +686,7 @@ export default function ConcertinaFAQ({
     180deg,
     rgba(255, 255, 255, 0.28) 0%,
     rgba(255, 255, 255, 0) 40%,
-    color-mix(in srgb, var(--cf-shadow) 8%, transparent) 100%
+    color-mix(in srgb, color-mix(in srgb, color-mix(in srgb, #2b3a8c 14%, #15130f) 80%, #000000) 8%, transparent) 100%
   );
 }
 
@@ -709,8 +694,8 @@ export default function ConcertinaFAQ({
   inset-block: 0;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--cf-shadow) 20%, transparent) 0%,
-    color-mix(in srgb, var(--cf-shadow) 7%, transparent) 55%,
+    color-mix(in srgb, color-mix(in srgb, color-mix(in srgb, #2b3a8c 14%, #15130f) 80%, #000000) 20%, transparent) 0%,
+    color-mix(in srgb, color-mix(in srgb, color-mix(in srgb, #2b3a8c 14%, #15130f) 80%, #000000) 7%, transparent) 55%,
     rgba(255, 255, 255, 0.08) 100%
   );
 }
@@ -718,6 +703,6 @@ export default function ConcertinaFAQ({
 .crease {
   inset-block-start: 0;
   block-size: 1px;
-  background: color-mix(in srgb, var(--cf-shadow) 22%, transparent);
+  background: color-mix(in srgb, color-mix(in srgb, color-mix(in srgb, #2b3a8c 14%, #15130f) 80%, #000000) 22%, transparent);
 }
 ```

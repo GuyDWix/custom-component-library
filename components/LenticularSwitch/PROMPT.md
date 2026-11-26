@@ -1,6 +1,6 @@
 Create a custom element called "Lenticular Switch". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: image A, image B, image A description, image B description, strip width, strip colour or gradient (stripColor), idle sway hint on/off. Add other settings if they help.
+The site owner must be able to change: image A, image B, image A description, image B description, strip width, idle sway hint on/off. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -16,7 +16,6 @@ export interface LenticularSwitchProps {
   imageBAlt?: string;
   stripWidth?: number;
   /** Tint of the strips while they flip: a CSS colour or gradient (e.g. `#ff7a00`, `linear-gradient(90deg, gold, hotpink)`). Gradients span the whole print. Empty = default multicolour sheen. */
-  stripColor?: string;
   hint?: boolean;
   className?: string;
 }
@@ -63,7 +62,6 @@ export default function LenticularSwitch({
   imageB = defaultImageB,
   imageBAlt = 'Pair of black knit sneakers with white soles on a plinth',
   stripWidth = 26,
-  stripColor,
   hint = true,
   className,
 }: LenticularSwitchProps) {
@@ -260,7 +258,6 @@ export default function LenticularSwitch({
     '--ls-img-b': imageB ? `url("${imageB}")` : 'none',
     '--ls-ar-a': ratioA,
     '--ls-ar-b': ratioB,
-    ...(stripColor ? { '--ls-tint': stripColor } : {}),
   } as CSSProperties;
   const openingStyle = { '--ls-n': stripCount } as CSSProperties;
   const ariaLabel = `Lenticular print switching between ${imageAAlt} and ${imageBAlt}`;
@@ -295,7 +292,7 @@ export default function LenticularSwitch({
             <span className={styles.flatB} aria-hidden="true" style={{ opacity: showB ? 1 : 0 }} />
           </>
         ) : (
-          <div className={[styles.strips, stripColor && styles.tinted].filter(Boolean).join(' ')} aria-hidden="true">
+          <div className={styles.strips} aria-hidden="true">
             {Array.from({ length: stripCount }, (_, i) => (
               <div
                 key={i}
@@ -345,9 +342,6 @@ export default function LenticularSwitch({
 
 ```css
 .root {
-  --ls-paper: #f5f4f1;
-  --ls-ink: #151515;
-  --ls-muted: #6b6a66;
   --ls-font-display: 'Montserrat', 'Futura', 'Helvetica Neue', system-ui, sans-serif;
   --ls-font-ui: 'Instrument Sans', 'Helvetica Neue', system-ui, sans-serif;
   --ls-img-a: none;
@@ -360,8 +354,8 @@ export default function LenticularSwitch({
   inline-size: 100%;
   margin: 0;
   padding: clamp(12px, 3cqi, 32px);
-  background: var(--ls-paper);
-  color: var(--ls-ink);
+  background: #f5f4f1;
+  color: #151515;
   font-family: var(--ls-font-ui);
   container-type: inline-size;
 }
@@ -374,7 +368,7 @@ export default function LenticularSwitch({
   overflow: hidden;
   container-type: inline-size;
   perspective: 1400px;
-  background: var(--ls-paper);
+  background: #f5f4f1;
   cursor: ew-resize;
   touch-action: pan-y;
   -webkit-tap-highlight-color: transparent;
@@ -382,7 +376,7 @@ export default function LenticularSwitch({
 }
 
 .opening:focus-visible {
-  outline: 2px solid var(--ls-ink);
+  outline: 2px solid #151515;
   outline-offset: 4px;
 }
 
@@ -414,7 +408,7 @@ export default function LenticularSwitch({
   background-repeat: no-repeat;
   background-size: max(100cqw, calc(75cqw * var(--ls-ar, 1.6))) auto;
   background-position: calc(var(--i) * -100cqw / var(--ls-n) + 0.5px) 38%;
-  background-color: var(--ls-paper);
+  background-color: #f5f4f1;
 }
 
 .faceA::before,
@@ -434,15 +428,6 @@ export default function LenticularSwitch({
   mix-blend-mode: soft-light;
   opacity: calc(var(--s) * 1.1);
   pointer-events: none;
-}
-
-.tinted .faceA::before,
-.tinted .faceB::before {
-  background: var(--ls-tint);
-  background-size: 100cqw 100%;
-  background-position: calc(var(--i) * -100cqw / var(--ls-n)) 0;
-  mix-blend-mode: normal;
-  opacity: calc(var(--s) * 0.55);
 }
 
 .faceA::after,
@@ -472,7 +457,7 @@ export default function LenticularSwitch({
   inset: 0;
   background-size: cover;
   background-position: center;
-  background-color: var(--ls-paper);
+  background-color: #f5f4f1;
   transition: opacity 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -517,7 +502,7 @@ export default function LenticularSwitch({
 
 .hintText {
   padding-block-end: 0.2em;
-  color: var(--ls-muted);
+  color: #6b6a66;
   font-size: 13px;
   letter-spacing: 0.02em;
 }
@@ -532,7 +517,7 @@ export default function LenticularSwitch({
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--ls-ink);
+  color: #151515;
   cursor: pointer;
   transition:
     background-color 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
@@ -548,7 +533,7 @@ export default function LenticularSwitch({
 }
 
 .pauseButton:focus-visible {
-  outline: 2px solid var(--ls-ink);
+  outline: 2px solid #151515;
   outline-offset: 2px;
 }
 

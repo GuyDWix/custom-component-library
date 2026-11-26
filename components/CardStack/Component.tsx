@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
+import type { KeyboardEvent, PointerEvent } from 'react';
 import styles from './Component.module.css';
 
 export interface CardStackCard {
@@ -14,7 +14,6 @@ export type CardSurface = 'glass' | 'paper' | 'solid';
 export interface CardStackProps {
   cards?: CardStackCard[];
   autoAdvanceSeconds?: number;
-  accentColor?: string;
   surface?: CardSurface;
   eyebrow?: string;
   hint?: string;
@@ -82,7 +81,6 @@ const initials = (name: string) =>
 export default function CardStack({
   cards = defaultCards,
   autoAdvanceSeconds = 6,
-  accentColor = '#2448D8',
   surface = 'glass',
   eyebrow = 'Kind words from clients',
   hint = 'Drag, tap or use the arrow keys',
@@ -419,14 +417,12 @@ export default function CardStack({
   };
 
   const frontIndex = order[0] ?? 0;
-  const rootStyle = { '--cs-accent': accentColor } as CSSProperties;
   const surfaceClass = styles[surface] ?? styles.glass;
 
   return (
     <section
       ref={rootRef}
       className={[styles.root, className].filter(Boolean).join(' ')}
-      style={rootStyle}
       aria-roledescription="carousel"
       aria-label={ariaLabel}
       onPointerEnter={(e) => e.pointerType === 'mouse' && setHovered(true)}

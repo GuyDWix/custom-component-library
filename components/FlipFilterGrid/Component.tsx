@@ -16,7 +16,6 @@ export interface FlipFilterCategory {
 export interface FlipFilterGridProps {
   items?: FlipFilterItem[];
   categories?: FlipFilterCategory[];
-  chipColor?: string;
   columns?: number;
   allLabel?: string;
   className?: string;
@@ -105,7 +104,6 @@ const makeBody = (t: Pose): Body => ({ ...t, vx: 0, vy: 0, vw: 0, vh: 0, vs: 0, 
 export default function FlipFilterGrid({
   items = defaultItems,
   categories = defaultCategories,
-  chipColor = '#C2381B',
   columns = 4,
   allLabel = 'All',
   className,
@@ -380,7 +378,7 @@ export default function FlipFilterGrid({
     }
   };
 
-  const rootStyle = { '--ffg-chip': chipColor, '--ffg-cols': clamp(Math.round(columns) || 3, 2, 5) } as CSSProperties;
+  const rootStyle = { '--ffg-cols': clamp(Math.round(columns) || 3, 2, 5) } as CSSProperties;
 
   const caption = (it: FlipFilterItem, index: number, featured: boolean, probe?: (el: HTMLDivElement | null) => void) => (
     <div

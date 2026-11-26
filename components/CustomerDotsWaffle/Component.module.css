@@ -1,32 +1,11 @@
-@property --cdw-ground {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: #f1f5f2;
-}
-
-@property --cdw-slate {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: #7f8e9a;
-}
-
-@property --cdw-ink {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: #1c2832;
-}
-
-@property --cdw-highlight {
+@property --accent {
   syntax: '<color>';
   inherits: true;
   initial-value: #f2503f;
 }
 
 .root {
-  --cdw-ground: #f1f5f2;
-  --cdw-slate: #7f8e9a;
-  --cdw-ink: #1c2832;
-  --cdw-highlight: #f2503f;
+  --accent: #f2503f;
   --cdw-font: 'DM Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --cdw-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -37,22 +16,22 @@
   container-type: inline-size;
   overflow: hidden;
   border-radius: 28px;
-  background-color: var(--cdw-ground);
+  background-color: #f1f5f2;
   background-image: radial-gradient(70% 90% at 66% 54%, rgba(205, 228, 215, 0.55) 0%, rgba(205, 228, 215, 0) 70%);
   box-shadow:
     inset 0 0 0 1px rgba(28, 40, 50, 0.07),
     0 1px 2px rgba(28, 40, 50, 0.05),
     0 18px 40px -22px rgba(28, 40, 50, 0.28);
-  color: var(--cdw-ink);
+  color: #1c2832;
   font-family: var(--cdw-font);
-  transition-property: --cdw-ground, --cdw-slate, --cdw-ink, --cdw-highlight;
+  transition-property: --accent, color, background-color;
   transition-duration: 1ms;
   transition-behavior: allow-discrete;
 }
 
 .root::selection {
-  background: color-mix(in srgb, var(--cdw-highlight) 28%, transparent);
-  color: var(--cdw-ink);
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+  color: #1c2832;
 }
 
 .frame {
@@ -112,7 +91,7 @@
   line-height: 0.82;
   letter-spacing: -0.065em;
   font-variant-numeric: tabular-nums;
-  color: var(--cdw-ink);
+  color: #1c2832;
 }
 
 .numWrap {
@@ -137,7 +116,7 @@
   font-size: 0.4em;
   font-weight: 600;
   letter-spacing: -0.02em;
-  color: var(--cdw-highlight);
+  color: var(--accent);
 }
 
 .statement {
@@ -147,7 +126,7 @@
   font-weight: 500;
   line-height: 1.4;
   letter-spacing: -0.012em;
-  color: color-mix(in srgb, var(--cdw-ink) 82%, var(--cdw-ground));
+  color: color-mix(in srgb, #1c2832 82%, #f1f5f2);
   text-wrap: pretty;
   overflow-wrap: anywhere;
 }
@@ -177,7 +156,7 @@
   border: 1px solid rgba(28, 40, 50, 0.12);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.55);
-  color: var(--cdw-ink);
+  color: #1c2832;
   font: inherit;
   font-size: 15px;
   font-weight: 500;
@@ -198,7 +177,7 @@
 }
 
 .legendBtn:focus-visible {
-  outline: 2px solid var(--cdw-highlight);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -212,11 +191,11 @@
   inline-size: 14px;
   block-size: 14px;
   border-radius: 50%;
-  background: var(--cdw-slate);
+  background: #7f8e9a;
 }
 
 .swatchHi {
-  background: var(--cdw-highlight);
+  background: var(--accent);
 }
 
 .tip {
@@ -232,7 +211,7 @@
   border: 1px solid rgba(28, 40, 50, 0.1);
   border-radius: 14px;
   background: #ffffff;
-  color: var(--cdw-ink);
+  color: #1c2832;
   font-size: 15px;
   font-weight: 500;
   line-height: 1.25;

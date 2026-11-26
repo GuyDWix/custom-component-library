@@ -1,6 +1,6 @@
 Create a custom element called "Electric Frame". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: heading, body text, button label and link, border color, intensity, speed, corner radius. Add other settings if they help.
+The site owner must be able to change: heading, body text, button label and link, intensity, speed, corner radius. Add other settings if they help.
 
 ```tsx
 import { Fragment, useEffect, useId, useRef, useState } from 'react';
@@ -12,7 +12,6 @@ export interface ElectricFrameProps {
   body?: string;
   ctaLabel?: string;
   ctaHref?: string;
-  color?: string;
   /** 0-100: how far the border is pulled off its straight line, and glow strength */
   intensity?: number;
   /** 0.25-3: animation speed multiplier */
@@ -31,7 +30,6 @@ export default function ElectricFrame({
   body = 'Unlimited projects, shared libraries and priority support, billed once a year with no surprise add-ons.',
   ctaLabel = 'Start free trial',
   ctaHref,
-  color = '#7cc4ff',
   intensity = 55,
   speed = 1,
   radius = 24,
@@ -85,7 +83,6 @@ export default function ElectricFrame({
   const live = !reduced && k > 0;
   const scale = (14 + k * 30).toFixed(1);
   const style = {
-    '--ef-color': color,
     '--ef-radius': `${radius}px`,
     ...(live ? { '--ef-filter': `url(#${filterId})` } : null),
   } as CSSProperties;
@@ -158,14 +155,8 @@ function Arrow() {
 
 ```css
 .root {
-  --ef-color: #7cc4ff;
-  --ef-light: var(--ef-color);
-  --ef-tint: color-mix(in srgb, var(--ef-color) 40%, transparent);
   --ef-radius: 24px;
   --ef-filter: none;
-  --ef-bg: #2b2b2b;
-  --ef-text: #f4f6fa;
-  --ef-muted: #adb4c2;
   --ef-font: 'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', sans-serif;
   position: relative;
   box-sizing: border-box;
@@ -174,15 +165,8 @@ function Arrow() {
   border-radius: var(--ef-radius);
   font-family: var(--ef-font);
   container-type: inline-size;
-  background:
-    linear-gradient(-30deg, var(--ef-tint), transparent, var(--ef-tint)),
-    linear-gradient(#171717, #171717);
-}
-@supports (color: oklch(from red l c h)) {
-  .root {
-    --ef-light: oklch(from var(--ef-color) l c h);
-    --ef-tint: oklch(from var(--ef-color) 0.3 calc(c / 2) h / 0.4);
-  }
+  background-color: #171717;
+  background-image: linear-gradient(-30deg, rgba(18, 48, 72, 0.4), transparent, rgba(18, 48, 72, 0.4));
 }
 .defs {
   position: absolute;
@@ -203,19 +187,19 @@ function Arrow() {
   pointer-events: none;
 }
 .outer {
-  border: 2px solid color-mix(in srgb, var(--ef-color) 50%, transparent);
+  border: 2px solid color-mix(in srgb, #7cc4ff 50%, transparent);
 }
 .main {
-  border: 2px solid var(--ef-color);
+  border: 2px solid #7cc4ff;
   inset: -2px 2px 2px -2px;
   filter: var(--ef-filter);
 }
 .glowTight {
-  border: 2px solid color-mix(in srgb, var(--ef-color) 60%, transparent);
+  border: 2px solid color-mix(in srgb, #7cc4ff 60%, transparent);
   filter: blur(1px);
 }
 .glowWide {
-  border: 2px solid var(--ef-light);
+  border: 2px solid #7cc4ff;
   filter: blur(4px);
 }
 .overlay,
@@ -233,7 +217,7 @@ function Arrow() {
   opacity: 0.3;
   transform: scale(1.1);
   filter: blur(32px);
-  background: linear-gradient(-30deg, var(--ef-light), transparent, var(--ef-color));
+  background: linear-gradient(-30deg, #7cc4ff, transparent, #7cc4ff);
 }
 .card {
   position: relative;
@@ -243,7 +227,7 @@ function Arrow() {
   flex-direction: column;
   align-items: flex-start;
   padding: clamp(1.5rem, 9cqi, 3rem);
-  color: var(--ef-text);
+  color: #f4f6fa;
 }
 .heading {
   margin: auto 0 0;
@@ -270,7 +254,7 @@ function Arrow() {
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-size: 0.95rem;
   line-height: 1.55;
-  color: var(--ef-muted);
+  color: #adb4c2;
   overflow-wrap: anywhere;
 }
 .cta {
@@ -279,10 +263,10 @@ function Arrow() {
   gap: 0.55rem;
   margin-block-start: 1.4rem;
   padding: 0.75rem 1.2rem;
-  border: 1px solid color-mix(in srgb, var(--ef-color) 60%, transparent);
+  border: 1px solid color-mix(in srgb, #7cc4ff 60%, transparent);
   border-radius: calc(var(--ef-radius) * 0.55);
-  background: color-mix(in srgb, var(--ef-color) 12%, transparent);
-  color: var(--ef-text);
+  background: color-mix(in srgb, #7cc4ff 12%, transparent);
+  color: #f4f6fa;
   font: inherit;
   font-size: 0.95rem;
   text-decoration: none;
@@ -290,14 +274,14 @@ function Arrow() {
   transition: background-color 0.2s ease-out, color 0.2s ease-out;
 }
 .cta:hover {
-  background: var(--ef-color);
+  background: #7cc4ff;
   color: #07101c;
 }
 .cta:active {
   transform: translateY(1px);
 }
 .cta:focus-visible {
-  outline: 2px solid var(--ef-text);
+  outline: 2px solid #f4f6fa;
   outline-offset: 3px;
 }
 .arrow {

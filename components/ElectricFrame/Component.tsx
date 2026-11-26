@@ -7,7 +7,6 @@ export interface ElectricFrameProps {
   body?: string;
   ctaLabel?: string;
   ctaHref?: string;
-  color?: string;
   /** 0-100: how far the border is pulled off its straight line, and glow strength */
   intensity?: number;
   /** 0.25-3: animation speed multiplier */
@@ -26,7 +25,6 @@ export default function ElectricFrame({
   body = 'Unlimited projects, shared libraries and priority support, billed once a year with no surprise add-ons.',
   ctaLabel = 'Start free trial',
   ctaHref,
-  color = '#7cc4ff',
   intensity = 55,
   speed = 1,
   radius = 24,
@@ -80,7 +78,6 @@ export default function ElectricFrame({
   const live = !reduced && k > 0;
   const scale = (14 + k * 30).toFixed(1);
   const style = {
-    '--ef-color': color,
     '--ef-radius': `${radius}px`,
     ...(live ? { '--ef-filter': `url(#${filterId})` } : null),
   } as CSSProperties;

@@ -15,7 +15,6 @@ export interface JobRouteTrackerProps {
   /** 1-based number of the stage the job has reached. */
   currentStage?: number;
   markerIcon?: JobRouteMarkerIcon;
-  routeColor?: string;
   hereLabel?: string;
   nextLabel?: string;
   doneLabel?: string;
@@ -398,7 +397,6 @@ export default function JobRouteTracker({
   stages = defaultStages,
   currentStage = 4,
   markerIcon = 'van',
-  routeColor = '#2b6a46',
   hereLabel = 'You are here',
   nextLabel = 'Next stop',
   doneLabel = 'Done',
@@ -693,7 +691,6 @@ export default function JobRouteTracker({
   };
 
   const animated = phase !== 'done';
-  const rootStyle = { '--jr-route': routeColor } as CSSProperties;
 
   const pos = posRef.current ?? cur;
   const len = posToLen(route, pos);
@@ -823,7 +820,7 @@ export default function JobRouteTracker({
   const pad2 = (v: number) => String(v).padStart(2, '0');
 
   return (
-    <section className={styles.root} style={rootStyle} ref={rootRef} aria-labelledby={`${uid}t`}>
+    <section className={styles.root} ref={rootRef} aria-labelledby={`${uid}t`}>
       <MapDecor uid={uid} />
       {wide ? (
         <>

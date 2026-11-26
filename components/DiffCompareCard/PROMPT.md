@@ -1,6 +1,6 @@
 Create a custom element called "Diff Compare Card". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: first option name, second option name, rows (label, first value, second value, optional numbers, unit, and better: higher or lower), accent colour, collapsed-stack label. Add other settings if they help.
+The site owner must be able to change: first option name, second option name, rows (label, first value, second value, optional numbers, unit, and better: higher or lower), collapsed-stack label. Add other settings if they help.
 
 ```tsx
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
@@ -24,7 +24,6 @@ export interface DiffCompareCardProps {
   optionAName?: string;
   optionBName?: string;
   rows?: DiffCompareRow[];
-  accentColor?: string;
   collapseLabel?: string;
   className?: string;
 }
@@ -88,7 +87,6 @@ export default function DiffCompareCard({
   optionAName = 'Signature Full-Day',
   optionBName = 'Classic Half-Day',
   rows = defaultRows,
-  accentColor,
   collapseLabel = 'Same in both',
   className,
 }: DiffCompareCardProps) {
@@ -202,7 +200,6 @@ export default function DiffCompareCard({
     verdict = `${name} fits you best: wins ${wins[lead]} of your ${counted.length} ${counted.length === 1 ? 'priority' : 'priorities'}.`;
   }
 
-  const rootStyle = (accentColor ? { '--dc-accent': accentColor } : undefined) as CSSProperties | undefined;
   const rootClass = [styles.root, className].filter(Boolean).join(' ');
 
   const pan = (side: 'A' | 'B') => {
@@ -249,7 +246,7 @@ export default function DiffCompareCard({
   };
 
   return (
-    <div ref={rootRef} className={rootClass} style={rootStyle} role="group" aria-label={`${nameA} compared with ${nameB}`}>
+    <div ref={rootRef} className={rootClass} role="group" aria-label={`${nameA} compared with ${nameB}`}>
       {decided.length > 0 && (
         <section className={styles.matters} aria-labelledby={`${uid}-m`}>
           <h4 id={`${uid}-m`} className={styles.mattersTitle}>
@@ -338,13 +335,6 @@ export default function DiffCompareCard({
 
 ```css
 .root {
-  --dc-paper: #ffffff;
-  --dc-ink: #17191f;
-  --dc-muted: #5b616c;
-  --dc-line: #e4e6ea;
-  --dc-accent: #2f56d6;
-  --dc-accent-ink: color-mix(in srgb, var(--dc-accent) 70%, #000);
-  --dc-tint: color-mix(in srgb, var(--dc-accent) 7%, var(--dc-paper));
   --dc-font: 'IBM Plex Sans', system-ui, sans-serif;
   --dc-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --dc-gap: clamp(14px, 3.2cqi, 32px);
@@ -355,17 +345,17 @@ export default function DiffCompareCard({
   inline-size: 100%;
   overflow: clip;
   padding: clamp(20px, 4.5cqi, 48px);
-  border: 1px solid var(--dc-line);
+  border: 1px solid #e4e6ea;
   border-radius: 16px;
-  background: var(--dc-paper);
+  background: #ffffff;
   box-shadow: 0 1px 2px rgba(23, 25, 31, 0.04), 0 12px 32px -20px rgba(23, 25, 31, 0.18);
-  color: var(--dc-ink);
+  color: #17191f;
   font-family: var(--dc-font);
   -webkit-tap-highlight-color: transparent;
 }
 
 .root ::selection {
-  background: color-mix(in srgb, var(--dc-accent) 22%, #fff);
+  background: color-mix(in srgb, #2f56d6 22%, #fff);
 }
 
 .sr {
@@ -388,7 +378,7 @@ export default function DiffCompareCard({
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--dc-muted);
+  color: #5b616c;
 }
 
 .chips {
@@ -405,9 +395,9 @@ export default function DiffCompareCard({
   max-inline-size: 100%;
   padding: 0 14px 0 12px;
   appearance: none;
-  border: 1px solid var(--dc-ink);
+  border: 1px solid #17191f;
   border-radius: 999px;
-  background: var(--dc-ink);
+  background: #17191f;
   color: #fff;
   font: inherit;
   font-size: 14px;
@@ -417,14 +407,14 @@ export default function DiffCompareCard({
 }
 
 .chip[data-w='2'] {
-  background: var(--dc-accent);
-  border-color: var(--dc-accent);
+  background: #2f56d6;
+  border-color: #2f56d6;
 }
 
 .chip[data-w='0'] {
   background: transparent;
-  border-color: var(--dc-line);
-  color: var(--dc-muted);
+  border-color: #e4e6ea;
+  color: #5b616c;
 }
 
 .chip:active {
@@ -433,7 +423,7 @@ export default function DiffCompareCard({
 
 .chip:focus-visible,
 .sameBtn:focus-visible {
-  outline: 2px solid var(--dc-accent-ink);
+  outline: 2px solid color-mix(in srgb, #2f56d6 70%, #000);
   outline-offset: 2px;
 }
 
@@ -483,7 +473,7 @@ export default function DiffCompareCard({
 .verdict {
   margin: 0 0 22px;
   padding-block-start: 16px;
-  border-block-start: 1px solid var(--dc-ink);
+  border-block-start: 1px solid #17191f;
   font-size: clamp(18px, 3.4cqi, 26px);
   font-weight: 600;
   line-height: 1.25;
@@ -520,7 +510,7 @@ export default function DiffCompareCard({
   inset-block-start: -4px;
   block-size: 8px;
   border-radius: 4px;
-  background: linear-gradient(180deg, #2b2f38, var(--dc-ink));
+  background: linear-gradient(180deg, #2b2f38, #17191f);
   box-shadow: 0 6px 10px -4px rgba(23, 25, 31, 0.35);
   rotate: calc(var(--s) * -1 * var(--dc-tilt));
 }
@@ -531,7 +521,7 @@ export default function DiffCompareCard({
   inset-block-start: 0;
   inline-size: 2px;
   block-size: 30px;
-  background: var(--dc-ink);
+  background: #17191f;
   opacity: 0.55;
 }
 
@@ -542,8 +532,8 @@ export default function DiffCompareCard({
   inline-size: 14px;
   block-size: 14px;
   border-radius: 50%;
-  background: var(--dc-paper);
-  border: 3px solid var(--dc-ink);
+  background: #ffffff;
+  border: 3px solid #17191f;
   box-sizing: border-box;
 }
 
@@ -564,30 +554,30 @@ export default function DiffCompareCard({
   inset-inline-start: calc(50% - 0.5px);
   inline-size: 1px;
   block-size: 22px;
-  background: var(--dc-ink);
+  background: #17191f;
   opacity: 0.6;
 }
 
 .panBody {
   box-sizing: border-box;
   padding: 14px clamp(10px, 2.4cqi, 18px) 6px;
-  border: 1px solid var(--dc-line);
-  border-block-start: 3px solid var(--dc-ink);
+  border: 1px solid #e4e6ea;
+  border-block-start: 3px solid #17191f;
   border-radius: 4px 4px 12px 12px;
-  background: var(--dc-paper);
+  background: #ffffff;
   box-shadow: 0 14px 20px -16px rgba(23, 25, 31, 0.35);
   transition: border-color 300ms var(--dc-ease);
 }
 
 .panA .panBody {
-  border-block-start-color: var(--dc-accent);
-  background: var(--dc-tint);
+  border-block-start-color: #2f56d6;
+  background: color-mix(in srgb, #2f56d6 7%, #ffffff);
 }
 
 
 .pan[data-lead='true'] .panBody {
-  border-inline-color: color-mix(in srgb, var(--dc-ink) 30%, var(--dc-line));
-  border-block-end-color: color-mix(in srgb, var(--dc-ink) 30%, var(--dc-line));
+  border-inline-color: color-mix(in srgb, #17191f 30%, #e4e6ea);
+  border-block-end-color: color-mix(in srgb, #17191f 30%, #e4e6ea);
 }
 
 .panHead {
@@ -622,7 +612,7 @@ export default function DiffCompareCard({
 .tallyUnit {
   font-size: 12px;
   font-weight: 500;
-  color: var(--dc-muted);
+  color: #5b616c;
 }
 
 .plates {
@@ -654,12 +644,12 @@ export default function DiffCompareCard({
   display: grid;
   gap: 2px;
   padding: 10px 0;
-  border-block-start: 1px solid var(--dc-line);
+  border-block-start: 1px solid #e4e6ea;
 }
 
 .plateLabel {
   font-size: 12px;
-  color: var(--dc-muted);
+  color: #5b616c;
   overflow-wrap: anywhere;
 }
 
@@ -671,12 +661,12 @@ export default function DiffCompareCard({
 }
 
 .plate[data-double='true'] .plateValue {
-  color: var(--dc-accent-ink);
+  color: color-mix(in srgb, #2f56d6 70%, #000);
 }
 
 .plateOther {
   font-size: 12px;
-  color: var(--dc-muted);
+  color: #5b616c;
   overflow-wrap: anywhere;
 }
 
@@ -711,13 +701,13 @@ export default function DiffCompareCard({
   grid-template-columns: 1fr 1fr 1fr;
   gap: 4px var(--dc-gap2);
   padding: 10px 4px;
-  border-block-start: 1px solid var(--dc-line);
+  border-block-start: 1px solid #e4e6ea;
   font-size: 14px;
   line-height: 1.4;
 }
 
 .neutralLabel {
-  color: var(--dc-muted);
+  color: #5b616c;
 }
 
 .neutralVal {
@@ -768,25 +758,25 @@ export default function DiffCompareCard({
   border: 0;
   background: none;
   font: inherit;
-  color: var(--dc-muted);
+  color: #5b616c;
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
 }
 
 .sameBtn:hover {
-  color: var(--dc-accent-ink);
+  color: color-mix(in srgb, #2f56d6 70%, #000);
 }
 
 .sameBtn:focus-visible {
-  outline: 2px solid var(--dc-accent-ink);
+  outline: 2px solid color-mix(in srgb, #2f56d6 70%, #000);
   outline-offset: -2px;
   border-radius: 6px;
 }
 
 .sameCount {
   font-weight: 600;
-  color: var(--dc-ink);
+  color: #17191f;
 }
 
 .chev {
@@ -828,13 +818,13 @@ export default function DiffCompareCard({
   justify-content: space-between;
   gap: 16px;
   padding: 10px 4px;
-  border-block-start: 1px solid var(--dc-line);
+  border-block-start: 1px solid #e4e6ea;
   font-size: 14px;
   line-height: 1.4;
 }
 
 .sameName {
-  color: var(--dc-muted);
+  color: #5b616c;
   min-inline-size: 0;
   overflow-wrap: anywhere;
 }

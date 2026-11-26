@@ -1,6 +1,6 @@
 Create a custom element called "Job Route Tracker". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: title, stages (name, short description), current stage, marker icon, route color, status labels (you are here, next stop, done, coming up). Add other settings if they help.
+The site owner must be able to change: title, stages (name, short description), current stage, marker icon, status labels (you are here, next stop, done, coming up). Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -20,7 +20,6 @@ export interface JobRouteTrackerProps {
   /** 1-based number of the stage the job has reached. */
   currentStage?: number;
   markerIcon?: JobRouteMarkerIcon;
-  routeColor?: string;
   hereLabel?: string;
   nextLabel?: string;
   doneLabel?: string;
@@ -403,7 +402,6 @@ export default function JobRouteTracker({
   stages = defaultStages,
   currentStage = 4,
   markerIcon = 'van',
-  routeColor = '#2b6a46',
   hereLabel = 'You are here',
   nextLabel = 'Next stop',
   doneLabel = 'Done',
@@ -698,7 +696,6 @@ export default function JobRouteTracker({
   };
 
   const animated = phase !== 'done';
-  const rootStyle = { '--jr-route': routeColor } as CSSProperties;
 
   const pos = posRef.current ?? cur;
   const len = posToLen(route, pos);
@@ -828,7 +825,7 @@ export default function JobRouteTracker({
   const pad2 = (v: number) => String(v).padStart(2, '0');
 
   return (
-    <section className={styles.root} style={rootStyle} ref={rootRef} aria-labelledby={`${uid}t`}>
+    <section className={styles.root} ref={rootRef} aria-labelledby={`${uid}t`}>
       <MapDecor uid={uid} />
       {wide ? (
         <>
@@ -935,16 +932,6 @@ export default function JobRouteTracker({
 ```css
 /* Trail map: stone paper, forest-green dashed route, mustard pins, hand-drawn compass. Bricolage Grotesque (OFL) is embedded below. */
 .root {
-  --jr-paper: #e6e4da;
-  --jr-paper-hi: #f2f0e8;
-  --jr-paper-lo: #d6d4c7;
-  --jr-ink: #1b2a22;
-  --jr-quiet: #435249;
-  --jr-route: #2b6a46;
-  --jr-marker: color-mix(in srgb, var(--jr-route) 68%, #07130c);
-  --jr-pin: #dba421;
-  --jr-water: #c4d5cb;
-  --jr-focus: #17402b;
   --jr-font: 'Bricolage Grotesque', 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
 
   position: relative;
@@ -954,12 +941,12 @@ export default function JobRouteTracker({
   isolation: isolate;
   overflow: hidden;
   border-radius: 26px;
-  background: var(--jr-paper);
-  border: 1px solid color-mix(in srgb, var(--jr-ink) 14%, transparent);
+  background: #e6e4da;
+  border: 1px solid color-mix(in srgb, #1b2a22 14%, transparent);
   box-shadow:
-    0 1px 2px color-mix(in srgb, var(--jr-ink) 10%, transparent),
-    0 22px 44px -26px color-mix(in srgb, var(--jr-ink) 38%, transparent);
-  color: var(--jr-ink);
+    0 1px 2px color-mix(in srgb, #1b2a22 10%, transparent),
+    0 22px 44px -26px color-mix(in srgb, #1b2a22 38%, transparent);
+  color: #1b2a22;
   font-family: var(--jr-font);
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
@@ -967,8 +954,8 @@ export default function JobRouteTracker({
 }
 
 .root::selection {
-  background: color-mix(in srgb, var(--jr-pin) 55%, transparent);
-  color: var(--jr-ink);
+  background: color-mix(in srgb, #dba421 55%, transparent);
+  color: #1b2a22;
 }
 
 /* ── scenery ── */
@@ -982,13 +969,13 @@ export default function JobRouteTracker({
 }
 
 .water {
-  fill: var(--jr-water);
+  fill: #c4d5cb;
   opacity: 0.75;
 }
 
 .river {
   fill: none;
-  stroke: var(--jr-water);
+  stroke: #c4d5cb;
   stroke-width: 15;
   stroke-linecap: round;
   opacity: 0.8;
@@ -996,29 +983,29 @@ export default function JobRouteTracker({
 
 .contour {
   fill: none;
-  stroke: var(--jr-ink);
+  stroke: #1b2a22;
   stroke-width: 1.1;
   opacity: 0.1;
 }
 
 .contourMajor {
   fill: none;
-  stroke: var(--jr-ink);
+  stroke: #1b2a22;
   stroke-width: 1.6;
   opacity: 0.18;
 }
 
 .tree {
-  fill: color-mix(in srgb, var(--jr-route) 22%, transparent);
-  stroke: color-mix(in srgb, var(--jr-route) 50%, transparent);
+  fill: color-mix(in srgb, #2b6a46 22%, transparent);
+  stroke: color-mix(in srgb, #2b6a46 50%, transparent);
   stroke-width: 1.4;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 
 .ridge {
-  fill: color-mix(in srgb, var(--jr-paper-hi) 60%, transparent);
-  stroke: color-mix(in srgb, var(--jr-ink) 38%, transparent);
+  fill: color-mix(in srgb, #f2f0e8 60%, transparent);
+  stroke: color-mix(in srgb, #1b2a22 38%, transparent);
   stroke-width: 1.6;
   stroke-linejoin: round;
   stroke-linecap: round;
@@ -1041,7 +1028,7 @@ export default function JobRouteTracker({
   background: linear-gradient(
     90deg,
     transparent 0%,
-    color-mix(in srgb, var(--jr-ink) 6%, transparent) 44%,
+    color-mix(in srgb, #1b2a22 6%, transparent) 44%,
     color-mix(in srgb, #fff 60%, transparent) 52%,
     transparent 100%
   );
@@ -1093,13 +1080,13 @@ export default function JobRouteTracker({
 }
 
 .cFill {
-  fill: var(--jr-paper-hi);
+  fill: #f2f0e8;
   opacity: 0.75;
 }
 
 .cInk {
   fill: none;
-  stroke: var(--jr-ink);
+  stroke: #1b2a22;
   stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -1107,7 +1094,7 @@ export default function JobRouteTracker({
 
 .cInkThin {
   fill: none;
-  stroke: var(--jr-ink);
+  stroke: #1b2a22;
   stroke-width: 1.2;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -1115,21 +1102,21 @@ export default function JobRouteTracker({
 }
 
 .cNorth {
-  fill: var(--jr-pin);
-  stroke: var(--jr-ink);
+  fill: #dba421;
+  stroke: #1b2a22;
   stroke-width: 1.8;
   stroke-linejoin: round;
 }
 
 .cSouth {
-  fill: var(--jr-paper-lo);
-  stroke: var(--jr-ink);
+  fill: #d6d4c7;
+  stroke: #1b2a22;
   stroke-width: 1.8;
   stroke-linejoin: round;
 }
 
 .cHub {
-  fill: var(--jr-ink);
+  fill: #1b2a22;
 }
 
 .needle {
@@ -1193,7 +1180,7 @@ export default function JobRouteTracker({
 
 .routeAhead {
   fill: none;
-  stroke: var(--jr-route);
+  stroke: #2b6a46;
   stroke-width: 3.5;
   stroke-linecap: round;
   stroke-dasharray: 8 10;
@@ -1202,7 +1189,7 @@ export default function JobRouteTracker({
 
 .routeWalked {
   fill: none;
-  stroke: var(--jr-route);
+  stroke: #2b6a46;
   stroke-width: 5.5;
   stroke-linecap: round;
 }
@@ -1288,7 +1275,7 @@ export default function JobRouteTracker({
   block-size: 12px;
   box-sizing: border-box;
   border-radius: 50%;
-  border: 2px dashed var(--jr-route);
+  border: 2px dashed #2b6a46;
   opacity: 0;
   transform: scale(0.6);
   transition:
@@ -1342,21 +1329,21 @@ export default function JobRouteTracker({
 }
 
 .pinGround {
-  fill: var(--jr-ink);
+  fill: #1b2a22;
   opacity: 0.2;
 }
 
 .pinBodyOn {
-  fill: var(--jr-pin);
-  stroke: color-mix(in srgb, var(--jr-ink) 38%, transparent);
+  fill: #dba421;
+  stroke: color-mix(in srgb, #1b2a22 38%, transparent);
   stroke-width: 1.2;
   stroke-linejoin: round;
   transition: fill 260ms ease;
 }
 
 .pinBodyOff {
-  fill: var(--jr-paper-hi);
-  stroke: var(--jr-pin);
+  fill: #f2f0e8;
+  stroke: #dba421;
   stroke-width: 2.4;
   stroke-linejoin: round;
   transition: fill 260ms ease;
@@ -1374,11 +1361,11 @@ export default function JobRouteTracker({
   font-size: 13px;
   font-weight: 700;
   line-height: 1;
-  color: var(--jr-ink);
+  color: #1b2a22;
 }
 
 .headFocus {
-  outline: 2.5px solid var(--jr-focus);
+  outline: 2.5px solid #17402b;
   outline-offset: 3px;
 }
 
@@ -1413,14 +1400,14 @@ export default function JobRouteTracker({
   inline-size: 2px;
   block-size: 32px;
   border-radius: 1px;
-  background: var(--jr-ink);
+  background: #1b2a22;
 }
 
 .flagCloth {
   padding-block: 3px;
   padding-inline: 8px 15px;
-  background: var(--jr-pin);
-  color: var(--jr-ink);
+  background: #dba421;
+  color: #1b2a22;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.3;
@@ -1467,17 +1454,17 @@ export default function JobRouteTracker({
 .nameHere {
   font-size: 17px;
   font-weight: 700;
-  background-image: linear-gradient(transparent 62%, color-mix(in srgb, var(--jr-pin) 62%, transparent) 62%);
+  background-image: linear-gradient(transparent 62%, color-mix(in srgb, #dba421 62%, transparent) 62%);
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }
 
 .nameDone {
-  color: var(--jr-ink);
+  color: #1b2a22;
 }
 
 .nameLater {
-  color: var(--jr-quiet);
+  color: #435249;
 }
 
 /* ── chips ── */
@@ -1499,25 +1486,25 @@ export default function JobRouteTracker({
 }
 
 .chipHere {
-  background: var(--jr-marker);
+  background: color-mix(in srgb, #2b6a46 68%, #07130c);
   color: #f6f2e4;
 }
 
 .chipDone {
-  background: color-mix(in srgb, var(--jr-route) 16%, transparent);
-  border-color: color-mix(in srgb, var(--jr-route) 40%, transparent);
-  color: var(--jr-ink);
+  background: color-mix(in srgb, #2b6a46 16%, transparent);
+  border-color: color-mix(in srgb, #2b6a46 40%, transparent);
+  color: #1b2a22;
 }
 
 .chipNext {
-  background: color-mix(in srgb, var(--jr-pin) 40%, transparent);
-  border-color: var(--jr-pin);
-  color: var(--jr-ink);
+  background: color-mix(in srgb, #dba421 40%, transparent);
+  border-color: #dba421;
+  color: #1b2a22;
 }
 
 .chipLater {
-  border-color: color-mix(in srgb, var(--jr-ink) 30%, transparent);
-  color: var(--jr-quiet);
+  border-color: color-mix(in srgb, #1b2a22 30%, transparent);
+  color: #435249;
 }
 
 /* ── marker ── */
@@ -1554,7 +1541,7 @@ export default function JobRouteTracker({
   inline-size: 24px;
   block-size: 8px;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--jr-ink) 32%, transparent);
+  background: color-mix(in srgb, #1b2a22 32%, transparent);
   filter: blur(2px);
 }
 
@@ -1574,8 +1561,8 @@ export default function JobRouteTracker({
   place-items: center;
   box-sizing: border-box;
   border-radius: 50%;
-  border: 3px solid var(--jr-pin);
-  background: var(--jr-marker);
+  border: 3px solid #dba421;
+  background: color-mix(in srgb, #2b6a46 68%, #07130c);
   box-shadow: 0 3px 8px color-mix(in srgb, #07130c 30%, transparent);
 }
 
@@ -1595,7 +1582,7 @@ export default function JobRouteTracker({
   inset: 0;
   box-sizing: border-box;
   border-radius: 50%;
-  border: 2px solid var(--jr-pin);
+  border: 2px solid #dba421;
   animation: ripple 1500ms cubic-bezier(0.2, 0.6, 0.3, 1) 2 backwards;
 }
 
@@ -1632,7 +1619,7 @@ export default function JobRouteTracker({
   grid-template-rows: 0fr;
   visibility: hidden;
   opacity: 0;
-  color: var(--jr-quiet);
+  color: #435249;
   font-size: 15px;
   line-height: 1.5;
   transition:
@@ -1646,7 +1633,7 @@ export default function JobRouteTracker({
   grid-template-rows: 1fr;
   visibility: visible;
   opacity: 1;
-  color: var(--jr-quiet);
+  color: #435249;
   font-size: 15px;
   line-height: 1.5;
   transition:
@@ -1672,7 +1659,7 @@ export default function JobRouteTracker({
   min-block-size: 11rem;
   margin-block-start: 6px;
   padding-block-start: clamp(18px, 2.4cqi, 28px);
-  border-block-start: 1.5px dashed color-mix(in srgb, var(--jr-ink) 26%, transparent);
+  border-block-start: 1.5px dashed color-mix(in srgb, #1b2a22 26%, transparent);
   opacity: 1;
   transition:
     opacity 560ms ease 80ms,
@@ -1716,7 +1703,7 @@ export default function JobRouteTracker({
 .rDesc {
   max-inline-size: 56ch;
   margin: 12px 0 0;
-  color: var(--jr-quiet);
+  color: #435249;
   font-size: 17px;
   line-height: 1.5;
   text-wrap: pretty;
@@ -1739,7 +1726,7 @@ export default function JobRouteTracker({
 .rNextLabel {
   display: block;
   margin-block-end: 4px;
-  color: var(--jr-quiet);
+  color: #435249;
   font-size: 13px;
   font-weight: 600;
   line-height: 1.3;
@@ -1762,7 +1749,7 @@ export default function JobRouteTracker({
   block-size: 12px;
   margin-block-start: 0.45em;
   fill: none;
-  stroke: var(--jr-route);
+  stroke: #2b6a46;
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -1782,7 +1769,7 @@ export default function JobRouteTracker({
 }
 
 .rTotal {
-  color: var(--jr-quiet);
+  color: #435249;
   font-size: 20px;
   font-weight: 600;
 }

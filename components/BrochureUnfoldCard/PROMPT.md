@@ -1,6 +1,6 @@
 Create a custom element called "Brochure Unfold Card". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: three panels (title, text, image), paper color, accent color, ink color, background color. Add other settings if they help.
+The site owner must be able to change: three panels (title, text, image). Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -16,10 +16,6 @@ export interface BrochurePanel {
 
 export interface BrochureUnfoldCardProps {
   panels?: BrochurePanel[];
-  paperColor?: string;
-  inkColor?: string;
-  accentColor?: string;
-  stageColor?: string;
   className?: string;
 }
 
@@ -116,10 +112,6 @@ function Duo({ src, alt, className }: { src: string; alt: string; className?: st
 
 export default function BrochureUnfoldCard({
   panels = defaultPanels,
-  paperColor = '#e7d8b4',
-  inkColor = '#2f3b17',
-  accentColor = '#f2a35f',
-  stageColor = '#161b0e',
   className,
 }: BrochureUnfoldCardProps) {
   const items = (panels.length ? panels : defaultPanels).slice(0, 3);
@@ -367,13 +359,6 @@ export default function BrochureUnfoldCard({
     goTo(next, true);
   };
 
-  const rootStyle = {
-    '--bc-paper': paperColor,
-    '--bc-ink': inkColor,
-    '--bc-accent': accentColor,
-    '--bc-stage': stageColor,
-  } as CSSProperties;
-
   const frontShade = (i: number): CSSProperties => ({ '--shv': i === 1 ? 'var(--sh2, 1)' : 'var(--sh3, 1)' }) as CSSProperties;
 
   const renderFront = (i: number, open: boolean): ReactNode => {
@@ -486,7 +471,6 @@ export default function BrochureUnfoldCard({
     <div
       ref={rootRef}
       className={cx(styles.root, className)}
-      style={rootStyle}
       role="group"
       aria-roledescription="brochure"
       aria-label={items[0]?.title || 'Brochure'}
@@ -520,10 +504,6 @@ export default function BrochureUnfoldCard({
 
 ```css
 .root {
-  --bc-paper: #e7d8b4;
-  --bc-ink: #2f3b17;
-  --bc-accent: #f2a35f;
-  --bc-stage: #161b0e;
   --bc-font: 'Epilogue', 'Helvetica Neue', Arial, sans-serif;
   container-type: inline-size;
   position: relative;
@@ -531,10 +511,9 @@ export default function BrochureUnfoldCard({
   inline-size: 100%;
   overflow: hidden;
   font-family: var(--bc-font);
-  color: var(--bc-ink);
-  background:
-    radial-gradient(70% 80% at 50% 38%, color-mix(in srgb, var(--bc-stage) 78%, #ffffff) 0%, transparent 100%),
-    var(--bc-stage);
+  color: #2f3b17;
+  background-color: #161b0e;
+  background-image: radial-gradient(70% 80% at 50% 38%, rgba(255, 255, 255, 0.22) 0%, transparent 100%);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -629,19 +608,19 @@ export default function BrochureUnfoldCard({
   isolation: isolate;
   background:
     radial-gradient(120% 90% at 18% 8%, rgba(255, 255, 255, 0.28), transparent 62%),
-    var(--bc-paper);
+    #e7d8b4;
   box-shadow: inset 0 0 0 calc(var(--u) * 0.2) rgba(40, 28, 6, 0.1);
 }
 
 .front2 {
   background:
     radial-gradient(120% 90% at 18% 8%, rgba(255, 255, 255, 0.2), transparent 62%),
-    var(--bc-accent);
+    #f2a35f;
 }
 
 .back {
   transform: rotateY(180deg);
-  background: var(--bc-ink);
+  background: #2f3b17;
   box-shadow: inset 0 0 0 calc(var(--u) * 0.2) rgba(255, 255, 255, 0.08);
 }
 
@@ -650,7 +629,7 @@ export default function BrochureUnfoldCard({
   inset: 0;
   background-image: radial-gradient(
     circle at 50% 50%,
-    color-mix(in srgb, var(--bc-accent) 55%, transparent) calc(var(--cell) * 0.2),
+    color-mix(in srgb, #f2a35f 55%, transparent) calc(var(--cell) * 0.2),
     transparent calc(var(--cell) * 0.2 + 0.6px)
   );
   background-size: var(--cell) var(--cell);
@@ -662,7 +641,7 @@ export default function BrochureUnfoldCard({
   pointer-events: none;
   background-image: radial-gradient(
     circle at 50% 50%,
-    color-mix(in srgb, var(--bc-ink) 10%, transparent) 0.7px,
+    color-mix(in srgb, #2f3b17 10%, transparent) 0.7px,
     transparent 1.1px
   );
   background-size: calc(var(--u) * 1.1) calc(var(--u) * 1.1);
@@ -680,15 +659,15 @@ export default function BrochureUnfoldCard({
 
 .routePath {
   fill: none;
-  stroke: var(--bc-ink);
+  stroke: #2f3b17;
   stroke-width: 0.9;
   stroke-linecap: round;
   stroke-dasharray: 0.1 2.6;
 }
 
 .routePin {
-  fill: var(--bc-accent);
-  stroke: var(--bc-ink);
+  fill: #f2a35f;
+  stroke: #2f3b17;
   stroke-width: 0.7;
 }
 
@@ -712,7 +691,7 @@ export default function BrochureUnfoldCard({
   block-size: var(--cell);
   background-image: radial-gradient(
     circle at 50% 50%,
-    var(--bc-ink) calc(var(--cell) * var(--f)),
+    #2f3b17 calc(var(--cell) * var(--f)),
     transparent calc(var(--cell) * var(--f) + 0.7px)
   );
   background-size: var(--cell) var(--cell);
@@ -725,7 +704,7 @@ export default function BrochureUnfoldCard({
   isolation: isolate;
   overflow: hidden;
   border-radius: inherit;
-  background: var(--bc-accent);
+  background: #f2a35f;
 }
 
 .fill {
@@ -745,7 +724,7 @@ export default function BrochureUnfoldCard({
 .duoTone {
   position: absolute;
   inset: 0;
-  background: var(--bc-ink);
+  background: #2f3b17;
   mix-blend-mode: lighten;
 }
 
@@ -755,7 +734,7 @@ export default function BrochureUnfoldCard({
   inset: 0;
   background-image: radial-gradient(
     circle at 50% 50%,
-    color-mix(in srgb, var(--bc-ink) 34%, transparent) calc(var(--c2) * 0.27),
+    color-mix(in srgb, #2f3b17 34%, transparent) calc(var(--c2) * 0.27),
     transparent calc(var(--c2) * 0.27 + 0.6px)
   );
   background-size: var(--c2) var(--c2);
@@ -770,8 +749,8 @@ export default function BrochureUnfoldCard({
   block-size: calc(var(--u) * 68);
   border-radius: 50%;
   box-shadow:
-    0 0 0 calc(var(--u) * 1.8) var(--bc-paper),
-    0 0 0 calc(var(--u) * 2.3) var(--bc-ink);
+    0 0 0 calc(var(--u) * 1.8) #e7d8b4,
+    0 0 0 calc(var(--u) * 2.3) #2f3b17;
 }
 
 .block0 {
@@ -785,9 +764,9 @@ export default function BrochureUnfoldCard({
   flex-direction: column;
   justify-content: flex-end;
   gap: calc(var(--u) * 3);
-  background: var(--bc-ink);
-  color: var(--bc-paper);
-  border-block-start: calc(var(--u) * 0.6) solid var(--bc-accent);
+  background: #2f3b17;
+  color: #e7d8b4;
+  border-block-start: calc(var(--u) * 0.6) solid #f2a35f;
 }
 
 .coverTitle {
@@ -810,7 +789,7 @@ export default function BrochureUnfoldCard({
   font-size: max(13px, calc(var(--u) * 4.1));
   line-height: 1.45;
   font-weight: 450;
-  color: color-mix(in srgb, var(--bc-paper) 88%, transparent);
+  color: color-mix(in srgb, #e7d8b4 88%, transparent);
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
@@ -852,7 +831,7 @@ export default function BrochureUnfoldCard({
   inline-size: calc(var(--u) * 12);
   block-size: calc(var(--u) * 1);
   border-radius: calc(var(--u) * 1);
-  background: var(--bc-accent);
+  background: #f2a35f;
 }
 
 .text1 {
@@ -874,7 +853,7 @@ export default function BrochureUnfoldCard({
   inline-size: calc(var(--u) * 15);
   block-size: calc(var(--u) * 15);
   border-radius: 50%;
-  background: var(--bc-accent);
+  background: #f2a35f;
 }
 
 .base1 {
@@ -882,7 +861,7 @@ export default function BrochureUnfoldCard({
   inset-inline: 0;
   inset-block-end: 0;
   block-size: calc(var(--u) * 5);
-  background: var(--bc-ink);
+  background: #2f3b17;
 }
 
 .archWrap {
@@ -901,8 +880,8 @@ export default function BrochureUnfoldCard({
   border-end-start-radius: 0;
   border-end-end-radius: 0;
   box-shadow:
-    0 0 0 calc(var(--u) * 1.6) var(--bc-paper),
-    0 0 0 calc(var(--u) * 2.1) var(--bc-ink);
+    0 0 0 calc(var(--u) * 1.6) #e7d8b4,
+    0 0 0 calc(var(--u) * 2.1) #2f3b17;
 }
 
 /* right panel */
@@ -920,7 +899,7 @@ export default function BrochureUnfoldCard({
   block-size: 100%;
   padding: calc(var(--u) * 3.4);
   rotate: -3.5deg;
-  background: var(--bc-paper);
+  background: #e7d8b4;
   box-shadow:
     0 calc(var(--u) * 2.2) calc(var(--u) * 4) rgba(60, 30, 4, 0.4),
     0 0 0 calc(var(--u) * 0.2) rgba(0, 0, 0, 0.1);
@@ -940,7 +919,7 @@ export default function BrochureUnfoldCard({
   block-size: calc(var(--u) * 22);
   rotate: -9deg;
   fill: none;
-  stroke: var(--bc-ink);
+  stroke: #2f3b17;
   stroke-width: 0.55;
   stroke-linecap: round;
   overflow: visible;
@@ -957,8 +936,8 @@ export default function BrochureUnfoldCard({
   flex-direction: column;
   justify-content: flex-end;
   gap: calc(var(--u) * 3);
-  background: var(--bc-ink);
-  color: var(--bc-paper);
+  background: #2f3b17;
+  color: #e7d8b4;
 }
 
 .title2 {
@@ -981,7 +960,7 @@ export default function BrochureUnfoldCard({
   font-size: max(13px, calc(var(--u) * 4.1));
   line-height: 1.5;
   font-weight: 450;
-  color: var(--bc-accent);
+  color: #f2a35f;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 4;
@@ -1053,7 +1032,7 @@ export default function BrochureUnfoldCard({
 }
 
 .hit:focus-visible {
-  outline: 2px solid var(--bc-accent);
+  outline: 2px solid #f2a35f;
   outline-offset: -6px;
 }
 

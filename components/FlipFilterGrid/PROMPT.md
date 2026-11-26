@@ -1,6 +1,6 @@
 Create a custom element called "Flip Filter Grid". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: items (title, image, category, optional detail), categories, chip color, columns. Add other settings if they help.
+The site owner must be able to change: items (title, image, category, optional detail), categories, columns. Add other settings if they help.
 
 ```tsx
 import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -21,7 +21,6 @@ export interface FlipFilterCategory {
 export interface FlipFilterGridProps {
   items?: FlipFilterItem[];
   categories?: FlipFilterCategory[];
-  chipColor?: string;
   columns?: number;
   allLabel?: string;
   className?: string;
@@ -110,7 +109,6 @@ const makeBody = (t: Pose): Body => ({ ...t, vx: 0, vy: 0, vw: 0, vh: 0, vs: 0, 
 export default function FlipFilterGrid({
   items = defaultItems,
   categories = defaultCategories,
-  chipColor = '#C2381B',
   columns = 4,
   allLabel = 'All',
   className,
@@ -385,7 +383,7 @@ export default function FlipFilterGrid({
     }
   };
 
-  const rootStyle = { '--ffg-chip': chipColor, '--ffg-cols': clamp(Math.round(columns) || 3, 2, 5) } as CSSProperties;
+  const rootStyle = { '--ffg-cols': clamp(Math.round(columns) || 3, 2, 5) } as CSSProperties;
 
   const caption = (it: FlipFilterItem, index: number, featured: boolean, probe?: (el: HTMLDivElement | null) => void) => (
     <div
@@ -496,19 +494,8 @@ export default function FlipFilterGrid({
 ```
 
 ```css
-/* Soft-UI tray: clay ground, raised tiles, pressed chips, one accent (chipColor). */
+/* Soft-UI tray: clay ground, raised tiles, pressed chips, one accent. */
 .root {
-  --ffg-ground: #e7e4dc;
-  --ffg-tile: #efece6;
-  --ffg-chip: #c2381b;
-  --ffg-chip-ink: #ffffff;
-  --ffg-ink: #16140f;
-  --ffg-ink-soft: #55514a;
-  --ffg-lit: rgba(255, 255, 255, 0.9);
-  --ffg-shade: rgba(88, 80, 62, 0.28);
-  --ffg-raise: 8px 10px 22px var(--ffg-shade), -7px -7px 18px var(--ffg-lit);
-  --ffg-press: inset 4px 5px 10px var(--ffg-shade), inset -4px -4px 9px var(--ffg-lit);
-  --ffg-plate: #dcd6c6;
   --ffg-font-display: 'Fraunces', 'Iowan Old Style', 'Georgia', 'Times New Roman', serif;
   --ffg-font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Menlo', 'Consolas', monospace;
   --ffg-cols: 4;
@@ -520,17 +507,17 @@ export default function FlipFilterGrid({
   container-type: inline-size;
   container-name: ffg;
   overflow: hidden;
-  color: var(--ffg-ink);
+  color: #16140f;
   font-family: var(--ffg-font-mono);
   font-synthesis: none;
-  background-color: var(--ffg-ground);
+  background-color: #e7e4dc;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
 
 .root::selection {
-  background: var(--ffg-chip);
-  color: var(--ffg-chip-ink);
+  background: #c2381b;
+  color: #ffffff;
 }
 
 .stall {
@@ -576,9 +563,9 @@ export default function FlipFilterGrid({
   padding: 0 20px;
   border: 0;
   border-radius: 999px;
-  background: var(--ffg-tile);
-  box-shadow: var(--ffg-raise);
-  color: var(--ffg-ink-soft);
+  background: #efece6;
+  box-shadow: 8px 10px 22px rgba(88, 80, 62, 0.28), -7px -7px 18px rgba(255, 255, 255, 0.9);
+  color: #55514a;
   font: 500 12px/1 var(--ffg-font-mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -597,7 +584,7 @@ export default function FlipFilterGrid({
   inline-size: 8px;
   block-size: 8px;
   border-radius: 50%;
-  background: var(--ffg-chip);
+  background: #c2381b;
   scale: 0;
   margin-inline-end: -8px;
   transition:
@@ -606,7 +593,7 @@ export default function FlipFilterGrid({
 }
 
 .chip:hover {
-  color: var(--ffg-ink);
+  color: #16140f;
 }
 
 .chip:active {
@@ -614,13 +601,13 @@ export default function FlipFilterGrid({
 }
 
 .chip:focus-visible {
-  outline: 2px solid var(--ffg-ink);
+  outline: 2px solid #16140f;
   outline-offset: 3px;
 }
 
 .chipOn {
-  color: var(--ffg-ink);
-  box-shadow: var(--ffg-press);
+  color: #16140f;
+  box-shadow: inset 4px 5px 10px rgba(88, 80, 62, 0.28), inset -4px -4px 9px rgba(255, 255, 255, 0.9);
 }
 
 .chipOn::before {
@@ -633,7 +620,7 @@ export default function FlipFilterGrid({
 }
 
 .chipCount {
-  color: var(--ffg-ink-soft);
+  color: #55514a;
   font-size: 11px;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
@@ -643,7 +630,7 @@ export default function FlipFilterGrid({
   display: block;
   margin: 0 0 clamp(14px, 2cqw, 22px);
   padding-inline-start: 4px;
-  color: var(--ffg-ink-soft);
+  color: #55514a;
   font: 400 11px/1 var(--ffg-font-mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -693,8 +680,8 @@ export default function FlipFilterGrid({
   block-size: 100%;
   padding: 10px;
   border-radius: 22px;
-  background: var(--ffg-tile);
-  box-shadow: var(--ffg-raise);
+  background: #efece6;
+  box-shadow: 8px 10px 22px rgba(88, 80, 62, 0.28), -7px -7px 18px rgba(255, 255, 255, 0.9);
   overflow: hidden;
 }
 
@@ -705,7 +692,7 @@ export default function FlipFilterGrid({
   margin-block-end: 10px;
   overflow: hidden;
   border-radius: 14px;
-  background: var(--ffg-plate);
+  background: #dcd6c6;
 }
 
 .mediaStatic {
@@ -758,7 +745,7 @@ export default function FlipFilterGrid({
 
 .title {
   margin: 0;
-  color: var(--ffg-ink);
+  color: #16140f;
   font: 400 21px/1.1 var(--ffg-font-display);
   font-variation-settings: 'opsz' 48;
   letter-spacing: -0.012em;
@@ -793,7 +780,7 @@ export default function FlipFilterGrid({
   justify-content: space-between;
   gap: 2px 12px;
   margin: 0;
-  color: var(--ffg-ink-soft);
+  color: #55514a;
   font: 400 11px/1.4 var(--ffg-font-mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -809,12 +796,12 @@ export default function FlipFilterGrid({
 
 .index {
   flex: none;
-  color: var(--ffg-chip);
+  color: #c2381b;
   font-variant-numeric: tabular-nums;
 }
 
 .detail {
-  color: var(--ffg-ink);
+  color: #16140f;
   font-variant-numeric: tabular-nums;
 }
 

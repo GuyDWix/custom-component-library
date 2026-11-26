@@ -7,11 +7,7 @@
   "job": "A trifold brochure card that opens panel by panel to present a package, itinerary or menu in sequence",
   "visitor_action": "click/tap to unfold or fold; swipe sideways on touch; arrow keys step through the panels",
   "owner_settings": [
-    "Three panels (title, text, image)",
-    "Paper color",
-    "Accent color",
-    "Ink color",
-    "Background color"
+    "Three panels (title, text, image)"
   ],
   "site_types": [
     "events",

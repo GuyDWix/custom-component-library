@@ -1,6 +1,6 @@
 Create a custom element called "Cube Faces Card". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: four faces (label, title, text, key figure and its note), face color, accent color, auto-turn on or off. Add other settings if they help.
+The site owner must be able to change: four faces (label, title, text, key figure and its note), auto-turn on or off. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
@@ -20,8 +20,6 @@ export interface CubeFace {
 
 export interface CubeFacesCardProps {
   faces?: CubeFace[];
-  faceColor?: string;
-  accentColor?: string;
   autoTurn?: boolean;
   className?: string;
 }
@@ -169,8 +167,6 @@ function Glyph({ icon, className, drawing }: { icon: CubeFaceIcon; className?: s
 
 export default function CubeFacesCard({
   faces: facesProp = defaultFaces,
-  faceColor = '#f3f4f1',
-  accentColor = '#1f47e6',
   autoTurn = true,
   className,
 }: CubeFacesCardProps) {
@@ -427,7 +423,6 @@ export default function CubeFacesCard({
     tabRefs.current[to]?.focus();
   };
 
-  const rootStyle = { '--cf-face': faceColor, '--cf-accent': accentColor } as CSSProperties;
   const animate = (on: boolean, delay: number): { className: string; style?: CSSProperties } =>
     on && turned && !reduced
       ? { className: styles.rise, style: { '--d': `${delay}ms` } as CSSProperties }
@@ -437,7 +432,6 @@ export default function CubeFacesCard({
     <div
       ref={rootRef}
       className={[styles.root, className].filter(Boolean).join(' ')}
-      style={rootStyle}
       onPointerEnter={() => {
         engaged.current = true;
       }}
@@ -630,14 +624,6 @@ export default function CubeFacesCard({
 /* Ceramic block: glazed off-white tile faces, cobalt line icons, soft ambient occlusion, hairline bevel catching light */
 
 .root {
-  --cf-face: #f3f4f1;
-  --cf-accent: #1f47e6;
-  --cf-ink: #0d1a4a;
-  --cf-muted: rgba(13, 26, 74, 0.68);
-  --cf-field: color-mix(in srgb, var(--cf-accent) 76%, #020624);
-  --cf-glow: color-mix(in srgb, var(--cf-accent) 90%, #ffffff);
-  --cf-floor: color-mix(in srgb, var(--cf-accent) 38%, #020624);
-  --cf-hairline: color-mix(in srgb, var(--cf-accent) 16%, transparent);
   --cf-font: 'Instrument Sans', 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
 
   container-type: inline-size;
@@ -647,7 +633,7 @@ export default function CubeFacesCard({
   box-sizing: border-box;
   inline-size: 100%;
   border-radius: 28px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--cf-field) 88%, #000) 0%, var(--cf-field) 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, color-mix(in srgb, #1f47e6 76%, #020624) 88%, #000) 0%, color-mix(in srgb, #1f47e6 76%, #020624) 100%);
   color: #ffffff;
   font-family: var(--cf-font);
   -webkit-font-smoothing: antialiased;
@@ -696,7 +682,7 @@ export default function CubeFacesCard({
 }
 
 .frame::selection {
-  background: var(--cf-accent);
+  background: #1f47e6;
   color: #ffffff;
 }
 
@@ -711,7 +697,7 @@ export default function CubeFacesCard({
   block-size: calc(var(--side) * 3.4);
   transform: translate(-50%, -50%);
   pointer-events: none;
-  background: radial-gradient(closest-side, var(--cf-glow) 0%, transparent 100%);
+  background: radial-gradient(closest-side, color-mix(in srgb, #1f47e6 90%, #ffffff) 0%, transparent 100%);
 }
 
 .rings {
@@ -779,8 +765,8 @@ export default function CubeFacesCard({
   transform: skewY(-3deg);
   transform-origin: 100% 0;
   background:
-    radial-gradient(60% 70% at calc(var(--cxr) * 100%) 0%, color-mix(in srgb, var(--cf-accent) 55%, transparent) 0%, transparent 100%),
-    linear-gradient(180deg, var(--cf-floor) 0%, color-mix(in srgb, var(--cf-floor) 50%, #000) 100%);
+    radial-gradient(60% 70% at calc(var(--cxr) * 100%) 0%, color-mix(in srgb, #1f47e6 55%, transparent) 0%, transparent 100%),
+    linear-gradient(180deg, color-mix(in srgb, #1f47e6 38%, #020624) 0%, color-mix(in srgb, color-mix(in srgb, #1f47e6 38%, #020624) 50%, #000) 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
@@ -811,7 +797,7 @@ export default function CubeFacesCard({
   inline-size: calc(var(--side) * 2.2);
   block-size: calc(var(--side) * 0.62);
   transform: translate(-50%, -50%);
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--cf-accent) 62%, #ffffff) 0%, transparent 100%);
+  background: radial-gradient(closest-side, color-mix(in srgb, #1f47e6 62%, #ffffff) 0%, transparent 100%);
   opacity: 0.34;
   pointer-events: none;
 }
@@ -865,16 +851,16 @@ export default function CubeFacesCard({
   backface-visibility: hidden;
   background: linear-gradient(
     150deg,
-    color-mix(in srgb, var(--cf-face) 62%, #ffffff) 0%,
-    var(--cf-face) 46%,
-    color-mix(in srgb, var(--cf-face) 90%, #5b6fb0) 100%
+    color-mix(in srgb, #f3f4f1 62%, #ffffff) 0%,
+    #f3f4f1 46%,
+    color-mix(in srgb, #f3f4f1 90%, #5b6fb0) 100%
   );
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.85),
     inset 1.5px 1.5px 0 rgba(255, 255, 255, 1),
     inset -1.5px -1.5px 0 rgba(26, 44, 140, 0.22),
     inset 0 0 calc(var(--side) * 0.1) rgba(40, 60, 150, 0.1);
-  color: var(--cf-ink);
+  color: #0d1a4a;
 }
 
 .f0 {
@@ -904,7 +890,7 @@ export default function CubeFacesCard({
   inset: calc(var(--side) * 0.035);
   z-index: 1;
   border-radius: calc(var(--side) * 0.012);
-  border: 1px solid var(--cf-hairline);
+  border: 1px solid color-mix(in srgb, #1f47e6 16%, transparent);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
   pointer-events: none;
 }
@@ -969,7 +955,7 @@ export default function CubeFacesCard({
 
 .iconWrap {
   display: block;
-  color: var(--cf-accent);
+  color: #1f47e6;
 }
 
 .icon {
@@ -989,14 +975,14 @@ export default function CubeFacesCard({
   max-inline-size: 62%;
   box-sizing: border-box;
   padding: 5px 11px;
-  border: 1px solid color-mix(in srgb, var(--cf-accent) 30%, transparent);
+  border: 1px solid color-mix(in srgb, #1f47e6 30%, transparent);
   border-radius: 14px;
   font-size: 13px;
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: 0;
   text-align: center;
-  color: var(--cf-accent);
+  color: #1f47e6;
   overflow-wrap: anywhere;
 }
 
@@ -1014,7 +1000,7 @@ export default function CubeFacesCard({
   font-weight: 600;
   line-height: 1.08;
   letter-spacing: -0.035em;
-  color: var(--cf-ink);
+  color: #0d1a4a;
   text-wrap: balance;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -1028,7 +1014,7 @@ export default function CubeFacesCard({
   margin: 0;
   font-size: max(13px, calc(var(--side) * 0.037));
   line-height: 1.45;
-  color: var(--cf-muted);
+  color: rgba(13, 26, 74, 0.68);
   text-wrap: pretty;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -1044,7 +1030,7 @@ export default function CubeFacesCard({
   justify-content: space-between;
   gap: 12px;
   padding-block-start: calc(var(--side) * 0.035);
-  border-block-start: 1px solid var(--cf-hairline);
+  border-block-start: 1px solid color-mix(in srgb, #1f47e6 16%, transparent);
 }
 
 /* --len = estimated width of the figure in em (set from the text); the size shrinks to leave the note room, and the text wraps rather than ever truncating */
@@ -1056,7 +1042,7 @@ export default function CubeFacesCard({
   line-height: 0.92;
   letter-spacing: -0.05em;
   font-variant-numeric: tabular-nums;
-  color: var(--cf-accent);
+  color: #1f47e6;
   overflow-wrap: anywhere;
 }
 
@@ -1074,7 +1060,7 @@ export default function CubeFacesCard({
   max-inline-size: 46%;
   font-size: 13px;
   line-height: 1.3;
-  color: var(--cf-muted);
+  color: rgba(13, 26, 74, 0.68);
   text-align: end;
   /* room (pulled back by the negative margin) so the clamp ellipsis is never cut off at the right edge */
   padding-inline-end: 0.6em;
@@ -1099,7 +1085,7 @@ export default function CubeFacesCard({
   display: grid;
   place-items: center;
   border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--cf-accent) 38%, transparent);
+  border: 1px solid color-mix(in srgb, #1f47e6 38%, transparent);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
@@ -1107,7 +1093,7 @@ export default function CubeFacesCard({
   inline-size: 34%;
   block-size: 34%;
   border-radius: 50%;
-  background: radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--cf-accent) 60%, #ffffff) 0%, var(--cf-accent) 62%);
+  background: radial-gradient(circle at 32% 28%, color-mix(in srgb, #1f47e6 60%, #ffffff) 0%, #1f47e6 62%);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.95),
     inset 0 -2px 4px rgba(0, 10, 80, 0.35);
@@ -1184,7 +1170,7 @@ export default function CubeFacesCard({
   inset-inline-start: 4px;
   inline-size: calc((100% - 8px) / 4);
   border-radius: 999px;
-  background: var(--cf-face);
+  background: #f3f4f1;
   box-shadow:
     0 1px 2px rgba(2, 8, 48, 0.35),
     0 8px 16px -8px rgba(2, 8, 48, 0.55);
@@ -1219,7 +1205,7 @@ export default function CubeFacesCard({
 
 .tabOn,
 .tabOn:hover {
-  color: var(--cf-accent);
+  color: #1f47e6;
 }
 
 .arrow,
@@ -1274,7 +1260,7 @@ export default function CubeFacesCard({
 .tab:focus-visible,
 .arrow:focus-visible,
 .pause:focus-visible {
-  outline: 2px solid var(--cf-face);
+  outline: 2px solid #f3f4f1;
   outline-offset: 3px;
 }
 

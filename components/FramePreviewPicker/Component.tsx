@@ -23,8 +23,6 @@ export interface FramePreviewPickerProps {
   sizes?: FrameSizeOption[];
   /** Starting orientation of the print; the visitor can switch it with the Orientation control. */
   orientation?: FrameOrientation;
-  wallColor?: string;
-  matColor?: string;
   frameGroupLabel?: string;
   sizeGroupLabel?: string;
   orientationGroupLabel?: string;
@@ -67,8 +65,6 @@ export default function FramePreviewPicker({
   frameStyles,
   sizes,
   orientation = 'portrait',
-  wallColor = '#c3cbb2',
-  matColor = '#f5f2e9',
   frameGroupLabel = 'Frame',
   sizeGroupLabel = 'Size',
   orientationGroupLabel = 'Orientation',
@@ -238,7 +234,6 @@ export default function FramePreviewPicker({
   const finishFor = (i: number): string =>
     finishClass[styleList[Math.min(i, styleList.length - 1)].finish ?? 'matte'] ?? finishClass.matte;
 
-  const rootStyle = { '--fpp-wall': wallColor, '--fpp-mat': matColor } as CSSProperties;
   const frameStyle = {
     fontSize: `${scale.toFixed(3)}px`,
     top: `${topPct.toFixed(3)}%`,
@@ -266,7 +261,6 @@ export default function FramePreviewPicker({
       className={[styles.root, orient === 'landscape' && styles.landscape, reduced && styles.still, !inView && styles.paused, className]
         .filter(Boolean)
         .join(' ')}
-      style={rootStyle}
     >
       <div
         ref={wallRef}

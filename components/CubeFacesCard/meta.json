@@ -8,8 +8,6 @@
   "visitor_action": "hover-drag or swipe to rotate; arrows and tab buttons jump to a face",
   "owner_settings": [
     "Four faces (label, title, text, key figure and its note)",
-    "Face color",
-    "Accent color",
     "Auto-turn on or off"
   ],
   "site_types": [

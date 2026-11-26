@@ -19,7 +19,6 @@ export interface DiffCompareCardProps {
   optionAName?: string;
   optionBName?: string;
   rows?: DiffCompareRow[];
-  accentColor?: string;
   collapseLabel?: string;
   className?: string;
 }
@@ -83,7 +82,6 @@ export default function DiffCompareCard({
   optionAName = 'Signature Full-Day',
   optionBName = 'Classic Half-Day',
   rows = defaultRows,
-  accentColor,
   collapseLabel = 'Same in both',
   className,
 }: DiffCompareCardProps) {
@@ -197,7 +195,6 @@ export default function DiffCompareCard({
     verdict = `${name} fits you best: wins ${wins[lead]} of your ${counted.length} ${counted.length === 1 ? 'priority' : 'priorities'}.`;
   }
 
-  const rootStyle = (accentColor ? { '--dc-accent': accentColor } : undefined) as CSSProperties | undefined;
   const rootClass = [styles.root, className].filter(Boolean).join(' ');
 
   const pan = (side: 'A' | 'B') => {
@@ -244,7 +241,7 @@ export default function DiffCompareCard({
   };
 
   return (
-    <div ref={rootRef} className={rootClass} style={rootStyle} role="group" aria-label={`${nameA} compared with ${nameB}`}>
+    <div ref={rootRef} className={rootClass} role="group" aria-label={`${nameA} compared with ${nameB}`}>
       {decided.length > 0 && (
         <section className={styles.matters} aria-labelledby={`${uid}-m`}>
           <h4 id={`${uid}-m`} className={styles.mattersTitle}>

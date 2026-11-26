@@ -8,8 +8,6 @@
   "visitor_action": "click/tap or Enter on a question; arrows move between questions",
   "owner_settings": [
     "Questions (question, answer)",
-    "Paper color",
-    "Accent color",
     "Allow multiple open"
   ],
   "site_types": [

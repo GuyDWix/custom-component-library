@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
+import type { PointerEvent as ReactPointerEvent } from 'react';
 import styles from './Component.module.css';
 
 export interface CustomerDotsWaffleProps {
@@ -7,7 +7,6 @@ export interface CustomerDotsWaffleProps {
   statement?: string;
   highlightLabel?: string;
   otherLabel?: string;
-  highlightColor?: string;
   className?: string;
 }
 
@@ -118,7 +117,6 @@ export default function CustomerDotsWaffle({
   statement = 'of first-time clients book a second visit within the year.',
   highlightLabel = 'Came back',
   otherLabel = 'Not yet',
-  highlightColor = '#f2503f',
   className,
 }: CustomerDotsWaffleProps) {
   const uid = useId();
@@ -207,12 +205,12 @@ export default function CustomerDotsWaffle({
 
     const readTokens = () => {
       const cs = getComputedStyle(root);
-      const read = (name: string, fb: RGB) => resolveColor(ctx, cs.getPropertyValue(name).trim(), fb);
+      const swatch = root.querySelector(`.${styles.swatch}:not(.${styles.swatchHi})`);
       tokens = {
-        ground: read('--cdw-ground', FALLBACK.ground),
-        slate: read('--cdw-slate', FALLBACK.slate),
-        ink: read('--cdw-ink', FALLBACK.ink),
-        hi: read('--cdw-highlight', FALLBACK.hi),
+        ground: resolveColor(ctx, cs.backgroundColor, FALLBACK.ground),
+        slate: resolveColor(ctx, swatch ? getComputedStyle(swatch).backgroundColor : '', FALLBACK.slate),
+        ink: resolveColor(ctx, cs.color, FALLBACK.ink),
+        hi: resolveColor(ctx, cs.getPropertyValue('--accent').trim(), FALLBACK.hi),
       };
     };
 
@@ -644,7 +642,7 @@ export default function CustomerDotsWaffle({
     mq?.addEventListener('change', onMq);
 
     const onTransitionEnd = (e: TransitionEvent) => {
-      if (e.target === root && e.propertyName.startsWith('--')) dirtyRef.current();
+      if (e.target === root) dirtyRef.current();
     };
     root.addEventListener('transitionend', onTransitionEnd);
 
@@ -697,11 +695,6 @@ export default function CustomerDotsWaffle({
       dirtyRef.current = () => {};
     };
   }, []);
-
-  // owner edits that change what is drawn
-  useEffect(() => {
-    dirtyRef.current();
-  }, [highlightColor]);
 
   useEffect(() => {
     kickRef.current();
@@ -775,7 +768,6 @@ export default function CustomerDotsWaffle({
     onBlur: () => setActive(null),
   });
 
-  const rootStyle = { '--cdw-highlight': highlightColor } as CSSProperties;
   const tipCount = tipGroup === 'hi' ? nLit : nOther;
   const tipLabel = tipGroup === 'hi' ? highlightLabel : otherLabel;
 
@@ -783,7 +775,6 @@ export default function CustomerDotsWaffle({
     <div
       ref={rootRef}
       className={[styles.root, className].filter(Boolean).join(' ')}
-      style={rootStyle}
       role="group"
       aria-labelledby={statementId}
     >

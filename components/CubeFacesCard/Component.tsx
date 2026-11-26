@@ -15,8 +15,6 @@ export interface CubeFace {
 
 export interface CubeFacesCardProps {
   faces?: CubeFace[];
-  faceColor?: string;
-  accentColor?: string;
   autoTurn?: boolean;
   className?: string;
 }
@@ -164,8 +162,6 @@ function Glyph({ icon, className, drawing }: { icon: CubeFaceIcon; className?: s
 
 export default function CubeFacesCard({
   faces: facesProp = defaultFaces,
-  faceColor = '#f3f4f1',
-  accentColor = '#1f47e6',
   autoTurn = true,
   className,
 }: CubeFacesCardProps) {
@@ -422,7 +418,6 @@ export default function CubeFacesCard({
     tabRefs.current[to]?.focus();
   };
 
-  const rootStyle = { '--cf-face': faceColor, '--cf-accent': accentColor } as CSSProperties;
   const animate = (on: boolean, delay: number): { className: string; style?: CSSProperties } =>
     on && turned && !reduced
       ? { className: styles.rise, style: { '--d': `${delay}ms` } as CSSProperties }
@@ -432,7 +427,6 @@ export default function CubeFacesCard({
     <div
       ref={rootRef}
       className={[styles.root, className].filter(Boolean).join(' ')}
-      style={rootStyle}
       onPointerEnter={() => {
         engaged.current = true;
       }}

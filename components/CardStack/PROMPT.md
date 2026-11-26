@@ -1,10 +1,10 @@
 Create a custom element called "Card Stack". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: cards (quote, person name, role, photo), auto-advance seconds, accent color, card surface style (glass | paper | solid), small heading, hint text. Add other settings if they help.
+The site owner must be able to change: cards (quote, person name, role, photo), auto-advance seconds, card surface style (glass | paper | solid), small heading, hint text. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
+import type { KeyboardEvent, PointerEvent } from 'react';
 import styles from './Component.module.css';
 
 export interface CardStackCard {
@@ -19,7 +19,6 @@ export type CardSurface = 'glass' | 'paper' | 'solid';
 export interface CardStackProps {
   cards?: CardStackCard[];
   autoAdvanceSeconds?: number;
-  accentColor?: string;
   surface?: CardSurface;
   eyebrow?: string;
   hint?: string;
@@ -87,7 +86,6 @@ const initials = (name: string) =>
 export default function CardStack({
   cards = defaultCards,
   autoAdvanceSeconds = 6,
-  accentColor = '#2448D8',
   surface = 'glass',
   eyebrow = 'Kind words from clients',
   hint = 'Drag, tap or use the arrow keys',
@@ -424,14 +422,12 @@ export default function CardStack({
   };
 
   const frontIndex = order[0] ?? 0;
-  const rootStyle = { '--cs-accent': accentColor } as CSSProperties;
   const surfaceClass = styles[surface] ?? styles.glass;
 
   return (
     <section
       ref={rootRef}
       className={[styles.root, className].filter(Boolean).join(' ')}
-      style={rootStyle}
       aria-roledescription="carousel"
       aria-label={ariaLabel}
       onPointerEnter={(e) => e.pointerType === 'mouse' && setHovered(true)}
@@ -564,16 +560,9 @@ export default function CardStack({
 
 ```css
 .root {
-  --cs-accent: #2448d8;
-  --cs-sky: #cfe0f3;
-  --cs-bg: #f6f4ef;
-  --cs-ink: #121c38;
-  --cs-muted: rgba(18, 28, 56, 0.6);
-  --cs-shadow: 28, 52, 110;
   --cs-font-quote: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
   --cs-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --cs-font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  --cs-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -583,12 +572,19 @@ export default function CardStack({
   inline-size: 100%;
   padding-block: 56px 48px;
   padding-inline: 20px;
-  background:
-    radial-gradient(70% 55% at 12% 8%, rgba(255, 255, 255, 0.85) 0%, transparent 60%),
-    linear-gradient(180deg, var(--cs-sky) 0%, color-mix(in srgb, var(--cs-sky) 45%, var(--cs-bg)) 46%, var(--cs-bg) 100%);
-  color: var(--cs-ink);
+  background: linear-gradient(180deg, #cfe0f3 0%, color-mix(in srgb, #cfe0f3 45%, #f6f4ef) 46%, #f6f4ef 100%);
+  color: #121c38;
   font-family: var(--cs-font-ui);
   border-radius: 32px;
+}
+
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(70% 55% at 12% 8%, rgba(255, 255, 255, 0.85) 0%, transparent 60%);
 }
 
 .glowA,
@@ -617,7 +613,7 @@ export default function CardStack({
   inline-size: 60%;
   aspect-ratio: 1.6;
   border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--cs-accent) 22%, transparent) 0%, transparent 100%);
+  background: radial-gradient(closest-side, color-mix(in srgb, #2448d8 22%, transparent) 0%, transparent 100%);
   filter: blur(56px);
   opacity: 0.7;
   animation: drift 28s ease-in-out -9s infinite alternate-reverse;
@@ -625,7 +621,7 @@ export default function CardStack({
 
 .grain {
   inset: 0;
-  background-image: var(--cs-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   mix-blend-mode: soft-light;
   opacity: 0.45;
 }
@@ -656,14 +652,14 @@ export default function CardStack({
   font-size: 14px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--cs-muted);
+  color: rgba(18, 28, 56, 0.6);
 }
 
 .eyebrow::before {
   content: '';
   inline-size: 28px;
   block-size: 1px;
-  background: var(--cs-accent);
+  background: #2448d8;
   flex: none;
 }
 
@@ -682,7 +678,7 @@ export default function CardStack({
   font-size: 76px;
   font-weight: 400;
   letter-spacing: -0.06em;
-  color: var(--cs-ink);
+  color: #121c38;
 }
 
 .numeralIn {
@@ -693,7 +689,7 @@ export default function CardStack({
   margin-inline-start: 6px;
   font-size: 22px;
   letter-spacing: -0.02em;
-  color: var(--cs-accent);
+  color: #2448d8;
   font-style: italic;
 }
 
@@ -708,7 +704,7 @@ export default function CardStack({
   grid-column: 1 / -1;
   margin: 0;
   font-size: 14px;
-  color: var(--cs-muted);
+  color: rgba(18, 28, 56, 0.6);
 }
 
 .navButton,
@@ -722,10 +718,10 @@ export default function CardStack({
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.9);
   background: rgba(255, 255, 255, 0.5);
-  color: var(--cs-ink);
+  color: #121c38;
   cursor: pointer;
   backdrop-filter: blur(10px);
-  box-shadow: inset 0 1px 0 #fff, 0 6px 16px -8px rgba(var(--cs-shadow), 0.35);
+  box-shadow: inset 0 1px 0 #fff, 0 6px 16px -8px rgba(28, 52, 110, 0.35);
   transition: background-color 220ms ease, border-color 220ms ease, transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -743,7 +739,7 @@ export default function CardStack({
 .navButton:focus-visible,
 .playButton:focus-visible,
 .stage:focus-visible {
-  outline: 2px solid var(--cs-accent);
+  outline: 2px solid #2448d8;
   outline-offset: 4px;
 }
 
@@ -770,7 +766,7 @@ export default function CardStack({
 }
 
 .ringFill {
-  stroke: var(--cs-accent);
+  stroke: #2448d8;
   stroke-linecap: round;
 }
 
@@ -801,14 +797,14 @@ export default function CardStack({
   inset-block-end: -26px;
   block-size: 56px;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(var(--cs-shadow), 0.32), transparent);
+  background: radial-gradient(closest-side, rgba(28, 52, 110, 0.32), transparent);
   filter: blur(10px);
   pointer-events: none;
 }
 
 .card {
-  --card-ink: var(--cs-ink);
-  --card-muted: var(--cs-muted);
+  --card-ink: #121c38;
+  --card-muted: rgba(18, 28, 56, 0.6);
   --card-rule: rgba(18, 28, 56, 0.1);
   --lift: calc(1 - var(--depth, 0) * 0.3);
   --mx: 50%;
@@ -841,7 +837,7 @@ export default function CardStack({
   content: '';
   position: absolute;
   inset: 0;
-  background-image: var(--cs-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   mix-blend-mode: soft-light;
   opacity: 0.35;
   pointer-events: none;
@@ -880,10 +876,10 @@ export default function CardStack({
   -webkit-backdrop-filter: blur(20px) saturate(150%);
   box-shadow:
     inset 0 1px 0 #fff,
-    inset 0 -1px 0 rgba(var(--cs-shadow), 0.08),
-    0 1px 2px rgba(var(--cs-shadow), 0.1),
-    0 14px 28px -14px rgba(var(--cs-shadow), calc(0.34 * var(--lift))),
-    0 44px 80px -36px rgba(var(--cs-shadow), calc(0.42 * var(--lift)));
+    inset 0 -1px 0 rgba(28, 52, 110, 0.08),
+    0 1px 2px rgba(28, 52, 110, 0.1),
+    0 14px 28px -14px rgba(28, 52, 110, calc(0.34 * var(--lift))),
+    0 44px 80px -36px rgba(28, 52, 110, calc(0.42 * var(--lift)));
 }
 
 .paper {
@@ -891,10 +887,10 @@ export default function CardStack({
   border: 1px solid #fff;
   box-shadow:
     inset 0 1px 0 #fff,
-    inset 0 -2px 6px rgba(var(--cs-shadow), 0.05),
-    0 1px 2px rgba(var(--cs-shadow), 0.12),
-    0 14px 28px -14px rgba(var(--cs-shadow), calc(0.3 * var(--lift))),
-    0 44px 80px -36px rgba(var(--cs-shadow), calc(0.38 * var(--lift)));
+    inset 0 -2px 6px rgba(28, 52, 110, 0.05),
+    0 1px 2px rgba(28, 52, 110, 0.12),
+    0 14px 28px -14px rgba(28, 52, 110, calc(0.3 * var(--lift))),
+    0 44px 80px -36px rgba(28, 52, 110, calc(0.38 * var(--lift)));
 }
 
 .solid {
@@ -904,13 +900,13 @@ export default function CardStack({
 
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 30%),
-    linear-gradient(160deg, color-mix(in srgb, var(--cs-accent) 32%, #16224a) 0%, #101a38 100%);
+    linear-gradient(160deg, color-mix(in srgb, #2448d8 32%, #16224a) 0%, #101a38 100%);
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    0 1px 2px rgba(var(--cs-shadow), 0.2),
-    0 14px 28px -14px rgba(var(--cs-shadow), calc(0.45 * var(--lift))),
-    0 44px 80px -36px rgba(var(--cs-shadow), calc(0.5 * var(--lift)));
+    0 1px 2px rgba(28, 52, 110, 0.2),
+    0 14px 28px -14px rgba(28, 52, 110, calc(0.45 * var(--lift))),
+    0 44px 80px -36px rgba(28, 52, 110, calc(0.5 * var(--lift)));
 }
 
 .cardTop,
@@ -934,8 +930,8 @@ export default function CardStack({
   font-size: 88px;
   line-height: 1;
   margin-block: -14px -36px;
-  color: var(--cs-accent);
-  text-shadow: 0 6px 18px color-mix(in srgb, var(--cs-accent) 30%, transparent);
+  color: #2448d8;
+  text-shadow: 0 6px 18px color-mix(in srgb, #2448d8 30%, transparent);
 }
 
 .cardIndex {
@@ -979,8 +975,8 @@ export default function CardStack({
   border-radius: 50%;
   box-shadow:
     0 0 0 2px #fff,
-    0 0 0 4px color-mix(in srgb, var(--cs-accent) 70%, transparent),
-    0 8px 18px -6px rgba(var(--cs-shadow), 0.4);
+    0 0 0 4px color-mix(in srgb, #2448d8 70%, transparent),
+    0 8px 18px -6px rgba(28, 52, 110, 0.4);
 }
 
 .photo {
@@ -992,7 +988,7 @@ export default function CardStack({
   display: grid;
   place-items: center;
   background: var(--card-ink);
-  color: var(--cs-bg);
+  color: #f6f4ef;
   font-size: 15px;
   font-weight: 650;
   letter-spacing: 0.04em;

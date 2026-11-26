@@ -1,10 +1,10 @@
 Create a custom element called "Customer Dots Waffle". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: percentage, statement under the grid, highlighted group label, other group label, highlight color. Add other settings if they help.
+The site owner must be able to change: percentage, statement under the grid, highlighted group label, other group label. Add other settings if they help.
 
 ```tsx
 import { useEffect, useId, useRef, useState } from 'react';
-import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
+import type { PointerEvent as ReactPointerEvent } from 'react';
 import styles from './Component.module.css';
 
 export interface CustomerDotsWaffleProps {
@@ -12,7 +12,6 @@ export interface CustomerDotsWaffleProps {
   statement?: string;
   highlightLabel?: string;
   otherLabel?: string;
-  highlightColor?: string;
   className?: string;
 }
 
@@ -123,7 +122,6 @@ export default function CustomerDotsWaffle({
   statement = 'of first-time clients book a second visit within the year.',
   highlightLabel = 'Came back',
   otherLabel = 'Not yet',
-  highlightColor = '#f2503f',
   className,
 }: CustomerDotsWaffleProps) {
   const uid = useId();
@@ -212,12 +210,12 @@ export default function CustomerDotsWaffle({
 
     const readTokens = () => {
       const cs = getComputedStyle(root);
-      const read = (name: string, fb: RGB) => resolveColor(ctx, cs.getPropertyValue(name).trim(), fb);
+      const swatch = root.querySelector(`.${styles.swatch}:not(.${styles.swatchHi})`);
       tokens = {
-        ground: read('--cdw-ground', FALLBACK.ground),
-        slate: read('--cdw-slate', FALLBACK.slate),
-        ink: read('--cdw-ink', FALLBACK.ink),
-        hi: read('--cdw-highlight', FALLBACK.hi),
+        ground: resolveColor(ctx, cs.backgroundColor, FALLBACK.ground),
+        slate: resolveColor(ctx, swatch ? getComputedStyle(swatch).backgroundColor : '', FALLBACK.slate),
+        ink: resolveColor(ctx, cs.color, FALLBACK.ink),
+        hi: resolveColor(ctx, cs.getPropertyValue('--accent').trim(), FALLBACK.hi),
       };
     };
 
@@ -649,7 +647,7 @@ export default function CustomerDotsWaffle({
     mq?.addEventListener('change', onMq);
 
     const onTransitionEnd = (e: TransitionEvent) => {
-      if (e.target === root && e.propertyName.startsWith('--')) dirtyRef.current();
+      if (e.target === root) dirtyRef.current();
     };
     root.addEventListener('transitionend', onTransitionEnd);
 
@@ -702,11 +700,6 @@ export default function CustomerDotsWaffle({
       dirtyRef.current = () => {};
     };
   }, []);
-
-  // owner edits that change what is drawn
-  useEffect(() => {
-    dirtyRef.current();
-  }, [highlightColor]);
 
   useEffect(() => {
     kickRef.current();
@@ -780,7 +773,6 @@ export default function CustomerDotsWaffle({
     onBlur: () => setActive(null),
   });
 
-  const rootStyle = { '--cdw-highlight': highlightColor } as CSSProperties;
   const tipCount = tipGroup === 'hi' ? nLit : nOther;
   const tipLabel = tipGroup === 'hi' ? highlightLabel : otherLabel;
 
@@ -788,7 +780,6 @@ export default function CustomerDotsWaffle({
     <div
       ref={rootRef}
       className={[styles.root, className].filter(Boolean).join(' ')}
-      style={rootStyle}
       role="group"
       aria-labelledby={statementId}
     >
@@ -860,35 +851,14 @@ export default function CustomerDotsWaffle({
 ```
 
 ```css
-@property --cdw-ground {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: #f1f5f2;
-}
-
-@property --cdw-slate {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: #7f8e9a;
-}
-
-@property --cdw-ink {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: #1c2832;
-}
-
-@property --cdw-highlight {
+@property --accent {
   syntax: '<color>';
   inherits: true;
   initial-value: #f2503f;
 }
 
 .root {
-  --cdw-ground: #f1f5f2;
-  --cdw-slate: #7f8e9a;
-  --cdw-ink: #1c2832;
-  --cdw-highlight: #f2503f;
+  --accent: #f2503f;
   --cdw-font: 'DM Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --cdw-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -899,22 +869,22 @@ export default function CustomerDotsWaffle({
   container-type: inline-size;
   overflow: hidden;
   border-radius: 28px;
-  background-color: var(--cdw-ground);
+  background-color: #f1f5f2;
   background-image: radial-gradient(70% 90% at 66% 54%, rgba(205, 228, 215, 0.55) 0%, rgba(205, 228, 215, 0) 70%);
   box-shadow:
     inset 0 0 0 1px rgba(28, 40, 50, 0.07),
     0 1px 2px rgba(28, 40, 50, 0.05),
     0 18px 40px -22px rgba(28, 40, 50, 0.28);
-  color: var(--cdw-ink);
+  color: #1c2832;
   font-family: var(--cdw-font);
-  transition-property: --cdw-ground, --cdw-slate, --cdw-ink, --cdw-highlight;
+  transition-property: --accent, color, background-color;
   transition-duration: 1ms;
   transition-behavior: allow-discrete;
 }
 
 .root::selection {
-  background: color-mix(in srgb, var(--cdw-highlight) 28%, transparent);
-  color: var(--cdw-ink);
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+  color: #1c2832;
 }
 
 .frame {
@@ -974,7 +944,7 @@ export default function CustomerDotsWaffle({
   line-height: 0.82;
   letter-spacing: -0.065em;
   font-variant-numeric: tabular-nums;
-  color: var(--cdw-ink);
+  color: #1c2832;
 }
 
 .numWrap {
@@ -999,7 +969,7 @@ export default function CustomerDotsWaffle({
   font-size: 0.4em;
   font-weight: 600;
   letter-spacing: -0.02em;
-  color: var(--cdw-highlight);
+  color: var(--accent);
 }
 
 .statement {
@@ -1009,7 +979,7 @@ export default function CustomerDotsWaffle({
   font-weight: 500;
   line-height: 1.4;
   letter-spacing: -0.012em;
-  color: color-mix(in srgb, var(--cdw-ink) 82%, var(--cdw-ground));
+  color: color-mix(in srgb, #1c2832 82%, #f1f5f2);
   text-wrap: pretty;
   overflow-wrap: anywhere;
 }
@@ -1039,7 +1009,7 @@ export default function CustomerDotsWaffle({
   border: 1px solid rgba(28, 40, 50, 0.12);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.55);
-  color: var(--cdw-ink);
+  color: #1c2832;
   font: inherit;
   font-size: 15px;
   font-weight: 500;
@@ -1060,7 +1030,7 @@ export default function CustomerDotsWaffle({
 }
 
 .legendBtn:focus-visible {
-  outline: 2px solid var(--cdw-highlight);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -1074,11 +1044,11 @@ export default function CustomerDotsWaffle({
   inline-size: 14px;
   block-size: 14px;
   border-radius: 50%;
-  background: var(--cdw-slate);
+  background: #7f8e9a;
 }
 
 .swatchHi {
-  background: var(--cdw-highlight);
+  background: var(--accent);
 }
 
 .tip {
@@ -1094,7 +1064,7 @@ export default function CustomerDotsWaffle({
   border: 1px solid rgba(28, 40, 50, 0.1);
   border-radius: 14px;
   background: #ffffff;
-  color: var(--cdw-ink);
+  color: #1c2832;
   font-size: 15px;
   font-weight: 500;
   line-height: 1.25;

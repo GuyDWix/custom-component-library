@@ -12,7 +12,6 @@ const worst: CustomerDotsWaffleProps = {
     'of the people who walked into our flagship location during the extended renovation period, the seasonal pop-up weeks and the three weekend-long open days booked a follow-up consultation with a different practitioner within the first calendar year.',
   highlightLabel: 'Booked a follow-up consultation with a different practitioner',
   otherLabel: 'Visited once, enjoyed it, and have not scheduled anything else yet',
-  highlightColor: '#e0301f',
 };
 
 const stage = {

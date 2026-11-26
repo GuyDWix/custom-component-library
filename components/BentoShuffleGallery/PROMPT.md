@@ -766,13 +766,6 @@ export default function BentoShuffleGallery({
 .root {
   --bs-radius: 22px;
   --bs-gap: 14px;
-  --bs-ink: #232634;
-  --bs-ink-soft: #565b6e;
-  --bs-surface: #e7eaf0;
-  --bs-wash: #d9dde6;
-  --bs-accent: #4a55c9;
-  --bs-hi: rgba(255, 255, 255, 0.95);
-  --bs-lo: rgba(139, 148, 170, 0.5);
   --bs-font-ui:
     "Bricolage Grotesque", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
 
@@ -783,13 +776,13 @@ export default function BentoShuffleGallery({
   inline-size: 100%;
   padding-block: 0;
   padding-inline: 0;
-  color: var(--bs-ink);
+  color: #232634;
   font-family: var(--bs-font-ui);
 }
 
 .root::selection {
-  background: var(--bs-accent);
-  color: var(--bs-surface);
+  background: #4a55c9;
+  color: #e7eaf0;
 }
 
 .inner {
@@ -810,7 +803,7 @@ export default function BentoShuffleGallery({
 }
 
 .stage:focus-visible {
-  outline: 2px solid var(--bs-accent);
+  outline: 2px solid #4a55c9;
   outline-offset: 8px;
   border-radius: var(--bs-radius);
 }
@@ -830,19 +823,19 @@ export default function BentoShuffleGallery({
   border: 0;
   overflow: clip;
   border-radius: var(--bs-radius);
-  background: var(--bs-wash);
+  background: #d9dde6;
   cursor: pointer;
   transform-origin: 50% 50%;
   -webkit-tap-highlight-color: transparent;
   will-change: transform;
   box-shadow:
-    -6px -6px 14px var(--bs-hi),
-    7px 8px 16px var(--bs-lo),
+    -6px -6px 14px rgba(255, 255, 255, 0.95),
+    7px 8px 16px rgba(139, 148, 170, 0.5),
     0 calc(var(--bs-lf) * 20px) calc(var(--bs-lf) * 34px) calc(var(--bs-lf) * -10px) rgba(35, 38, 52, calc(var(--bs-lf) * 0.3));
 }
 
 .tile:focus-visible {
-  outline: 2px solid var(--bs-accent);
+  outline: 2px solid #4a55c9;
   outline-offset: 3px;
 }
 
@@ -859,8 +852,8 @@ export default function BentoShuffleGallery({
   place-items: center;
   inline-size: 100%;
   block-size: 100%;
-  background: var(--bs-wash);
-  color: var(--bs-ink-soft);
+  background: #d9dde6;
+  color: #565b6e;
   font-size: 32px;
   font-weight: 600;
   user-select: none;
@@ -1017,10 +1010,10 @@ export default function BentoShuffleGallery({
   padding: 0;
   border-radius: 50%;
   border: 0;
-  background: var(--bs-surface);
-  color: var(--bs-ink);
+  background: #e7eaf0;
+  color: #232634;
   cursor: pointer;
-  box-shadow: -3px -3px 8px var(--bs-hi), 4px 4px 10px var(--bs-lo);
+  box-shadow: -3px -3px 8px rgba(255, 255, 255, 0.95), 4px 4px 10px rgba(139, 148, 170, 0.5);
   transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 200ms ease;
 }
 
@@ -1031,11 +1024,11 @@ export default function BentoShuffleGallery({
 .pause:active,
 .pause[aria-pressed="true"] {
   transform: scale(0.96);
-  box-shadow: inset -2px -2px 5px var(--bs-hi), inset 3px 3px 7px var(--bs-lo);
+  box-shadow: inset -2px -2px 5px rgba(255, 255, 255, 0.95), inset 3px 3px 7px rgba(139, 148, 170, 0.5);
 }
 
 .pause:focus-visible {
-  outline: 2px solid var(--bs-accent);
+  outline: 2px solid #4a55c9;
   outline-offset: 3px;
 }
 
@@ -1058,7 +1051,7 @@ export default function BentoShuffleGallery({
 }
 
 .ringFill {
-  stroke: var(--bs-accent);
+  stroke: #4a55c9;
   stroke-linecap: round;
 }
 

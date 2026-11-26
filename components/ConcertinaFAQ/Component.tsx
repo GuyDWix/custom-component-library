@@ -9,8 +9,6 @@ export interface ConcertinaFAQQuestion {
 
 export interface ConcertinaFAQProps {
   questions?: ConcertinaFAQQuestion[];
-  paperColor?: string;
-  accentColor?: string;
   allowMultipleOpen?: boolean;
 }
 
@@ -70,8 +68,6 @@ function pose(p: number, n: number): number[] {
 
 export default function ConcertinaFAQ({
   questions = defaultQuestions,
-  paperColor = '#f1ebdf',
-  accentColor = '#2b3a8c',
   allowMultipleOpen = false,
 }: ConcertinaFAQProps) {
   const items = questions.filter((q) => q.question);
@@ -309,10 +305,9 @@ export default function ConcertinaFAQ({
     </div>
   );
 
-  const rootStyle = { '--cf-paper': paperColor, '--cf-accent': accentColor } as CSSProperties;
 
   return (
-    <div ref={rootRef} className={styles.root} style={rootStyle}>
+    <div ref={rootRef} className={styles.root}>
       <div className={styles.frame}>
         <ul
           className={styles.list}

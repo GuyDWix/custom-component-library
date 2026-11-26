@@ -17,7 +17,6 @@ export interface HotspotPinPhotoProps {
   imageAlt?: string;
   caption?: string;
   pins?: HotspotPinPhotoPin[];
-  pinColor?: string;
   className?: string;
 }
 
@@ -38,7 +37,6 @@ export default function HotspotPinPhoto({
   imageAlt = 'Bright living room with a bouclé sofa, a brass floor lamp and oak furniture',
   caption = 'The autumn lookbook · photographed at Studio Nordheim',
   pins = defaultPins,
-  pinColor = '#dc4b2f',
   className,
 }: HotspotPinPhotoProps) {
   const [open, setOpen] = useState<number | null>(null);
@@ -132,7 +130,6 @@ export default function HotspotPinPhoto({
     <div
       ref={rootRef}
       className={rootClass}
-      style={{ '--hp-accent': pinColor } as CSSProperties}
       onPointerDown={onRootPointerDown}
       onKeyDown={onRootKeyDown}
       onBlur={onRootBlur}

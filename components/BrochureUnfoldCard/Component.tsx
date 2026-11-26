@@ -11,10 +11,6 @@ export interface BrochurePanel {
 
 export interface BrochureUnfoldCardProps {
   panels?: BrochurePanel[];
-  paperColor?: string;
-  inkColor?: string;
-  accentColor?: string;
-  stageColor?: string;
   className?: string;
 }
 
@@ -111,10 +107,6 @@ function Duo({ src, alt, className }: { src: string; alt: string; className?: st
 
 export default function BrochureUnfoldCard({
   panels = defaultPanels,
-  paperColor = '#e7d8b4',
-  inkColor = '#2f3b17',
-  accentColor = '#f2a35f',
-  stageColor = '#161b0e',
   className,
 }: BrochureUnfoldCardProps) {
   const items = (panels.length ? panels : defaultPanels).slice(0, 3);
@@ -362,13 +354,6 @@ export default function BrochureUnfoldCard({
     goTo(next, true);
   };
 
-  const rootStyle = {
-    '--bc-paper': paperColor,
-    '--bc-ink': inkColor,
-    '--bc-accent': accentColor,
-    '--bc-stage': stageColor,
-  } as CSSProperties;
-
   const frontShade = (i: number): CSSProperties => ({ '--shv': i === 1 ? 'var(--sh2, 1)' : 'var(--sh3, 1)' }) as CSSProperties;
 
   const renderFront = (i: number, open: boolean): ReactNode => {
@@ -481,7 +466,6 @@ export default function BrochureUnfoldCard({
     <div
       ref={rootRef}
       className={cx(styles.root, className)}
-      style={rootStyle}
       role="group"
       aria-roledescription="brochure"
       aria-label={items[0]?.title || 'Brochure'}

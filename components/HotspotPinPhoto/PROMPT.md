@@ -1,6 +1,6 @@
 Create a custom element called "Hotspot Pin Photo". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: image, image description, pins (position, title, text, link), pin colour, photo caption. Add other settings if they help.
+The site owner must be able to change: image, image description, pins (position, title, text, link), photo caption. Add other settings if they help.
 
 ```tsx
 import { useEffect, useId, useRef, useState } from 'react';
@@ -22,7 +22,6 @@ export interface HotspotPinPhotoProps {
   imageAlt?: string;
   caption?: string;
   pins?: HotspotPinPhotoPin[];
-  pinColor?: string;
   className?: string;
 }
 
@@ -43,7 +42,6 @@ export default function HotspotPinPhoto({
   imageAlt = 'Bright living room with a bouclé sofa, a brass floor lamp and oak furniture',
   caption = 'The autumn lookbook · photographed at Studio Nordheim',
   pins = defaultPins,
-  pinColor = '#dc4b2f',
   className,
 }: HotspotPinPhotoProps) {
   const [open, setOpen] = useState<number | null>(null);
@@ -137,7 +135,6 @@ export default function HotspotPinPhoto({
     <div
       ref={rootRef}
       className={rootClass}
-      style={{ '--hp-accent': pinColor } as CSSProperties}
       onPointerDown={onRootPointerDown}
       onKeyDown={onRootKeyDown}
       onBlur={onRootBlur}
@@ -221,16 +218,9 @@ export default function HotspotPinPhoto({
 
 ```css
 .root {
-  --hp-accent: #dc4b2f;
-  --hp-stage: #f1ece1;
-  --hp-frame: rgba(62, 48, 39, 0.14);
-  --hp-paper: #fbf6ec;
-  --hp-ink: #3e3027;
-  --hp-muted: #7d6a5b;
   --hp-font: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --hp-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --hp-spring: cubic-bezier(0.24, 1.3, 0.32, 1);
-  --hp-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   box-sizing: border-box;
@@ -238,14 +228,14 @@ export default function HotspotPinPhoto({
   container-type: inline-size;
   padding: 14px;
   border-radius: 18px;
-  border: 1px solid var(--hp-frame);
-  background: var(--hp-stage);
-  color: var(--hp-ink);
+  border: 1px solid rgba(62, 48, 39, 0.14);
+  background: #f1ece1;
+  color: #3e3027;
   font-family: var(--hp-font);
 }
 
 .root ::selection {
-  background: color-mix(in srgb, var(--hp-accent) 26%, transparent);
+  background: color-mix(in srgb, #dc4b2f 26%, transparent);
 }
 
 .frame {
@@ -274,7 +264,7 @@ export default function HotspotPinPhoto({
   inset: 0;
   border-radius: 10px;
   background-color: #ece5d8;
-  background-image: radial-gradient(color-mix(in srgb, var(--hp-ink) 8%, transparent) 1px, transparent 1.4px);
+  background-image: radial-gradient(color-mix(in srgb, #3e3027 8%, transparent) 1px, transparent 1.4px);
   background-size: 16px 16px;
 }
 
@@ -337,7 +327,7 @@ export default function HotspotPinPhoto({
   position: absolute;
   inset: 15%;
   border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--hp-accent) 55%, transparent), transparent 72%);
+  background: radial-gradient(closest-side, color-mix(in srgb, #dc4b2f 55%, transparent), transparent 72%);
   animation: hp-breathe 3.4s ease-in-out infinite;
 }
 
@@ -346,7 +336,7 @@ export default function HotspotPinPhoto({
   position: absolute;
   inset: 30%;
   border-radius: 50%;
-  border: 1.5px solid var(--hp-accent);
+  border: 1.5px solid #dc4b2f;
   opacity: 0;
   animation: hp-ring 3.4s var(--hp-ease-out) infinite;
 }
@@ -387,10 +377,10 @@ export default function HotspotPinPhoto({
   margin-block-start: -8px;
   margin-inline-start: -8px;
   border-radius: 50%;
-  background: radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--hp-accent) 45%, white), var(--hp-accent) 62%);
+  background: radial-gradient(circle at 32% 28%, color-mix(in srgb, #dc4b2f 45%, white), #dc4b2f 62%);
   box-shadow:
     0 0 0 2px rgba(255, 253, 248, 0.92),
-    0 2px 8px color-mix(in srgb, var(--hp-ink) 40%, transparent);
+    0 2px 8px color-mix(in srgb, #3e3027 40%, transparent);
   transition:
     transform 0.35s var(--hp-ease-out),
     box-shadow 0.35s var(--hp-ease-out);
@@ -404,12 +394,12 @@ export default function HotspotPinPhoto({
   transform: scale(1.4);
   box-shadow:
     0 0 0 2px rgba(255, 253, 248, 0.95),
-    0 0 0 6px color-mix(in srgb, var(--hp-accent) 32%, transparent),
-    0 3px 10px color-mix(in srgb, var(--hp-ink) 38%, transparent);
+    0 0 0 6px color-mix(in srgb, #dc4b2f 32%, transparent),
+    0 3px 10px color-mix(in srgb, #3e3027 38%, transparent);
 }
 
 .pin:focus-visible {
-  outline: 2px solid var(--hp-accent);
+  outline: 2px solid #dc4b2f;
   outline-offset: 4px;
   border-radius: 50%;
 }
@@ -450,11 +440,11 @@ export default function HotspotPinPhoto({
   box-sizing: border-box;
   padding: 13px 15px 12px;
   border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--hp-ink) 10%, transparent);
-  background: var(--hp-paper);
+  border: 1px solid color-mix(in srgb, #3e3027 10%, transparent);
+  background: #fbf6ec;
   box-shadow:
-    0 16px 36px -14px color-mix(in srgb, var(--hp-ink) 42%, transparent),
-    0 4px 12px -6px color-mix(in srgb, var(--hp-ink) 24%, transparent);
+    0 16px 36px -14px color-mix(in srgb, #3e3027 42%, transparent),
+    0 4px 12px -6px color-mix(in srgb, #3e3027 24%, transparent);
   animation: hp-note-in 0.34s var(--hp-spring) both;
 }
 
@@ -474,7 +464,7 @@ export default function HotspotPinPhoto({
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background-image: var(--hp-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.05;
   mix-blend-mode: multiply;
   pointer-events: none;
@@ -493,7 +483,7 @@ export default function HotspotPinPhoto({
   margin: 0;
   font-size: 14px;
   line-height: 1.45;
-  color: var(--hp-muted);
+  color: #7d6a5b;
   font-variant-numeric: tabular-nums;
   overflow-wrap: break-word;
 }
@@ -506,9 +496,9 @@ export default function HotspotPinPhoto({
   block-size: 30px;
   margin-block-start: 10px;
   border-radius: 9px;
-  border: 1px solid color-mix(in srgb, var(--hp-ink) 14%, transparent);
-  background: color-mix(in srgb, var(--hp-stage) 45%, var(--hp-paper));
-  color: var(--hp-ink);
+  border: 1px solid color-mix(in srgb, #3e3027 14%, transparent);
+  background: color-mix(in srgb, #f1ece1 45%, #fbf6ec);
+  color: #3e3027;
   transition:
     background-color 0.25s var(--hp-ease-out),
     color 0.25s var(--hp-ease-out),
@@ -516,13 +506,13 @@ export default function HotspotPinPhoto({
 }
 
 .noteLink:hover {
-  background: var(--hp-accent);
-  border-color: var(--hp-accent);
+  background: #dc4b2f;
+  border-color: #dc4b2f;
   color: #fff;
 }
 
 .noteLink:focus-visible {
-  outline: 2px solid var(--hp-accent);
+  outline: 2px solid #dc4b2f;
   outline-offset: 2px;
 }
 
@@ -544,14 +534,14 @@ export default function HotspotPinPhoto({
   inline-size: 6px;
   block-size: 6px;
   border-radius: 2px;
-  background: var(--hp-accent);
+  background: #dc4b2f;
 }
 
 .caption {
   font-size: 14px;
   line-height: 1.4;
   letter-spacing: 0.01em;
-  color: var(--hp-muted);
+  color: #7d6a5b;
 }
 
 .still .spot,

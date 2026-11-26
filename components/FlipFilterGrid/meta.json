@@ -9,7 +9,6 @@
   "owner_settings": [
     "Items (title, image, category, optional detail)",
     "Categories",
-    "Chip color",
     "Columns"
   ],
   "site_types": [

@@ -11,7 +11,6 @@
     "Stages (name, short description)",
     "Current stage",
     "Marker icon",
-    "Route color",
     "Status labels (you are here, next stop, done, coming up)"
   ],
   "site_types": [
