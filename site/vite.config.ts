@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react';
 
 const DISPLAY_KEYS = [
   'display_name', 'category', 'tier', 'job', 'visitor_action', 'owner_settings', 'site_types',
-  'mobile', 'motion', 'art_direction', 'status', 'studio2_tested',
+  'mobile', 'motion', 'art_direction', 'status',
 ];
 
 // Public builds ship only the fields the gallery displays (no notes, provenance or scores)

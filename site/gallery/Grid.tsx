@@ -37,7 +37,7 @@ function Card({ entry, edit, state }: { entry: Entry; edit?: VersionSummary; sta
           <h2 className="g-card__title">{entry.title}</h2>
           {metaLine(entry) && <p className="g-card__meta">{metaLine(entry)}</p>}
           {entry.job && <p className="g-card__job">{entry.job}</p>}
-          <Badges entry={entry} state={state ?? null} />
+          <Badges state={state ?? null} />
           {edit && (
             <span className="g-pill g-pill--edited g-card__edited" title={`Edited by ${authorOf(edit)} · ${relativeTime(edit.createdAt)}`}>
               {entry.inRepo ? 'Edited' : 'New'}

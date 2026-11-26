@@ -1,6 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { SHOW_REVIEW, isRepoName, metaLine, type Entry } from './data';
-import Badges from './Badges';
 import { entryFor, useCatalog } from './catalog';
 import { fetchVersion, loadRepoCode, type Code, type Version } from './edits';
 import Editor from './Editor';
@@ -258,7 +257,6 @@ export default function Detail({ name }: { name: string }) {
         {work.error && <p className="g-editor__notice g-editor__notice--bad" role="alert">{work.error}</p>}
         {metaLine(entry) && <p className="g-card__meta">{metaLine(entry)}</p>}
         {entry.job && <p className="g-detail__job">{entry.job}</p>}
-        <Badges entry={entry} />
       </header>
       <div className="g-detail__layout">
         {(!isNew || previewCode) && (

@@ -14,8 +14,6 @@ export type Entry = {
   mobile?: string;
   motion?: string;
   artDirection?: string;
-  craft: unknown;
-  studio2: unknown;
   inRepo: boolean;
 };
 
@@ -31,7 +29,6 @@ const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : unde
 const strList = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string' && !!x.trim()) : []);
 
 export function toEntry(name: string, meta: RawMeta = {}, inRepo = false): Entry {
-  const checks = (meta.checks ?? {}) as RawMeta;
   return {
     name,
     title: str(meta.display_name) ?? name,
@@ -44,8 +41,6 @@ export function toEntry(name: string, meta: RawMeta = {}, inRepo = false): Entry
     mobile: str(meta.mobile),
     motion: str(meta.motion),
     artDirection: str(meta.art_direction),
-    craft: checks.craft,
-    studio2: meta.studio2_tested,
     inRepo,
   };
 }

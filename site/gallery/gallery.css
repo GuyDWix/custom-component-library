@@ -122,7 +122,6 @@ body.gallery-body {
 .g-detail__controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .g-detail__title { font-family: var(--g-display); font-size: clamp(30px, 4.5vw, 44px); font-weight: 600; letter-spacing: -0.035em; line-height: 1.05; }
 .g-detail__job { font-size: 17px; color: var(--g-text-2); }
-.g-detail__head .g-badges { margin-top: 6px; }
 
 .g-preview { margin-bottom: 40px; }
 .g-preview__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 12px; }
