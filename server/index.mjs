@@ -522,6 +522,26 @@ async function kit(req, res, url, name) {
   return sendZip(res, `${name}-kit.zip`, await existingKit(name));
 }
 
+async function deleteComponent(name, user) {
+  if (REPO_NAMES.has(name)) throw new HttpError(409, 'Repo components cannot be deleted here');
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const { rowCount } = await client.query('DELETE FROM component_versions WHERE component = $1', [name]);
+    if (!rowCount) throw new HttpError(404, 'Unknown component');
+    await client.query('DELETE FROM component_state WHERE component = $1', [name]);
+    await client.query('DELETE FROM component_events WHERE component = $1', [name]);
+    await client.query('COMMIT');
+    console.log(`component deleted: ${name} by ${user.email}`);
+    return { deleted: name, versions: rowCount };
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
 // --- API router ---
 
 function only(req, method) {
@@ -533,6 +553,7 @@ async function componentRoute(req, res, name, sub, user) {
   if (!sub) {
     if (req.method === 'GET') return sendJson(res, 200, await latestVersion(pool, name));
     if (req.method === 'POST') return sendJson(res, 201, await saveVersion(name, await readJson(req), user));
+    if (req.method === 'DELETE') return sendJson(res, 200, await deleteComponent(name, user));
     throw new HttpError(405, 'Method not allowed');
   }
   if (sub === 'state') {
