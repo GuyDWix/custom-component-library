@@ -35,6 +35,30 @@
       right: Math.max(a.right, r.right), bottom: Math.max(a.bottom, r.bottom),
     }));
 
+  const STAGE_FILLS = 0.9;
+  const clear = (el) => {
+    el.style.setProperty('background-color', 'transparent', 'important');
+    if (!/url\(/.test(getComputedStyle(el).backgroundImage)) el.style.setProperty('background-image', 'none', 'important');
+  };
+  const fillsViewport = (r) => r.width >= innerWidth * STAGE_FILLS && r.height >= innerHeight * STAGE_FILLS;
+  const area = (r) => (r.right - r.left) * (r.bottom - r.top);
+
+  // Viewport-filling wrappers that only frame a smaller object are stage, not component: paint them transparent.
+  function clearStage() {
+    clear(document.documentElement);
+    clear(document.body);
+    let el = document.body;
+    for (;;) {
+      const kids = visibleChildren(el);
+      if (kids.length !== 1) return;
+      el = kids[0];
+      const r = el.getBoundingClientRect();
+      if (!fillsViewport(r)) return;
+      const inner = visibleChildren(el);
+      if (inner.length && area(union(inner.map((k) => k.getBoundingClientRect()))) < area(r) * 0.8) clear(el);
+    }
+  }
+
   function contentBox() {
     let el = document.body;
     for (;;) {
@@ -69,6 +93,7 @@
   }
 
   const report = () => {
+    clearStage();
     const target = thumb && scrollFraction && scrollTarget();
     if (target) target.scrollTop = scrollFraction * (target.scrollHeight - target.clientHeight);
     requestAnimationFrame(() =>
