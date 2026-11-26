@@ -54,7 +54,6 @@ const stage = {
   boxSizing: 'border-box' as const,
   display: 'grid',
   placeItems: 'center',
-  background: '#07080a',
 };
 
 export default function Preview() {

@@ -9,8 +9,6 @@ const stage: CSSProperties = {
   minHeight: '100vh',
   boxSizing: 'border-box',
   padding: 'clamp(20px, 4vw, 64px) clamp(16px, 4vw, 64px)',
-  background:
-    'radial-gradient(80% 60% at 70% 0%, #0b1a2e 0%, transparent 60%), radial-gradient(60% 50% at 0% 100%, #062320 0%, transparent 60%), #01040a',
   color: '#f5f2eb',
   fontFamily:
     "'Wix Madefor Display', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif",

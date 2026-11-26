@@ -29,7 +29,6 @@ const stage = {
   display: 'grid',
   alignContent: 'center',
   padding: 'clamp(12px, 3vw, 40px)',
-  background: '#0f1628',
 };
 
 const directions: RadialContactFanDirection[] = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];

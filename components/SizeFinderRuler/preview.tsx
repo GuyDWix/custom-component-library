@@ -45,7 +45,6 @@ const stage = {
   display: 'grid',
   placeItems: 'center',
   padding: 'clamp(12px, 3vw, 40px)',
-  background: '#e9e7e0',
 };
 
 export default function Preview() {

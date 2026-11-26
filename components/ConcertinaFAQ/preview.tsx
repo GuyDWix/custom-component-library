@@ -72,7 +72,6 @@ const stage = {
   minHeight: '100vh',
   boxSizing: 'border-box' as const,
   padding: 'clamp(16px, 4vw, 56px)',
-  background: 'linear-gradient(180deg, #dfe6e5 0%, #e9eceb 100%)',
 };
 
 export default function Preview() {

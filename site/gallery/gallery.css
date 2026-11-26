@@ -101,7 +101,7 @@ body.gallery-body {
 .g-thumb.is-loaded .g-frame { opacity: 1; }
 
 .g-frame { position: relative; overflow: hidden; }
-.g-frame__iframe { display: block; border: 0; transform-origin: 0 0; }
+.g-frame__iframe { display: block; border: 0; transform-origin: 0 0; color-scheme: normal; }
 .g-frame__iframe--inert { pointer-events: none; }
 
 .g-badges { display: flex; flex-wrap: wrap; gap: 6px; }

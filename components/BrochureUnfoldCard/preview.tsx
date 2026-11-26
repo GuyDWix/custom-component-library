@@ -32,7 +32,6 @@ const stage = {
   boxSizing: 'border-box' as const,
   display: 'grid',
   alignContent: 'center',
-  background: '#161b0e',
 };
 
 export default function Preview() {

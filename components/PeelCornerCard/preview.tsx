@@ -21,7 +21,6 @@ const frame = {
   minHeight: '100vh',
   display: 'grid',
   alignContent: 'center',
-  background: '#15100a',
 };
 
 export default function Preview() {

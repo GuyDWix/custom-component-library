@@ -25,7 +25,6 @@ const stage = {
   gridTemplateColumns: 'minmax(0, 1fr)',
   placeItems: 'center',
   padding: 'clamp(16px, 4vw, 56px)',
-  background: 'radial-gradient(120% 90% at 50% 0%, #e7e8e6 0%, #d5d6d3 100%)',
 };
 
 export default function Preview() {

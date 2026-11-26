@@ -8,7 +8,6 @@ const stage: CSSProperties = {
   display: 'grid',
   placeItems: 'center',
   padding: 'clamp(16px, 4vw, 56px)',
-  background: '#faf8f4',
 };
 
 const worst = {

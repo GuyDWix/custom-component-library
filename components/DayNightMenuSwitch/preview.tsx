@@ -41,7 +41,6 @@ const stage = {
   minHeight: '100vh',
   boxSizing: 'border-box' as const,
   padding: 'clamp(8px, 1.6vw, 20px)',
-  background: '#ece4dc',
 };
 
 export default function Preview() {

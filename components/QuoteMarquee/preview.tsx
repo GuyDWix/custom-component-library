@@ -22,7 +22,6 @@ const page: CSSProperties = {
   gap: 4,
   padding: '48px 0',
   boxSizing: 'border-box',
-  background: '#120d11',
   overflowX: 'hidden',
 };
 

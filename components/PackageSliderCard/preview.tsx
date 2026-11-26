@@ -33,7 +33,6 @@ const stage = {
   display: 'grid',
   placeItems: 'center',
   padding: 0,
-  background: '#f2f1ed',
 };
 
 export default function Preview() {
