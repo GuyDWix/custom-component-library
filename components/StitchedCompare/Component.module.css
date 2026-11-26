@@ -1,7 +1,5 @@
 .root {
-  --sc-thread: #9b2d2b;
-  --sc-thread-hi: color-mix(in srgb, var(--sc-thread) 55%, #fff1e4);
-  --sc-ink: #24201b;
+  --thread: #9b2d2b;
   --sc-gap: 10px;
 
   position: relative;
@@ -12,7 +10,7 @@
   padding: clamp(12px, 3cqw, 28px);
   border-radius: 20px;
   overflow: clip;
-  color: var(--sc-ink);
+  color: #24201b;
   background: linear-gradient(180deg, #f6f3ee 0%, #ebe6dd 100%);
   box-shadow:
     inset 0 0 0 1px rgba(60, 48, 32, 0.1),
@@ -145,7 +143,7 @@
 }
 
 .stitch {
-  stroke: var(--sc-thread);
+  stroke: var(--thread);
   stroke-width: 2.2px;
 }
 
@@ -155,7 +153,7 @@
 }
 
 .stitchSheen {
-  stroke: var(--sc-thread-hi);
+  stroke: color-mix(in srgb, var(--thread) 55%, #fff1e4);
   stroke-width: 0.7px;
   opacity: 0.75;
 }
@@ -187,7 +185,7 @@
   outline: 2px solid #fff;
   outline-offset: 3px;
   box-shadow:
-    0 0 0 5px color-mix(in srgb, var(--sc-thread) 80%, #000),
+    0 0 0 5px color-mix(in srgb, var(--thread) 80%, #000),
     0 6px 14px -4px rgba(20, 14, 6, 0.45);
 }
 

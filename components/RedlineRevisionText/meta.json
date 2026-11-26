@@ -8,10 +8,6 @@
   "visitor_action": "none (plays in view); hover replays the edit; replays on re-entering the viewport",
   "owner_settings": [
     "Sentence with edits (text, optional replacement word)",
-    "Strike color",
-    "Insert color",
-    "Text color",
-    "Paper color",
     "Proof label",
     "Handwritten note"
   ],

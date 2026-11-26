@@ -386,8 +386,8 @@ export default function SeatMapCapacity({
           >
             <defs>
               <radialGradient id={glowId}>
-                <stop offset="0%" stopColor="var(--sm-free-glow)" stopOpacity="0.85" />
-                <stop offset="100%" stopColor="var(--sm-free-glow)" stopOpacity="0" />
+                <stop offset="0%" className={styles.glowStop} stopOpacity="0.85" />
+                <stop offset="100%" className={styles.glowStop} stopOpacity="0" />
               </radialGradient>
             </defs>
 
@@ -471,20 +471,8 @@ export default function SeatMapCapacity({
 
 ```css
 .root {
-  --sm-paper: #f6efe2;
-  --sm-paper-deep: #ede2cf;
-  --sm-ink: #2b1519;
-  --sm-muted: rgba(43, 21, 25, 0.62);
-  --sm-line: rgba(43, 21, 25, 0.12);
-  --sm-taken: #6e1e2c;
-  --sm-taken-alt: #4a2342;
-  --sm-free: #c99d43;
-  --sm-free-edge: #9a7426;
-  --sm-free-glow: #e8be5e;
-  --sm-table: #e6d9c2;
   --sm-font-display: 'Fraunces', 'Playfair Display', 'Iowan Old Style', Georgia, serif;
   --sm-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --sm-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.2  0 0 0 0 0.15  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -497,9 +485,9 @@ export default function SeatMapCapacity({
   padding-block: 28px 32px;
   padding-inline: 22px;
   border-radius: 24px;
-  border: 1px solid var(--sm-line);
-  background: var(--sm-paper);
-  color: var(--sm-ink);
+  border: 1px solid rgba(43, 21, 25, 0.12);
+  background: #f6efe2;
+  color: #2b1519;
   font-family: var(--sm-font-ui);
   box-shadow: 0 1px 2px rgba(43, 21, 25, 0.05), 0 18px 40px -24px rgba(43, 21, 25, 0.28);
 }
@@ -514,16 +502,16 @@ export default function SeatMapCapacity({
 
 .paper {
   background:
-    radial-gradient(70% 55% at 50% 62%, color-mix(in srgb, var(--sm-free-glow) 16%, transparent) 0%, transparent 70%),
-    repeating-linear-gradient(0deg, transparent 0 23px, color-mix(in srgb, var(--sm-ink) 4%, transparent) 23px 24px),
-    repeating-linear-gradient(90deg, transparent 0 23px, color-mix(in srgb, var(--sm-ink) 4%, transparent) 23px 24px),
-    linear-gradient(180deg, var(--sm-paper) 0%, var(--sm-paper-deep) 100%);
+    radial-gradient(70% 55% at 50% 62%, color-mix(in srgb, #e8be5e 16%, transparent) 0%, transparent 70%),
+    repeating-linear-gradient(0deg, transparent 0 23px, color-mix(in srgb, #2b1519 4%, transparent) 23px 24px),
+    repeating-linear-gradient(90deg, transparent 0 23px, color-mix(in srgb, #2b1519 4%, transparent) 23px 24px),
+    linear-gradient(180deg, #f6efe2 0%, #ede2cf 100%);
   -webkit-mask-image: linear-gradient(180deg, #000 30%, rgba(0, 0, 0, 0.6) 100%);
   mask-image: linear-gradient(180deg, #000 30%, rgba(0, 0, 0, 0.6) 100%);
 }
 
 .grain {
-  background-image: var(--sm-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.2  0 0 0 0 0.15  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.18;
   mix-blend-mode: multiply;
 }
@@ -548,7 +536,7 @@ export default function SeatMapCapacity({
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--sm-muted);
+  color: rgba(43, 21, 25, 0.62);
   overflow-wrap: anywhere;
 }
 
@@ -559,7 +547,7 @@ export default function SeatMapCapacity({
   align-items: baseline;
   column-gap: 12px;
   font-family: var(--sm-font-display);
-  color: var(--sm-ink);
+  color: #2b1519;
 }
 
 .count {
@@ -568,7 +556,7 @@ export default function SeatMapCapacity({
   line-height: 0.9;
   letter-spacing: -0.045em;
   font-variant-numeric: tabular-nums lining-nums;
-  color: var(--sm-taken);
+  color: #6e1e2c;
 }
 
 .calloutText {
@@ -585,7 +573,7 @@ export default function SeatMapCapacity({
   font-weight: 600;
   line-height: 1;
   letter-spacing: -0.035em;
-  color: var(--sm-taken);
+  color: #6e1e2c;
   overflow-wrap: anywhere;
 }
 
@@ -605,14 +593,14 @@ export default function SeatMapCapacity({
   min-block-size: 36px;
   padding-inline: 12px 14px;
   border-radius: 999px;
-  border: 1px solid var(--sm-line);
-  background: color-mix(in srgb, var(--sm-paper) 70%, #fff);
+  border: 1px solid rgba(43, 21, 25, 0.12);
+  background: color-mix(in srgb, #f6efe2 70%, #fff);
   font-size: 14px;
   max-inline-size: 100%;
 }
 
 .legendLabel {
-  color: var(--sm-muted);
+  color: rgba(43, 21, 25, 0.62);
   overflow-wrap: anywhere;
 }
 
@@ -630,12 +618,12 @@ export default function SeatMapCapacity({
 }
 
 .swatchFree {
-  background: var(--sm-free);
-  box-shadow: 0 0 0 1px var(--sm-free-edge) inset, 0 0 8px color-mix(in srgb, var(--sm-free-glow) 70%, transparent);
+  background: #c99d43;
+  box-shadow: 0 0 0 1px #9a7426 inset, 0 0 8px color-mix(in srgb, #e8be5e 70%, transparent);
 }
 
 .swatchTaken {
-  background: var(--sm-taken);
+  background: #6e1e2c;
 }
 
 .house {
@@ -652,8 +640,8 @@ export default function SeatMapCapacity({
   min-inline-size: 140px;
   block-size: 30px;
   border-radius: 6px 6px 50% 50% / 6px 6px 100% 100%;
-  background: var(--sm-taken-alt);
-  color: var(--sm-paper);
+  background: #4a2342;
+  color: #f6efe2;
 }
 
 .stageText {
@@ -678,7 +666,7 @@ export default function SeatMapCapacity({
 }
 
 .plan:focus-visible {
-  box-shadow: 0 0 0 2px var(--sm-paper), 0 0 0 4px var(--sm-ink);
+  box-shadow: 0 0 0 2px #f6efe2, 0 0 0 4px #2b1519;
 }
 
 .svg {
@@ -693,19 +681,19 @@ export default function SeatMapCapacity({
 }
 
 .table {
-  fill: var(--sm-table);
-  stroke: color-mix(in srgb, var(--sm-ink) 18%, transparent);
+  fill: #e6d9c2;
+  stroke: color-mix(in srgb, #2b1519 18%, transparent);
   stroke-width: 0.5;
 }
 
 .tableInner {
   fill: none;
-  stroke: color-mix(in srgb, var(--sm-ink) 10%, transparent);
+  stroke: color-mix(in srgb, #2b1519 10%, transparent);
   stroke-width: 0.4;
 }
 
 .bench {
-  fill: color-mix(in srgb, var(--sm-ink) 18%, var(--sm-paper));
+  fill: color-mix(in srgb, #2b1519 18%, #f6efe2);
 }
 
 .seat {
@@ -715,21 +703,21 @@ export default function SeatMapCapacity({
 }
 
 .cushionTaken {
-  fill: color-mix(in srgb, var(--sm-taken-alt) var(--mix), var(--sm-taken));
+  fill: color-mix(in srgb, #4a2342 var(--mix), #6e1e2c);
 }
 
 .backTaken {
-  fill: color-mix(in srgb, color-mix(in srgb, var(--sm-taken-alt) var(--mix), var(--sm-taken)) 78%, #000);
+  fill: color-mix(in srgb, color-mix(in srgb, #4a2342 var(--mix), #6e1e2c) 78%, #000);
 }
 
 .cushionFree {
-  fill: var(--sm-free);
-  stroke: var(--sm-free-edge);
+  fill: #c99d43;
+  stroke: #9a7426;
   stroke-width: 0.5;
 }
 
 .backFree {
-  fill: var(--sm-free-edge);
+  fill: #9a7426;
 }
 
 .glow {
@@ -775,7 +763,7 @@ export default function SeatMapCapacity({
 
 .ring {
   fill: none;
-  stroke: var(--sm-ink);
+  stroke: #2b1519;
   stroke-width: 0.9;
   pointer-events: none;
   transition: transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
@@ -790,8 +778,8 @@ export default function SeatMapCapacity({
   padding-block: 7px;
   padding-inline: 11px;
   border-radius: 8px;
-  background: var(--sm-ink);
-  color: var(--sm-paper);
+  background: #2b1519;
+  color: #f6efe2;
   font-size: 13px;
   font-weight: 500;
   line-height: 1.3;
@@ -850,5 +838,9 @@ export default function SeatMapCapacity({
   .tip {
     transition: none;
   }
+}
+
+.glowStop {
+  stop-color: #e8be5e;
 }
 ```

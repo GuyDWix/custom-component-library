@@ -18,7 +18,6 @@ export interface ServiceAreaRingsProps {
   rings?: ServiceAreaRing[];
   neighbourhoods?: ServiceAreaNeighbourhood[];
   centreLabel?: string;
-  accentColor?: string;
   distanceLabel?: string;
   feeLabel?: string;
   className?: string;
@@ -379,7 +378,6 @@ export default function ServiceAreaRings({
   rings: ringsProp = defaultRings,
   neighbourhoods = defaultNeighbourhoods,
   centreLabel = 'Pier Nine Kitchen',
-  accentColor = '#ff5a1f',
   distanceLabel = 'Distance',
   feeLabel = 'Delivery fee',
   className,
@@ -623,7 +621,6 @@ export default function ServiceAreaRings({
     .filter(({ h }) => clampRing(Math.round(h.ring) - 1) === ringIdx);
 
   const rootStyle = {
-    '--sar-accent': accentColor,
     '--px': `${r1((geo.pinX / geo.width) * 100)}%`,
     '--py': `${r1((geo.pinY / geo.height) * 100)}%`,
   } as CSSProperties;

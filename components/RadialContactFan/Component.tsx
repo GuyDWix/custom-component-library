@@ -16,8 +16,6 @@ export interface RadialContactFanProps {
   mainLabel?: string;
   heading?: string;
   note?: string;
-  buttonColor?: string;
-  accentColor?: string;
   fanDirection?: RadialContactFanDirection;
   className?: string;
 }
@@ -85,8 +83,6 @@ export default function RadialContactFan({
   mainLabel = 'Contact the desk',
   heading = 'Anything you need, at the front desk.',
   note = 'Hotel Marlowe · open all hours · Rua das Flores 18, Lisbon',
-  buttonColor = '#14213f',
-  accentColor = '#b98b46',
   fanDirection = 'bottom-right',
   className,
 }: RadialContactFanProps) {
@@ -166,14 +162,12 @@ export default function RadialContactFan({
     els[next].focus();
   };
 
-  const rootStyle = { '--rcf-navy': buttonColor, '--rcf-brass': accentColor } as CSSProperties;
   const state = open ? 'true' : 'false';
 
   return (
     <div
       ref={rootRef}
       className={[styles.root, className].filter(Boolean).join(' ')}
-      style={rootStyle}
       onKeyDown={onKeyDown}
     >
       <div className={styles.frame}>

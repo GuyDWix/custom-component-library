@@ -10,9 +10,7 @@
     "Card heading",
     "Card text",
     "Date line",
-    "Seal initials",
-    "Seal color",
-    "Envelope color"
+    "Seal initials"
   ],
   "site_types": [
     "events",

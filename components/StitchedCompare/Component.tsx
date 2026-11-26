@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
+import type { KeyboardEvent, PointerEvent } from 'react';
 import styles from './Component.module.css';
 
 export interface StitchedCompareProps {
@@ -9,7 +9,6 @@ export interface StitchedCompareProps {
   afterImage?: string;
   afterAlt?: string;
   afterLabel?: string;
-  threadColor?: string;
   className?: string;
 }
 
@@ -31,7 +30,6 @@ export default function StitchedCompare({
   afterImage = 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=1400&h=900&fit=crop&auto=format&q=80',
   afterAlt = 'The restored armchair after the re-upholstery refresh',
   afterLabel = 'After — restyled & re-upholstered',
-  threadColor = '#9b2d2b',
   className,
 }: StitchedCompareProps) {
   const [reduced, setReduced] = useState(false);
@@ -199,7 +197,6 @@ export default function StitchedCompare({
     }
   };
 
-  const rootStyle = { '--sc-thread': threadColor } as CSSProperties;
 
   const renderLayer = (
     side: 'Before' | 'After',
@@ -220,7 +217,7 @@ export default function StitchedCompare({
   );
 
   return (
-    <div ref={rootRef} className={cx(styles.root, className)} style={rootStyle}>
+    <div ref={rootRef} className={cx(styles.root, className)}>
       <div
         ref={plateRef}
         className={styles.plate}

@@ -14,7 +14,6 @@ const worst: MatBoardFrameProps = {
   price: '€12,450.00 per table of twelve guests',
   note:
     'Booked for private parties only, Thursday to Saturday. Every course is adjusted for allergies when you tell us at least seventy-two hours ahead; the wine pairing can be swapped for our zero-proof fermentation flight. A twenty percent deposit secures the date and is fully refundable until fourteen days before the dinner.',
-  matColor: '#dfe3dc',
   frameFinish: 'walnut',
 };
 

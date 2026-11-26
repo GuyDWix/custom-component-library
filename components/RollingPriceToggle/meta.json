@@ -8,8 +8,7 @@
   "visitor_action": "click/tap or arrow keys to switch options",
   "owner_settings": [
     "Options (label, price, billing period, saving badge text, included features one per line)",
-    "Currency symbol",
-    "Highlight color"
+    "Currency symbol"
   ],
   "site_types": [
     "business",

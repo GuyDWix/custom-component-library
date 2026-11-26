@@ -1,11 +1,6 @@
 .root {
-  /* re-themable palette: two pigments, paper, ink */
-  --wash-color-one: #2e3c8c;
-  --wash-color-two: #567d2e;
-  --wash-paper: #f7f4ec;
-  --wash-ink: #29313f;
-  --wash-ink-soft: #4d5563;
-  --wash-accent: #3f6724;
+  --color-one: #2e3c8c;
+  --color-two: #567d2e;
   --wash-display-font: 'Bricolage Grotesque', 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
   --wash-body-font: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
 
@@ -21,19 +16,19 @@
   place-items: center;
   padding-block: clamp(64px, 10%, 128px);
   padding-inline: clamp(24px, 8%, 120px);
-  background: var(--wash-paper);
-  color: var(--wash-ink);
+  background: #f7f4ec;
+  color: #29313f;
   font-family: var(--wash-body-font);
   border-radius: 10px;
   box-shadow:
     0 0 0 1px rgb(41 49 63 / 0.05),
     0 26px 60px -42px rgb(35 42 60 / 0.3);
-  caret-color: var(--wash-accent);
+  caret-color: #3f6724;
 }
 
 .root::selection {
-  background: color-mix(in srgb, var(--wash-color-one) 26%, transparent);
-  color: var(--wash-ink);
+  background: color-mix(in srgb, var(--color-one) 26%, transparent);
+  color: #29313f;
 }
 
 /* static approximation of the finished wash, shown until the canvas paints
@@ -43,11 +38,11 @@
   inset: 0;
   z-index: 0;
   background:
-    radial-gradient(ellipse 36% 34% at 88% 40%, color-mix(in srgb, var(--wash-color-one) 50%, transparent), transparent 70%),
-    radial-gradient(ellipse 46% 18% at 56% 0%, color-mix(in srgb, var(--wash-color-two) 38%, transparent), transparent 70%),
-    radial-gradient(ellipse 24% 22% at 4% 40%, color-mix(in srgb, var(--wash-color-two) 32%, transparent), transparent 72%),
-    radial-gradient(ellipse 58% 16% at 78% 100%, color-mix(in srgb, var(--wash-color-one) 22%, transparent), transparent 75%),
-    var(--wash-paper);
+    radial-gradient(ellipse 36% 34% at 88% 40%, color-mix(in srgb, var(--color-one) 50%, transparent), transparent 70%),
+    radial-gradient(ellipse 46% 18% at 56% 0%, color-mix(in srgb, var(--color-two) 38%, transparent), transparent 70%),
+    radial-gradient(ellipse 24% 22% at 4% 40%, color-mix(in srgb, var(--color-two) 32%, transparent), transparent 72%),
+    radial-gradient(ellipse 58% 16% at 78% 100%, color-mix(in srgb, var(--color-one) 22%, transparent), transparent 75%),
+    #f7f4ec;
 }
 
 .canvas,
@@ -108,7 +103,7 @@
   font-weight: 600;
   line-height: 1.05;
   letter-spacing: -0.02em;
-  color: var(--wash-ink);
+  color: #29313f;
   text-wrap: balance;
   overflow-wrap: anywhere;
   text-shadow: 0 1px 0 rgb(255 255 255 / 0.4);
@@ -132,7 +127,7 @@
   max-inline-size: 34rem;
   font-size: clamp(15px, 1.6cqi, 18px);
   line-height: 1.65;
-  color: var(--wash-ink-soft);
+  color: #4d5563;
   text-wrap: pretty;
   overflow-wrap: anywhere;
 }
@@ -151,10 +146,10 @@
   margin-block-start: 6px;
   padding-block: 12px;
   padding-inline: 28px;
-  border: 1px solid color-mix(in srgb, var(--wash-ink) 72%, #000);
+  border: 1px solid color-mix(in srgb, #29313f 72%, #000);
   border-radius: 10px;
-  background: var(--wash-ink);
-  color: var(--wash-paper);
+  background: #29313f;
+  color: #f7f4ec;
   font-family: var(--wash-body-font);
   font-size: 15px;
   font-weight: 600;
@@ -172,8 +167,8 @@
 
 .button:hover {
   transform: translateY(-1px);
-  background: var(--wash-accent);
-  border-color: color-mix(in srgb, var(--wash-accent) 76%, #000);
+  background: #3f6724;
+  border-color: color-mix(in srgb, #3f6724 76%, #000);
   box-shadow: 0 16px 30px -18px rgb(46 82 24 / 0.7);
 }
 
@@ -182,7 +177,7 @@
 }
 
 .button:focus-visible {
-  outline: 2px solid var(--wash-accent);
+  outline: 2px solid #3f6724;
   outline-offset: 3px;
 }
 

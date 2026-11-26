@@ -1,6 +1,6 @@
 Create a custom element called "Package Slider Card". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: packages (name, price, short tagline, included items one per line), accent color, currency symbol, price note (e.g. per garment), digit size (S/M/L). Add other settings if they help.
+The site owner must be able to change: packages (name, price, short tagline, included items one per line), currency symbol, price note (e.g. per garment), digit size (S/M/L). Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
@@ -16,7 +16,6 @@ export interface PackageSliderStop {
 
 export interface PackageSliderCardProps {
   stops?: PackageSliderStop[];
-  accentColor?: string;
   currencySymbol?: string;
   priceNote?: string;
   digitSize?: 'S' | 'M' | 'L';
@@ -99,7 +98,6 @@ function OdometerColumn({ index, char }: { index: number; char: string | undefin
 
 export default function PackageSliderCard({
   stops = defaultStops,
-  accentColor = '#e2411c',
   currencySymbol = '$',
   priceNote = 'per garment',
   digitSize = 'L',
@@ -298,12 +296,11 @@ export default function PackageSliderCard({
 
   const priceText = target === null ? stop.price : formatPrice(target, decimals);
   const fitLength = target === null ? stop.price.length : priceText.length;
-  const rootStyle = { '--ps-accent': accentColor } as CSSProperties;
   const tapeStyle = { '--pos': stopPos(active) } as CSSProperties;
   const valueText = `${stop.name}, ${target === null ? stop.price : `${currencySymbol}${priceText}`}`;
 
   return (
-    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
+    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')}>
       <div className={styles.inner}>
         <div className={styles.measure}>
           <p className={styles.topline} aria-hidden="true">
@@ -435,10 +432,7 @@ export default function PackageSliderCard({
 
 ```css
 .root {
-  --ps-paper: #f2f1ed;
-  --ps-ink: #111110;
-  --ps-mute: #66655f;
-  --ps-rule: color-mix(in srgb, var(--ps-ink) 16%, transparent);
+  --accent: #e2411c;
   --ps-font: 'Inter', 'Helvetica Neue', Arial, system-ui, sans-serif;
 
   position: relative;
@@ -446,8 +440,8 @@ export default function PackageSliderCard({
   box-sizing: border-box;
   inline-size: 100%;
   padding: clamp(20px, 5cqw, 56px);
-  background: var(--ps-paper);
-  color: var(--ps-ink);
+  background: #f2f1ed;
+  color: #111110;
   font-family: var(--ps-font);
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
@@ -477,7 +471,7 @@ export default function PackageSliderCard({
 }
 
 .topline span:last-child {
-  color: var(--ps-mute);
+  color: #66655f;
 }
 
 /* slider */
@@ -495,7 +489,7 @@ export default function PackageSliderCard({
 }
 
 .tape:focus-visible .thumb {
-  outline: 2px solid var(--ps-ink);
+  outline: 2px solid #111110;
   outline-offset: 3px;
 }
 
@@ -506,13 +500,13 @@ export default function PackageSliderCard({
   inset-block-start: 50%;
   block-size: 2px;
   translate: 0 -50%;
-  background: var(--ps-rule);
+  background: color-mix(in srgb, #111110 16%, transparent);
 }
 
 .fill {
   inset-inline-end: auto;
   inline-size: calc(var(--pos) * 100%);
-  background: var(--ps-ink);
+  background: #111110;
 }
 
 .stopMark {
@@ -521,8 +515,8 @@ export default function PackageSliderCard({
   inline-size: 10px;
   block-size: 10px;
   translate: -50% -50%;
-  background: var(--ps-paper);
-  border: 2px solid var(--ps-ink);
+  background: #f2f1ed;
+  border: 2px solid #111110;
   transition: background-color 0.2s;
 }
 
@@ -531,7 +525,7 @@ export default function PackageSliderCard({
 }
 
 .stopMark[data-on] {
-  background: var(--ps-ink);
+  background: #111110;
 }
 
 .thumb {
@@ -541,7 +535,7 @@ export default function PackageSliderCard({
   inline-size: 26px;
   block-size: 26px;
   translate: -50% -50%;
-  background: var(--ps-accent);
+  background: var(--accent);
   transition: scale 0.18s ease-out;
 }
 
@@ -568,7 +562,7 @@ export default function PackageSliderCard({
   font-size: 15px;
   font-weight: 500;
   line-height: 1.25;
-  color: var(--ps-mute);
+  color: #66655f;
   text-align: center;
   cursor: pointer;
   display: -webkit-box;
@@ -580,13 +574,13 @@ export default function PackageSliderCard({
 }
 
 .label[data-on] {
-  color: var(--ps-ink);
+  color: #111110;
   font-weight: 700;
 }
 
 @media (hover: hover) {
   .label:hover {
-    color: var(--ps-ink);
+    color: #111110;
   }
 }
 
@@ -595,7 +589,7 @@ export default function PackageSliderCard({
   display: grid;
   gap: clamp(20px, 3.5cqw, 40px);
   padding-block-start: clamp(16px, 2.5cqw, 28px);
-  border-block-start: 2px solid var(--ps-ink);
+  border-block-start: 2px solid #111110;
   min-inline-size: 0;
 }
 
@@ -633,7 +627,7 @@ export default function PackageSliderCard({
   font-weight: 600;
   line-height: 1;
   letter-spacing: 0.02em;
-  color: var(--ps-mute);
+  color: #66655f;
 }
 
 .price {
@@ -725,7 +719,7 @@ export default function PackageSliderCard({
   font-size: 15px;
   font-weight: 500;
   line-height: 1;
-  color: var(--ps-mute);
+  color: #66655f;
 }
 
 .cols {
@@ -756,7 +750,7 @@ export default function PackageSliderCard({
   font-size: 18px;
   font-weight: 400;
   line-height: 1.4;
-  color: var(--ps-mute);
+  color: #66655f;
   overflow-wrap: anywhere;
   animation: ps-rise 0.4s 60ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
@@ -765,7 +759,7 @@ export default function PackageSliderCard({
   list-style: none;
   margin: 0;
   padding: 0;
-  border-block-end: 1px solid var(--ps-rule);
+  border-block-end: 1px solid color-mix(in srgb, #111110 16%, transparent);
 }
 
 .item {
@@ -774,16 +768,16 @@ export default function PackageSliderCard({
   align-items: center;
   gap: 16px;
   padding-block: 14px;
-  border-block-start: 1px solid var(--ps-rule);
+  border-block-start: 1px solid color-mix(in srgb, #111110 16%, transparent);
   font-size: 17px;
   font-weight: 500;
   line-height: 1.3;
-  color: color-mix(in srgb, var(--ps-ink) 42%, var(--ps-paper));
+  color: color-mix(in srgb, #111110 42%, #f2f1ed);
   transition: color 0.25s var(--d, 0ms);
 }
 
 .item[data-on] {
-  color: var(--ps-ink);
+  color: #111110;
 }
 
 .itemText {
@@ -793,7 +787,7 @@ export default function PackageSliderCard({
 .mark {
   inline-size: 12px;
   block-size: 12px;
-  border: 2px solid color-mix(in srgb, var(--ps-ink) 30%, var(--ps-paper));
+  border: 2px solid color-mix(in srgb, #111110 30%, #f2f1ed);
   background: transparent;
   transition:
     background-color 0.25s var(--d, 0ms),
@@ -802,8 +796,8 @@ export default function PackageSliderCard({
 }
 
 .item[data-on] .mark {
-  background: var(--ps-accent);
-  border-color: var(--ps-accent);
+  background: var(--accent);
+  border-color: var(--accent);
   scale: 1.15;
 }
 

@@ -7,10 +7,7 @@
   "job": "Show 2-4 key numbers on a departure-board split-flap display that flips into place",
   "visitor_action": "none (flips when in view); hover or focus replays one tile",
   "owner_settings": [
-    "Stats (value, label)",
-    "Board color",
-    "Digit color",
-    "Label lamp color"
+    "Stats (value, label)"
   ],
   "site_types": [
     "business",

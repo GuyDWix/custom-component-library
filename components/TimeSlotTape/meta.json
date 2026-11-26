@@ -9,8 +9,7 @@
   "owner_settings": [
     "Times (list like 09:00 and 09:30)",
     "Booked times (greyed)",
-    "Button label and link",
-    "Tape colour"
+    "Button label and link"
   ],
   "site_types": [
     "services",

@@ -1,12 +1,11 @@
 import { useMemo } from 'react';
 import SignOffSignature from './Component';
-import type { HandwritingStyle, PaperTone } from './Component';
+import type { HandwritingStyle } from './Component';
 
 const worst = {
   name: 'Alexandria Montgomery-Vanderhoeven-Castellanos',
   note: 'Dearest friends — after fourteen years of baking before sunrise, testing every flour we could ship, and arguing gently about cardamom, we are closing this chapter the same way we began it: with a note written by hand, a small bag of something warm, and more gratitude than fits on this card. Thank you for every single morning.',
   handwritingStyle: 'quick' as HandwritingStyle,
-  paperTone: 'ivory' as PaperTone,
 };
 
 const stage = {

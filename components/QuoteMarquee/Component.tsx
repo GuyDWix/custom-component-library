@@ -16,7 +16,6 @@ export type QuoteMarqueeProps = {
   speed?: number;
   direction?: 'left' | 'right';
   rows?: 1 | 2;
-  accentColor?: string;
   autoPlay?: boolean;
   label?: string;
   pauseLabel?: string;
@@ -104,7 +103,6 @@ export default function QuoteMarquee({
   speed = 36,
   direction = 'left',
   rows = 1,
-  accentColor = '#e4572e',
   autoPlay = true,
   label = 'What our customers say',
   pauseLabel = 'Pause quotes',
@@ -269,11 +267,10 @@ export default function QuoteMarquee({
     setActive((current) => (current?.via === 'focus' ? null : current));
   };
 
-  const rootStyle = { '--qm-accent': accentColor } as CSSProperties;
   const rootClass = [styles.root, className].filter(Boolean).join(' ');
 
   return (
-    <section ref={rootRef} className={rootClass} style={rootStyle} aria-label={label}>
+    <section ref={rootRef} className={rootClass} aria-label={label}>
       {!reduced && (
         <button
           type="button"

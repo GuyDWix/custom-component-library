@@ -1,17 +1,11 @@
 .root {
-  --ws-seal: #d9432c;
-  --ws-env: #1c2747;
-  --ws-paper: #f3f2ee;
-  --ws-ink: color-mix(in oklab, var(--ws-env) 86%, black);
-  --ws-muted: color-mix(in oklab, var(--ws-ink) 74%, var(--ws-paper));
-  --ws-stage: color-mix(in oklab, var(--ws-env) 42%, #05060b);
+  --seal: #d9432c;
+  --envelope: #1c2747;
   --ws-font-display: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --ws-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --ws-font-seal: 'Didot', 'Bodoni 72', 'Bodoni Moda', 'Playfair Display', Georgia, serif;
-  --ws-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .8 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   --ws-spring: linear(0, 0.006, 0.025 2.8%, 0.101 6.1%, 0.539 18.9%, 0.721 25.3%, 0.849 31.5%, 0.937 38.1%, 0.968 41.8%, 0.991 45.7%, 1.006 50.1%, 1.015 55%, 1.017 63.9%, 1.001 85.3%, 1);
   --ws-easeOut: cubic-bezier(0.22, 1, 0.36, 1);
-  --ws-laid: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='140'><path d='M0 2h160M0 13h160M0 25h160M0 36h160M0 48h160M0 60h160M0 71h160M0 83h160M0 94h160M0 106h160M0 118h160M0 129h160' stroke='rgb(26,36,74)' stroke-opacity='.045' stroke-width='.8'/><path d='M0 6h160M0 17h160M0 29h160M0 41h160M0 52h160M0 64h160M0 76h160M0 87h160M0 99h160M0 111h160M0 123h160M0 134h160' stroke='rgb(26,36,74)' stroke-opacity='.026' stroke-width='.6'/><path d='M30 0v140M92 0v140M151 0v140' stroke='rgb(26,36,74)' stroke-opacity='.014' stroke-width='1.2'/></svg>");
   --ws-gutter: clamp(16px, 6cqi, 64px);
   --ws-w: min(calc(100cqi - 2 * var(--ws-gutter)), 620px);
   --ws-o: 0;
@@ -25,11 +19,18 @@
   inline-size: 100%;
   min-block-size: calc(var(--ws-o) * var(--ws-open-h, 0px));
   border-radius: 28px;
-  background:
-    radial-gradient(90% 70% at 78% 112%, color-mix(in oklab, var(--ws-seal) 16%, transparent) 0%, transparent 62%),
-    linear-gradient(165deg, color-mix(in oklab, var(--ws-stage) 88%, #6f82c4) 0%, var(--ws-stage) 46%, color-mix(in oklab, var(--ws-stage) 80%, black) 100%);
-  color: var(--ws-ink);
+  background: linear-gradient(165deg, color-mix(in oklab, color-mix(in oklab, var(--envelope) 42%, #05060b) 88%, #6f82c4) 0%, color-mix(in oklab, var(--envelope) 42%, #05060b) 46%, color-mix(in oklab, color-mix(in oklab, var(--envelope) 42%, #05060b) 80%, black) 100%);
+  color: color-mix(in oklab, var(--envelope) 86%, black);
   font-family: var(--ws-font-ui);
+}
+
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(90% 70% at 78% 112%, color-mix(in oklab, var(--seal) 16%, transparent) 0%, transparent 62%);
+  pointer-events: none;
 }
 
 /* Open/close state classes (set from TSX) drive the fixed keyframe timeline below. */
@@ -59,7 +60,7 @@
   inset: 0;
   z-index: 20;
   pointer-events: none;
-  background-image: var(--ws-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .8 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.11;
   mix-blend-mode: overlay;
 }
@@ -87,9 +88,9 @@
 .back {
   z-index: 1;
   border-radius: 6px;
-  background: linear-gradient(180deg, color-mix(in oklab, var(--ws-env) 70%, black) 0%, color-mix(in oklab, var(--ws-env) 86%, black) 60%);
+  background: linear-gradient(180deg, color-mix(in oklab, var(--envelope) 70%, black) 0%, color-mix(in oklab, var(--envelope) 86%, black) 60%);
   box-shadow:
-    inset 0 1px 0 color-mix(in oklab, var(--ws-env) 60%, white),
+    inset 0 1px 0 color-mix(in oklab, var(--envelope) 60%, white),
     0 1px 2px rgba(0, 0, 0, 0.45),
     0 6px 12px -4px rgba(0, 0, 0, 0.45),
     calc(var(--ws-w) * 0.04) calc(var(--ws-w) * 0.07) calc(var(--ws-w) * 0.09) calc(var(--ws-w) * -0.02) rgba(0, 0, 0, 0.6);
@@ -106,10 +107,10 @@
 .liner,
 .backLiner {
   background:
-    repeating-linear-gradient(45deg, color-mix(in oklab, var(--ws-paper) 26%, transparent) 0 1px, transparent 1px 11px),
-    repeating-linear-gradient(-45deg, color-mix(in oklab, var(--ws-paper) 26%, transparent) 0 1px, transparent 1px 11px),
-    radial-gradient(120% 90% at 30% 0%, color-mix(in oklab, var(--ws-seal) 92%, white) 0%, transparent 70%),
-    color-mix(in oklab, var(--ws-seal) 78%, black);
+    repeating-linear-gradient(45deg, color-mix(in oklab, #f3f2ee 26%, transparent) 0 1px, transparent 1px 11px),
+    repeating-linear-gradient(-45deg, color-mix(in oklab, #f3f2ee 26%, transparent) 0 1px, transparent 1px 11px),
+    radial-gradient(120% 90% at 30% 0%, color-mix(in oklab, var(--seal) 92%, white) 0%, transparent 70%),
+    color-mix(in oklab, var(--seal) 78%, black);
 }
 
 .flapLayer {
@@ -197,7 +198,7 @@
 
 .lining {
   transform: rotateY(180deg);
-  background: color-mix(in oklab, var(--ws-env) 80%, black);
+  background: color-mix(in oklab, var(--envelope) 80%, black);
 }
 
 .liningBase {
@@ -244,7 +245,7 @@
 }
 
 .paperEdge {
-  stroke: color-mix(in oklab, var(--ws-env) 45%, white);
+  stroke: color-mix(in oklab, var(--envelope) 45%, white);
   stroke-opacity: 0.32;
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
@@ -259,23 +260,23 @@
 }
 
 .stopBright {
-  stop-color: color-mix(in oklab, var(--ws-env) 84%, white);
+  stop-color: color-mix(in oklab, var(--envelope) 84%, white);
 }
 
 .stopLit {
-  stop-color: color-mix(in oklab, var(--ws-env) 92%, white);
+  stop-color: color-mix(in oklab, var(--envelope) 92%, white);
 }
 
 .stopBase {
-  stop-color: var(--ws-env);
+  stop-color: var(--envelope);
 }
 
 .stopShade {
-  stop-color: color-mix(in oklab, var(--ws-env) 84%, black);
+  stop-color: color-mix(in oklab, var(--envelope) 84%, black);
 }
 
 .stopDeep {
-  stop-color: color-mix(in oklab, var(--ws-env) 72%, black);
+  stop-color: color-mix(in oklab, var(--envelope) 72%, black);
 }
 
 .cardTrack {
@@ -328,16 +329,25 @@
   padding-block: clamp(24px, 5.4cqi, 44px) clamp(20px, 4.4cqi, 34px);
   padding-inline: clamp(22px, 5.4cqi, 44px);
   border-radius: 3px;
-  background:
-    var(--ws-laid) 0 0 / 160px 140px,
-    radial-gradient(120% 80% at 18% 0%, #fff 0%, transparent 60%),
-    var(--ws-paper);
+  isolation: isolate;
+  background-color: #f3f2ee;
+  background-image: radial-gradient(120% 80% at 18% 0%, #fff 0%, transparent 60%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
     inset 0 -1px 0 rgba(20, 28, 60, 0.12),
     0 1px 2px rgba(0, 0, 0, 0.3),
     0 calc(4px + var(--ws-o) * 26px) calc(8px + var(--ws-o) * 46px) calc(var(--ws-o) * -8px) rgba(0, 0, 0, calc(0.3 + var(--ws-o) * 0.32));
-  color: var(--ws-ink);
+  color: color-mix(in oklab, var(--envelope) 86%, black);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='140'><path d='M0 2h160M0 13h160M0 25h160M0 36h160M0 48h160M0 60h160M0 71h160M0 83h160M0 94h160M0 106h160M0 118h160M0 129h160' stroke='rgb(26,36,74)' stroke-opacity='.045' stroke-width='.8'/><path d='M0 6h160M0 17h160M0 29h160M0 41h160M0 52h160M0 64h160M0 76h160M0 87h160M0 99h160M0 111h160M0 123h160M0 134h160' stroke='rgb(26,36,74)' stroke-opacity='.026' stroke-width='.6'/><path d='M30 0v140M92 0v140M151 0v140' stroke='rgb(26,36,74)' stroke-opacity='.014' stroke-width='1.2'/></svg>") 0 0 / 160px 140px 0 0 / 160px 140px;
+  pointer-events: none;
 }
 
 .open .card {
@@ -365,7 +375,7 @@
   max-inline-size: 46ch;
   font-size: clamp(14px, 2.1cqi, 16px);
   line-height: 1.58;
-  color: var(--ws-muted);
+  color: color-mix(in oklab, color-mix(in oklab, var(--envelope) 86%, black) 74%, #f3f2ee);
   text-wrap: pretty;
   overflow-wrap: anywhere;
 }
@@ -377,7 +387,7 @@
   gap: 16px;
   margin-block-start: clamp(4px, 1.4cqi, 12px);
   padding-block-start: clamp(12px, 2.2cqi, 16px);
-  border-block-start: 1px solid color-mix(in oklab, var(--ws-ink) 16%, transparent);
+  border-block-start: 1px solid color-mix(in oklab, color-mix(in oklab, var(--envelope) 86%, black) 16%, transparent);
 }
 
 .date {
@@ -386,7 +396,7 @@
   font-weight: 600;
   letter-spacing: 0.005em;
   font-variant-numeric: tabular-nums lining-nums;
-  color: color-mix(in oklab, var(--ws-seal) 86%, black);
+  color: color-mix(in oklab, var(--seal) 86%, black);
   overflow-wrap: anywhere;
 }
 
@@ -397,20 +407,20 @@
   inline-size: 38px;
   aspect-ratio: 1;
   border-radius: 50%;
-  border: 1.5px solid color-mix(in oklab, var(--ws-seal) 80%, black);
-  box-shadow: inset 0 0 0 3px var(--ws-paper), inset 0 0 0 4px color-mix(in oklab, var(--ws-seal) 45%, transparent);
+  border: 1.5px solid color-mix(in oklab, var(--seal) 80%, black);
+  box-shadow: inset 0 0 0 3px #f3f2ee, inset 0 0 0 4px color-mix(in oklab, var(--seal) 45%, transparent);
   font-family: var(--ws-font-seal);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.04em;
-  color: color-mix(in oklab, var(--ws-seal) 86%, black);
+  color: color-mix(in oklab, var(--seal) 86%, black);
 }
 
 .heading::selection,
 .text::selection,
 .date::selection {
-  background: color-mix(in oklab, var(--ws-seal) 30%, transparent);
-  color: var(--ws-ink);
+  background: color-mix(in oklab, var(--seal) 30%, transparent);
+  color: color-mix(in oklab, var(--envelope) 86%, black);
 }
 
 .pocket {
@@ -469,11 +479,11 @@
 }
 
 .floodWax {
-  flood-color: var(--ws-seal);
+  flood-color: var(--seal);
 }
 
 .floodGlow {
-  flood-color: color-mix(in oklab, var(--ws-seal) 60%, #ffc27a);
+  flood-color: color-mix(in oklab, var(--seal) 60%, #ffc27a);
 }
 
 .sealType {
@@ -567,7 +577,7 @@
 
 .shardEdge {
   fill: none;
-  stroke: color-mix(in oklab, var(--ws-seal) 55%, #ffd2a0);
+  stroke: color-mix(in oklab, var(--seal) 55%, #ffd2a0);
   stroke-width: 2.4;
   stroke-opacity: 0.9;
 }
@@ -586,7 +596,7 @@
 }
 
 .button:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--ws-seal) 70%, white);
+  outline: 2px solid color-mix(in oklab, var(--seal) 70%, white);
   outline-offset: -6px;
 }
 

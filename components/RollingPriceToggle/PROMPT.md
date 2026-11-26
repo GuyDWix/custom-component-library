@@ -1,6 +1,6 @@
 Create a custom element called "Rolling Price Toggle". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: options (label, price, billing period, saving badge text, included features one per line), currency symbol, highlight color. Add other settings if they help.
+The site owner must be able to change: options (label, price, billing period, saving badge text, included features one per line), currency symbol. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
@@ -19,7 +19,6 @@ export interface RollingPriceOption {
 export interface RollingPriceToggleProps {
   options?: RollingPriceOption[];
   currency?: string;
-  highlightColor?: string;
   className?: string;
 }
 
@@ -117,7 +116,6 @@ const HELP = 'Use the left and right arrow keys to switch between options. The p
 export default function RollingPriceToggle({
   options = defaultOptions,
   currency = '$',
-  highlightColor = '#e2b13c',
   className,
 }: RollingPriceToggleProps) {
   const opts = options.length > 0 ? options : defaultOptions;
@@ -273,7 +271,6 @@ export default function RollingPriceToggle({
   };
 
   const rootStyle = {
-    '--rp-gold': highlightColor,
     '--rp-n': widthUnits,
     '--rp-opts': opts.length,
     '--rp-i': idx,
@@ -422,26 +419,16 @@ export default function RollingPriceToggle({
 
 ```css
 .root {
-  --rp-pine: #0e4a3b;
-  --rp-pine-deep: #093227;
-  --rp-mint: #f5fcf8;
-  --rp-mint-deep: #e3f3ea;
-  --rp-slate: #1b2a2f;
-  --rp-slate-soft: #4d6166;
-  --rp-hair: rgba(14, 74, 59, 0.16);
-  --rp-gold: #e2b13c;
-  --rp-gold-ink: #1b2a2f;
   --rp-font-ui: 'Manrope', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --rp-font-figures: 'Bricolage Grotesque', 'Manrope', 'Helvetica Neue', system-ui, sans-serif;
   --rp-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
-  --rp-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.3  0 0 0 0 0.25  0 0 0 .8 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  color: var(--rp-slate);
+  color: #1b2a2f;
   font-family: var(--rp-font-ui);
-  accent-color: var(--rp-pine);
+  accent-color: #0e4a3b;
 }
 
 @supports (transition-timing-function: linear(0, 1)) {
@@ -460,8 +447,8 @@ export default function RollingPriceToggle({
 }
 
 .root ::selection {
-  background: var(--rp-pine);
-  color: var(--rp-mint);
+  background: #0e4a3b;
+  color: #f5fcf8;
 }
 
 /* ---------- Toggle: hangs over the card's top edge ---------- */
@@ -479,7 +466,7 @@ export default function RollingPriceToggle({
   padding: 5px;
   border-radius: 999px;
   background: #fff;
-  border: 1px solid var(--rp-hair);
+  border: 1px solid rgba(14, 74, 59, 0.16);
   box-shadow:
     0 1px 2px rgba(9, 50, 39, 0.06),
     0 14px 28px -14px rgba(9, 50, 39, 0.28);
@@ -508,7 +495,7 @@ export default function RollingPriceToggle({
   inset-inline-start: 0;
   inline-size: calc(100% / var(--rp-opts));
   border-radius: 999px;
-  background: var(--rp-pine);
+  background: #0e4a3b;
   box-shadow: 0 6px 14px -6px rgba(9, 50, 39, 0.55);
   transform: translateX(calc(var(--rp-i) * 100%));
   transition: transform 640ms var(--rp-spring);
@@ -535,7 +522,7 @@ export default function RollingPriceToggle({
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--rp-slate-soft);
+  color: #4d6166;
   font: 700 16px/1.2 var(--rp-font-ui);
   letter-spacing: -0.005em;
   text-align: center;
@@ -546,7 +533,7 @@ export default function RollingPriceToggle({
 }
 
 .option:hover {
-  color: var(--rp-pine);
+  color: #0e4a3b;
 }
 
 .optionOn,
@@ -555,7 +542,7 @@ export default function RollingPriceToggle({
 }
 
 .option:focus-visible {
-  outline: 3px solid var(--rp-gold);
+  outline: 3px solid #e2b13c;
   outline-offset: 1px;
 }
 
@@ -571,8 +558,8 @@ export default function RollingPriceToggle({
   border-radius: 40px;
   background:
     radial-gradient(70% 60% at 8% 0%, #ffffff 0%, transparent 70%),
-    linear-gradient(165deg, var(--rp-mint) 0%, var(--rp-mint-deep) 100%);
-  border: 1px solid var(--rp-hair);
+    linear-gradient(165deg, #f5fcf8 0%, #e3f3ea 100%);
+  border: 1px solid rgba(14, 74, 59, 0.16);
   box-shadow:
     0 1px 0 #fff inset,
     0 40px 70px -40px rgba(9, 50, 39, 0.4);
@@ -588,14 +575,14 @@ export default function RollingPriceToggle({
 .sheen {
   inset: 0;
   z-index: -3;
-  background: radial-gradient(45% 55% at 100% 100%, color-mix(in srgb, var(--rp-pine) 9%, transparent), transparent 70%);
+  background: radial-gradient(45% 55% at 100% 100%, color-mix(in srgb, #0e4a3b 9%, transparent), transparent 70%);
 }
 
 .grain {
   inset: 0;
   z-index: -1;
   opacity: 0.07;
-  background-image: var(--rp-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.3  0 0 0 0 0.25  0 0 0 .8 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   mix-blend-mode: multiply;
 }
 
@@ -618,14 +605,14 @@ export default function RollingPriceToggle({
 }
 
 .ringsA {
-  background: repeating-radial-gradient(circle at 50% 50%, transparent 0 7px, color-mix(in srgb, var(--rp-pine) 46%, transparent) 7px 8.2px);
+  background: repeating-radial-gradient(circle at 50% 50%, transparent 0 7px, color-mix(in srgb, #0e4a3b 46%, transparent) 7px 8.2px);
   -webkit-mask-image: radial-gradient(closest-side, #000 20%, rgba(0, 0, 0, 0.55) 62%, transparent 100%);
   mask-image: radial-gradient(closest-side, #000 20%, rgba(0, 0, 0, 0.55) 62%, transparent 100%);
   opacity: 0.5;
 }
 
 .fan {
-  background: repeating-conic-gradient(from 0deg at 50% 50%, color-mix(in srgb, var(--rp-pine) 34%, transparent) 0deg 0.5deg, transparent 0.5deg 3deg);
+  background: repeating-conic-gradient(from 0deg at 50% 50%, color-mix(in srgb, #0e4a3b 34%, transparent) 0deg 0.5deg, transparent 0.5deg 3deg);
   -webkit-mask-image: radial-gradient(closest-side, transparent 24%, #000 34%, #000 52%, transparent 74%);
   mask-image: radial-gradient(closest-side, transparent 24%, #000 34%, #000 52%, transparent 74%);
   opacity: 0.32;
@@ -640,7 +627,7 @@ export default function RollingPriceToggle({
 
 .ringsB {
   transform: translateX(46px);
-  background: repeating-radial-gradient(circle at 50% 50%, transparent 0 7px, color-mix(in srgb, var(--rp-gold) 80%, transparent) 7px 8.2px);
+  background: repeating-radial-gradient(circle at 50% 50%, transparent 0 7px, color-mix(in srgb, #e2b13c 80%, transparent) 7px 8.2px);
   -webkit-mask-image: radial-gradient(closest-side, #000 20%, rgba(0, 0, 0, 0.55) 62%, transparent 100%);
   mask-image: radial-gradient(closest-side, #000 20%, rgba(0, 0, 0, 0.55) 62%, transparent 100%);
   opacity: 0.55;
@@ -658,7 +645,7 @@ export default function RollingPriceToggle({
   inset-inline: calc(var(--rp-pad) * -1);
   inset-block-end: calc(var(--rp-size) * 0.17);
   block-size: 1px;
-  background: color-mix(in srgb, var(--rp-pine) 24%, transparent);
+  background: color-mix(in srgb, #0e4a3b 24%, transparent);
 }
 
 .price {
@@ -672,7 +659,7 @@ export default function RollingPriceToggle({
   font-family: var(--rp-font-figures);
   font-variant-numeric: tabular-nums lining-nums;
   font-feature-settings: 'tnum' 1, 'lnum' 1;
-  color: var(--rp-slate);
+  color: #1b2a2f;
 }
 
 .currency {
@@ -681,7 +668,7 @@ export default function RollingPriceToggle({
   font-size: 0.34em;
   font-weight: 700;
   line-height: 1;
-  color: var(--rp-pine);
+  color: #0e4a3b;
   letter-spacing: -0.02em;
 }
 
@@ -720,7 +707,7 @@ export default function RollingPriceToggle({
   block-size: 1em;
   padding-block-start: 0.04em;
   font-weight: 700;
-  color: var(--rp-pine);
+  color: #0e4a3b;
 }
 
 .window {
@@ -769,14 +756,14 @@ export default function RollingPriceToggle({
   padding-block: 9px;
   padding-inline: 16px;
   border-radius: 999px;
-  background: var(--rp-gold);
-  color: var(--rp-gold-ink);
+  background: #e2b13c;
+  color: #1b2a2f;
   font-size: 15px;
   font-weight: 800;
   line-height: 1.25;
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--rp-gold-ink) 14%, transparent) inset;
+  box-shadow: 0 0 0 1px color-mix(in srgb, #1b2a2f 14%, transparent) inset;
   transform-origin: left center;
   animation: rp-pop 760ms var(--rp-spring) 220ms backwards;
 }
@@ -791,7 +778,7 @@ export default function RollingPriceToggle({
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.01em;
-  color: var(--rp-slate-soft);
+  color: #4d6166;
   animation: rp-rise 560ms cubic-bezier(0.2, 0.8, 0.2, 1) 180ms backwards;
 }
 
@@ -831,7 +818,7 @@ export default function RollingPriceToggle({
   margin-block-start: 40px;
   padding: 0;
   list-style: none;
-  border-block-start: 1px solid var(--rp-hair);
+  border-block-start: 1px solid rgba(14, 74, 59, 0.16);
 }
 
 .item {
@@ -839,8 +826,8 @@ export default function RollingPriceToggle({
   align-items: flex-start;
   gap: 14px;
   padding-block: 17px;
-  border-block-end: 1px solid var(--rp-hair);
-  color: var(--rp-slate);
+  border-block-end: 1px solid rgba(14, 74, 59, 0.16);
+  color: #1b2a2f;
   font-size: 18px;
   font-weight: 600;
   line-height: 1.35;
@@ -855,7 +842,7 @@ export default function RollingPriceToggle({
   block-size: 24px;
   margin-block-start: 1px;
   border-radius: 50%;
-  background: var(--rp-pine);
+  background: #0e4a3b;
   color: #eaf8f1;
 }
 

@@ -10,8 +10,6 @@ const worst: WaxSealInviteProps = {
   text: 'Join us for an unhurried long-table dinner in the walled garden behind the old orangery: six seasonal courses from our kitchen, natural wines from small growers across the valley, a string trio until the light goes, then coffee, petits fours and candlelight in the glasshouse until very late. Dress is garden-party smart; flat shoes are wise on the lawn. Vegetarian and allergy-friendly menus on request.',
   dateLine: 'Saturday 14 June 2027 · arrivals from 6.30 pm, dinner seated at 7.15 pm sharp',
   sealInitials: 'MVC',
-  sealColor: '#c2352a',
-  envelopeColor: '#22304f',
 };
 
 const stage = {

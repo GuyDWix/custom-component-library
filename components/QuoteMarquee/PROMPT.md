@@ -1,6 +1,6 @@
 Create a custom element called "Quote Marquee". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: quotes (text, person name, role, photo, star rating), speed, direction, number of rows (1 by default, or 2), accent color. Add other settings if they help.
+The site owner must be able to change: quotes (text, person name, role, photo, star rating), speed, direction, number of rows (1 by default, or 2). Add other settings if they help.
 
 ```tsx
 import { useEffect, useRef, useState } from 'react';
@@ -21,7 +21,6 @@ export type QuoteMarqueeProps = {
   speed?: number;
   direction?: 'left' | 'right';
   rows?: 1 | 2;
-  accentColor?: string;
   autoPlay?: boolean;
   label?: string;
   pauseLabel?: string;
@@ -109,7 +108,6 @@ export default function QuoteMarquee({
   speed = 36,
   direction = 'left',
   rows = 1,
-  accentColor = '#e4572e',
   autoPlay = true,
   label = 'What our customers say',
   pauseLabel = 'Pause quotes',
@@ -274,11 +272,10 @@ export default function QuoteMarquee({
     setActive((current) => (current?.via === 'focus' ? null : current));
   };
 
-  const rootStyle = { '--qm-accent': accentColor } as CSSProperties;
   const rootClass = [styles.root, className].filter(Boolean).join(' ');
 
   return (
-    <section ref={rootRef} className={rootClass} style={rootStyle} aria-label={label}>
+    <section ref={rootRef} className={rootClass} aria-label={label}>
       {!reduced && (
         <button
           type="button"
@@ -373,20 +370,10 @@ export default function QuoteMarquee({
 
 ```css
 .root {
-  --qm-accent: #e4572e;
-  --qm-control: #231a20;
-  --qm-control-ink: #f6efe4;
-  --qm-paper: #f7f0e5;
-  --qm-paper-edge: #e9dfcf;
-  --qm-paper-ink: #1d1418;
-  --qm-paper-muted: #6b5a5f;
-  --qm-night: #231a20;
-  --qm-night-ink: #f6efe4;
-  --qm-night-muted: #c4b5ad;
+  --accent: #e4572e;
   --qm-font-quote: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
   --qm-font-ui: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --qm-gap: 16px;
-  --qm-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 
   position: relative;
   isolation: isolate;
@@ -481,8 +468,6 @@ export default function QuoteMarquee({
   margin: 0;
   padding: 18px 20px 16px;
   border-radius: 18px;
-  background: var(--card-bg);
-  color: var(--card-ink);
   scroll-snap-align: start;
   outline: none;
   cursor: default;
@@ -491,13 +476,6 @@ export default function QuoteMarquee({
   transform: perspective(1000px) translate3d(0, calc(var(--lift) * -10px), 0)
     rotate(calc(var(--rest) * (1 - var(--lift)) * 1deg)) rotateX(calc(var(--ty) * -9deg))
     rotateY(calc(var(--tx) * 11deg)) scale(calc(1 + var(--lift) * 0.04));
-  box-shadow:
-    inset 0 1px 0 var(--card-highlight),
-    0 0 0 calc(var(--ring) * 2px) var(--qm-accent),
-    0 0 0 calc(var(--ring) * 6px) color-mix(in srgb, var(--qm-accent) 28%, transparent),
-    0 1px 2px rgba(0, 0, 0, 0.35),
-    0 calc(8px + var(--lift) * 16px) calc(18px + var(--lift) * 28px) calc(-8px - var(--lift) * 4px) rgba(0, 0, 0, calc(0.55 + var(--lift) * 0.15)),
-    0 calc(var(--lift) * 20px) calc(var(--lift) * 50px) calc(var(--lift) * -16px) color-mix(in srgb, var(--qm-accent) 45%, transparent);
   transition:
     transform 700ms cubic-bezier(0.22, 1.4, 0.36, 1),
     box-shadow 600ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -510,34 +488,69 @@ export default function QuoteMarquee({
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background-image: var(--qm-noise);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   opacity: var(--card-grain);
   mix-blend-mode: var(--card-grain-blend);
   pointer-events: none;
 }
 
 .tonePaper {
-  --card-bg: linear-gradient(165deg, #fffaf2 0%, var(--qm-paper) 45%, var(--qm-paper-edge) 100%);
-  --card-ink: var(--qm-paper-ink);
-  --card-muted: var(--qm-paper-muted);
-  --card-highlight: rgba(255, 255, 255, 0.9);
-  --card-rule: rgba(29, 20, 24, 0.12);
   --card-grain: 0.28;
   --card-grain-blend: multiply;
-  --card-star-off: rgba(29, 20, 24, 0.35);
+  background: linear-gradient(165deg, #fffaf2 0%, #f7f0e5 45%, #e9dfcf 100%);
+  color: #1d1418;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 0 0 calc(var(--ring) * 2px) var(--accent),
+    0 0 0 calc(var(--ring) * 6px) color-mix(in srgb, var(--accent) 28%, transparent),
+    0 1px 2px rgba(0, 0, 0, 0.35),
+    0 calc(8px + var(--lift) * 16px) calc(18px + var(--lift) * 28px) calc(-8px - var(--lift) * 4px) rgba(0, 0, 0, calc(0.55 + var(--lift) * 0.15)),
+    0 calc(var(--lift) * 20px) calc(var(--lift) * 50px) calc(var(--lift) * -16px) color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
 .toneNight {
-  --card-bg:
-    radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, var(--qm-accent) 26%, transparent), transparent 60%),
-    linear-gradient(165deg, #2e232a 0%, var(--qm-night) 55%, #181116 100%);
-  --card-ink: var(--qm-night-ink);
-  --card-muted: var(--qm-night-muted);
-  --card-highlight: rgba(255, 255, 255, 0.14);
-  --card-rule: rgba(246, 239, 228, 0.14);
   --card-grain: 0.35;
   --card-grain-blend: overlay;
-  --card-star-off: rgba(246, 239, 228, 0.45);
+  background: linear-gradient(165deg, #2e232a 0%, #231a20 55%, #181116 100%);
+  color: #f6efe4;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 0 0 calc(var(--ring) * 2px) var(--accent),
+    0 0 0 calc(var(--ring) * 6px) color-mix(in srgb, var(--accent) 28%, transparent),
+    0 1px 2px rgba(0, 0, 0, 0.35),
+    0 calc(8px + var(--lift) * 16px) calc(18px + var(--lift) * 28px) calc(-8px - var(--lift) * 4px) rgba(0, 0, 0, calc(0.55 + var(--lift) * 0.15)),
+    0 calc(var(--lift) * 20px) calc(var(--lift) * 50px) calc(var(--lift) * -16px) color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.toneNight::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 60%);
+}
+
+.tonePaper .role { color: #6b5a5f; }
+.toneNight .role { color: #c4b5ad; }
+
+.tonePaper .person { border-block-start-color: rgba(29, 20, 24, 0.12); }
+.toneNight .person { border-block-start-color: rgba(246, 239, 228, 0.14); }
+
+.tonePaper .starOff { stroke: rgba(29, 20, 24, 0.35); }
+.toneNight .starOff { stroke: rgba(246, 239, 228, 0.45); }
+
+.tonePaper .avatar {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.9),
+    0 0 0 3.5px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.toneNight .avatar {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.14),
+    0 0 0 3.5px color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 .sheen {
@@ -568,7 +581,7 @@ export default function QuoteMarquee({
   font-weight: 700;
   line-height: 1;
   margin-block: -6px -24px;
-  color: var(--qm-accent);
+  color: var(--accent);
   transform: translateY(calc(var(--lift) * -3px));
   transition: transform 600ms cubic-bezier(0.22, 1.4, 0.36, 1);
 }
@@ -582,14 +595,13 @@ export default function QuoteMarquee({
 .starOn {
   inline-size: 13px;
   block-size: 13px;
-  fill: var(--qm-accent);
+  fill: var(--accent);
 }
 
 .starOff {
   inline-size: 13px;
   block-size: 13px;
   fill: none;
-  stroke: var(--card-star-off);
   stroke-width: 1.6;
 }
 
@@ -610,7 +622,7 @@ export default function QuoteMarquee({
   align-items: center;
   gap: 10px;
   padding-block-start: 12px;
-  border-block-start: 1px solid var(--card-rule);
+  border-block-start: 1px solid;
 }
 
 .avatar {
@@ -619,9 +631,6 @@ export default function QuoteMarquee({
   block-size: 34px;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow:
-    0 0 0 2px var(--card-highlight),
-    0 0 0 3.5px color-mix(in srgb, var(--qm-accent) 55%, transparent);
   -webkit-user-drag: none;
 }
 
@@ -632,7 +641,7 @@ export default function QuoteMarquee({
   inline-size: 34px;
   block-size: 34px;
   border-radius: 50%;
-  background: linear-gradient(145deg, color-mix(in srgb, var(--qm-accent) 75%, #fff), var(--qm-accent));
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 75%, #fff), var(--accent));
   color: #1d1418;
   font-size: 12.5px;
   font-weight: 700;
@@ -655,7 +664,6 @@ export default function QuoteMarquee({
 
 .role {
   font-size: 12.5px;
-  color: var(--card-muted);
   overflow-wrap: anywhere;
 }
 
@@ -671,11 +679,11 @@ export default function QuoteMarquee({
   padding: 0;
   border: 1px solid rgba(246, 239, 228, 0.16);
   border-radius: 50%;
-  background: linear-gradient(160deg, #3a2e35, var(--qm-control));
+  background: linear-gradient(160deg, #3a2e35, #231a20);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     0 8px 24px -8px rgba(0, 0, 0, 0.6);
-  color: var(--qm-control-ink);
+  color: #f6efe4;
   cursor: pointer;
   transition:
     transform 300ms cubic-bezier(0.22, 1.4, 0.36, 1),
@@ -685,7 +693,7 @@ export default function QuoteMarquee({
 
 .pause:hover {
   transform: scale(1.06);
-  border-color: color-mix(in srgb, var(--qm-accent) 70%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 70%, transparent);
 }
 
 .pause:active {
@@ -693,7 +701,7 @@ export default function QuoteMarquee({
 }
 
 .pause:focus-visible {
-  outline: 2px solid var(--qm-accent);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 

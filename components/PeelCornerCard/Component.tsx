@@ -11,7 +11,6 @@ export interface PeelCornerCardProps {
   hiddenTitle?: string;
   hiddenBody?: string;
   hiddenCode?: string;
-  peelColor?: string;
   corner?: PeelCorner;
   className?: string;
 }
@@ -170,7 +169,6 @@ export default function PeelCornerCard({
   hiddenTitle = 'You found it',
   hiddenBody = 'Members get a free lemon tart with any loaf this week. Show this card at the counter.',
   hiddenCode = 'LEMON-TART',
-  peelColor = '#e6b85c',
   corner = 'top-right',
   className,
 }: PeelCornerCardProps) {
@@ -198,11 +196,9 @@ export default function PeelCornerCard({
     downY: 0,
   });
   const cornerRef = useRef<PeelCorner>(corner);
-  const colorRef = useRef(peelColor);
   const reducedRef = useRef(false);
 
   cornerRef.current = corner;
-  colorRef.current = peelColor;
   reducedRef.current = reduced;
 
   const dMax = useCallback(() => {
@@ -406,7 +402,7 @@ export default function PeelCornerCard({
     // Faint ink show-through from the printed side.
     ctx.globalCompositeOperation = 'multiply';
     ctx.globalAlpha = 0.16;
-    ctx.fillStyle = colorRef.current;
+    ctx.fillStyle = rootRef.current ? getComputedStyle(rootRef.current).getPropertyValue('--peel').trim() : '#e6b85c';
     ctx.fillRect(0, 0, cw + bleed * 2, ch);
     ctx.globalCompositeOperation = 'source-over';
     ctx.globalAlpha = 1;
@@ -549,7 +545,7 @@ export default function PeelCornerCard({
   // Repaint once when theming props change while the loop is parked.
   useEffect(() => {
     if (reduced || !inView) drawFrame();
-  }, [peelColor, corner, reduced, inView, drawFrame]);
+  }, [corner, reduced, inView, drawFrame]);
 
   const cornerPoint = useCallback(() => {
     const { sw, sh } = sizeRef.current;
@@ -649,7 +645,6 @@ export default function PeelCornerCard({
     .map((s) => s.trim())
     .filter(Boolean);
   const rootStyle = {
-    '--pc-peel': peelColor,
     '--pc-cx': cornerPos.x,
     '--pc-cy': cornerPos.y,
     '--pc-corner-x': `${cornerPos.x * 100}%`,

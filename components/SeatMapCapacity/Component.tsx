@@ -381,8 +381,8 @@ export default function SeatMapCapacity({
           >
             <defs>
               <radialGradient id={glowId}>
-                <stop offset="0%" stopColor="var(--sm-free-glow)" stopOpacity="0.85" />
-                <stop offset="100%" stopColor="var(--sm-free-glow)" stopOpacity="0" />
+                <stop offset="0%" className={styles.glowStop} stopOpacity="0.85" />
+                <stop offset="100%" className={styles.glowStop} stopOpacity="0" />
               </radialGradient>
             </defs>
 

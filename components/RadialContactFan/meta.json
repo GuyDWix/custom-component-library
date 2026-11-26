@@ -9,10 +9,8 @@
   "owner_settings": [
     "Actions (label, icon, link)",
     "Main button label",
-    "Button color",
     "Fan direction",
-    "Heading and note",
-    "Brass edge color"
+    "Heading and note"
   ],
   "site_types": [
     "restaurant",

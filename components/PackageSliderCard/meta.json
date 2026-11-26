@@ -8,7 +8,6 @@
   "visitor_action": "drag the thumb or press arrow keys; tap a stop label",
   "owner_settings": [
     "Packages (name, price, short tagline, included items one per line)",
-    "Accent color",
     "Currency symbol",
     "Price note (e.g. per garment)",
     "Digit size (S/M/L)"

@@ -880,20 +880,9 @@ export default function SizeAgainstObjects({
 
 ```css
 .root {
-  --sao-ground: #eef1f4;
-  --sao-ground-deep: #e2e7ec;
-  --sao-surface: #ffffff;
-  --sao-grid: rgba(54, 78, 110, 0.09);
-  --sao-grid-major: rgba(54, 78, 110, 0.17);
-  --sao-ink: #111a26;
-  --sao-muted: #536173;
-  --sao-line: #2a3a50;
-  --sao-hairline: rgba(17, 26, 38, 0.12);
-  --sao-accent: #f0521c;
-  --sao-accent-ink: #c43c0c;
+  --accent: #f0521c;
   --sao-font-display: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --sao-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --sao-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.26  0 0 0 0 0.34  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   --sao-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --sao-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
 
@@ -904,18 +893,18 @@ export default function SizeAgainstObjects({
   inline-size: 100%;
   container-type: inline-size;
   border-radius: 28px;
-  background: var(--sao-ground);
-  color: var(--sao-ink);
+  background: #eef1f4;
+  color: #111a26;
   font-family: var(--sao-font-ui);
   box-shadow:
-    inset 0 0 0 1px var(--sao-hairline),
+    inset 0 0 0 1px rgba(17, 26, 38, 0.12),
     0 1px 2px rgba(17, 26, 38, 0.05),
     0 30px 60px -40px rgba(17, 26, 38, 0.35);
 }
 
 .root ::selection {
-  background: color-mix(in srgb, var(--sao-accent) 26%, transparent);
-  color: var(--sao-ink);
+  background: color-mix(in srgb, var(--accent) 26%, transparent);
+  color: #111a26;
 }
 
 .stage {
@@ -941,8 +930,8 @@ export default function SizeAgainstObjects({
 
 .grid {
   background-image:
-    linear-gradient(to right, var(--sao-grid-major) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--sao-grid-major) 1px, transparent 1px),
+    linear-gradient(to right, rgba(54, 78, 110, 0.17) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(54, 78, 110, 0.17) 1px, transparent 1px),
     linear-gradient(to right, rgba(54, 78, 110, calc(0.075 * var(--sao-minor-a))) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(54, 78, 110, calc(0.075 * var(--sao-minor-a))) 1px, transparent 1px);
   background-size:
@@ -961,7 +950,7 @@ export default function SizeAgainstObjects({
 }
 
 .grain {
-  background-image: var(--sao-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.26  0 0 0 0 0.34  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.07;
   mix-blend-mode: multiply;
 }
@@ -1019,13 +1008,13 @@ export default function SizeAgainstObjects({
 .times {
   margin-inline: 0.1em;
   font-weight: 300;
-  color: var(--sao-accent);
+  color: var(--accent);
 }
 
 .unit {
   font-size: 18px;
   font-weight: 500;
-  color: var(--sao-muted);
+  color: #536173;
 }
 
 .legend {
@@ -1036,14 +1025,14 @@ export default function SizeAgainstObjects({
   margin: 4px 0 0;
   font-size: 15px;
   line-height: 1.35;
-  color: var(--sao-line);
+  color: #2a3a50;
   animation: legendIn 520ms var(--sao-ease) backwards;
 }
 
 .legend .segIcon {
   inline-size: 22px;
   block-size: 22px;
-  color: var(--sao-line);
+  color: #2a3a50;
 }
 
 .legendName {
@@ -1052,7 +1041,7 @@ export default function SizeAgainstObjects({
 }
 
 .legendDims {
-  color: var(--sao-muted);
+  color: #536173;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -1076,19 +1065,19 @@ export default function SizeAgainstObjects({
 
 .baseline {
   fill: none;
-  stroke: var(--sao-line);
+  stroke: #2a3a50;
   stroke-width: 1.25;
 }
 
 .ticks {
   fill: none;
-  stroke: var(--sao-line);
+  stroke: #2a3a50;
   stroke-width: 1;
   opacity: 0.7;
 }
 
 .rulerLabel {
-  fill: var(--sao-muted);
+  fill: #536173;
   font-size: 12px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
@@ -1100,13 +1089,13 @@ export default function SizeAgainstObjects({
 
 .construct {
   fill: none;
-  stroke: var(--sao-line);
+  stroke: #2a3a50;
   opacity: 0.22;
 }
 
 .centerline {
   fill: none;
-  stroke: var(--sao-accent);
+  stroke: var(--accent);
   opacity: 0.55;
 }
 
@@ -1115,14 +1104,14 @@ export default function SizeAgainstObjects({
 }
 
 .hatchLine {
-  stroke: var(--sao-line);
+  stroke: #2a3a50;
   opacity: 0.2;
 }
 
 .outline,
 .detail {
   fill: none;
-  stroke: var(--sao-line);
+  stroke: #2a3a50;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 1;
@@ -1168,7 +1157,7 @@ export default function SizeAgainstObjects({
 
 .dimExt {
   fill: none;
-  stroke: var(--sao-accent);
+  stroke: var(--accent);
   stroke-width: 0.75;
   opacity: 0.8;
   animation: fadeIn 400ms ease-out var(--d) backwards;
@@ -1181,24 +1170,24 @@ export default function SizeAgainstObjects({
 
 .dimLine {
   fill: none;
-  stroke: var(--sao-accent);
+  stroke: var(--accent);
   stroke-width: 1;
 }
 
 .dimTick {
   fill: none;
-  stroke: var(--sao-accent);
+  stroke: var(--accent);
   stroke-width: 1.5;
   stroke-linecap: round;
 }
 
 .dimLabel {
-  fill: var(--sao-accent-ink);
+  fill: #c43c0c;
   font-size: 13px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   paint-order: stroke;
-  stroke: var(--sao-ground);
+  stroke: #eef1f4;
   stroke-width: 8px;
   stroke-linejoin: round;
   animation: fadeIn 360ms ease-out calc(var(--d) + 260ms) backwards;
@@ -1214,7 +1203,7 @@ export default function SizeAgainstObjects({
 
 .product:focus-visible,
 .objectHit:focus-visible {
-  box-shadow: 0 0 0 3px var(--sao-ground), 0 0 0 5px var(--sao-accent);
+  box-shadow: 0 0 0 3px #eef1f4, 0 0 0 5px var(--accent);
 }
 
 .productIn {
@@ -1267,7 +1256,7 @@ export default function SizeAgainstObjects({
   inline-size: 100%;
   block-size: 100%;
   fill: rgba(255, 255, 255, 0.7);
-  stroke: var(--sao-line);
+  stroke: #2a3a50;
   stroke-width: 1.25;
 }
 
@@ -1299,7 +1288,7 @@ export default function SizeAgainstObjects({
   margin: 0;
   font-size: 14px;
   font-weight: 500;
-  color: var(--sao-muted);
+  color: #536173;
 }
 
 .segScroll {
@@ -1307,7 +1296,7 @@ export default function SizeAgainstObjects({
   mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
   overflow-x: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--sao-hairline) transparent;
+  scrollbar-color: rgba(17, 26, 38, 0.12) transparent;
   padding: 2px;
   margin: -2px;
 }
@@ -1318,7 +1307,7 @@ export default function SizeAgainstObjects({
   gap: 2px;
   padding: 4px;
   border-radius: 14px;
-  background: var(--sao-ground-deep);
+  background: #e2e7ec;
   box-shadow: inset 0 0 0 1px rgba(17, 26, 38, 0.06);
 }
 
@@ -1327,7 +1316,7 @@ export default function SizeAgainstObjects({
   inset-block: 4px;
   inset-inline-start: 0;
   border-radius: 10px;
-  background: var(--sao-surface);
+  background: #ffffff;
   box-shadow:
     0 0 0 1px rgba(17, 26, 38, 0.06),
     0 1px 2px rgba(17, 26, 38, 0.08),
@@ -1350,7 +1339,7 @@ export default function SizeAgainstObjects({
   border: 0;
   border-radius: 10px;
   background: transparent;
-  color: var(--sao-muted);
+  color: #536173;
   font: inherit;
   font-size: 14px;
   font-weight: 500;
@@ -1364,7 +1353,7 @@ export default function SizeAgainstObjects({
 }
 
 .seg:hover {
-  color: var(--sao-ink);
+  color: #111a26;
 }
 
 .seg:active {
@@ -1372,12 +1361,12 @@ export default function SizeAgainstObjects({
 }
 
 .seg:focus-visible {
-  outline: 2px solid var(--sao-accent);
+  outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
 
 .segOn {
-  color: var(--sao-ink);
+  color: #111a26;
 }
 
 .segIcon {
@@ -1413,13 +1402,13 @@ export default function SizeAgainstObjects({
   display: none;
   align-items: center;
   gap: 10px;
-  color: var(--sao-muted);
+  color: #536173;
 }
 
 .scaleTrack {
   display: flex;
   block-size: 6px;
-  box-shadow: 0 0 0 1px var(--sao-line);
+  box-shadow: 0 0 0 1px #2a3a50;
 }
 
 .scaleCell,
@@ -1428,11 +1417,11 @@ export default function SizeAgainstObjects({
 }
 
 .scaleCell {
-  background: var(--sao-line);
+  background: #2a3a50;
 }
 
 .scaleCellLight {
-  background: var(--sao-surface);
+  background: #ffffff;
 }
 
 .scaleText {

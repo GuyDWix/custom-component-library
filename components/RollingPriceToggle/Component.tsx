@@ -14,7 +14,6 @@ export interface RollingPriceOption {
 export interface RollingPriceToggleProps {
   options?: RollingPriceOption[];
   currency?: string;
-  highlightColor?: string;
   className?: string;
 }
 
@@ -112,7 +111,6 @@ const HELP = 'Use the left and right arrow keys to switch between options. The p
 export default function RollingPriceToggle({
   options = defaultOptions,
   currency = '$',
-  highlightColor = '#e2b13c',
   className,
 }: RollingPriceToggleProps) {
   const opts = options.length > 0 ? options : defaultOptions;
@@ -268,7 +266,6 @@ export default function RollingPriceToggle({
   };
 
   const rootStyle = {
-    '--rp-gold': highlightColor,
     '--rp-n': widthUnits,
     '--rp-opts': opts.length,
     '--rp-i': idx,

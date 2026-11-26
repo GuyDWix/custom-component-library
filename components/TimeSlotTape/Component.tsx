@@ -17,9 +17,6 @@ export interface TimeSlotTapeProps {
   buttonLabel?: string;
   buttonLink?: string;
   noTimesLabel?: string;
-  tapeColor?: string;
-  inkColor?: string;
-  deskColor?: string;
   ariaLabel?: string;
   className?: string;
 }
@@ -86,9 +83,6 @@ export default function TimeSlotTape({
   buttonLabel = 'Book {time}',
   buttonLink = '#book',
   noTimesLabel = 'No times left today',
-  tapeColor = '#1A1D23',
-  inkColor = '#E6E9EE',
-  deskColor = '#121419',
   ariaLabel = 'Appointment time',
   className,
 }: TimeSlotTapeProps) {
@@ -305,9 +299,6 @@ export default function TimeSlotTape({
   const countText = openCountLabel.replace('{count}', String(openCount)).replace('{total}', String(count));
 
   const rootStyle = {
-    '--tst-tape': tapeColor,
-    '--tst-ink': inkColor,
-    '--tst-desk': deskColor,
     '--tst-slot': `${slot}px`,
     '--tst-num-size': `${font}px`,
     '--tst-pad': `${PAD * slot}px`,

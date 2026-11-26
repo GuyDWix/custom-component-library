@@ -20,7 +20,6 @@ const worst = {
     'Before — structural restoration, steam-cleaned beech frame and full re-upholstery in madder-dyed Belgian linen with hand-finished double piping and antique brass hardware',
   afterLabel:
     'After — delivered in six weeks, hand-stitched seams, feather-wrapped cushions and a ten-year workshop guarantee, photographed on delivery day in the client sitting room',
-  threadColor: '#31506b',
 };
 
 export default function Preview() {

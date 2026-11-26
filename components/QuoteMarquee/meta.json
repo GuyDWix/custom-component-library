@@ -9,8 +9,7 @@
     "Quotes (text, person name, role, photo, star rating)",
     "Speed",
     "Direction",
-    "Number of rows (1 by default, or 2)",
-    "Accent color"
+    "Number of rows (1 by default, or 2)"
   ],
   "site_types": [
     "business",

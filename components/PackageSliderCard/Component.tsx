@@ -11,7 +11,6 @@ export interface PackageSliderStop {
 
 export interface PackageSliderCardProps {
   stops?: PackageSliderStop[];
-  accentColor?: string;
   currencySymbol?: string;
   priceNote?: string;
   digitSize?: 'S' | 'M' | 'L';
@@ -94,7 +93,6 @@ function OdometerColumn({ index, char }: { index: number; char: string | undefin
 
 export default function PackageSliderCard({
   stops = defaultStops,
-  accentColor = '#e2411c',
   currencySymbol = '$',
   priceNote = 'per garment',
   digitSize = 'L',
@@ -293,12 +291,11 @@ export default function PackageSliderCard({
 
   const priceText = target === null ? stop.price : formatPrice(target, decimals);
   const fitLength = target === null ? stop.price.length : priceText.length;
-  const rootStyle = { '--ps-accent': accentColor } as CSSProperties;
   const tapeStyle = { '--pos': stopPos(active) } as CSSProperties;
   const valueText = `${stop.name}, ${target === null ? stop.price : `${currencySymbol}${priceText}`}`;
 
   return (
-    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
+    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')}>
       <div className={styles.inner}>
         <div className={styles.measure}>
           <p className={styles.topline} aria-hidden="true">

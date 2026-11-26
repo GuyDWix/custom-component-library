@@ -1,6 +1,6 @@
 Create a custom element called "Peel Corner Card". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: card content (title, text, footnote), hidden message (title, text, code), peel color, corner position. Add other settings if they help.
+The site owner must be able to change: card content (title, text, footnote), hidden message (title, text, code), corner position. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
@@ -16,7 +16,6 @@ export interface PeelCornerCardProps {
   hiddenTitle?: string;
   hiddenBody?: string;
   hiddenCode?: string;
-  peelColor?: string;
   corner?: PeelCorner;
   className?: string;
 }
@@ -175,7 +174,6 @@ export default function PeelCornerCard({
   hiddenTitle = 'You found it',
   hiddenBody = 'Members get a free lemon tart with any loaf this week. Show this card at the counter.',
   hiddenCode = 'LEMON-TART',
-  peelColor = '#e6b85c',
   corner = 'top-right',
   className,
 }: PeelCornerCardProps) {
@@ -203,11 +201,9 @@ export default function PeelCornerCard({
     downY: 0,
   });
   const cornerRef = useRef<PeelCorner>(corner);
-  const colorRef = useRef(peelColor);
   const reducedRef = useRef(false);
 
   cornerRef.current = corner;
-  colorRef.current = peelColor;
   reducedRef.current = reduced;
 
   const dMax = useCallback(() => {
@@ -411,7 +407,7 @@ export default function PeelCornerCard({
     // Faint ink show-through from the printed side.
     ctx.globalCompositeOperation = 'multiply';
     ctx.globalAlpha = 0.16;
-    ctx.fillStyle = colorRef.current;
+    ctx.fillStyle = rootRef.current ? getComputedStyle(rootRef.current).getPropertyValue('--peel').trim() : '#e6b85c';
     ctx.fillRect(0, 0, cw + bleed * 2, ch);
     ctx.globalCompositeOperation = 'source-over';
     ctx.globalAlpha = 1;
@@ -554,7 +550,7 @@ export default function PeelCornerCard({
   // Repaint once when theming props change while the loop is parked.
   useEffect(() => {
     if (reduced || !inView) drawFrame();
-  }, [peelColor, corner, reduced, inView, drawFrame]);
+  }, [corner, reduced, inView, drawFrame]);
 
   const cornerPoint = useCallback(() => {
     const { sw, sh } = sizeRef.current;
@@ -654,7 +650,6 @@ export default function PeelCornerCard({
     .map((s) => s.trim())
     .filter(Boolean);
   const rootStyle = {
-    '--pc-peel': peelColor,
     '--pc-cx': cornerPos.x,
     '--pc-cy': cornerPos.y,
     '--pc-corner-x': `${cornerPos.x * 100}%`,
@@ -733,13 +728,7 @@ export default function PeelCornerCard({
  */
 .root {
   --pc-radius: 20px;
-  --pc-peel: #e6b85c;
-  --pc-peel-lift: color-mix(in srgb, var(--pc-peel) 70%, #fff6e2);
-  --pc-peel-deep: color-mix(in srgb, var(--pc-peel) 78%, #5a3d10);
-  --pc-peel-shade: color-mix(in srgb, var(--pc-peel) 86%, #b8782a);
-  --pc-ink: #2a1d10;
-  --pc-well: #1b1510;
-  --pc-well-text: #f6eedd;
+  --peel: #e6b85c;
   --pc-font: 'Archivo', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --pc-title-tall: 16cqi;
   --pc-title-square: 12cqi;
@@ -754,14 +743,14 @@ export default function PeelCornerCard({
   box-sizing: border-box;
   inline-size: 100%;
   border-radius: var(--pc-radius);
-  background: var(--pc-well);
-  color: var(--pc-ink);
+  background: #1b1510;
+  color: #2a1d10;
   font-family: var(--pc-font);
 }
 
 .root ::selection {
-  background: var(--pc-ink);
-  color: var(--pc-peel);
+  background: #2a1d10;
+  color: var(--peel);
 }
 
 .card {
@@ -793,7 +782,7 @@ export default function PeelCornerCard({
 }
 
 .card:focus-visible {
-  outline: 3px solid var(--pc-ink);
+  outline: 3px solid #2a1d10;
   outline-offset: -8px;
 }
 
@@ -808,11 +797,11 @@ export default function PeelCornerCard({
   background:
     radial-gradient(
       80% 100% at var(--pc-corner-x) var(--pc-corner-y),
-      color-mix(in srgb, var(--pc-peel) 20%, var(--pc-well)) 0%,
-      color-mix(in srgb, var(--pc-peel) 6%, var(--pc-well)) 50%,
+      color-mix(in srgb, var(--peel) 20%, #1b1510) 0%,
+      color-mix(in srgb, var(--peel) 6%, #1b1510) 50%,
       transparent 80%
     ),
-    linear-gradient(172deg, #221a13 0%, var(--pc-well) 100%);
+    linear-gradient(172deg, #221a13 0%, #1b1510 100%);
   pointer-events: none;
 }
 
@@ -824,7 +813,7 @@ export default function PeelCornerCard({
   z-index: 0;
   box-sizing: border-box;
   inline-size: 46cqi;
-  color: var(--pc-well-text);
+  color: #f6eedd;
   pointer-events: none;
 }
 
@@ -873,7 +862,7 @@ export default function PeelCornerCard({
   line-height: 1.08;
   letter-spacing: -0.02em;
   text-wrap: balance;
-  color: var(--pc-peel);
+  color: var(--peel);
   overflow-wrap: break-word;
   opacity: var(--pc-beat);
   transform: translateY(calc((1 - var(--pc-beat)) * 12px * var(--pc-dir)));
@@ -913,14 +902,14 @@ export default function PeelCornerCard({
   box-sizing: border-box;
   margin-block-start: 14px;
   padding: 7px 14px;
-  border: 1px solid color-mix(in srgb, var(--pc-peel) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--peel) 55%, transparent);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--pc-peel) 12%, transparent);
+  background: color-mix(in srgb, var(--peel) 12%, transparent);
   font-size: 13px;
   font-weight: 650;
   letter-spacing: 0.1em;
   font-variant-numeric: tabular-nums;
-  color: var(--pc-peel);
+  color: var(--peel);
   overflow-wrap: break-word;
   opacity: var(--pc-beat);
   transform: translateY(calc((1 - var(--pc-beat)) * 12px * var(--pc-dir)));
@@ -945,12 +934,12 @@ export default function PeelCornerCard({
   background:
     linear-gradient(
       155deg,
-      var(--pc-peel-lift) 0%,
-      var(--pc-peel) 48%,
-      var(--pc-peel-shade) 100%
+      color-mix(in srgb, var(--peel) 70%, #fff6e2) 0%,
+      var(--peel) 48%,
+      color-mix(in srgb, var(--peel) 86%, #b8782a) 100%
     );
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--pc-peel-deep) 35%, transparent);
+    inset 0 0 0 1px color-mix(in srgb, color-mix(in srgb, var(--peel) 78%, #5a3d10) 35%, transparent);
 }
 
 /* Print stress: the vinyl bends darker toward the lifting crease. */
@@ -1028,7 +1017,7 @@ export default function PeelCornerCard({
   font-weight: 700;
   line-height: 0.98;
   letter-spacing: -0.035em;
-  color: var(--pc-ink);
+  color: #2a1d10;
   overflow-wrap: break-word;
   hyphens: manual;
   text-wrap: balance;
@@ -1089,7 +1078,7 @@ export default function PeelCornerCard({
   letter-spacing: 0.1em;
   line-height: 1.3;
   text-transform: uppercase;
-  color: var(--pc-ink);
+  color: #2a1d10;
   hyphens: none;
 }
 

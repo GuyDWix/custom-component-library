@@ -1,6 +1,6 @@
 Create a custom element called "Time Slot Tape". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: times (list like 09:00 and 09:30), booked times (greyed), button label and link, tape colour. Add other settings if they help.
+The site owner must be able to change: times (list like 09:00 and 09:30), booked times (greyed), button label and link. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -22,9 +22,6 @@ export interface TimeSlotTapeProps {
   buttonLabel?: string;
   buttonLink?: string;
   noTimesLabel?: string;
-  tapeColor?: string;
-  inkColor?: string;
-  deskColor?: string;
   ariaLabel?: string;
   className?: string;
 }
@@ -91,9 +88,6 @@ export default function TimeSlotTape({
   buttonLabel = 'Book {time}',
   buttonLink = '#book',
   noTimesLabel = 'No times left today',
-  tapeColor = '#1A1D23',
-  inkColor = '#E6E9EE',
-  deskColor = '#121419',
   ariaLabel = 'Appointment time',
   className,
 }: TimeSlotTapeProps) {
@@ -310,9 +304,6 @@ export default function TimeSlotTape({
   const countText = openCountLabel.replace('{count}', String(openCount)).replace('{total}', String(count));
 
   const rootStyle = {
-    '--tst-tape': tapeColor,
-    '--tst-ink': inkColor,
-    '--tst-desk': deskColor,
     '--tst-slot': `${slot}px`,
     '--tst-num-size': `${font}px`,
     '--tst-pad': `${PAD * slot}px`,
@@ -419,15 +410,7 @@ export default function TimeSlotTape({
 
 ```css
 .root {
-  --tst-tape: #1a1d23;
-  --tst-ink: #e6e9ee;
-  --tst-desk: #121419;
-  --tst-accent: #5ee4b4;
-  --tst-accent-ink: #062016;
-  --tst-muted: color-mix(in srgb, var(--tst-ink) 64%, var(--tst-desk));
-  --tst-tick: color-mix(in srgb, var(--tst-ink) 34%, var(--tst-tape));
-  --tst-tick-minor: color-mix(in srgb, var(--tst-ink) 16%, var(--tst-tape));
-  --tst-hairline: color-mix(in srgb, var(--tst-ink) 9%, transparent);
+  --accent: #5ee4b4;
   --tst-slot: 126px;
   --tst-num-size: 28px;
   --tst-pad: 1260px;
@@ -445,15 +428,15 @@ export default function TimeSlotTape({
   padding-block: 36px 32px;
   padding-inline: 20px;
   border-radius: 24px;
-  border: 1px solid var(--tst-hairline);
-  background: var(--tst-desk);
-  color: var(--tst-ink);
+  border: 1px solid color-mix(in srgb, #e6e9ee 9%, transparent);
+  background: #121419;
+  color: #e6e9ee;
   color-scheme: dark;
   font-family: var(--tst-font-ui);
   font-variant-numeric: tabular-nums;
-  accent-color: var(--tst-accent);
-  caret-color: var(--tst-accent);
-  scrollbar-color: var(--tst-tick) transparent;
+  accent-color: var(--accent);
+  caret-color: var(--accent);
+  scrollbar-color: color-mix(in srgb, #e6e9ee 34%, #1a1d23) transparent;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -461,8 +444,8 @@ export default function TimeSlotTape({
 .heading::selection,
 .detail::selection,
 .count::selection {
-  background: color-mix(in srgb, var(--tst-accent) 32%, transparent);
-  color: var(--tst-ink);
+  background: color-mix(in srgb, var(--accent) 32%, transparent);
+  color: #e6e9ee;
 }
 
 .inner {
@@ -502,7 +485,7 @@ export default function TimeSlotTape({
   max-inline-size: 65ch;
   font-size: 15px;
   line-height: 1.45;
-  color: var(--tst-muted);
+  color: color-mix(in srgb, #e6e9ee 64%, #121419);
   text-wrap: pretty;
   overflow-wrap: anywhere;
 }
@@ -512,10 +495,10 @@ export default function TimeSlotTape({
   padding-block: 6px;
   padding-inline: 12px;
   border-radius: 999px;
-  border: 1px solid var(--tst-hairline);
+  border: 1px solid color-mix(in srgb, #e6e9ee 9%, transparent);
   font-size: 13px;
   font-weight: 500;
-  color: var(--tst-muted);
+  color: color-mix(in srgb, #e6e9ee 64%, #121419);
 }
 
 .viewport {
@@ -537,15 +520,15 @@ export default function TimeSlotTape({
 }
 
 .viewport:focus-visible {
-  --tst-focus: 0 0 0 2px var(--tst-accent), 0 0 0 5px color-mix(in srgb, var(--tst-accent) 22%, transparent),;
+  --tst-focus: 0 0 0 2px var(--accent), 0 0 0 5px color-mix(in srgb, var(--accent) 22%, transparent),;
 }
 
 .rail {
   position: absolute;
   inset-block: 30px;
   inset-inline: 0;
-  background: var(--tst-tape);
-  border-block: 1px solid var(--tst-hairline);
+  background: #1a1d23;
+  border-block: 1px solid color-mix(in srgb, #e6e9ee 9%, transparent);
 }
 
 .ticks,
@@ -560,10 +543,10 @@ export default function TimeSlotTape({
 .ticks {
   inline-size: calc(var(--tst-pad) * 2 + var(--tst-count) * var(--tst-slot));
   background-image:
-    linear-gradient(90deg, transparent calc(50% - 0.75px), var(--tst-tick) calc(50% - 0.75px) calc(50% + 0.75px), transparent calc(50% + 0.75px)),
-    linear-gradient(90deg, transparent calc(50% - 0.75px), var(--tst-tick) calc(50% - 0.75px) calc(50% + 0.75px), transparent calc(50% + 0.75px)),
-    linear-gradient(90deg, var(--tst-tick-minor) 0 1px, transparent 1px),
-    linear-gradient(90deg, var(--tst-tick-minor) 0 1px, transparent 1px);
+    linear-gradient(90deg, transparent calc(50% - 0.75px), color-mix(in srgb, #e6e9ee 34%, #1a1d23) calc(50% - 0.75px) calc(50% + 0.75px), transparent calc(50% + 0.75px)),
+    linear-gradient(90deg, transparent calc(50% - 0.75px), color-mix(in srgb, #e6e9ee 34%, #1a1d23) calc(50% - 0.75px) calc(50% + 0.75px), transparent calc(50% + 0.75px)),
+    linear-gradient(90deg, color-mix(in srgb, #e6e9ee 16%, #1a1d23) 0 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, #e6e9ee 16%, #1a1d23) 0 1px, transparent 1px);
   background-size:
     var(--tst-slot) 16px,
     var(--tst-slot) 16px,
@@ -581,7 +564,7 @@ export default function TimeSlotTape({
   margin-inline-start: calc(var(--tst-slot) * -0.46);
   border-radius: 18px;
   border: 1px solid color-mix(in srgb, #fff 14%, transparent);
-  background: linear-gradient(180deg, color-mix(in srgb, #fff 9%, transparent) 0%, color-mix(in srgb, #fff 3%, transparent) 55%, color-mix(in srgb, var(--tst-accent) 8%, transparent) 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, #fff 9%, transparent) 0%, color-mix(in srgb, #fff 3%, transparent) 55%, color-mix(in srgb, var(--accent) 8%, transparent) 100%);
   backdrop-filter: blur(5px) saturate(140%);
   -webkit-backdrop-filter: blur(5px) saturate(140%);
   box-shadow:
@@ -597,7 +580,7 @@ export default function TimeSlotTape({
   inset-block: 46% 4%;
   z-index: -1;
   border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--tst-accent) 34%, transparent), transparent);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 34%, transparent), transparent);
   filter: blur(10px);
 }
 
@@ -629,7 +612,7 @@ export default function TimeSlotTape({
   line-height: 1.15;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
-  color: color-mix(in oklab, var(--tst-accent) calc(var(--near) * 100%), var(--tst-ink));
+  color: color-mix(in oklab, var(--accent) calc(var(--near) * 100%), #e6e9ee);
   opacity: calc(1 - var(--far) * 0.32);
   transform: scale(calc(1 + var(--near) * 0.42));
 }
@@ -641,7 +624,7 @@ export default function TimeSlotTape({
   white-space: nowrap;
   font-size: max(12px, calc(var(--tst-num-size) * 0.46));
   font-weight: 500;
-  color: var(--tst-muted);
+  color: color-mix(in srgb, #e6e9ee 64%, #121419);
   opacity: calc(1 - var(--far) * 0.3);
   transform: translateY(calc(var(--near) * 6px));
 }
@@ -651,11 +634,11 @@ export default function TimeSlotTape({
 }
 
 .numeralBooked {
-  color: var(--tst-muted);
+  color: color-mix(in srgb, #e6e9ee 64%, #121419);
   opacity: 0.7;
   text-decoration: line-through;
   text-decoration-thickness: 1.5px;
-  text-decoration-color: color-mix(in srgb, var(--tst-ink) 45%, transparent);
+  text-decoration-color: color-mix(in srgb, #e6e9ee 45%, transparent);
   text-shadow: none;
 }
 
@@ -668,7 +651,7 @@ export default function TimeSlotTape({
   text-transform: uppercase;
   text-align: center;
   overflow-wrap: anywhere;
-  color: var(--tst-muted);
+  color: color-mix(in srgb, #e6e9ee 64%, #121419);
 }
 
 .pin {
@@ -686,7 +669,7 @@ export default function TimeSlotTape({
   inset-inline-start: 8px;
   inline-size: 2px;
   border-radius: 1px;
-  background: var(--tst-accent);
+  background: var(--accent);
   mask-image: linear-gradient(180deg, #000 0 14px, transparent 14px calc(100% - 14px), #000 calc(100% - 14px));
   -webkit-mask-image: linear-gradient(180deg, #000 0 14px, transparent 14px calc(100% - 14px), #000 calc(100% - 14px));
 }
@@ -698,8 +681,8 @@ export default function TimeSlotTape({
   inline-size: 12px;
   block-size: 4px;
   border-radius: 2px;
-  background: var(--tst-accent);
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--tst-accent) 50%, transparent);
+  background: var(--accent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 50%, transparent);
 }
 
 .footer {
@@ -722,8 +705,8 @@ export default function TimeSlotTape({
   line-height: 1.4;
   border: 0;
   border-radius: 12px;
-  background: var(--tst-accent);
-  color: var(--tst-accent-ink);
+  background: var(--accent);
+  color: #062016;
   font-family: inherit;
   font-size: 16px;
   font-weight: 600;
@@ -732,14 +715,14 @@ export default function TimeSlotTape({
   text-wrap: balance;
   overflow-wrap: anywhere;
   cursor: pointer;
-  box-shadow: 0 8px 20px -12px color-mix(in srgb, var(--tst-accent) 70%, transparent);
+  box-shadow: 0 8px 20px -12px color-mix(in srgb, var(--accent) 70%, transparent);
   transition:
     background-color 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
     transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .button:hover {
-  background: color-mix(in srgb, var(--tst-accent) 86%, #fff);
+  background: color-mix(in srgb, var(--accent) 86%, #fff);
 }
 
 .button:active {
@@ -747,16 +730,16 @@ export default function TimeSlotTape({
 }
 
 .button:focus-visible {
-  outline: 2px solid var(--tst-accent);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
 .button:disabled {
   cursor: not-allowed;
   transform: none;
-  background: var(--tst-tape);
-  color: var(--tst-muted);
-  box-shadow: inset 0 0 0 1px var(--tst-hairline);
+  background: #1a1d23;
+  color: color-mix(in srgb, #e6e9ee 64%, #121419);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #e6e9ee 9%, transparent);
 }
 
 .buttonTime {

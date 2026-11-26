@@ -1,6 +1,6 @@
 Create a custom element called "Service Area Rings". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: rings (distance label, time, fee), neighbourhoods per ring, centre label, accent color. Add other settings if they help.
+The site owner must be able to change: rings (distance label, time, fee), neighbourhoods per ring, centre label. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -23,7 +23,6 @@ export interface ServiceAreaRingsProps {
   rings?: ServiceAreaRing[];
   neighbourhoods?: ServiceAreaNeighbourhood[];
   centreLabel?: string;
-  accentColor?: string;
   distanceLabel?: string;
   feeLabel?: string;
   className?: string;
@@ -384,7 +383,6 @@ export default function ServiceAreaRings({
   rings: ringsProp = defaultRings,
   neighbourhoods = defaultNeighbourhoods,
   centreLabel = 'Pier Nine Kitchen',
-  accentColor = '#ff5a1f',
   distanceLabel = 'Distance',
   feeLabel = 'Delivery fee',
   className,
@@ -628,7 +626,6 @@ export default function ServiceAreaRings({
     .filter(({ h }) => clampRing(Math.round(h.ring) - 1) === ringIdx);
 
   const rootStyle = {
-    '--sar-accent': accentColor,
     '--px': `${r1((geo.pinX / geo.width) * 100)}%`,
     '--py': `${r1((geo.pinY / geo.height) * 100)}%`,
   } as CSSProperties;
@@ -895,15 +892,7 @@ export default function ServiceAreaRings({
 ```css
 .root {
   --sar-font: 'Instrument Sans', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
-  --sar-paper: #e1eee7;
-  --sar-paper-hi: #f2f9f5;
-  --sar-paper-deep: #d3e5dc;
-  --sar-strip: #d4e6dd;
-  --sar-card: #f6fbf8;
-  --sar-ink: #14284b;
-  --sar-ink-soft: rgba(20, 40, 75, 0.68);
-  --sar-hair: rgba(20, 40, 75, 0.2);
-  --sar-accent: #ff5a1f;
+  --accent: #ff5a1f;
   --sar-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --sar-spring: cubic-bezier(0.34, 1.45, 0.5, 1);
   --sar-play: paused;
@@ -915,9 +904,9 @@ export default function ServiceAreaRings({
   inline-size: 100%;
   overflow: hidden;
   border-radius: 18px;
-  border: 1px solid color-mix(in srgb, var(--sar-ink) 24%, transparent);
-  background: var(--sar-paper);
-  color: var(--sar-ink);
+  border: 1px solid color-mix(in srgb, #14284b 24%, transparent);
+  background: #e1eee7;
+  color: #14284b;
   font-family: var(--sar-font);
   font-variant-numeric: tabular-nums;
   -webkit-tap-highlight-color: transparent;
@@ -929,11 +918,11 @@ export default function ServiceAreaRings({
 }
 
 .root ::selection {
-  background: color-mix(in srgb, var(--sar-accent) 30%, transparent);
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .root button:focus-visible {
-  outline: 2px solid var(--sar-accent);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -944,7 +933,7 @@ export default function ServiceAreaRings({
   direction: ltr;
   overflow: hidden;
   background:
-    radial-gradient(120% 95% at var(--px, 20%) var(--py, 85%), var(--sar-paper-hi) 0%, var(--sar-paper) 52%, var(--sar-paper-deep) 100%);
+    radial-gradient(120% 95% at var(--px, 20%) var(--py, 85%), #f2f9f5 0%, #e1eee7 52%, #d3e5dc 100%);
 }
 
 .svg {
@@ -974,11 +963,11 @@ export default function ServiceAreaRings({
 /* chart ink */
 
 .strip {
-  fill: var(--sar-strip);
+  fill: #d4e6dd;
 }
 
 .baseline {
-  stroke: var(--sar-ink);
+  stroke: #14284b;
   stroke-opacity: 0.55;
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
@@ -986,19 +975,19 @@ export default function ServiceAreaRings({
 
 .crossTick {
   fill: none;
-  stroke: var(--sar-ink);
+  stroke: #14284b;
   stroke-opacity: 0.7;
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
 
 .depth {
-  fill: var(--sar-ink);
+  fill: #14284b;
 }
 
 .contour {
   fill: none;
-  stroke: var(--sar-ink);
+  stroke: #14284b;
   stroke-opacity: 0.3;
   stroke-width: 0.8;
   stroke-linejoin: round;
@@ -1007,7 +996,7 @@ export default function ServiceAreaRings({
 
 .ring {
   fill: none;
-  stroke: var(--sar-ink);
+  stroke: #14284b;
   stroke-opacity: 0.82;
   stroke-width: 1.25;
   vector-effect: non-scaling-stroke;
@@ -1015,7 +1004,7 @@ export default function ServiceAreaRings({
 
 .ticks {
   fill: none;
-  stroke: var(--sar-ink);
+  stroke: #14284b;
   stroke-opacity: 0.55;
   stroke-width: 0.9;
   vector-effect: non-scaling-stroke;
@@ -1023,7 +1012,7 @@ export default function ServiceAreaRings({
 
 .bearing {
   fill: none;
-  stroke: var(--sar-ink);
+  stroke: #14284b;
   stroke-opacity: 0.22;
   stroke-width: 0.8;
   stroke-dasharray: 2 5;
@@ -1032,14 +1021,14 @@ export default function ServiceAreaRings({
 
 .mark {
   fill: none;
-  stroke: var(--sar-ink);
+  stroke: #14284b;
   stroke-opacity: 0.34;
   stroke-width: 0.9;
   vector-effect: non-scaling-stroke;
 }
 
 .tint {
-  fill: var(--sar-accent);
+  fill: var(--accent);
   opacity: 0;
   pointer-events: none;
   transition: opacity 320ms var(--sar-ease);
@@ -1051,7 +1040,7 @@ export default function ServiceAreaRings({
 
 .edge {
   fill: none;
-  stroke: var(--sar-accent);
+  stroke: var(--accent);
   stroke-width: 2.4;
   opacity: 0;
   pointer-events: none;
@@ -1065,7 +1054,7 @@ export default function ServiceAreaRings({
 
 .ripple {
   fill: none;
-  stroke: var(--sar-accent);
+  stroke: var(--accent);
   stroke-width: 2;
   pointer-events: none;
   vector-effect: non-scaling-stroke;
@@ -1075,7 +1064,7 @@ export default function ServiceAreaRings({
 }
 
 .route {
-  stroke: var(--sar-accent);
+  stroke: var(--accent);
   stroke-width: 1.6;
   stroke-linecap: round;
   stroke-dasharray: 1;
@@ -1086,34 +1075,34 @@ export default function ServiceAreaRings({
 }
 
 .neat {
-  fill: var(--sar-ink);
+  fill: #14284b;
   fill-opacity: 0.82;
 }
 
 .neatLine {
   fill: none;
-  stroke: var(--sar-ink);
+  stroke: #14284b;
   stroke-opacity: 0.85;
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
 
 .roseSolid {
-  fill: var(--sar-ink);
-  stroke: var(--sar-ink);
+  fill: #14284b;
+  stroke: #14284b;
   stroke-width: 0.8;
   stroke-linejoin: round;
 }
 
 .roseHollow {
-  fill: var(--sar-paper-hi);
-  stroke: var(--sar-ink);
+  fill: #f2f9f5;
+  stroke: #14284b;
   stroke-width: 0.8;
   stroke-linejoin: round;
 }
 
 .halo {
-  fill: var(--sar-accent);
+  fill: var(--accent);
   fill-opacity: 0.22;
   transform-box: view-box;
   animation: sar-halo 1500ms var(--sar-ease) 520ms backwards;
@@ -1121,13 +1110,13 @@ export default function ServiceAreaRings({
 }
 
 .pinRing {
-  fill: var(--sar-accent);
-  stroke: var(--sar-paper-hi);
+  fill: var(--accent);
+  stroke: #f2f9f5;
   stroke-width: 3;
 }
 
 .pinCore {
-  fill: var(--sar-paper-hi);
+  fill: #f2f9f5;
 }
 
 .hit {
@@ -1188,7 +1177,7 @@ export default function ServiceAreaRings({
   position: absolute;
   margin: 0;
   box-sizing: border-box;
-  color: var(--sar-ink);
+  color: #14284b;
   font-size: 15px;
   font-weight: 650;
   line-height: 1.25;
@@ -1211,7 +1200,7 @@ export default function ServiceAreaRings({
   block-size: 9px;
   margin-inline-end: 9px;
   border-radius: 50%;
-  background: var(--sar-accent);
+  background: var(--accent);
   vertical-align: 0.05em;
 }
 
@@ -1223,11 +1212,11 @@ export default function ServiceAreaRings({
   gap: 8px;
   margin: 0;
   padding: 6px 12px 6px 9px;
-  border: 1px solid var(--sar-hair);
+  border: 1px solid rgba(20, 40, 75, 0.2);
   border-radius: 16px;
-  background: color-mix(in srgb, var(--sar-paper-hi) 90%, transparent);
+  background: color-mix(in srgb, #f2f9f5 90%, transparent);
   box-shadow: 0 1px 2px rgba(20, 40, 75, 0.08), 0 8px 18px -12px rgba(20, 40, 75, 0.4);
-  color: var(--sar-ink);
+  color: #14284b;
   font: inherit;
   font-size: 13px;
   font-weight: 560;
@@ -1259,8 +1248,8 @@ export default function ServiceAreaRings({
   inline-size: 10px;
   block-size: 10px;
   border-radius: 50%;
-  background: var(--sar-ink);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sar-ink) 14%, transparent);
+  background: #14284b;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #14284b 14%, transparent);
   transition:
     background-color 200ms var(--sar-ease),
     box-shadow 200ms var(--sar-ease);
@@ -1290,15 +1279,15 @@ export default function ServiceAreaRings({
 
 .hood:hover,
 .hood[data-active='true'] {
-  border-color: var(--sar-ink);
-  background: var(--sar-ink);
-  color: var(--sar-paper-hi);
+  border-color: #14284b;
+  background: #14284b;
+  color: #f2f9f5;
 }
 
 .hood:hover .hoodMark,
 .hood[data-active='true'] .hoodMark {
-  background: var(--sar-accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sar-accent) 35%, transparent);
+  background: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .hoodCompact {
@@ -1339,10 +1328,10 @@ export default function ServiceAreaRings({
   margin: 0;
   padding: 4px 11px;
   min-block-size: 28px;
-  border: 1px solid var(--sar-hair);
+  border: 1px solid rgba(20, 40, 75, 0.2);
   border-radius: 14px;
-  background: var(--sar-paper-hi);
-  color: var(--sar-ink);
+  background: #f2f9f5;
+  color: #14284b;
   font: inherit;
   font-size: 13px;
   font-weight: 600;
@@ -1363,9 +1352,9 @@ export default function ServiceAreaRings({
 
 .pill:hover,
 .pill[data-active='true'] {
-  border-color: var(--sar-ink);
-  background: var(--sar-ink);
-  color: var(--sar-paper-hi);
+  border-color: #14284b;
+  background: #14284b;
+  color: #f2f9f5;
 }
 
 /* ---------- cartouche (wide) and card (compact) ---------- */
@@ -1376,9 +1365,9 @@ export default function ServiceAreaRings({
   inset-block-start: 34px;
   box-sizing: border-box;
   padding: 22px 22px 20px;
-  border: 1px solid color-mix(in srgb, var(--sar-ink) 38%, transparent);
+  border: 1px solid color-mix(in srgb, #14284b 38%, transparent);
   border-radius: 6px;
-  background: var(--sar-card);
+  background: #f6fbf8;
   box-shadow: 0 1px 2px rgba(20, 40, 75, 0.1), 0 22px 40px -24px rgba(20, 40, 75, 0.5);
   animation: sar-cart 800ms var(--sar-ease) 1100ms backwards;
   animation-play-state: var(--sar-play);
@@ -1388,7 +1377,7 @@ export default function ServiceAreaRings({
   content: '';
   position: absolute;
   inset: 4px;
-  border: 1px solid color-mix(in srgb, var(--sar-ink) 18%, transparent);
+  border: 1px solid color-mix(in srgb, #14284b 18%, transparent);
   border-radius: 3px;
   pointer-events: none;
 }
@@ -1434,7 +1423,7 @@ export default function ServiceAreaRings({
 
 .miniArc {
   fill: none;
-  stroke: var(--sar-ink);
+  stroke: #14284b;
   stroke-opacity: 0.4;
   stroke-width: 1.4;
   stroke-linecap: round;
@@ -1445,13 +1434,13 @@ export default function ServiceAreaRings({
 }
 
 .miniArc[data-active='true'] {
-  stroke: var(--sar-accent);
+  stroke: var(--accent);
   stroke-opacity: 1;
   stroke-width: 3;
 }
 
 .miniPin {
-  fill: var(--sar-accent);
+  fill: var(--accent);
 }
 
 .swap {
@@ -1465,7 +1454,7 @@ export default function ServiceAreaRings({
   gap: 12px 28px;
   margin: 16px 0 0;
   padding: 14px 0 0;
-  border-block-start: 1px solid var(--sar-hair);
+  border-block-start: 1px solid rgba(20, 40, 75, 0.2);
 }
 
 .fact {
@@ -1474,7 +1463,7 @@ export default function ServiceAreaRings({
 
 .fact dt {
   margin: 0 0 3px;
-  color: var(--sar-ink-soft);
+  color: rgba(20, 40, 75, 0.68);
   font-size: 13px;
   font-weight: 500;
   line-height: 1.2;
@@ -1524,14 +1513,14 @@ export default function ServiceAreaRings({
   inline-size: 9px;
   block-size: 9px;
   border-radius: 50%;
-  background: var(--sar-accent);
+  background: var(--accent);
 }
 
 .card {
   box-sizing: border-box;
   padding: 18px 18px 22px;
-  border-block-start: 1px solid color-mix(in srgb, var(--sar-ink) 30%, transparent);
-  background: var(--sar-card);
+  border-block-start: 1px solid color-mix(in srgb, #14284b 30%, transparent);
+  background: #f6fbf8;
 }
 
 .card .facts {
@@ -1550,10 +1539,10 @@ export default function ServiceAreaRings({
   min-block-size: 36px;
   margin: 0;
   padding: 6px 14px;
-  border: 1px solid var(--sar-hair);
+  border: 1px solid rgba(20, 40, 75, 0.2);
   border-radius: 18px;
   background: transparent;
-  color: var(--sar-ink);
+  color: #14284b;
   font: inherit;
   font-size: 14px;
   font-weight: 600;
@@ -1567,9 +1556,9 @@ export default function ServiceAreaRings({
 }
 
 .tab[data-active='true'] {
-  border-color: var(--sar-ink);
-  background: var(--sar-ink);
-  color: var(--sar-paper-hi);
+  border-color: #14284b;
+  background: #14284b;
+  color: #f2f9f5;
 }
 
 .chips {
@@ -1591,10 +1580,10 @@ export default function ServiceAreaRings({
   max-inline-size: 100%;
   margin: 0;
   padding: 6px 13px;
-  border: 1px solid var(--sar-hair);
+  border: 1px solid rgba(20, 40, 75, 0.2);
   border-radius: 18px;
-  background: var(--sar-paper-hi);
-  color: var(--sar-ink);
+  background: #f2f9f5;
+  color: #14284b;
   font: inherit;
   font-size: 14px;
   font-weight: 540;
@@ -1610,9 +1599,9 @@ export default function ServiceAreaRings({
 
 .chip[data-active='true'],
 .chip:hover {
-  border-color: var(--sar-ink);
-  background: var(--sar-ink);
-  color: var(--sar-paper-hi);
+  border-color: #14284b;
+  background: #14284b;
+  color: #f2f9f5;
 }
 
 .card .time.timeL {

@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import type { CSSProperties, PointerEvent } from 'react';
+import type { PointerEvent } from 'react';
 import styles from './Component.module.css';
 
 export type MatBoardFrameFinish = 'oak' | 'walnut' | 'ebony' | 'white';
@@ -11,7 +11,6 @@ export interface MatBoardFrameProps {
   title?: string;
   price?: string;
   note?: string;
-  matColor?: string;
   frameFinish?: MatBoardFrameFinish;
   className?: string;
 }
@@ -83,7 +82,6 @@ export default function MatBoardFrame({
   title = 'Still Life with Tulips',
   price = '€1,450',
   note = 'Archival print on cotton rag, 50 × 62 cm, floated in an oak shadow box behind museum glass. Signed and numbered, edition of 40. Ships in five working days.',
-  matColor = '#e4e1da',
   frameFinish = 'oak',
   className,
 }: MatBoardFrameProps) {
@@ -395,7 +393,6 @@ export default function MatBoardFrame({
     <div
       ref={rootRef}
       className={cx(styles.root, hovered && styles.rootWarm, finishClass[frameFinish] ?? styles.finishOak, className)}
-      style={{ '--mb-mat': matColor } as CSSProperties}
       onPointerMove={track}
       onPointerLeave={leave}
     >

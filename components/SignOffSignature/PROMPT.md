@@ -1,22 +1,18 @@
 Create a custom element called "Sign-off Signature". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: note text, signature name, handwriting style, ink color, flourish underline, paper tone, writing speed. Add other settings if they help.
+The site owner must be able to change: note text, signature name, handwriting style, flourish underline, writing speed. Add other settings if they help.
 
 ```tsx
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { CSSProperties } from 'react';
 import styles from './Component.module.css';
 
 export type HandwritingStyle = 'elegant' | 'everyday' | 'quick';
-export type PaperTone = 'cream' | 'ivory' | 'white';
 
 export interface SignOffSignatureProps {
   note?: string;
   name?: string;
   handwritingStyle?: HandwritingStyle;
-  inkColor?: string;
   showFlourish?: boolean;
-  paperTone?: PaperTone;
   /** Writing speed multiplier: 1 = default, higher = faster. Clamped to 0.25-3. */
   speed?: number;
   className?: string;
@@ -464,9 +460,7 @@ export default function SignOffSignature({
   note = DEFAULT_NOTE,
   name = 'Amelia Hart',
   handwritingStyle = 'elegant',
-  inkColor = '#2c2a63',
   showFlourish = true,
-  paperTone = 'cream',
   speed = 1,
   className,
 }: SignOffSignatureProps) {
@@ -531,6 +525,7 @@ export default function SignOffSignature({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.scale(dpr, dpr);
+    const inkColor = getComputedStyle(canvas).color;
 
     if (reduced || !inView) {
       if (reduced) drawFrame(ctx, timeline.beats, Infinity, timeline.total, layout, inkColor);
@@ -552,16 +547,10 @@ export default function SignOffSignature({
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [layout, timeline, inkColor, reduced, inView, rate]);
-
-  const rootStyle = { '--sos-ink': inkColor } as CSSProperties;
+  }, [layout, timeline, reduced, inView, rate]);
 
   return (
-    <article
-      className={`${styles.root}${className ? ` ${className}` : ''}`}
-      data-tone={paperTone}
-      style={rootStyle}
-    >
+    <article className={`${styles.root}${className ? ` ${className}` : ''}`}>
       {note ? <p className={styles.note}>{note}</p> : null}
       {layout ? (
         <div className={styles.sigWrap} ref={wrapRef}>
@@ -584,11 +573,6 @@ export default function SignOffSignature({
 /* SignOffSignature — fountain-pen letter on laid paper. */
 
 .root {
-  --sos-paper: #f7efdf;
-  --sos-paper-deep: #efe4cc;
-  --sos-edge: rgba(74, 60, 24, 0.14);
-  --sos-note-ink: #38332b;
-  --sos-ink: #2c2a63;
   --sos-font-note: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Times New Roman', serif;
 
   position: relative;
@@ -599,18 +583,26 @@ export default function SignOffSignature({
   padding: clamp(26px, 5.5%, 46px);
   box-sizing: border-box;
   border-radius: 3px;
-  border: 1px solid var(--sos-edge);
-  background:
-    radial-gradient(130% 90% at 18% 0%, rgba(255, 253, 244, 0.55), rgba(255, 253, 244, 0) 62%),
-    repeating-linear-gradient(180deg, rgba(74, 60, 24, 0.028) 0 1px, rgba(0, 0, 0, 0) 1px 7px),
-    repeating-linear-gradient(90deg, rgba(74, 60, 24, 0.034) 0 1px, rgba(0, 0, 0, 0) 1px 29px),
-    linear-gradient(160deg, var(--sos-paper) 0%, var(--sos-paper-deep) 100%);
+  border: 1px solid rgba(74, 60, 24, 0.14);
+  background: linear-gradient(160deg, #f7efdf 0%, #efe4cc 100%);
   box-shadow:
     0 1px 2px rgba(46, 36, 14, 0.1),
     0 26px 56px -30px rgba(46, 36, 14, 0.4);
   transform: rotate(-0.35deg);
   overflow: hidden;
-  color: var(--sos-note-ink);
+  color: #38332b;
+}
+
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(130% 90% at 18% 0%, rgba(255, 253, 244, 0.55), rgba(255, 253, 244, 0) 62%),
+    repeating-linear-gradient(180deg, rgba(74, 60, 24, 0.028) 0 1px, rgba(0, 0, 0, 0) 1px 7px),
+    repeating-linear-gradient(90deg, rgba(74, 60, 24, 0.034) 0 1px, rgba(0, 0, 0, 0) 1px 29px);
 }
 
 /* Paper grain, kept very quiet. */
@@ -624,21 +616,9 @@ export default function SignOffSignature({
   background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
 }
 
-.root[data-tone='ivory'] {
-  --sos-paper: #fbf7ec;
-  --sos-paper-deep: #f3ecda;
-  --sos-edge: rgba(74, 60, 24, 0.1);
-}
-
-.root[data-tone='white'] {
-  --sos-paper: #fdfcf8;
-  --sos-paper-deep: #f6f3ea;
-  --sos-edge: rgba(74, 60, 24, 0.09);
-}
-
 .root::selection {
-  background: var(--sos-ink);
-  color: var(--sos-paper);
+  background: #2c2a63;
+  color: #f7efdf;
 }
 
 .note {
@@ -650,7 +630,7 @@ export default function SignOffSignature({
   letter-spacing: 0.004em;
   white-space: pre-line;
   text-wrap: pretty;
-  color: var(--sos-note-ink);
+  color: #38332b;
   animation: sos-note-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.25s both;
 }
 
@@ -662,6 +642,7 @@ export default function SignOffSignature({
 }
 
 .sig {
+  color: #2c2a63;
   display: block;
   flex: none;
 }

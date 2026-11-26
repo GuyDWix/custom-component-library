@@ -11,10 +11,6 @@ export interface RedlineRevisionTextProps {
   segments?: RedlineSegment[];
   label?: string;
   note?: string;
-  textColor?: string;
-  strikeColor?: string;
-  insertColor?: string;
-  paperColor?: string;
   className?: string;
 }
 
@@ -59,10 +55,6 @@ export default function RedlineRevisionText({
   segments = defaultSegments,
   label = 'Galley proof · Homepage, line 1',
   note = 'Sharper. Ship it. — R.',
-  textColor = '#26282d',
-  strikeColor = '#e23d1a',
-  insertColor = '#1e3fae',
-  paperColor = '#fcfbf6',
   className,
 }: RedlineRevisionTextProps) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -130,10 +122,6 @@ export default function RedlineRevisionText({
   const run = phase === 'run';
   const idle = phase === 'idle';
   const rootStyle = {
-    '--rrt-text': textColor,
-    '--rrt-strike': strikeColor,
-    '--rrt-insert': insertColor,
-    '--rrt-paper': paperColor,
     '--rrt-play': visible ? 'running' : 'paused',
     '--rrt-scale': typeScale(finalText.length).toFixed(3),
   } as CSSProperties;

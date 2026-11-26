@@ -1,6 +1,6 @@
 Create a custom element called "Radial Contact Fan". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: actions (label, icon, link), main button label, button color, fan direction, heading and note, brass edge color. Add other settings if they help.
+The site owner must be able to change: actions (label, icon, link), main button label, fan direction, heading and note. Add other settings if they help.
 
 ```tsx
 import { useEffect, useId, useRef, useState } from 'react';
@@ -21,8 +21,6 @@ export interface RadialContactFanProps {
   mainLabel?: string;
   heading?: string;
   note?: string;
-  buttonColor?: string;
-  accentColor?: string;
   fanDirection?: RadialContactFanDirection;
   className?: string;
 }
@@ -90,8 +88,6 @@ export default function RadialContactFan({
   mainLabel = 'Contact the desk',
   heading = 'Anything you need, at the front desk.',
   note = 'Hotel Marlowe · open all hours · Rua das Flores 18, Lisbon',
-  buttonColor = '#14213f',
-  accentColor = '#b98b46',
   fanDirection = 'bottom-right',
   className,
 }: RadialContactFanProps) {
@@ -171,14 +167,12 @@ export default function RadialContactFan({
     els[next].focus();
   };
 
-  const rootStyle = { '--rcf-navy': buttonColor, '--rcf-brass': accentColor } as CSSProperties;
   const state = open ? 'true' : 'false';
 
   return (
     <div
       ref={rootRef}
       className={[styles.root, className].filter(Boolean).join(' ')}
-      style={rootStyle}
       onKeyDown={onKeyDown}
     >
       <div className={styles.frame}>
@@ -297,18 +291,6 @@ export default function RadialContactFan({
 }
 
 .root {
-  --rcf-navy: #14213f;
-  --rcf-brass: #b98b46;
-  --rcf-navy-hi: color-mix(in srgb, var(--rcf-navy) 62%, #7f93cf);
-  --rcf-navy-lo: color-mix(in srgb, var(--rcf-navy) 68%, #000);
-  --rcf-brass-hi: color-mix(in srgb, var(--rcf-brass) 45%, #fff3d1);
-  --rcf-brass-lo: color-mix(in srgb, var(--rcf-brass) 62%, #2e1f08);
-  --rcf-ivory: #f6f1e6;
-  --rcf-ivory-hi: #fffdf8;
-  --rcf-ivory-lo: #e8dfca;
-  --rcf-ink: color-mix(in srgb, var(--rcf-navy) 82%, #000);
-  --rcf-muted: color-mix(in srgb, var(--rcf-navy) 66%, var(--rcf-ivory));
-  --rcf-hair: color-mix(in srgb, var(--rcf-brass) 42%, transparent);
   --rcf-font-display: 'Bricolage Grotesque', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --rcf-font-ui: 'Instrument Sans', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --rcf-spring: cubic-bezier(0.34, 1.2, 0.5, 1);
@@ -318,7 +300,7 @@ export default function RadialContactFan({
   box-sizing: border-box;
   inline-size: 100%;
   font-family: var(--rcf-font-ui);
-  color: var(--rcf-ink);
+  color: color-mix(in srgb, #14213f 82%, #000);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -355,14 +337,21 @@ export default function RadialContactFan({
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   border-radius: clamp(22px, 3.4cqi, 36px);
-  background:
-    radial-gradient(90% 70% at 8% 0%, var(--rcf-ivory-hi) 0%, transparent 62%),
-    linear-gradient(168deg, var(--rcf-ivory) 0%, var(--rcf-ivory-lo) 100%);
+  background: linear-gradient(168deg, #f6f1e6 0%, #e8dfca 100%);
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--rcf-brass) 18%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, #b98b46 18%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.7),
     0 1px 2px rgba(20, 24, 40, 0.08),
     0 28px 56px -28px rgba(20, 24, 40, 0.4);
+}
+
+.frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(90% 70% at 8% 0%, #fffdf8 0%, transparent 62%);
+  pointer-events: none;
 }
 
 @container (min-width: 760px) {
@@ -385,7 +374,7 @@ export default function RadialContactFan({
 }
 
 .light {
-  background: radial-gradient(60% 55% at 100% 100%, color-mix(in srgb, var(--rcf-navy) 9%, transparent) 0%, transparent 70%);
+  background: radial-gradient(60% 55% at 100% 100%, color-mix(in srgb, #14213f 9%, transparent) 0%, transparent 70%);
 }
 
 /* ---------- headline block ---------- */
@@ -422,7 +411,7 @@ export default function RadialContactFan({
   font-size: clamp(1.75rem, 4.6cqi, 3.75rem);
   line-height: 1.04;
   letter-spacing: -0.03em;
-  color: var(--rcf-ink);
+  color: color-mix(in srgb, #14213f 82%, #000);
   text-wrap: balance;
   overflow-wrap: normal;
   word-break: normal;
@@ -435,7 +424,7 @@ export default function RadialContactFan({
   line-height: 1.5;
   font-weight: 450;
   letter-spacing: 0.01em;
-  color: var(--rcf-muted);
+  color: color-mix(in srgb, #14213f 66%, #f6f1e6);
   text-wrap: pretty;
 }
 
@@ -443,8 +432,8 @@ export default function RadialContactFan({
 .note::selection,
 .label::selection,
 .mainLabel::selection {
-  background: var(--rcf-brass);
-  color: var(--rcf-navy-lo);
+  background: #b98b46;
+  color: color-mix(in srgb, #14213f 68%, #000);
 }
 
 /* ---------- stage: the fan lives here ---------- */
@@ -556,10 +545,10 @@ export default function RadialContactFan({
 
 .bloom {
   inline-size: calc((var(--r) + var(--ad) / 2 + 30px) * 2);
-  background: radial-gradient(circle at center, var(--rcf-navy) 0%, var(--rcf-navy) 30%, var(--rcf-navy-lo) 100%);
+  background: radial-gradient(circle at center, #14213f 0%, #14213f 30%, color-mix(in srgb, #14213f 68%, #000) 100%);
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.1),
-    0 30px 70px -24px color-mix(in srgb, var(--rcf-navy) 60%, transparent);
+    0 30px 70px -24px color-mix(in srgb, #14213f 60%, transparent);
   scale: 0.04;
   opacity: 0;
   visibility: hidden;
@@ -633,7 +622,7 @@ export default function RadialContactFan({
   border: 0;
   border-radius: 50%;
   background: none;
-  color: var(--rcf-ivory-hi);
+  color: #fffdf8;
   cursor: pointer;
   touch-action: manipulation;
   outline: none;
@@ -641,7 +630,7 @@ export default function RadialContactFan({
 
 .pulse {
   inset: calc(var(--md) * -0.14);
-  border: 1px solid var(--rcf-brass);
+  border: 1px solid #b98b46;
   opacity: 0;
   animation: rcfPulse 2600ms cubic-bezier(0.2, 0.6, 0.3, 1) 1200ms 2 both;
 }
@@ -690,8 +679,8 @@ export default function RadialContactFan({
 
 .main:focus-visible {
   box-shadow:
-    0 0 0 3px var(--rcf-ivory-hi),
-    0 0 0 6px var(--rcf-navy);
+    0 0 0 3px #fffdf8,
+    0 0 0 6px #14213f;
 }
 
 .mainBody,
@@ -703,7 +692,7 @@ export default function RadialContactFan({
 }
 
 .mainBody {
-  background: radial-gradient(120% 120% at 28% 14%, var(--rcf-navy-hi) 0%, var(--rcf-navy) 52%, var(--rcf-navy-lo) 100%);
+  background: radial-gradient(120% 120% at 28% 14%, color-mix(in srgb, #14213f 62%, #7f93cf) 0%, #14213f 52%, color-mix(in srgb, #14213f 68%, #000) 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
     inset 0 -10px 18px rgba(0, 0, 0, 0.28);
@@ -722,7 +711,7 @@ export default function RadialContactFan({
   position: absolute;
   inline-size: 40%;
   block-size: 40%;
-  color: var(--rcf-ivory-hi);
+  color: #fffdf8;
   transition:
     rotate 560ms var(--rcf-out),
     scale 560ms var(--rcf-out),
@@ -761,9 +750,9 @@ export default function RadialContactFan({
   inline-size: max-content;
   padding: 8px 14px;
   border-radius: 999px;
-  background: var(--rcf-ivory-hi);
+  background: #fffdf8;
   border: 1px solid rgba(20, 24, 40, 0.08);
-  color: var(--rcf-ink);
+  color: color-mix(in srgb, #14213f 82%, #000);
   font-family: var(--rcf-font-ui);
   font-size: 0.875rem;
   line-height: 1.2;
@@ -883,7 +872,7 @@ export default function RadialContactFan({
   border: 0;
   border-radius: 50%;
   background: none;
-  color: var(--rcf-ink);
+  color: color-mix(in srgb, #14213f 82%, #000);
   text-decoration: none;
   cursor: pointer;
   outline: none;
@@ -913,7 +902,7 @@ export default function RadialContactFan({
 }
 
 .discBody {
-  background: radial-gradient(120% 120% at 30% 14%, var(--rcf-ivory-hi) 0%, var(--rcf-ivory) 58%, var(--rcf-ivory-lo) 100%);
+  background: radial-gradient(120% 120% at 30% 14%, #fffdf8 0%, #f6f1e6 58%, #e8dfca 100%);
   box-shadow: inset 0 -5px 9px rgba(120, 90, 40, 0.1);
 }
 
@@ -925,7 +914,7 @@ export default function RadialContactFan({
   position: relative;
   inline-size: 46%;
   block-size: 46%;
-  color: var(--rcf-navy);
+  color: #14213f;
   stroke-width: 1.6;
 }
 
@@ -936,8 +925,8 @@ export default function RadialContactFan({
 
 .item:focus-visible {
   box-shadow:
-    0 0 0 3px var(--rcf-ivory-hi),
-    0 0 0 6px var(--rcf-navy);
+    0 0 0 3px #fffdf8,
+    0 0 0 6px #14213f;
 }
 
 @media (hover: hover) {

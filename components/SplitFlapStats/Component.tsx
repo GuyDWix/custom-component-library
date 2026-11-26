@@ -9,9 +9,6 @@ export interface SplitFlapStat {
 
 export interface SplitFlapStatsProps {
   stats?: SplitFlapStat[];
-  boardColor?: string;
-  digitColor?: string;
-  lampColor?: string;
   className?: string;
 }
 
@@ -195,9 +192,6 @@ const BOARD_HELP = 'Hover or focus a figure to replay its flip.';
 
 export default function SplitFlapStats({
   stats = defaultStats,
-  boardColor = '#26282c',
-  digitColor = '#ece5d3',
-  lampColor = '#f0a23c',
   className,
 }: SplitFlapStatsProps) {
   const rows = (stats.length > 0 ? stats : defaultStats).slice(0, 4).map((s) => {
@@ -306,11 +300,6 @@ export default function SplitFlapStats({
     relight(i, lastLanding(i, 'replay') + 220);
   };
 
-  const rootStyle = {
-    '--sf-flap': boardColor,
-    '--sf-digit': digitColor,
-    '--sf-amber': lampColor,
-  } as CSSProperties;
 
   const boardStyle = {
     '--sf-wide-cols': wideCols,
@@ -325,7 +314,6 @@ export default function SplitFlapStats({
     <section
       ref={rootRef}
       className={cx(styles.root, className)}
-      style={rootStyle}
       aria-label="Key figures"
       aria-description={BOARD_HELP}
     >

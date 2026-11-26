@@ -1,10 +1,10 @@
 Create a custom element called "Stitched Compare". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: before image, before image description, before label, after image, after image description, after label, thread colour. Add other settings if they help.
+The site owner must be able to change: before image, before image description, before label, after image, after image description, after label. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
+import type { KeyboardEvent, PointerEvent } from 'react';
 import styles from './Component.module.css';
 
 export interface StitchedCompareProps {
@@ -14,7 +14,6 @@ export interface StitchedCompareProps {
   afterImage?: string;
   afterAlt?: string;
   afterLabel?: string;
-  threadColor?: string;
   className?: string;
 }
 
@@ -36,7 +35,6 @@ export default function StitchedCompare({
   afterImage = 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=1400&h=900&fit=crop&auto=format&q=80',
   afterAlt = 'The restored armchair after the re-upholstery refresh',
   afterLabel = 'After — restyled & re-upholstered',
-  threadColor = '#9b2d2b',
   className,
 }: StitchedCompareProps) {
   const [reduced, setReduced] = useState(false);
@@ -204,7 +202,6 @@ export default function StitchedCompare({
     }
   };
 
-  const rootStyle = { '--sc-thread': threadColor } as CSSProperties;
 
   const renderLayer = (
     side: 'Before' | 'After',
@@ -225,7 +222,7 @@ export default function StitchedCompare({
   );
 
   return (
-    <div ref={rootRef} className={cx(styles.root, className)} style={rootStyle}>
+    <div ref={rootRef} className={cx(styles.root, className)}>
       <div
         ref={plateRef}
         className={styles.plate}
@@ -270,9 +267,7 @@ export default function StitchedCompare({
 
 ```css
 .root {
-  --sc-thread: #9b2d2b;
-  --sc-thread-hi: color-mix(in srgb, var(--sc-thread) 55%, #fff1e4);
-  --sc-ink: #24201b;
+  --thread: #9b2d2b;
   --sc-gap: 10px;
 
   position: relative;
@@ -283,7 +278,7 @@ export default function StitchedCompare({
   padding: clamp(12px, 3cqw, 28px);
   border-radius: 20px;
   overflow: clip;
-  color: var(--sc-ink);
+  color: #24201b;
   background: linear-gradient(180deg, #f6f3ee 0%, #ebe6dd 100%);
   box-shadow:
     inset 0 0 0 1px rgba(60, 48, 32, 0.1),
@@ -416,7 +411,7 @@ export default function StitchedCompare({
 }
 
 .stitch {
-  stroke: var(--sc-thread);
+  stroke: var(--thread);
   stroke-width: 2.2px;
 }
 
@@ -426,7 +421,7 @@ export default function StitchedCompare({
 }
 
 .stitchSheen {
-  stroke: var(--sc-thread-hi);
+  stroke: color-mix(in srgb, var(--thread) 55%, #fff1e4);
   stroke-width: 0.7px;
   opacity: 0.75;
 }
@@ -458,7 +453,7 @@ export default function StitchedCompare({
   outline: 2px solid #fff;
   outline-offset: 3px;
   box-shadow:
-    0 0 0 5px color-mix(in srgb, var(--sc-thread) 80%, #000),
+    0 0 0 5px color-mix(in srgb, var(--thread) 80%, #000),
     0 6px 14px -4px rgba(20, 14, 6, 0.45);
 }
 

@@ -12,7 +12,6 @@ export interface MarkerHighlightHeadlineProps {
   headline?: string;
   markedWords?: MarkedWord[];
   markStyle?: MarkStyle;
-  markerColor?: string;
   kicker?: string;
   className?: string;
 }
@@ -121,7 +120,6 @@ export default function MarkerHighlightHeadline({
   headline = 'Good work is honest, useful and quietly unforgettable.',
   markedWords = defaultMarkedWords,
   markStyle = 'highlight',
-  markerColor = '#c9f23a',
   kicker = 'Studio notes · No. 12',
   className,
 }: MarkerHighlightHeadlineProps) {
@@ -200,11 +198,10 @@ export default function MarkerHighlightHeadline({
     return () => io.disconnect();
   }, [drawn]);
 
-  const rootStyle = { '--mh-marker': markerColor } as CSSProperties;
   const strokeClass = markStyle === 'highlight' ? styles.brush : styles.pen;
 
   return (
-    <div className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
+    <div className={[styles.root, className].filter(Boolean).join(' ')}>
       <span className={styles.grain} aria-hidden="true" />
       <div className={styles.inner}>
         {kicker && <p className={styles.kicker}>{kicker}</p>}

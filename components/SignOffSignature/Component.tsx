@@ -1,17 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { CSSProperties } from 'react';
 import styles from './Component.module.css';
 
 export type HandwritingStyle = 'elegant' | 'everyday' | 'quick';
-export type PaperTone = 'cream' | 'ivory' | 'white';
 
 export interface SignOffSignatureProps {
   note?: string;
   name?: string;
   handwritingStyle?: HandwritingStyle;
-  inkColor?: string;
   showFlourish?: boolean;
-  paperTone?: PaperTone;
   /** Writing speed multiplier: 1 = default, higher = faster. Clamped to 0.25-3. */
   speed?: number;
   className?: string;
@@ -459,9 +455,7 @@ export default function SignOffSignature({
   note = DEFAULT_NOTE,
   name = 'Amelia Hart',
   handwritingStyle = 'elegant',
-  inkColor = '#2c2a63',
   showFlourish = true,
-  paperTone = 'cream',
   speed = 1,
   className,
 }: SignOffSignatureProps) {
@@ -526,6 +520,7 @@ export default function SignOffSignature({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.scale(dpr, dpr);
+    const inkColor = getComputedStyle(canvas).color;
 
     if (reduced || !inView) {
       if (reduced) drawFrame(ctx, timeline.beats, Infinity, timeline.total, layout, inkColor);
@@ -547,16 +542,10 @@ export default function SignOffSignature({
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [layout, timeline, inkColor, reduced, inView, rate]);
-
-  const rootStyle = { '--sos-ink': inkColor } as CSSProperties;
+  }, [layout, timeline, reduced, inView, rate]);
 
   return (
-    <article
-      className={`${styles.root}${className ? ` ${className}` : ''}`}
-      data-tone={paperTone}
-      style={rootStyle}
-    >
+    <article className={`${styles.root}${className ? ` ${className}` : ''}`}>
       {note ? <p className={styles.note}>{note}</p> : null}
       {layout ? (
         <div className={styles.sigWrap} ref={wrapRef}>

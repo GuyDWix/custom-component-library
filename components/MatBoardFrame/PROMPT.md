@@ -1,10 +1,10 @@
 Create a custom element called "Mat Board Frame". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: image (or text shown when there is no image), plaque title, price, plaque note, mat color, frame finish (oak, walnut, ebony, white). Add other settings if they help.
+The site owner must be able to change: image (or text shown when there is no image), plaque title, price, plaque note, frame finish (oak, walnut, ebony, white). Add other settings if they help.
 
 ```tsx
 import { useEffect, useId, useRef, useState } from 'react';
-import type { CSSProperties, PointerEvent } from 'react';
+import type { PointerEvent } from 'react';
 import styles from './Component.module.css';
 
 export type MatBoardFrameFinish = 'oak' | 'walnut' | 'ebony' | 'white';
@@ -16,7 +16,6 @@ export interface MatBoardFrameProps {
   title?: string;
   price?: string;
   note?: string;
-  matColor?: string;
   frameFinish?: MatBoardFrameFinish;
   className?: string;
 }
@@ -88,7 +87,6 @@ export default function MatBoardFrame({
   title = 'Still Life with Tulips',
   price = '€1,450',
   note = 'Archival print on cotton rag, 50 × 62 cm, floated in an oak shadow box behind museum glass. Signed and numbered, edition of 40. Ships in five working days.',
-  matColor = '#e4e1da',
   frameFinish = 'oak',
   className,
 }: MatBoardFrameProps) {
@@ -400,7 +398,6 @@ export default function MatBoardFrame({
     <div
       ref={rootRef}
       className={cx(styles.root, hovered && styles.rootWarm, finishClass[frameFinish] ?? styles.finishOak, className)}
-      style={{ '--mb-mat': matColor } as CSSProperties}
       onPointerMove={track}
       onPointerLeave={leave}
     >
@@ -511,22 +508,7 @@ export default function MatBoardFrame({
 }
 
 .root {
-  --mb-mat: #e4e1da;
-  --mb-wall: #1b2127;
-  --mb-wall-deep: #0d1014;
-  --mb-light-cool: #dfe7ff;
-  --mb-light-warm: #ffd29a;
-  --mb-wood: #b98a55;
-  --mb-wood-hi: #e2bf8c;
-  --mb-wood-lo: #6e4b27;
-  --mb-paper: #f3f1ec;
-  --mb-plaque-ink: #f2f4f7;
-  --mb-plaque-soft: rgba(226, 233, 242, 0.74);
-  --mb-focus: #ffd29a;
   --mb-font: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --mb-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  --mb-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='40'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.01 .6' numOctaves='3' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0 0.02  0 0 0 1.4 -0.4'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
-  --mb-light: color-mix(in oklab, var(--mb-light-cool), var(--mb-light-warm) calc(var(--mbf-heat) * 100%));
 
   position: relative;
   isolation: isolate;
@@ -535,49 +517,88 @@ export default function MatBoardFrame({
   box-sizing: border-box;
   inline-size: 100%;
   border-radius: 24px;
-  background:
-    radial-gradient(90% 80% at 40% 45%, transparent 30%, rgba(4, 5, 7, 0.55) 100%),
-    linear-gradient(180deg, color-mix(in srgb, var(--mb-wall) 75%, #000) 0%, var(--mb-wall) 45%, var(--mb-wall-deep) 100%);
-  color: var(--mb-plaque-ink);
+  background: linear-gradient(180deg, color-mix(in srgb, #1b2127 75%, #000) 0%, #1b2127 45%, #0d1014 100%);
+  color: #f2f4f7;
   font-family: var(--mb-font);
   transition: --mbf-heat 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(90% 80% at 40% 45%, transparent 30%, rgba(4, 5, 7, 0.55) 100%);
+  pointer-events: none;
 }
 
 .rootWarm {
   --mbf-heat: 1;
 }
 
-.finishOak {
-  --mb-wood: #b98a55;
-  --mb-wood-hi: #e6c592;
-  --mb-wood-lo: #6b4824;
+.finishOak :is(.sideTop,.sideBottom,.sideLeft,.sideRight) {
+  background-color: #b98a55;
 }
 
-.finishWalnut {
-  --mb-wood: #5c3a23;
-  --mb-wood-hi: #93664a;
-  --mb-wood-lo: #2c1a0e;
+.finishOak .face {
+  background:
+    linear-gradient(225deg, #e6c592 0%, transparent 38%),
+    linear-gradient(45deg, #6b4824 0%, transparent 45%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='40'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.01 .6' numOctaves='3' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0 0.02  0 0 0 1.4 -0.4'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>"),
+    #b98a55;
+  background-size: auto, auto, 300px 30px, auto;
+  background-blend-mode: soft-light, multiply, multiply, normal;
 }
 
-.finishEbony {
-  --mb-wood: #1a1a1b;
-  --mb-wood-hi: #57575c;
-  --mb-wood-lo: #050505;
-  --mb-grain: var(--mb-noise);
+.finishWalnut :is(.sideTop,.sideBottom,.sideLeft,.sideRight) {
+  background-color: #5c3a23;
 }
 
-.finishWhite {
-  --mb-wood: #e9e8e4;
-  --mb-wood-hi: #ffffff;
-  --mb-wood-lo: #a9a8a2;
-  --mb-grain: var(--mb-noise);
+.finishWalnut .face {
+  background:
+    linear-gradient(225deg, #93664a 0%, transparent 38%),
+    linear-gradient(45deg, #2c1a0e 0%, transparent 45%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='40'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.01 .6' numOctaves='3' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0 0.02  0 0 0 1.4 -0.4'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>"),
+    #5c3a23;
+  background-size: auto, auto, 300px 30px, auto;
+  background-blend-mode: soft-light, multiply, multiply, normal;
+}
+
+.finishEbony :is(.sideTop,.sideBottom,.sideLeft,.sideRight) {
+  background-color: #1a1a1b;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+.finishEbony .face {
+  background:
+    linear-gradient(225deg, #57575c 0%, transparent 38%),
+    linear-gradient(45deg, #050505 0%, transparent 45%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    #1a1a1b;
+  background-size: auto, auto, 300px 30px, auto;
+  background-blend-mode: soft-light, multiply, multiply, normal;
+}
+
+.finishWhite :is(.sideTop,.sideBottom,.sideLeft,.sideRight) {
+  background-color: #e9e8e4;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+.finishWhite .face {
+  background:
+    linear-gradient(225deg, #ffffff 0%, transparent 38%),
+    linear-gradient(45deg, #a9a8a2 0%, transparent 45%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    #e9e8e4;
+  background-size: auto, auto, 300px 30px, auto;
+  background-blend-mode: soft-light, multiply, multiply, normal;
 }
 
 .wallTexture {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background-image: var(--mb-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.16;
   mix-blend-mode: overlay;
   pointer-events: none;
@@ -591,8 +612,8 @@ export default function MatBoardFrame({
   inline-size: var(--mb-pool-w, 900px);
   block-size: var(--mb-pool-h, 600px);
   background:
-    radial-gradient(closest-side at 54% 46%, color-mix(in srgb, var(--mb-light) 52%, transparent) 0%,
-      color-mix(in srgb, var(--mb-light) 40%, transparent) 50%, color-mix(in srgb, var(--mb-light) 12%, transparent) 72%, transparent 92%);
+    radial-gradient(closest-side at 54% 46%, color-mix(in srgb, color-mix(in oklab, #dfe7ff, #ffd29a calc(var(--mbf-heat) * 100%)) 52%, transparent) 0%,
+      color-mix(in srgb, color-mix(in oklab, #dfe7ff, #ffd29a calc(var(--mbf-heat) * 100%)) 40%, transparent) 50%, color-mix(in srgb, color-mix(in oklab, #dfe7ff, #ffd29a calc(var(--mbf-heat) * 100%)) 12%, transparent) 72%, transparent 92%);
   mix-blend-mode: screen;
   pointer-events: none;
   transform-origin: 60% 30%;
@@ -622,9 +643,9 @@ export default function MatBoardFrame({
   inset: 0;
   clip-path: polygon(calc(50% - 9px) 0, calc(50% + 9px) 0, 100% 100%, 0 100%);
   background:
-    radial-gradient(60% 50% at 50% 0%, color-mix(in srgb, var(--mb-light) 50%, transparent), transparent 70%),
-    linear-gradient(180deg, color-mix(in srgb, var(--mb-light) 42%, transparent) 0%,
-      color-mix(in srgb, var(--mb-light) 16%, transparent) 40%, color-mix(in srgb, var(--mb-light) 5%, transparent) 62%, transparent 80%);
+    radial-gradient(60% 50% at 50% 0%, color-mix(in srgb, color-mix(in oklab, #dfe7ff, #ffd29a calc(var(--mbf-heat) * 100%)) 50%, transparent), transparent 70%),
+    linear-gradient(180deg, color-mix(in srgb, color-mix(in oklab, #dfe7ff, #ffd29a calc(var(--mbf-heat) * 100%)) 42%, transparent) 0%,
+      color-mix(in srgb, color-mix(in oklab, #dfe7ff, #ffd29a calc(var(--mbf-heat) * 100%)) 16%, transparent) 40%, color-mix(in srgb, color-mix(in oklab, #dfe7ff, #ffd29a calc(var(--mbf-heat) * 100%)) 5%, transparent) 62%, transparent 80%);
   -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 70%, transparent 100%);
   mask-image: linear-gradient(90deg, transparent 0%, #000 30%, #000 70%, transparent 100%);
 }
@@ -678,8 +699,8 @@ export default function MatBoardFrame({
 .sideLeft,
 .sideRight {
   position: absolute;
-  background-color: var(--mb-wood);
-  background-image: var(--mb-grain);
+  background-color: #b98a55;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='40'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.01 .6' numOctaves='3' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0 0.02  0 0 0 1.4 -0.4'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
   background-size: 300px 30px;
   background-blend-mode: multiply;
 }
@@ -730,13 +751,13 @@ export default function MatBoardFrame({
   position: absolute;
   inset: 0;
   transform: translateZ(calc(var(--depth) * -1));
-  background-color: var(--mb-mat);
+  background-color: #e4e1da;
   background-image:
     linear-gradient(180deg, rgba(8, 10, 14, 0.62) 0%, rgba(8, 10, 14, 0.18) 7%, transparent 16%),
     linear-gradient(270deg, rgba(8, 10, 14, 0.38) 0%, transparent 9%),
-    radial-gradient(90% 70% at 70% 14%, color-mix(in srgb, var(--mb-light) 55%, transparent), transparent 70%),
+    radial-gradient(90% 70% at 70% 14%, color-mix(in srgb, color-mix(in oklab, #dfe7ff, #ffd29a calc(var(--mbf-heat) * 100%)) 55%, transparent), transparent 70%),
     linear-gradient(205deg, transparent 25%, rgba(10, 14, 20, 0.55) 100%),
-    var(--mb-noise);
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   background-blend-mode: normal, normal, soft-light, normal, multiply;
 }
 
@@ -745,7 +766,7 @@ export default function MatBoardFrame({
 .wallLeft,
 .wallRight {
   position: absolute;
-  background-color: var(--mb-mat);
+  background-color: #e4e1da;
 }
 
 .wallTop {
@@ -764,7 +785,7 @@ export default function MatBoardFrame({
   transform-origin: 50% 100%;
   transform: rotateX(90deg);
   background-image:
-    linear-gradient(0deg, color-mix(in srgb, var(--mb-light) 18%, transparent) 0%, rgba(10, 12, 16, 0.1) 45%, rgba(10, 12, 16, 0.45) 100%),
+    linear-gradient(0deg, color-mix(in srgb, color-mix(in oklab, #dfe7ff, #ffd29a calc(var(--mbf-heat) * 100%)) 18%, transparent) 0%, rgba(10, 12, 16, 0.1) 45%, rgba(10, 12, 16, 0.45) 100%),
     linear-gradient(90deg, rgba(10, 12, 16, 0.4), transparent 55%);
 }
 
@@ -776,7 +797,7 @@ export default function MatBoardFrame({
   transform: rotateY(90deg);
   background-image:
     linear-gradient(180deg, rgba(6, 8, 12, 0.55) 0%, transparent 18%, transparent 80%, rgba(6, 8, 12, 0.18) 100%),
-    linear-gradient(90deg, color-mix(in srgb, var(--mb-light) 14%, transparent) 0%, rgba(10, 12, 16, 0.12) 45%, rgba(10, 12, 16, 0.5) 100%);
+    linear-gradient(90deg, color-mix(in srgb, color-mix(in oklab, #dfe7ff, #ffd29a calc(var(--mbf-heat) * 100%)) 14%, transparent) 0%, rgba(10, 12, 16, 0.12) 45%, rgba(10, 12, 16, 0.5) 100%);
 }
 
 .wallRight {
@@ -803,8 +824,8 @@ export default function MatBoardFrame({
   display: grid;
   overflow: hidden;
   padding: 4.5%;
-  background: var(--mb-paper);
-  background-image: var(--mb-noise);
+  background: #f3f1ec;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   background-blend-mode: multiply;
   box-shadow:
     inset 0 0 0 0.5px rgba(0, 0, 0, 0.18),
@@ -840,7 +861,7 @@ export default function MatBoardFrame({
 .title::selection,
 .price::selection,
 .note::selection {
-  background: color-mix(in srgb, var(--mb-light-warm) 55%, transparent);
+  background: color-mix(in srgb, #ffd29a 55%, transparent);
   color: #0d1014;
 }
 
@@ -849,7 +870,7 @@ export default function MatBoardFrame({
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(130% 100% at 85% 0%, color-mix(in srgb, var(--mb-light) 22%, transparent) 0%, transparent 55%),
+    radial-gradient(130% 100% at 85% 0%, color-mix(in srgb, color-mix(in oklab, #dfe7ff, #ffd29a calc(var(--mbf-heat) * 100%)) 22%, transparent) 0%, transparent 55%),
     linear-gradient(205deg, transparent 35%, rgba(8, 10, 16, 0.42) 100%),
     linear-gradient(180deg, rgba(8, 10, 16, 0.28) 0%, transparent 10%);
   mix-blend-mode: soft-light;
@@ -863,7 +884,7 @@ export default function MatBoardFrame({
   transform: translateZ(-1px);
   background:
     radial-gradient(22% 16% at calc(78% - var(--mb-gx, 0) * 26%) calc(10% - var(--mb-gy, 0) * 18%),
-      color-mix(in srgb, var(--mb-light) 24%, transparent), transparent 70%),
+      color-mix(in srgb, color-mix(in oklab, #dfe7ff, #ffd29a calc(var(--mbf-heat) * 100%)) 24%, transparent), transparent 70%),
     linear-gradient(118deg, transparent calc(42% - var(--mb-gx, 0) * 14%), rgba(255, 255, 255, 0.07) calc(48% - var(--mb-gx, 0) * 14%),
       rgba(255, 255, 255, 0.02) calc(56% - var(--mb-gx, 0) * 14%), transparent calc(60% - var(--mb-gx, 0) * 14%));
 }
@@ -889,10 +910,10 @@ export default function MatBoardFrame({
   padding: var(--fw);
   transform: translateZ(0.5px);
   background:
-    linear-gradient(225deg, var(--mb-wood-hi) 0%, transparent 38%),
-    linear-gradient(45deg, var(--mb-wood-lo) 0%, transparent 45%),
-    var(--mb-grain),
-    var(--mb-wood);
+    linear-gradient(225deg, #e2bf8c 0%, transparent 38%),
+    linear-gradient(45deg, #6e4b27 0%, transparent 45%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='40'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.01 .6' numOctaves='3' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0 0.02  0 0 0 1.4 -0.4'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>"),
+    #b98a55;
   background-size: auto, auto, 300px 30px, auto;
   background-blend-mode: soft-light, multiply, multiply, normal;
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -986,13 +1007,13 @@ export default function MatBoardFrame({
 }
 
 .plaqueButton:focus-visible {
-  outline: 2px solid var(--mb-focus);
+  outline: 2px solid #ffd29a;
   outline-offset: 6px;
 }
 
 .title {
   grid-column: 1;
-  color: var(--mb-plaque-ink);
+  color: #f2f4f7;
   font-size: 18px;
   font-weight: 600;
   line-height: 1.25;
@@ -1002,7 +1023,7 @@ export default function MatBoardFrame({
 
 .price {
   grid-column: 1;
-  color: var(--mb-plaque-soft);
+  color: rgba(226, 233, 242, 0.74);
   font-size: 15px;
   font-weight: 500;
   line-height: 1.3;
@@ -1017,7 +1038,7 @@ export default function MatBoardFrame({
   block-size: 14px;
   margin-block-start: 4px;
   fill: none;
-  stroke: var(--mb-plaque-soft);
+  stroke: rgba(226, 233, 242, 0.74);
   stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -1048,7 +1069,7 @@ export default function MatBoardFrame({
   padding-block-start: 14px;
   margin-block-start: 14px;
   border-block-start: 1px solid rgba(255, 255, 255, 0.14);
-  color: var(--mb-plaque-soft);
+  color: rgba(226, 233, 242, 0.74);
   font-size: 14px;
   line-height: 1.55;
   opacity: 0;
@@ -1149,10 +1170,10 @@ export default function MatBoardFrame({
   inset-block-end: -3px;
   block-size: 6px;
   border-radius: 50%;
-  background: radial-gradient(closest-side, #fff, var(--mb-light) 60%, color-mix(in srgb, var(--mb-light) 40%, #000) 100%);
+  background: radial-gradient(closest-side, #fff, color-mix(in oklab, #dfe7ff, #ffd29a calc(var(--mbf-heat) * 100%)) 60%, color-mix(in srgb, color-mix(in oklab, #dfe7ff, #ffd29a calc(var(--mbf-heat) * 100%)) 40%, #000) 100%);
   box-shadow:
-    0 0 10px 2px color-mix(in srgb, var(--mb-light) 80%, transparent),
-    0 0 34px 8px color-mix(in srgb, var(--mb-light) 30%, transparent);
+    0 0 10px 2px color-mix(in srgb, color-mix(in oklab, #dfe7ff, #ffd29a calc(var(--mbf-heat) * 100%)) 80%, transparent),
+    0 0 34px 8px color-mix(in srgb, color-mix(in oklab, #dfe7ff, #ffd29a calc(var(--mbf-heat) * 100%)) 30%, transparent);
 }
 
 .lensArmed {
@@ -1197,7 +1218,7 @@ export default function MatBoardFrame({
 }
 
 .pause:focus-visible {
-  outline: 2px solid var(--mb-focus);
+  outline: 2px solid #ffd29a;
   outline-offset: 3px;
 }
 

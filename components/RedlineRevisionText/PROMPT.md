@@ -1,6 +1,6 @@
 Create a custom element called "Redline Revision Text". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: sentence with edits (text, optional replacement word), strike color, insert color, text color, paper color, proof label, handwritten note. Add other settings if they help.
+The site owner must be able to change: sentence with edits (text, optional replacement word), proof label, handwritten note. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -16,10 +16,6 @@ export interface RedlineRevisionTextProps {
   segments?: RedlineSegment[];
   label?: string;
   note?: string;
-  textColor?: string;
-  strikeColor?: string;
-  insertColor?: string;
-  paperColor?: string;
   className?: string;
 }
 
@@ -64,10 +60,6 @@ export default function RedlineRevisionText({
   segments = defaultSegments,
   label = 'Galley proof · Homepage, line 1',
   note = 'Sharper. Ship it. — R.',
-  textColor = '#26282d',
-  strikeColor = '#e23d1a',
-  insertColor = '#1e3fae',
-  paperColor = '#fcfbf6',
   className,
 }: RedlineRevisionTextProps) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -135,10 +127,6 @@ export default function RedlineRevisionText({
   const run = phase === 'run';
   const idle = phase === 'idle';
   const rootStyle = {
-    '--rrt-text': textColor,
-    '--rrt-strike': strikeColor,
-    '--rrt-insert': insertColor,
-    '--rrt-paper': paperColor,
     '--rrt-play': visible ? 'running' : 'paused',
     '--rrt-scale': typeScale(finalText.length).toFixed(3),
   } as CSSProperties;
@@ -212,22 +200,18 @@ export default function RedlineRevisionText({
 
 ```css
 .root {
-  --rrt-text: #26282d;
-  --rrt-strike: #e23d1a;
-  --rrt-insert: #1e3fae;
-  --rrt-paper: #fcfbf6;
+  --insert: #1e3fae;
   --rrt-font-type: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
   --rrt-font-hand: 'Bradley Hand', 'Segoe Print', 'Noteworthy', 'Chalkboard SE', 'Comic Neue', cursive;
   --rrt-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --rrt-spring: cubic-bezier(0.34, 1.7, 0.5, 1);
-  --rrt-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0 0.25  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   position: relative;
   container-type: inline-size;
   inline-size: 100%;
   box-sizing: border-box;
   padding-block: 14px 22px;
   padding-inline: 10px;
-  color: var(--rrt-text);
+  color: #26282d;
   font-family: var(--rrt-font-type);
 }
 
@@ -236,7 +220,7 @@ export default function RedlineRevisionText({
   inset-block: 22px 12px;
   inset-inline: 22px 4px;
   border-radius: 3px;
-  background: color-mix(in srgb, var(--rrt-paper) 88%, #b9b2a2);
+  background: color-mix(in srgb, #fcfbf6 88%, #b9b2a2);
   transform: rotate(1.6deg);
   box-shadow: 0 1px 2px rgba(40, 34, 24, 0.14), 0 18px 40px -22px rgba(40, 34, 24, 0.45);
 }
@@ -248,9 +232,7 @@ export default function RedlineRevisionText({
   padding-block: clamp(20px, 4.5cqi, 44px) clamp(22px, 5cqi, 48px);
   padding-inline: clamp(20px, 6.5cqi, 72px);
   border-radius: 3px;
-  background:
-    radial-gradient(120% 80% at 12% 0%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 55%),
-    linear-gradient(176deg, var(--rrt-paper) 0%, color-mix(in srgb, var(--rrt-paper) 94%, #d9d0bd) 100%);
+  background: linear-gradient(176deg, #fcfbf6 0%, color-mix(in srgb, #fcfbf6 94%, #d9d0bd) 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
     inset 0 0 0 1px rgba(60, 50, 30, 0.06),
@@ -259,12 +241,22 @@ export default function RedlineRevisionText({
     0 28px 60px -28px rgba(40, 34, 24, 0.42);
 }
 
+.sheet::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(120% 80% at 12% 0%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 55%);
+}
+
 .grain {
   position: absolute;
   inset: 0;
   z-index: -1;
   border-radius: inherit;
-  background-image: var(--rrt-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0 0.25  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   background-size: 200px 200px;
   opacity: 0.32;
   mix-blend-mode: multiply;
@@ -297,7 +289,7 @@ export default function RedlineRevisionText({
   min-block-size: 44px;
   padding-block-end: 10px;
   margin-block-end: clamp(14px, 3.4cqi, 30px);
-  border-block-end: 1px solid color-mix(in srgb, var(--rrt-text) 16%, transparent);
+  border-block-end: 1px solid color-mix(in srgb, #26282d 16%, transparent);
 }
 
 .label {
@@ -305,7 +297,7 @@ export default function RedlineRevisionText({
   font-size: 15px;
   font-variant-caps: all-small-caps;
   letter-spacing: 0.12em;
-  color: color-mix(in srgb, var(--rrt-text) 68%, transparent);
+  color: color-mix(in srgb, #26282d 68%, transparent);
   overflow-wrap: anywhere;
 }
 
@@ -330,7 +322,7 @@ export default function RedlineRevisionText({
   letter-spacing: -0.018em;
   text-wrap: pretty;
   overflow-wrap: break-word;
-  color: var(--rrt-text);
+  color: #26282d;
 }
 
 .edit {
@@ -346,12 +338,12 @@ export default function RedlineRevisionText({
   grid-area: 1 / 1;
   align-self: end;
   max-inline-size: 100%;
-  color: color-mix(in srgb, var(--rrt-text) 72%, transparent);
+  color: color-mix(in srgb, #26282d 72%, transparent);
 }
 
 .strike {
   padding-inline: 0.06em;
-  background-image: linear-gradient(-2.2deg, transparent 47%, var(--rrt-strike) 47.5%, var(--rrt-strike) 57%, transparent 57.5%);
+  background-image: linear-gradient(-2.2deg, transparent 47%, #e23d1a 47.5%, #e23d1a 57%, transparent 57.5%);
   background-repeat: no-repeat;
   background-position: 0 58%;
   background-size: 100% 0.5em;
@@ -386,8 +378,8 @@ export default function RedlineRevisionText({
 .insert {
   display: inline-block;
   padding-inline: 0.1em 0.2em;
-  color: var(--rrt-insert);
-  text-shadow: 0 0 0.6px color-mix(in srgb, var(--rrt-insert) 70%, transparent);
+  color: var(--insert);
+  text-shadow: 0 0 0.6px color-mix(in srgb, var(--insert) 70%, transparent);
 }
 
 .insertIdle {
@@ -408,7 +400,7 @@ export default function RedlineRevisionText({
   margin-inline-start: -0.18em;
   overflow: visible;
   fill: none;
-  stroke: var(--rrt-insert);
+  stroke: var(--insert);
   stroke-width: 2.4;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -439,7 +431,7 @@ export default function RedlineRevisionText({
   font-size: clamp(18px, 3cqi, 26px);
   font-weight: 700;
   line-height: 1.3;
-  color: var(--rrt-insert);
+  color: var(--insert);
   transform: rotate(-3deg);
   overflow-wrap: anywhere;
 }

@@ -9,10 +9,6 @@ export interface WatercolourWashFieldProps {
   body?: string;
   buttonLabel?: string;
   buttonLink?: string;
-  /** First pigment (defaults to indigo). */
-  colorOne?: string;
-  /** Second pigment (defaults to sap green). */
-  colorTwo?: string;
   /** 0–100: how much pigment the wash carries. */
   washIntensity?: number;
   /** soft: feathered wet-on-wet edges. torn: crisp, drier edges. */
@@ -443,8 +439,6 @@ export default function WatercolourWashField({
   body = 'Seven small courses built around what the market brings in each morning, served at one long table by the window.',
   buttonLabel = 'Reserve a table',
   buttonLink = '#reserve',
-  colorOne,
-  colorTwo,
   washIntensity = 62,
   edgeStyle = 'soft',
   pointerTint = 50,
@@ -517,14 +511,13 @@ export default function WatercolourWashField({
     const probe = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
     const readColors = () => {
       const style = getComputedStyle(root);
-      const read = (name: string, fallback: Rgb) =>
-        probe ? toRgb(probe, style.getPropertyValue(name).trim(), fallback) : fallback;
-      const kA = absorbance(read('--wash-color-one', [0.18, 0.23, 0.55]));
-      const kB = absorbance(read('--wash-color-two', [0.35, 0.54, 0.18]));
+      const read = (value: string, fallback: Rgb) => (probe ? toRgb(probe, value.trim(), fallback) : fallback);
+      const kA = absorbance(read(style.getPropertyValue('--color-one'), [0.18, 0.23, 0.55]));
+      const kB = absorbance(read(style.getPropertyValue('--color-two'), [0.35, 0.54, 0.18]));
       gl.uniform3fv(loc.kA, kA);
       gl.uniform3fv(loc.kB, kB);
       gl.uniform3fv(loc.kC, [0, 1, 2].map((i) => lerp(kA[i], kB[i], 0.5) * 0.9 + (i === 0 ? 0.03 : 0)));
-      gl.uniform3fv(loc.paper, read('--wash-paper', [0.965, 0.957, 0.933]));
+      gl.uniform3fv(loc.paper, read(style.backgroundColor, [0.965, 0.957, 0.933]));
     };
 
     let sim: Sim | null = null;
@@ -750,16 +743,11 @@ export default function WatercolourWashField({
 
   useEffect(() => {
     redrawRef.current();
-  }, [colorOne, colorTwo, washIntensity]);
+  }, [washIntensity]);
 
   useEffect(() => {
     rebuildRef.current();
   }, [edgeStyle]);
-
-  const themed = {
-    ...(colorOne ? { '--wash-color-one': colorOne } : {}),
-    ...(colorTwo ? { '--wash-color-two': colorTwo } : {}),
-  } as CSSProperties;
 
   const titleSize = !title || title.length <= 34 ? 'titleLarge' : title.length <= 70 ? 'titleMedium' : 'titleSmall';
 
@@ -782,7 +770,6 @@ export default function WatercolourWashField({
     <section
       ref={rootRef}
       className={[styles.root, className].filter(Boolean).join(' ')}
-      style={themed}
       aria-label={title ? undefined : ariaLabel}
       aria-labelledby={title ? titleId : undefined}
     >

@@ -630,13 +630,6 @@ export default function SwatchFanCard({
 
 ```css
 .root {
-  --sf-counter: #eceae5;
-  --sf-counter-deep: #e2dfd8;
-  --sf-paper: #fbfaf7;
-  --sf-paper-shade: #f4f2ed;
-  --sf-ink: #1d1c1a;
-  --sf-muted: #5b5852;
-  --sf-hairline: rgba(29, 28, 26, 0.12);
   --sf-font-display: 'Inter', 'Helvetica Neue', system-ui, sans-serif;
   --sf-font-ui: 'Inter', 'Helvetica Neue', system-ui, sans-serif;
   --tint: #7d8b6f;
@@ -667,15 +660,15 @@ export default function SwatchFanCard({
   max-inline-size: 680px;
   margin-inline: auto;
   border-radius: var(--rad);
-  color: var(--sf-ink);
+  color: #1d1c1a;
   color-scheme: light;
   font-family: var(--sf-font-ui);
   box-shadow: 0 1px 2px rgba(29, 28, 26, 0.08), 0 28px 48px -28px rgba(29, 28, 26, 0.38);
 }
 
 .root ::selection {
-  background: color-mix(in srgb, var(--tint) 40%, var(--sf-paper));
-  color: var(--sf-ink);
+  background: color-mix(in srgb, var(--tint) 40%, #fbfaf7);
+  color: #1d1c1a;
 }
 
 .sheet {
@@ -686,7 +679,7 @@ export default function SwatchFanCard({
   pointer-events: none;
   background:
     radial-gradient(80% 45% at 30% 0%, rgba(255, 255, 255, 0.7), transparent 70%),
-    linear-gradient(180deg, var(--sf-counter) 0%, var(--sf-counter-deep) 100%);
+    linear-gradient(180deg, #eceae5 0%, #e2dfd8 100%);
 }
 
 /* ---------- the table: framed photo, then the fan on top of it ---------- */
@@ -741,7 +734,7 @@ export default function SwatchFanCard({
   inline-size: 100%;
   block-size: 100%;
   border-radius: 2px;
-  background: var(--sf-counter-deep);
+  background: #e2dfd8;
 }
 
 /* The mat's cut edge: the picture sits slightly recessed. */
@@ -872,7 +865,7 @@ export default function SwatchFanCard({
 }
 
 .chip:focus-visible .card {
-  outline: 3px solid var(--sf-ink);
+  outline: 3px solid #1d1c1a;
   outline-offset: 3px;
 }
 
@@ -881,7 +874,7 @@ export default function SwatchFanCard({
   position: absolute;
   inset: 0;
   border-radius: 6px;
-  background: linear-gradient(180deg, var(--sf-paper) 0%, var(--sf-paper-shade) 100%);
+  background: linear-gradient(180deg, #fbfaf7 0%, #f4f2ed 100%);
   box-shadow:
     0 0 0 1px rgba(29, 28, 26, 0.1),
     calc(var(--ex) * var(--k) * 1px) calc(var(--ey) * var(--k) * 2px) calc(var(--k) * 3px) rgba(29, 28, 26, 0.14),
@@ -988,7 +981,7 @@ export default function SwatchFanCard({
   padding: clamp(22px, 4.4cqi, 30px) clamp(20px, 4.8cqi, 32px) clamp(24px, 4.6cqi, 32px);
   border-end-start-radius: var(--rad);
   border-end-end-radius: var(--rad);
-  background: linear-gradient(180deg, #ffffff 0%, var(--sf-paper) 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfaf7 100%);
   box-shadow:
     0 -1px 0 rgba(255, 255, 255, 0.9),
     0 -10px 20px -12px rgba(29, 28, 26, 0.3);
@@ -1097,7 +1090,7 @@ export default function SwatchFanCard({
   flex: none;
   font-size: 14px;
   font-weight: 600;
-  color: var(--sf-muted);
+  color: #5b5852;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1105,7 +1098,7 @@ export default function SwatchFanCard({
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  box-shadow: inset 0 0 0 1px var(--sf-hairline);
+  box-shadow: inset 0 0 0 1px rgba(29, 28, 26, 0.12);
   pointer-events: none;
   z-index: 9;
 }

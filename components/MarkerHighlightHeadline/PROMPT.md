@@ -1,6 +1,6 @@
 Create a custom element called "Marker Highlight Headline". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: headline text, words to mark, mark style (highlight, underline, circle), marker color, small label above the headline. Add other settings if they help.
+The site owner must be able to change: headline text, words to mark, mark style (highlight, underline, circle), small label above the headline. Add other settings if they help.
 
 ```tsx
 import { Fragment, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -17,7 +17,6 @@ export interface MarkerHighlightHeadlineProps {
   headline?: string;
   markedWords?: MarkedWord[];
   markStyle?: MarkStyle;
-  markerColor?: string;
   kicker?: string;
   className?: string;
 }
@@ -126,7 +125,6 @@ export default function MarkerHighlightHeadline({
   headline = 'Good work is honest, useful and quietly unforgettable.',
   markedWords = defaultMarkedWords,
   markStyle = 'highlight',
-  markerColor = '#c9f23a',
   kicker = 'Studio notes · No. 12',
   className,
 }: MarkerHighlightHeadlineProps) {
@@ -205,11 +203,10 @@ export default function MarkerHighlightHeadline({
     return () => io.disconnect();
   }, [drawn]);
 
-  const rootStyle = { '--mh-marker': markerColor } as CSSProperties;
   const strokeClass = markStyle === 'highlight' ? styles.brush : styles.pen;
 
   return (
-    <div className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
+    <div className={[styles.root, className].filter(Boolean).join(' ')}>
       <span className={styles.grain} aria-hidden="true" />
       <div className={styles.inner}>
         {kicker && <p className={styles.kicker}>{kicker}</p>}
@@ -280,15 +277,9 @@ export default function MarkerHighlightHeadline({
 
 ```css
 .root {
-  --mh-marker: #c9f23a;
-  --mh-paper: #f7f2e6;
-  --mh-paper-edge: #eee6d2;
-  --mh-ink: #16140f;
-  --mh-muted: rgba(22, 20, 15, 0.56);
-  --mh-rule: rgba(22, 20, 15, 0.16);
+  --marker: #c9f23a;
   --mh-font-display: 'Fraunces', 'Newsreader', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
   --mh-font-ui: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
-  --mh-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0 0.2  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -299,10 +290,17 @@ export default function MarkerHighlightHeadline({
   padding-block: clamp(40px, 9cqi, 96px);
   padding-inline: clamp(20px, 7cqi, 88px);
   border-radius: 20px;
-  background:
-    radial-gradient(90% 70% at 18% 0%, #fffdf6 0%, transparent 65%),
-    linear-gradient(180deg, var(--mh-paper) 0%, var(--mh-paper-edge) 100%);
-  color: var(--mh-ink);
+  background: linear-gradient(180deg, #f7f2e6 0%, #eee6d2 100%);
+  color: #16140f;
+}
+
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(90% 70% at 18% 0%, #fffdf6 0%, transparent 65%);
 }
 
 .grain {
@@ -310,7 +308,7 @@ export default function MarkerHighlightHeadline({
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-image: var(--mh-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0 0.2  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.35;
   mix-blend-mode: multiply;
 }
@@ -330,7 +328,7 @@ export default function MarkerHighlightHeadline({
   font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--mh-muted);
+  color: rgba(22, 20, 15, 0.56);
   overflow-wrap: anywhere;
 }
 
@@ -339,7 +337,7 @@ export default function MarkerHighlightHeadline({
   flex: none;
   inline-size: 28px;
   block-size: 1px;
-  background: var(--mh-ink);
+  background: #16140f;
 }
 
 .stage {
@@ -359,7 +357,7 @@ export default function MarkerHighlightHeadline({
 .brush,
 .pen {
   fill: none;
-  stroke: var(--mh-marker);
+  stroke: var(--marker);
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
 }
@@ -375,7 +373,7 @@ export default function MarkerHighlightHeadline({
 }
 
 .pen {
-  stroke: color-mix(in srgb, var(--mh-marker) 82%, var(--mh-ink));
+  stroke: color-mix(in srgb, var(--marker) 82%, #16140f);
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -398,7 +396,7 @@ export default function MarkerHighlightHeadline({
   text-wrap: balance;
   overflow-wrap: break-word;
   hyphens: manual;
-  color: var(--mh-ink);
+  color: #16140f;
   font-variation-settings: 'opsz' 96;
 }
 

@@ -1,6 +1,6 @@
 Create a custom element called "Split-Flap Stats". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: stats (value, label), board color, digit color, label lamp color. Add other settings if they help.
+The site owner must be able to change: stats (value, label). Add other settings if they help.
 
 ```tsx
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -14,9 +14,6 @@ export interface SplitFlapStat {
 
 export interface SplitFlapStatsProps {
   stats?: SplitFlapStat[];
-  boardColor?: string;
-  digitColor?: string;
-  lampColor?: string;
   className?: string;
 }
 
@@ -200,9 +197,6 @@ const BOARD_HELP = 'Hover or focus a figure to replay its flip.';
 
 export default function SplitFlapStats({
   stats = defaultStats,
-  boardColor = '#26282c',
-  digitColor = '#ece5d3',
-  lampColor = '#f0a23c',
   className,
 }: SplitFlapStatsProps) {
   const rows = (stats.length > 0 ? stats : defaultStats).slice(0, 4).map((s) => {
@@ -311,11 +305,6 @@ export default function SplitFlapStats({
     relight(i, lastLanding(i, 'replay') + 220);
   };
 
-  const rootStyle = {
-    '--sf-flap': boardColor,
-    '--sf-digit': digitColor,
-    '--sf-amber': lampColor,
-  } as CSSProperties;
 
   const boardStyle = {
     '--sf-wide-cols': wideCols,
@@ -330,7 +319,6 @@ export default function SplitFlapStats({
     <section
       ref={rootRef}
       className={cx(styles.root, className)}
-      style={rootStyle}
       aria-label="Key figures"
       aria-description={BOARD_HELP}
     >
@@ -388,15 +376,7 @@ export default function SplitFlapStats({
 
 ```css
 .root {
-  --sf-flap: #26282c;
-  --sf-digit: #ece5d3;
-  --sf-amber: #e3a64f;
-  --sf-board: color-mix(in srgb, var(--sf-flap) 50%, #000);
-  --sf-wall: color-mix(in srgb, var(--sf-flap) 36%, #040506);
-  --sf-flap-hi: color-mix(in srgb, var(--sf-flap) 90%, #fff);
-  --sf-flap-lo: color-mix(in srgb, var(--sf-flap) 84%, #000);
-  --sf-flap-deep: color-mix(in srgb, var(--sf-flap) 70%, #000);
-  --sf-hair: rgba(255, 255, 255, 0.07);
+  --lamp: #f0a23c;
   --sf-font-display: 'Barlow', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --sf-font-ui: 'Barlow', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
 
@@ -414,8 +394,8 @@ export default function SplitFlapStats({
   box-sizing: border-box;
   inline-size: 100%;
   border-radius: 24px;
-  background: var(--sf-wall);
-  color: var(--sf-digit);
+  background: color-mix(in srgb, #26282c 36%, #040506);
+  color: #ece5d3;
   font-family: var(--sf-font-ui);
 }
 
@@ -433,8 +413,8 @@ export default function SplitFlapStats({
   margin-block-start: var(--sf-hp);
   padding: var(--sf-fp);
   border-radius: clamp(14px, 2.2cqi, 24px);
-  border: 1px solid var(--sf-hair);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--sf-board) 90%, #fff) 0%, var(--sf-board) 38%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: linear-gradient(180deg, color-mix(in srgb, color-mix(in srgb, #26282c 50%, #000) 90%, #fff) 0%, color-mix(in srgb, #26282c 50%, #000) 38%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
     0 28px 48px -32px rgba(0, 0, 0, 0.8);
@@ -484,7 +464,7 @@ export default function SplitFlapStats({
 }
 
 .stat:focus-visible {
-  outline: 2px solid var(--sf-amber);
+  outline: 2px solid var(--lamp);
   outline-offset: 8px;
 }
 
@@ -499,7 +479,7 @@ export default function SplitFlapStats({
   --sf-cap: 96px;
   --sf-n: var(--sf-rest-n);
   --sf-count: var(--sf-rest-count);
-  border-block-start: 1px solid var(--sf-hair);
+  border-block-start: 1px solid rgba(255, 255, 255, 0.07);
   padding-block-start: clamp(14px, 2.2cqi, 26px);
 }
 
@@ -561,7 +541,7 @@ export default function SplitFlapStats({
   inset-block-start: 0;
   border-start-start-radius: calc(var(--sf-cell) * 0.05);
   border-start-end-radius: calc(var(--sf-cell) * 0.05);
-  background: linear-gradient(180deg, var(--sf-flap-hi) 0%, var(--sf-flap) 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, #26282c 90%, #fff) 0%, #26282c 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
@@ -569,7 +549,7 @@ export default function SplitFlapStats({
   inset-block-end: 0;
   border-end-start-radius: calc(var(--sf-cell) * 0.05);
   border-end-end-radius: calc(var(--sf-cell) * 0.05);
-  background: linear-gradient(180deg, var(--sf-flap-lo) 0%, var(--sf-flap-deep) 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, #26282c 84%, #000) 0%, color-mix(in srgb, #26282c 70%, #000) 100%);
   box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.35);
 }
 
@@ -585,7 +565,7 @@ export default function SplitFlapStats({
   font-size: calc(var(--sf-h) * 0.8);
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  color: var(--sf-digit);
+  color: #ece5d3;
   transform: translateY(-0.05em);
   user-select: none;
 }
@@ -720,7 +700,7 @@ export default function SplitFlapStats({
   align-items: center;
   gap: 10px;
   margin-block-start: clamp(12px, 1.8cqi, 20px);
-  color: color-mix(in srgb, var(--sf-digit) 52%, var(--sf-board));
+  color: color-mix(in srgb, #ece5d3 52%, color-mix(in srgb, #26282c 50%, #000));
   font-family: var(--sf-font-ui);
   font-weight: 500;
   font-size: 12px;
@@ -735,7 +715,7 @@ export default function SplitFlapStats({
 }
 
 .labelLit {
-  color: color-mix(in srgb, var(--sf-digit) 72%, var(--sf-board));
+  color: color-mix(in srgb, #ece5d3 72%, color-mix(in srgb, #26282c 50%, #000));
 }
 
 .labelText {
@@ -748,14 +728,14 @@ export default function SplitFlapStats({
   flex: none;
   inline-size: 14px;
   block-size: 1px;
-  background: color-mix(in srgb, var(--sf-amber) 28%, transparent);
+  background: color-mix(in srgb, var(--lamp) 28%, transparent);
   transition:
     background-color 0.4s ease,
     inline-size 0.5s ease;
 }
 
 .lampLit {
-  background: var(--sf-amber);
+  background: var(--lamp);
   inline-size: 22px;
 }
 

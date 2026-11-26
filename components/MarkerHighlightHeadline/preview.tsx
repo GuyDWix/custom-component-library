@@ -15,14 +15,12 @@ const variants: MarkerHighlightHeadlineProps[] = [
     headline: 'Slow bread, wild greens and a very good reason to stay late.',
     markedWords: [{ phrase: 'wild greens' }, { phrase: 'stay late' }],
     markStyle: 'underline',
-    markerColor: '#ff7a3d',
   },
   {
     kicker: '',
     headline: 'Three days. One city. Zero boring talks.',
     markedWords: [{ phrase: 'Zero' }],
     markStyle: 'circle',
-    markerColor: '#3d7bff',
   },
 ];
 

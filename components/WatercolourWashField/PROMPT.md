@@ -1,6 +1,6 @@
 Create a custom element called "Watercolour Wash Field". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: headline, paragraph, button label and link, colours (2), wash intensity, edge style (soft | torn). Add other settings if they help.
+The site owner must be able to change: headline, paragraph, button label and link, wash intensity, edge style (soft | torn). Add other settings if they help.
 
 ```tsx
 import { useEffect, useId, useRef, useState } from 'react';
@@ -14,10 +14,6 @@ export interface WatercolourWashFieldProps {
   body?: string;
   buttonLabel?: string;
   buttonLink?: string;
-  /** First pigment (defaults to indigo). */
-  colorOne?: string;
-  /** Second pigment (defaults to sap green). */
-  colorTwo?: string;
   /** 0–100: how much pigment the wash carries. */
   washIntensity?: number;
   /** soft: feathered wet-on-wet edges. torn: crisp, drier edges. */
@@ -448,8 +444,6 @@ export default function WatercolourWashField({
   body = 'Seven small courses built around what the market brings in each morning, served at one long table by the window.',
   buttonLabel = 'Reserve a table',
   buttonLink = '#reserve',
-  colorOne,
-  colorTwo,
   washIntensity = 62,
   edgeStyle = 'soft',
   pointerTint = 50,
@@ -522,14 +516,13 @@ export default function WatercolourWashField({
     const probe = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
     const readColors = () => {
       const style = getComputedStyle(root);
-      const read = (name: string, fallback: Rgb) =>
-        probe ? toRgb(probe, style.getPropertyValue(name).trim(), fallback) : fallback;
-      const kA = absorbance(read('--wash-color-one', [0.18, 0.23, 0.55]));
-      const kB = absorbance(read('--wash-color-two', [0.35, 0.54, 0.18]));
+      const read = (value: string, fallback: Rgb) => (probe ? toRgb(probe, value.trim(), fallback) : fallback);
+      const kA = absorbance(read(style.getPropertyValue('--color-one'), [0.18, 0.23, 0.55]));
+      const kB = absorbance(read(style.getPropertyValue('--color-two'), [0.35, 0.54, 0.18]));
       gl.uniform3fv(loc.kA, kA);
       gl.uniform3fv(loc.kB, kB);
       gl.uniform3fv(loc.kC, [0, 1, 2].map((i) => lerp(kA[i], kB[i], 0.5) * 0.9 + (i === 0 ? 0.03 : 0)));
-      gl.uniform3fv(loc.paper, read('--wash-paper', [0.965, 0.957, 0.933]));
+      gl.uniform3fv(loc.paper, read(style.backgroundColor, [0.965, 0.957, 0.933]));
     };
 
     let sim: Sim | null = null;
@@ -755,16 +748,11 @@ export default function WatercolourWashField({
 
   useEffect(() => {
     redrawRef.current();
-  }, [colorOne, colorTwo, washIntensity]);
+  }, [washIntensity]);
 
   useEffect(() => {
     rebuildRef.current();
   }, [edgeStyle]);
-
-  const themed = {
-    ...(colorOne ? { '--wash-color-one': colorOne } : {}),
-    ...(colorTwo ? { '--wash-color-two': colorTwo } : {}),
-  } as CSSProperties;
 
   const titleSize = !title || title.length <= 34 ? 'titleLarge' : title.length <= 70 ? 'titleMedium' : 'titleSmall';
 
@@ -787,7 +775,6 @@ export default function WatercolourWashField({
     <section
       ref={rootRef}
       className={[styles.root, className].filter(Boolean).join(' ')}
-      style={themed}
       aria-label={title ? undefined : ariaLabel}
       aria-labelledby={title ? titleId : undefined}
     >
@@ -813,13 +800,8 @@ export default function WatercolourWashField({
 
 ```css
 .root {
-  /* re-themable palette: two pigments, paper, ink */
-  --wash-color-one: #2e3c8c;
-  --wash-color-two: #567d2e;
-  --wash-paper: #f7f4ec;
-  --wash-ink: #29313f;
-  --wash-ink-soft: #4d5563;
-  --wash-accent: #3f6724;
+  --color-one: #2e3c8c;
+  --color-two: #567d2e;
   --wash-display-font: 'Bricolage Grotesque', 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
   --wash-body-font: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
 
@@ -835,19 +817,19 @@ export default function WatercolourWashField({
   place-items: center;
   padding-block: clamp(64px, 10%, 128px);
   padding-inline: clamp(24px, 8%, 120px);
-  background: var(--wash-paper);
-  color: var(--wash-ink);
+  background: #f7f4ec;
+  color: #29313f;
   font-family: var(--wash-body-font);
   border-radius: 10px;
   box-shadow:
     0 0 0 1px rgb(41 49 63 / 0.05),
     0 26px 60px -42px rgb(35 42 60 / 0.3);
-  caret-color: var(--wash-accent);
+  caret-color: #3f6724;
 }
 
 .root::selection {
-  background: color-mix(in srgb, var(--wash-color-one) 26%, transparent);
-  color: var(--wash-ink);
+  background: color-mix(in srgb, var(--color-one) 26%, transparent);
+  color: #29313f;
 }
 
 /* static approximation of the finished wash, shown until the canvas paints
@@ -857,11 +839,11 @@ export default function WatercolourWashField({
   inset: 0;
   z-index: 0;
   background:
-    radial-gradient(ellipse 36% 34% at 88% 40%, color-mix(in srgb, var(--wash-color-one) 50%, transparent), transparent 70%),
-    radial-gradient(ellipse 46% 18% at 56% 0%, color-mix(in srgb, var(--wash-color-two) 38%, transparent), transparent 70%),
-    radial-gradient(ellipse 24% 22% at 4% 40%, color-mix(in srgb, var(--wash-color-two) 32%, transparent), transparent 72%),
-    radial-gradient(ellipse 58% 16% at 78% 100%, color-mix(in srgb, var(--wash-color-one) 22%, transparent), transparent 75%),
-    var(--wash-paper);
+    radial-gradient(ellipse 36% 34% at 88% 40%, color-mix(in srgb, var(--color-one) 50%, transparent), transparent 70%),
+    radial-gradient(ellipse 46% 18% at 56% 0%, color-mix(in srgb, var(--color-two) 38%, transparent), transparent 70%),
+    radial-gradient(ellipse 24% 22% at 4% 40%, color-mix(in srgb, var(--color-two) 32%, transparent), transparent 72%),
+    radial-gradient(ellipse 58% 16% at 78% 100%, color-mix(in srgb, var(--color-one) 22%, transparent), transparent 75%),
+    #f7f4ec;
 }
 
 .canvas,
@@ -922,7 +904,7 @@ export default function WatercolourWashField({
   font-weight: 600;
   line-height: 1.05;
   letter-spacing: -0.02em;
-  color: var(--wash-ink);
+  color: #29313f;
   text-wrap: balance;
   overflow-wrap: anywhere;
   text-shadow: 0 1px 0 rgb(255 255 255 / 0.4);
@@ -946,7 +928,7 @@ export default function WatercolourWashField({
   max-inline-size: 34rem;
   font-size: clamp(15px, 1.6cqi, 18px);
   line-height: 1.65;
-  color: var(--wash-ink-soft);
+  color: #4d5563;
   text-wrap: pretty;
   overflow-wrap: anywhere;
 }
@@ -965,10 +947,10 @@ export default function WatercolourWashField({
   margin-block-start: 6px;
   padding-block: 12px;
   padding-inline: 28px;
-  border: 1px solid color-mix(in srgb, var(--wash-ink) 72%, #000);
+  border: 1px solid color-mix(in srgb, #29313f 72%, #000);
   border-radius: 10px;
-  background: var(--wash-ink);
-  color: var(--wash-paper);
+  background: #29313f;
+  color: #f7f4ec;
   font-family: var(--wash-body-font);
   font-size: 15px;
   font-weight: 600;
@@ -986,8 +968,8 @@ export default function WatercolourWashField({
 
 .button:hover {
   transform: translateY(-1px);
-  background: var(--wash-accent);
-  border-color: color-mix(in srgb, var(--wash-accent) 76%, #000);
+  background: #3f6724;
+  border-color: color-mix(in srgb, #3f6724 76%, #000);
   box-shadow: 0 16px 30px -18px rgb(46 82 24 / 0.7);
 }
 
@@ -996,7 +978,7 @@ export default function WatercolourWashField({
 }
 
 .button:focus-visible {
-  outline: 2px solid var(--wash-accent);
+  outline: 2px solid #3f6724;
   outline-offset: 3px;
 }
 

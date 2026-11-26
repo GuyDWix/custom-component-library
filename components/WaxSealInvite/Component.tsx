@@ -7,8 +7,6 @@ export interface WaxSealInviteProps {
   text?: string;
   dateLine?: string;
   sealInitials?: string;
-  sealColor?: string;
-  envelopeColor?: string;
   className?: string;
 }
 
@@ -190,8 +188,6 @@ export default function WaxSealInvite({
   text = 'A long table under the station clock: seven courses, natural wines and a late train home. Bring someone you would write a letter to.',
   dateLine = 'Friday 21 March · 8.30 pm',
   sealInitials = 'NP',
-  sealColor = '#d9432c',
-  envelopeColor = '#1c2747',
   className,
 }: WaxSealInviteProps) {
   const [open, setOpen] = useState(false);
@@ -284,8 +280,6 @@ export default function WaxSealInvite({
   const { hf, hch } = headingFit(heading.length);
 
   const rootStyle: Vars = {
-    '--ws-seal': sealColor,
-    '--ws-env': envelopeColor,
     '--ws-o': open ? 1 : 0,
     '--ws-hf': hf,
     '--ws-hch': hch,
