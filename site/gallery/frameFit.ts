@@ -4,6 +4,7 @@ type Box = { x: number; y: number; w: number; h: number; painted?: boolean };
 type FrameMessage = { type: 'frame'; box: Box | null; docHeight: number };
 
 const FILLS_VIEWPORT = 0.92;
+const PAINTED_FILLS = 0.99;
 const PADDING = 0.08;
 const MIN_ZOOM = 0.6;
 const MAX_ZOOM = 2;
@@ -14,7 +15,8 @@ export const thumbQuery = (scroll?: number) => `thumb=1${scroll ? `&scroll=${scr
 
 /** Frames `box` (frame px) into a `width`×`height` card shown at `base` scale. */
 function fitTransform(box: Box | null, width: number, height: number, base: number): CSSProperties {
-  const fillsCard = box && box.w >= width * FILLS_VIEWPORT && box.h >= height * FILLS_VIEWPORT && box.h <= height / FILLS_VIEWPORT;
+  const fills = box?.painted ? PAINTED_FILLS : FILLS_VIEWPORT;
+  const fillsCard = box && box.w >= width * fills && box.h >= height * fills && box.h <= height / fills;
   if (!box || fillsCard) return { transform: `scale(${base})` };
   const contain = Math.min(width / box.w, height / box.h);
   const cover = Math.max(width / box.w, height / box.h);
