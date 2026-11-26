@@ -2,6 +2,11 @@ export const SHOW_REVIEW = import.meta.env.VITE_PUBLIC !== '1';
 
 export type RawMeta = Record<string, unknown>;
 
+export const thumbnailScroll = (meta: RawMeta | null | undefined) => {
+  const value = (meta?.thumbnail as RawMeta | undefined)?.scroll;
+  return typeof value === 'number' ? value : undefined;
+};
+
 export type Entry = {
   name: string;
   title: string;
@@ -15,6 +20,7 @@ export type Entry = {
   mobile?: string;
   motion?: string;
   artDirection?: string;
+  thumbnailScroll?: number;
   inRepo: boolean;
 };
 
@@ -43,6 +49,7 @@ export function toEntry(name: string, meta: RawMeta = {}, inRepo = false): Entry
     mobile: str(meta.mobile),
     motion: str(meta.motion),
     artDirection: str(meta.art_direction),
+    thumbnailScroll: thumbnailScroll(meta),
     inRepo,
   };
 }

@@ -32,7 +32,7 @@ function Card({ entry, edit, state }: { entry: Entry; edit?: VersionSummary; sta
   return (
     <li>
       <a className={`g-card${muted ? ' g-card--muted' : ''}`} href={`?view=${encodeURIComponent(entry.name)}`}>
-        <Thumb name={entry.name} title={entry.title} hasVersion={!!edit} />
+        <Thumb name={entry.name} title={entry.title} hasVersion={!!edit} scroll={entry.thumbnailScroll} />
         <div className="g-card__body">
           <h2 className="g-card__title">{entry.title}</h2>
           {metaLine(entry) && <p className="g-card__meta">{metaLine(entry)}</p>}

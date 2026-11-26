@@ -33,7 +33,7 @@ const MAX_BODY = 2 * 1024 * 1024;
 const NAME_RE = /^[A-Za-z0-9]+$/;
 const STATUSES = ['backlog', 'in_progress', 'approved', 'rejected'];
 const COMPONENT_FILES = { tsx: 'Component.tsx', css: 'Component.module.css', preview: 'preview.tsx', meta: 'meta.json' };
-const PUBLIC_PATHS = [/^\/auth\//, /^\/sandbox\.html$/, /^\/component-assets\//];
+const PUBLIC_PATHS = [/^\/auth\//, /^\/sandbox\.html$/, /^\/frame-probe\.js$/, /^\/component-assets\//];
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',

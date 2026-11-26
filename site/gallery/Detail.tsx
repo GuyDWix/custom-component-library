@@ -41,11 +41,11 @@ function Preview({ entry, code, label }: { entry: Entry; code?: Code; label?: st
   const src = previewHref(entry) + (data === 'extreme' ? '&worst=1' : '');
   const title = `${entry.title} live preview`;
   const hasData = !code || !!code.preview;
-  const frame = (width: number, height: number, maxScale?: number) =>
+  const frame = (width: number, height: number, maxScale?: number, grow?: boolean) =>
     code ? (
-      <SandboxFrame key={device} name={entry.name} code={code} title={title} width={width} height={height} maxScale={maxScale} worst={data === 'extreme'} />
+      <SandboxFrame key={device} name={entry.name} code={code} title={title} width={width} height={height} maxScale={maxScale} grow={grow} worst={data === 'extreme'} />
     ) : (
-      <ScaledFrame key={src} src={src} title={title} width={width} height={height} maxScale={maxScale} />
+      <ScaledFrame key={src} src={src} title={title} width={width} height={height} maxScale={maxScale} grow={grow} />
     );
 
   return (
@@ -62,7 +62,7 @@ function Preview({ entry, code, label }: { entry: Entry; code?: Code; label?: st
         )}
       </div>
       {device === 'desktop' ? (
-        <div className="g-stage">{frame(1280, 800)}</div>
+        <div className="g-stage">{frame(1280, 800, undefined, true)}</div>
       ) : (
         <div className="g-stage g-stage--mobile">
           <div className="g-device">{frame(375, 760, 1)}</div>

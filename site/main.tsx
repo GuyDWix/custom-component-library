@@ -8,6 +8,7 @@ const loaderByName = Object.fromEntries(
 
 const name = new URLSearchParams(location.search).get('c');
 const load = name ? loaderByName[name] : undefined;
+if (name) document.head.append(Object.assign(document.createElement('script'), { src: '/frame-probe.js' }));
 const Page = lazy(load ?? (() => import('./gallery/Gallery')));
 
 createRoot(document.getElementById('root')!).render(

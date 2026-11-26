@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { fetchVersion, type Version } from './edits';
+import { thumbnailScroll } from './data';
 import SandboxFrame from './SandboxFrame';
 import ScaledFrame from './ScaledFrame';
 
@@ -30,12 +31,15 @@ function useVersionWhen(name: string, enabled: boolean) {
   return version;
 }
 
-export default function Thumb({ name, title, hasVersion }: { name: string; title: string; hasVersion: boolean }) {
+type Props = { name: string; title: string; hasVersion: boolean; scroll?: number };
+
+export default function Thumb({ name, title, hasVersion, scroll }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const near = useNearViewport(ref);
   const [loaded, setLoaded] = useState(false);
   const version = useVersionWhen(name, near && hasVersion);
-  const frame = { title: `${title} preview`, width: 1280, height: 800, decorative: true };
+  const fit = { scroll: thumbnailScroll(version?.meta) ?? scroll };
+  const frame = { title: `${title} preview`, width: 1280, height: 800, decorative: true, fit, grow: !fit.scroll };
 
   useEffect(() => {
     if (!near) setLoaded(false);
