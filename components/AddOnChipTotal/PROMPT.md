@@ -222,7 +222,7 @@ export default function AddOnChipTotal({
             { duration: 420, easing: 'cubic-bezier(.2,1.3,.4,1)' },
           );
           row?.animate(
-            [{ backgroundColor: 'var(--ac-raspberry-tint)' }, { backgroundColor: 'transparent' }],
+            [{ backgroundColor: '#fdecf1' }, { backgroundColor: 'transparent' }],
             { duration: 900, easing: 'cubic-bezier(.4,0,.2,1)' },
           );
           badgeRef.current?.animate(
@@ -350,20 +350,8 @@ export default function AddOnChipTotal({
 
 ```css
 .root {
-  --ac-cream: #faf6ee;
-  --ac-surface: #fffdf9;
-  --ac-pistachio: #a9c48a;
-  --ac-pistachio-soft: #eaf1df;
-  --ac-pistachio-ink: #2c3d26;
-  --ac-raspberry: #c0285a;
-  --ac-raspberry-deep: #a01f4b;
-  --ac-raspberry-tint: #fdecf1;
-  --ac-ink: #26261f;
-  --ac-muted: #6b6a5d;
-  --ac-line: rgba(44, 61, 38, 0.14);
   --ac-font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
   --ac-font-ui: 'Inter', 'DM Sans', 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
-  --ac-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.4  0 0 0 0 0.3  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   --ac-spring: cubic-bezier(0.25, 1.25, 0.45, 1);
 
   position: relative;
@@ -374,8 +362,8 @@ export default function AddOnChipTotal({
   padding-block: 32px;
   padding-inline: 20px;
   border-radius: 24px;
-  background: var(--ac-cream);
-  color: var(--ac-ink);
+  background: #faf6ee;
+  color: #26261f;
   font-family: var(--ac-font-ui);
   -webkit-font-smoothing: antialiased;
 }
@@ -386,7 +374,7 @@ export default function AddOnChipTotal({
   z-index: -1;
   overflow: clip;
   border-radius: inherit;
-  box-shadow: inset 0 0 0 1px var(--ac-line);
+  box-shadow: inset 0 0 0 1px rgba(44, 61, 38, 0.14);
   pointer-events: none;
 }
 
@@ -403,7 +391,7 @@ export default function AddOnChipTotal({
   inline-size: 55%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--ac-pistachio) 40%, transparent), transparent);
+  background: radial-gradient(closest-side, color-mix(in srgb, #a9c48a 40%, transparent), transparent);
   filter: blur(40px);
 }
 
@@ -413,13 +401,13 @@ export default function AddOnChipTotal({
   inline-size: 60%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--ac-raspberry-tint) 80%, transparent), transparent);
+  background: radial-gradient(closest-side, color-mix(in srgb, #fdecf1 80%, transparent), transparent);
   filter: blur(40px);
 }
 
 .grain {
   inset: 0;
-  background-image: var(--ac-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.4  0 0 0 0 0.3  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.08;
   mix-blend-mode: multiply;
 }
@@ -445,7 +433,7 @@ export default function AddOnChipTotal({
   letter-spacing: -0.025em;
   text-wrap: balance;
   overflow-wrap: anywhere;
-  color: var(--ac-pistachio-ink);
+  color: #2c3d26;
 }
 
 .chips {
@@ -472,10 +460,10 @@ export default function AddOnChipTotal({
   box-sizing: border-box;
   padding-block: 9px;
   padding-inline: 10px 16px;
-  border: 1px solid var(--ac-line);
+  border: 1px solid rgba(44, 61, 38, 0.14);
   border-radius: 999px;
-  background: var(--ac-surface);
-  color: var(--ac-ink);
+  background: #fffdf9;
+  color: #26261f;
   font: inherit;
   font-size: 15px;
   font-weight: 500;
@@ -493,18 +481,18 @@ export default function AddOnChipTotal({
 }
 
 .chip:hover {
-  border-color: color-mix(in srgb, var(--ac-pistachio-ink) 30%, transparent);
-  background: color-mix(in srgb, var(--ac-pistachio-soft) 55%, var(--ac-surface));
+  border-color: color-mix(in srgb, #2c3d26 30%, transparent);
+  background: color-mix(in srgb, #eaf1df 55%, #fffdf9);
 }
 
 .chipOn {
-  border-color: color-mix(in srgb, var(--ac-raspberry) 45%, transparent);
-  background: var(--ac-raspberry-tint);
-  color: var(--ac-raspberry-deep);
+  border-color: color-mix(in srgb, #c0285a 45%, transparent);
+  background: #fdecf1;
+  color: #a01f4b;
 }
 
 .chipOn:hover {
-  border-color: var(--ac-raspberry);
+  border-color: #c0285a;
 }
 
 .chip:active,
@@ -516,7 +504,7 @@ export default function AddOnChipTotal({
 .chip:focus-visible,
 .chipOn:focus-visible,
 .cta:focus-visible {
-  outline: 2px solid var(--ac-raspberry);
+  outline: 2px solid #c0285a;
   outline-offset: 3px;
 }
 
@@ -527,15 +515,15 @@ export default function AddOnChipTotal({
   inline-size: 24px;
   block-size: 24px;
   border-radius: 50%;
-  background: var(--ac-pistachio-soft);
-  color: var(--ac-pistachio-ink);
+  background: #eaf1df;
+  color: #2c3d26;
   transition:
     background-color 200ms ease,
     color 200ms ease;
 }
 
 .chipOn .chipIcon {
-  background: var(--ac-raspberry);
+  background: #c0285a;
   color: #fff;
 }
 
@@ -574,12 +562,12 @@ export default function AddOnChipTotal({
   font-size: 14px;
   font-weight: 450;
   font-variant-numeric: tabular-nums;
-  color: var(--ac-muted);
+  color: #6b6a5d;
   transition: color 200ms ease;
 }
 
 .chipOn .chipPrice {
-  color: color-mix(in srgb, var(--ac-raspberry-deep) 75%, transparent);
+  color: color-mix(in srgb, #a01f4b 75%, transparent);
 }
 
 .ghost {
@@ -592,7 +580,7 @@ export default function AddOnChipTotal({
   align-items: center;
   padding-inline: 16px;
   border-radius: 999px;
-  background: var(--ac-raspberry);
+  background: #c0285a;
   color: #fff;
   font-size: 15px;
   font-weight: 500;
@@ -612,10 +600,10 @@ export default function AddOnChipTotal({
   min-inline-size: 0;
   padding-block: 22px;
   padding-inline: 22px;
-  border: 1px solid var(--ac-line);
+  border: 1px solid rgba(44, 61, 38, 0.14);
   border-radius: 20px;
-  background: var(--ac-surface);
-  color: var(--ac-ink);
+  background: #fffdf9;
+  color: #26261f;
   box-shadow:
     0 1px 2px rgba(44, 61, 38, 0.04),
     0 12px 32px -18px rgba(44, 61, 38, 0.22);
@@ -637,8 +625,8 @@ export default function AddOnChipTotal({
   box-sizing: border-box;
   padding-inline: 7px;
   border-radius: 999px;
-  background: var(--ac-pistachio-soft);
-  color: var(--ac-pistachio-ink);
+  background: #eaf1df;
+  color: #2c3d26;
   font-size: 12px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -650,7 +638,7 @@ export default function AddOnChipTotal({
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--ac-muted);
+  color: #6b6a5d;
   overflow-wrap: anywhere;
 }
 
@@ -681,13 +669,13 @@ export default function AddOnChipTotal({
   margin-block-end: 8px;
   padding-block: 12px;
   border-radius: 12px;
-  background: var(--ac-pistachio-soft);
+  background: #eaf1df;
   font-weight: 600;
-  color: var(--ac-pistachio-ink);
+  color: #2c3d26;
 }
 
 .row {
-  color: var(--ac-ink);
+  color: #26261f;
 }
 
 .rowPending {
@@ -706,7 +694,7 @@ export default function AddOnChipTotal({
 .rowPrice {
   flex: none;
   font-variant-numeric: tabular-nums;
-  color: var(--ac-muted);
+  color: #6b6a5d;
 }
 
 .rowBase .rowPrice {
@@ -720,13 +708,13 @@ export default function AddOnChipTotal({
   justify-content: space-between;
   gap: 4px 12px;
   padding-block-start: 16px;
-  border-block-start: 1px solid var(--ac-line);
+  border-block-start: 1px solid rgba(44, 61, 38, 0.14);
 }
 
 .totalLabel {
   font-size: 15px;
   font-weight: 500;
-  color: var(--ac-muted);
+  color: #6b6a5d;
   overflow-wrap: anywhere;
 }
 
@@ -738,7 +726,7 @@ export default function AddOnChipTotal({
   line-height: 1.1;
   letter-spacing: -0.035em;
   font-variant-numeric: tabular-nums lining-nums;
-  color: var(--ac-raspberry-deep);
+  color: #a01f4b;
 }
 
 .rollStatic {
@@ -777,7 +765,7 @@ export default function AddOnChipTotal({
   padding-inline: 20px;
   border: 0;
   border-radius: 14px;
-  background: var(--ac-raspberry);
+  background: #c0285a;
   color: #fff;
   font: inherit;
   font-size: 15px;
@@ -793,7 +781,7 @@ export default function AddOnChipTotal({
 }
 
 .cta:hover {
-  background: var(--ac-raspberry-deep);
+  background: #a01f4b;
 }
 
 .cta:active {

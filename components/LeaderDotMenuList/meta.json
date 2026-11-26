@@ -10,10 +10,7 @@
     "Items (name, price, description)",
     "Currency symbol",
     "Heading",
-    "Small line above the heading",
-    "Text color",
-    "Accent color",
-    "Paper color"
+    "Small line above the heading"
   ],
   "site_types": [
     "restaurant",

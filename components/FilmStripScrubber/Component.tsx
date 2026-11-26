@@ -10,7 +10,6 @@ export interface FilmStripPhoto {
 export interface FilmStripScrubberProps {
   photos?: FilmStripPhoto[];
   frameRatio?: '16:9' | '3:2' | '4:3' | '1:1';
-  stripColor?: string;
   filmLabel?: string;
   className?: string;
 }
@@ -74,7 +73,6 @@ const STRIP_HELP =
 export default function FilmStripScrubber({
   photos = defaultPhotos,
   frameRatio = '3:2',
-  stripColor = '#4b5158',
   filmLabel = 'PORTRA 400',
   className,
 }: FilmStripScrubberProps) {
@@ -360,7 +358,6 @@ export default function FilmStripScrubber({
   const photo = photos[safeIndex];
   const r = RATIO[frameRatio] ?? RATIO['3:2'];
   const rootStyle = {
-    '--fs-acetate': stripColor,
     '--fs-ratio': r.ratio,
     '--fs-ratio-w': String(r.w),
   } as CSSProperties;

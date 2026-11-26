@@ -434,21 +434,10 @@ export default function FlipMenuCard({
 /* ───────── stage: a tomato-red gingham tablecloth, seen from above ───────── */
 
 .root {
-  --fm-red: #c23a1e;
-  --fm-red-deep: #8f2610;
-  --fm-red-a: #cf4626;
-  --fm-red-b: #a02a12;
-  --fm-paper: #fbf5e4;
-  --fm-paper-hi: #fffcef;
-  --fm-paper-shade: #eadcb8;
-  --fm-rim: #fffef8;
-  --fm-ink: #2a1c14;
-  --fm-cloth: #fbf1db;
   --fm-hand: 'Caveat', 'Segoe Script', cursive;
   --fm-display: 'Oswald', 'Arial Narrow', Impact, sans-serif;
   --fm-ui: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --fm-ease: cubic-bezier(0.3, 1.22, 0.42, 1);
-  --fm-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.32  0 0 0 0 0.22  0 0 0 0 0.1  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   --fm-cell: clamp(30px, 4.6cqw, 54px);
 
   position: relative;
@@ -461,15 +450,15 @@ export default function FlipMenuCard({
   padding: clamp(30px, 5.4cqw, 64px) clamp(14px, 4cqw, 40px) clamp(38px, 6cqw, 72px);
   border-radius: 24px;
   overflow: clip;
-  background: var(--fm-cloth);
-  color: var(--fm-ink);
+  background: #fbf1db;
+  color: #2a1c14;
   font-family: var(--fm-ui);
   font-weight: 500;
 }
 
 .root::selection {
-  background: var(--fm-red);
-  color: var(--fm-paper);
+  background: #c23a1e;
+  color: #fbf5e4;
 }
 
 .defs {
@@ -510,7 +499,7 @@ export default function FlipMenuCard({
   background-image:
     repeating-linear-gradient(45deg, rgba(60, 20, 8, 0.07) 0 1px, transparent 1px 3px),
     repeating-linear-gradient(-45deg, rgba(255, 250, 235, 0.16) 0 1px, transparent 1px 3px),
-    var(--fm-noise);
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.32  0 0 0 0 0.22  0 0 0 0 0.1  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   mix-blend-mode: multiply;
   opacity: 0.8;
 }
@@ -632,7 +621,7 @@ export default function FlipMenuCard({
 }
 
 .tilt:focus-visible {
-  outline: 2px solid var(--fm-paper-hi);
+  outline: 2px solid #fffcef;
   outline-offset: 10px;
 }
 
@@ -688,7 +677,7 @@ export default function FlipMenuCard({
 .padKraft {
   inset: -0.6cqw -1.4cqw -4.6cqw;
   background:
-    var(--fm-noise),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.32  0 0 0 0 0.22  0 0 0 0 0.1  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
     linear-gradient(180deg, #bd9565, #a37a4f);
   box-shadow: 0 0.3cqw 0.6cqw rgba(60, 20, 8, 0.4);
   transform: translate(0.4cqw, 1cqw) rotate(0.5deg);
@@ -715,7 +704,7 @@ export default function FlipMenuCard({
   grid-area: 1 / 1;
   position: relative;
   display: grid;
-  background: var(--fm-rim);
+  background: #fffef8;
   clip-path: var(--fm-tear-out);
   -webkit-mask: radial-gradient(circle 1.75cqw at 50% 0, transparent 97%, #000 100%) 50% 0 / 6.4cqw 100% repeat-x;
   mask: radial-gradient(circle 1.75cqw at 50% 0, transparent 97%, #000 100%) 50% 0 / 6.4cqw 100% repeat-x;
@@ -731,14 +720,14 @@ export default function FlipMenuCard({
   clip-path: var(--fm-tear-in);
   background:
     radial-gradient(130% 90% at 50% 42%, transparent 58%, rgba(166, 118, 52, 0.17) 100%),
-    linear-gradient(176deg, var(--fm-paper-hi) 0%, var(--fm-paper) 48%, var(--fm-paper-shade) 100%);
+    linear-gradient(176deg, #fffcef 0%, #fbf5e4 48%, #eadcb8 100%);
 }
 
 .paper::after {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: var(--fm-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.32  0 0 0 0 0.22  0 0 0 0 0.1  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.3;
   mix-blend-mode: multiply;
   pointer-events: none;
@@ -752,14 +741,14 @@ export default function FlipMenuCard({
   transform: rotateY(180deg);
   contain: size;
   grid-template-rows: minmax(0, 1fr);
-  color: var(--fm-paper);
+  color: #fbf5e4;
 }
 
 .paperBack {
   background:
     radial-gradient(120% 60% at 18% 0%, rgba(255, 170, 125, 0.34), transparent 62%),
     radial-gradient(130% 90% at 50% 42%, transparent 55%, rgba(60, 10, 0, 0.3) 100%),
-    linear-gradient(172deg, var(--fm-red-a) 0%, var(--fm-red-b) 100%);
+    linear-gradient(172deg, #cf4626 0%, #a02a12 100%);
 }
 
 .paperBack::after {
@@ -1000,7 +989,7 @@ export default function FlipMenuCard({
   font-weight: 700;
   font-size: 6.3cqw;
   line-height: 1.1;
-  color: var(--fm-red-deep);
+  color: #8f2610;
   transform: rotate(-0.8deg);
 }
 
@@ -1016,7 +1005,7 @@ export default function FlipMenuCard({
   margin-inline: 2cqw;
   border-radius: 50%;
   vertical-align: middle;
-  background: var(--fm-red);
+  background: #c23a1e;
   opacity: 0.7;
 }
 
@@ -1087,7 +1076,7 @@ export default function FlipMenuCard({
   font-size: calc(var(--fm-name, 9.6) * 1cqw);
   line-height: 1.04;
   letter-spacing: 0;
-  color: var(--fm-ink);
+  color: #2a1c14;
   text-wrap: balance;
   word-break: keep-all;
   overflow-wrap: normal;
@@ -1114,7 +1103,7 @@ export default function FlipMenuCard({
 }
 
 .scribblePath {
-  stroke: var(--fm-red);
+  stroke: #c23a1e;
   stroke-width: 1.9;
   stroke-dasharray: 1;
   stroke-dashoffset: 0;
@@ -1137,14 +1126,14 @@ export default function FlipMenuCard({
   align-items: baseline;
   gap: 1cqw;
   padding: 0.9cqw 2.6cqw 1cqw;
-  border: 0.6cqw solid var(--fm-red);
+  border: 0.6cqw solid #c23a1e;
   border-radius: 1.4cqw;
-  outline: 0.22cqw solid var(--fm-red);
+  outline: 0.22cqw solid #c23a1e;
   outline-offset: 0.5cqw;
   font-family: var(--fm-display);
   font-weight: 800;
   line-height: 1;
-  color: var(--fm-red);
+  color: #c23a1e;
   mix-blend-mode: multiply;
   opacity: 0.93;
   transform: rotate(8deg);
@@ -1190,7 +1179,7 @@ export default function FlipMenuCard({
   font-weight: 700;
   font-size: 24cqw;
   line-height: 1;
-  color: var(--fm-red);
+  color: #c23a1e;
 }
 
 /* ───────── back: the reverse of the slip — red stock, written on in white pen ───────── */
@@ -1308,7 +1297,7 @@ export default function FlipMenuCard({
   isolation: isolate;
   margin-block-start: auto;
   padding: 6.4cqw 5.4cqw 5cqw;
-  color: var(--fm-ink);
+  color: #2a1c14;
   transform: rotate(-1.3deg);
   flex: none;
 }
@@ -1319,7 +1308,7 @@ export default function FlipMenuCard({
   inset: 0;
   z-index: -1;
   background:
-    var(--fm-noise),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.32  0 0 0 0 0.22  0 0 0 0 0.1  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
     linear-gradient(176deg, #fffcef, #f6ebcf);
   background-blend-mode: multiply, normal;
   clip-path: polygon(0 1.3cqw, 4% 0.1cqw, 9% 1.4cqw, 15% 0.3cqw, 22% 1.5cqw, 30% 0.2cqw, 38% 1.3cqw, 46% 0, 54% 1.5cqw, 63% 0.3cqw, 71% 1.4cqw, 80% 0, 88% 1.3cqw, 94% 0.2cqw, 100% 1.1cqw, 100% 100%, 0 100%);
@@ -1340,7 +1329,7 @@ export default function FlipMenuCard({
   font-weight: 700;
   font-size: 6cqw;
   line-height: 1.1;
-  color: var(--fm-red);
+  color: #c23a1e;
 }
 
 .note {
@@ -1349,7 +1338,7 @@ export default function FlipMenuCard({
   font-weight: 700;
   font-size: 5.3cqw;
   line-height: 1.28;
-  color: var(--fm-ink);
+  color: #2a1c14;
 }
 
 /* ───────── motion ───────── */

@@ -9,9 +9,7 @@
   "owner_settings": [
     "Group heading",
     "Options (label, description, price)",
-    "Selected option",
-    "Primary color (pink)",
-    "Secondary color (blue)"
+    "Selected option"
   ],
   "site_types": [
     "store",

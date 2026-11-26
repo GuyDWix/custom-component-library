@@ -1,6 +1,6 @@
 Create a custom element called "Drawer Pull Card". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: card title, image, drawer contents (rows of label and value), handle label, wood or metal tone, subtitle, image description. Add other settings if they help.
+The site owner must be able to change: card title, image, drawer contents (rows of label and value), handle label, subtitle, image description. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
@@ -19,7 +19,6 @@ export interface DrawerPullCardProps {
   subtitle?: string;
   handleLabel?: string;
   rows?: DrawerPullCardRow[];
-  tone?: 'oak' | 'walnut' | 'steel';
   className?: string;
 }
 
@@ -45,7 +44,6 @@ export default function DrawerPullCard({
   subtitle = 'Neighborhood dining room · Fernwood',
   handleLabel = 'House hours',
   rows = defaultRows,
-  tone = 'oak',
   className,
 }: DrawerPullCardProps) {
   const [open, setOpen] = useState(false);
@@ -182,7 +180,6 @@ export default function DrawerPullCard({
     <div
       ref={rootRef}
       className={[styles.root, className].filter(Boolean).join(' ')}
-      data-tone={tone}
       data-title={tier}
       onKeyDown={onKeyDown}
     >
@@ -265,14 +262,6 @@ export default function DrawerPullCard({
 ```css
 /* Soft UI: one surface colour, depth from paired light/dark shadows, one teal accent. */
 .root {
-  --surface: #e6e1d9;
-  --hi: rgba(255, 255, 255, 0.85);
-  --lo: rgba(120, 104, 82, 0.34);
-  --ink: #23201c;
-  --muted: #55504a;
-  --accent: #0f766e;
-  --accent-ink: #ffffff;
-  --focus: #0b514b;
   --font: 'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
   --pad: clamp(1.25rem, 6cqi, 2.5rem);
   --d: clamp(4px, 1.5cqi, 9px);
@@ -280,26 +269,8 @@ export default function DrawerPullCard({
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  color: var(--ink);
+  color: #23201c;
   font-family: var(--font);
-}
-
-.root[data-tone='walnut'] {
-  --surface: #2d3036;
-  --hi: rgba(255, 255, 255, 0.07);
-  --lo: rgba(0, 0, 0, 0.55);
-  --ink: #eceef1;
-  --muted: #b4bac2;
-  --accent: #2dd4bf;
-  --accent-ink: #0b1f1d;
-  --focus: #5eead4;
-}
-
-.root[data-tone='steel'] {
-  --surface: #dde3ea;
-  --hi: rgba(255, 255, 255, 0.9);
-  --lo: rgba(88, 108, 132, 0.34);
-  --muted: #4a5662;
 }
 
 .root *,
@@ -310,11 +281,11 @@ export default function DrawerPullCard({
 
 .card {
   margin: 0;
-  background: var(--surface);
+  background: #e6e1d9;
   border-radius: 28px;
   overflow: clip;
-  box-shadow: calc(var(--d) * 1.6) calc(var(--d) * 1.6) calc(var(--d) * 3.2) var(--lo),
-    calc(var(--d) * -1.6) calc(var(--d) * -1.6) calc(var(--d) * 3.2) var(--hi);
+  box-shadow: calc(var(--d) * 1.6) calc(var(--d) * 1.6) calc(var(--d) * 3.2) rgba(120, 104, 82, 0.34),
+    calc(var(--d) * -1.6) calc(var(--d) * -1.6) calc(var(--d) * 3.2) rgba(255, 255, 255, 0.85);
 }
 
 .top {
@@ -328,16 +299,16 @@ export default function DrawerPullCard({
   margin: 0;
   padding: 6px;
   border-radius: 22px;
-  background: var(--surface);
-  box-shadow: inset var(--d) var(--d) calc(var(--d) * 1.8) var(--lo),
-    inset calc(var(--d) * -1) calc(var(--d) * -1) calc(var(--d) * 1.8) var(--hi);
+  background: #e6e1d9;
+  box-shadow: inset var(--d) var(--d) calc(var(--d) * 1.8) rgba(120, 104, 82, 0.34),
+    inset calc(var(--d) * -1) calc(var(--d) * -1) calc(var(--d) * 1.8) rgba(255, 255, 255, 0.85);
 }
 
 .figureInner {
   aspect-ratio: 4 / 3;
   border-radius: 17px;
   overflow: hidden;
-  background: color-mix(in srgb, var(--ink) 8%, var(--surface));
+  background: color-mix(in srgb, #23201c 8%, #e6e1d9);
 }
 
 .photo {
@@ -364,7 +335,7 @@ export default function DrawerPullCard({
 .subtitle {
   order: -1;
   margin: 0;
-  color: var(--muted);
+  color: #55504a;
   font-size: clamp(0.9375rem, 2.6cqi, 1.0625rem);
   font-weight: 400;
   line-height: 1.4;
@@ -405,23 +376,23 @@ export default function DrawerPullCard({
   margin: var(--pad) var(--pad) 0;
   padding: 1rem 1rem 1rem 1.5rem;
   border-radius: 20px;
-  background: var(--surface);
-  color: var(--ink);
+  background: #e6e1d9;
+  color: #23201c;
   cursor: pointer;
   box-shadow: calc(var(--d) * (0.8 + var(--dp-pull, 0) * 0.6)) calc(var(--d) * (0.8 + var(--dp-pull, 0) * 0.9))
-      calc(var(--d) * (1.8 + var(--dp-pull, 0) * 1.2)) var(--lo),
-    calc(var(--d) * -0.8) calc(var(--d) * -0.8) calc(var(--d) * 1.8) var(--hi);
+      calc(var(--d) * (1.8 + var(--dp-pull, 0) * 1.2)) rgba(120, 104, 82, 0.34),
+    calc(var(--d) * -0.8) calc(var(--d) * -0.8) calc(var(--d) * 1.8) rgba(255, 255, 255, 0.85);
   transition: box-shadow 140ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .front:active {
-  box-shadow: inset calc(var(--d) * 0.7) calc(var(--d) * 0.7) calc(var(--d) * 1.4) var(--lo),
-    inset calc(var(--d) * -0.7) calc(var(--d) * -0.7) calc(var(--d) * 1.4) var(--hi);
+  box-shadow: inset calc(var(--d) * 0.7) calc(var(--d) * 0.7) calc(var(--d) * 1.4) rgba(120, 104, 82, 0.34),
+    inset calc(var(--d) * -0.7) calc(var(--d) * -0.7) calc(var(--d) * 1.4) rgba(255, 255, 255, 0.85);
 }
 
 .front:focus-visible {
-  outline: 3px solid var(--focus);
+  outline: 3px solid #0b514b;
   outline-offset: 4px;
 }
 
@@ -442,7 +413,7 @@ export default function DrawerPullCard({
 }
 
 .stateWord {
-  color: var(--muted);
+  color: #55504a;
   font-size: 0.9375rem;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -455,9 +426,9 @@ export default function DrawerPullCard({
   inline-size: 3rem;
   block-size: 3rem;
   border-radius: 50%;
-  background: var(--accent);
-  box-shadow: calc(var(--d) * 0.5) calc(var(--d) * 0.5) calc(var(--d) * 1.1) var(--lo),
-    calc(var(--d) * -0.5) calc(var(--d) * -0.5) calc(var(--d) * 1.1) var(--hi);
+  background: #0f766e;
+  box-shadow: calc(var(--d) * 0.5) calc(var(--d) * 0.5) calc(var(--d) * 1.1) rgba(120, 104, 82, 0.34),
+    calc(var(--d) * -0.5) calc(var(--d) * -0.5) calc(var(--d) * 1.1) rgba(255, 255, 255, 0.85);
   transition: transform 160ms ease;
 }
 
@@ -473,7 +444,7 @@ export default function DrawerPullCard({
   block-size: 2.5px;
   margin: -1.25px 0 0 -0.5625rem;
   border-radius: 2px;
-  background: var(--accent-ink);
+  background: #ffffff;
 }
 
 .pullV {
@@ -487,15 +458,15 @@ export default function DrawerPullCard({
   margin-inline: var(--pad);
   margin-block-start: calc(var(--pad) * -0.25);
   border-radius: 0 0 20px 20px;
-  background: var(--surface);
-  box-shadow: inset var(--d) var(--d) calc(var(--d) * 1.8) var(--lo),
-    inset calc(var(--d) * -1) calc(var(--d) * -1) calc(var(--d) * 1.8) var(--hi);
+  background: #e6e1d9;
+  box-shadow: inset var(--d) var(--d) calc(var(--d) * 1.8) rgba(120, 104, 82, 0.34),
+    inset calc(var(--d) * -1) calc(var(--d) * -1) calc(var(--d) * 1.8) rgba(255, 255, 255, 0.85);
 }
 
 .interior {
   visibility: hidden;
   padding: calc(var(--pad) * 0.5) clamp(1rem, 4cqi, 1.75rem) clamp(1rem, 4cqi, 1.5rem);
-  color: var(--ink);
+  color: #23201c;
 }
 
 .rowsScroll {
@@ -505,7 +476,7 @@ export default function DrawerPullCard({
 }
 
 .rowsScroll:focus-visible {
-  outline: 3px solid var(--focus);
+  outline: 3px solid #0b514b;
   outline-offset: 2px;
 }
 
@@ -521,7 +492,7 @@ export default function DrawerPullCard({
   align-items: baseline;
   gap: 1rem;
   padding: 0.875rem 0;
-  border-block-end: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+  border-block-end: 1px solid color-mix(in srgb, #23201c 14%, transparent);
   opacity: clamp(0, calc(var(--dp-pull, 0) * 1.8 - var(--dp-i, 0) * 0.14), 1);
 }
 
@@ -531,7 +502,7 @@ export default function DrawerPullCard({
 
 .rowLabel {
   margin: 0;
-  color: var(--muted);
+  color: #55504a;
   font-size: clamp(0.9375rem, 2.8cqi, 1.0625rem);
   line-height: 1.3;
   overflow-wrap: anywhere;

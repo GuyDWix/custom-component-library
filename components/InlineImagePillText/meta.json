@@ -10,8 +10,6 @@
     "Sentence",
     "Pills (position = word number to replace, image)",
     "Pill height",
-    "Text color",
-    "Background color",
     "Small label",
     "Accessibility description"
   ],

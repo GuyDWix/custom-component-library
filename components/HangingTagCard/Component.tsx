@@ -8,8 +8,6 @@ export interface HangingTagCardProps {
   title?: string;
   price?: string;
   note?: string;
-  stringColor?: string;
-  inkColor?: string;
   tagShape?: HangingTagShape;
   className?: string;
 }
@@ -51,8 +49,6 @@ export default function HangingTagCard({
   title = 'Atelier Mug No. 12',
   price = '$38',
   note = 'Small-batch stoneware, thrown on the wheel and glazed in a soft sage green. Limited run of forty.',
-  stringColor = '#a87c4e',
-  inkColor = '#2c4a38',
   tagShape = 'classic',
   className,
 }: HangingTagCardProps) {
@@ -260,13 +256,8 @@ export default function HangingTagCard({
     }
   };
 
-  const rootStyle = {
-    '--ht-string': stringColor,
-    '--ht-ink': inkColor,
-  } as CSSProperties;
-
   return (
-    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
+    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')}>
       <span className={styles.wallBroad} aria-hidden="true" />
       <span className={styles.wallPlaster} aria-hidden="true" />
       <span className={styles.wallGrit} aria-hidden="true" />

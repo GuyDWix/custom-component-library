@@ -1,9 +1,5 @@
 .root {
-  --ec-pink: #fc51c9;
-  --ec-blue: #05ddfa;
-  --ec-bg: #070b1a;
-  --ec-ink: #f4f6ff;
-  --ec-muted: rgba(244, 246, 255, 0.68);
+  --accent: #fc51c9;
   --ec-font: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --ec-elastic: linear(0, 1.918 3%, 2.653 6%, 2.129 8%, 1.072 11%, 0.308 14%, 0.217 17%, 0.641 19%, 1.151 22%, 1.405 25%, 1.326 28%, 1.071 31%, 0.853 33%, 0.796 36%, 0.884 39%, 1.016 42%, 1.096 44%, 1.091 47%, 1.031 50%, 0.971 53%, 0.948 56%, 0.965 58%, 0.998 61%, 1.022 64%, 1.024 67%, 1.011 69%, 0.995 72%, 0.987 75%, 0.99 78%, 0.998 81%, 1.005 83%, 1.006 86%, 1.004 89%, 1 92%, 0.997 94%, 0.997 97%, 1);
 
@@ -14,9 +10,9 @@
   padding: clamp(28px, 7cqi, 72px);
   border: 0;
   border-radius: 28px;
-  background: radial-gradient(120% 90% at 50% 0%, #101a3d 0%, var(--ec-bg) 62%);
+  background: radial-gradient(120% 90% at 50% 0%, #101a3d 0%, #070b1a 62%);
   font-family: var(--ec-font);
-  color: var(--ec-ink);
+  color: #f4f6ff;
   container-type: inline-size;
 }
 
@@ -105,12 +101,12 @@
 
 .pink,
 .pinkOn {
-  stroke: var(--ec-pink);
+  stroke: var(--accent);
 }
 
 .blue,
 .blueOn {
-  stroke: var(--ec-blue);
+  stroke: #05ddfa;
   mix-blend-mode: color-dodge;
 }
 
@@ -127,7 +123,7 @@
   font-size: 0.9375rem;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-  color: var(--ec-ink);
+  color: #f4f6ff;
 }
 
 .label {
@@ -135,14 +131,14 @@
   font-weight: 500;
   letter-spacing: -0.01em;
   overflow-wrap: anywhere;
-  color: var(--ec-muted);
+  color: rgba(244, 246, 255, 0.68);
   transition: color 0.3s ease-out, text-shadow 0.3s ease-out;
 }
 
 .rowOn .label {
   font-weight: 650;
   color: #fff;
-  text-shadow: var(--ec-pink) 0 0 12px;
+  text-shadow: var(--accent) 0 0 12px;
   transition: color 1s ease-out, text-shadow 1s ease-out;
 }
 
@@ -150,7 +146,7 @@
   max-inline-size: 22ch;
   font-size: 0.875rem;
   line-height: 1.4;
-  color: var(--ec-muted);
+  color: rgba(244, 246, 255, 0.68);
   overflow-wrap: anywhere;
 }
 

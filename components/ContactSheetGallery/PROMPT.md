@@ -1,6 +1,6 @@
 Create a custom element called "Contact Sheet Gallery". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: photos (image, caption, picked mark), frame numbers on/off, marker color, table light tone, title, roll label. Add other settings if they help.
+The site owner must be able to change: photos (image, caption, picked mark), frame numbers on/off, title, roll label. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -17,8 +17,6 @@ export interface ContactSheetGalleryProps {
   photos?: ContactSheetPhoto[];
   rollLabel?: string;
   showFrameNumbers?: boolean;
-  markerColor?: string;
-  paperTone?: string;
   ariaLabel?: string;
   photoLabel?: string;
   closeLabel?: string;
@@ -72,8 +70,6 @@ export default function ContactSheetGallery({
   photos = defaultPhotos,
   rollLabel = 'Roll 07 · 400 · Proof',
   showFrameNumbers = true,
-  markerColor = '#E8502E',
-  paperTone = '#F2EBDD',
   ariaLabel = 'Contact sheet',
   photoLabel = 'Photo',
   closeLabel = 'Close',
@@ -534,7 +530,6 @@ export default function ContactSheetGallery({
   const gridCols = { gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` };
   const isOpen = phase === 'open';
   const introRank = (i: number) => photos.slice(0, i).filter((p) => p.picked).length;
-  const rootStyle = { '--csg-paper': paperTone, '--csg-marker': markerColor } as CSSProperties;
   const on = (base: string, active: string, flag: boolean) => (flag ? `${base} ${active}` : base);
 
   const stripNode = (cells: number[], s: number, clone: boolean) => (
@@ -616,7 +611,7 @@ export default function ContactSheetGallery({
   );
 
   return (
-    <section ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle} aria-label={ariaLabel}>
+    <section ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} aria-label={ariaLabel}>
       <span className={styles.grain} aria-hidden="true" />
       <div
         ref={tableRef}
@@ -741,21 +736,10 @@ export default function ContactSheetGallery({
 }
 
 .root {
-  --csg-room: #131417;
-  --csg-paper: #f2ebdd;
-  --csg-marker: #e8502e;
-  --csg-ink: #eeeeea;
-  --csg-muted: rgba(238, 238, 234, 0.66);
-  --csg-table: color-mix(in srgb, var(--csg-paper) 38%, #e9e9e6);
   --csg-negative: invert(0.92) sepia(0.2) saturate(0.85) hue-rotate(172deg) brightness(1.04) contrast(0.9);
-  --csg-amber: #d9b27a;
-  --csg-mask: #d88c3c;
-  --csg-film: #1b1c1f;
   --csg-loupe: clamp(130px, 27cqi, 225px);
   --csg-font-display: 'Space Grotesk', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --csg-font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  --csg-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.47  0 0 0 0 0.42  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  --csg-holes: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='5'><rect x='3' y='0.5' width='6' height='4' rx='1'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -764,7 +748,7 @@ export default function ContactSheetGallery({
   box-sizing: border-box;
   inline-size: 100%;
   background: transparent;
-  color: var(--csg-ink);
+  color: #eeeeea;
   font-family: var(--csg-font-display);
   border-radius: 6px;
   box-shadow:
@@ -778,7 +762,7 @@ export default function ContactSheetGallery({
   inset: 0;
   pointer-events: none;
   z-index: 4;
-  background-image: var(--csg-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.47  0 0 0 0 0.42  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   mix-blend-mode: overlay;
   opacity: 0.07;
 }
@@ -790,9 +774,9 @@ export default function ContactSheetGallery({
   padding-block: clamp(22px, 4cqi, 42px) clamp(30px, 5.5cqi, 54px);
   background:
     linear-gradient(180deg,
-      color-mix(in srgb, var(--csg-table) 70%, #fff) 0%,
-      var(--csg-table) 55%,
-      color-mix(in srgb, var(--csg-table) 90%, #5d5d5a) 100%);
+      color-mix(in srgb, color-mix(in srgb, #f2ebdd 38%, #e9e9e6) 70%, #fff) 0%,
+      color-mix(in srgb, #f2ebdd 38%, #e9e9e6) 55%,
+      color-mix(in srgb, color-mix(in srgb, #f2ebdd 38%, #e9e9e6) 90%, #5d5d5a) 100%);
 }
 
 .table {
@@ -809,7 +793,7 @@ export default function ContactSheetGallery({
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background: radial-gradient(75% 52% at 50% 0%, color-mix(in srgb, var(--csg-paper) 30%, #fff) 0%, transparent 72%);
+  background: radial-gradient(75% 52% at 50% 0%, color-mix(in srgb, #f2ebdd 30%, #fff) 0%, transparent 72%);
   mix-blend-mode: screen;
   animation: bloom 7.5s ease-in-out infinite alternate;
 }
@@ -843,7 +827,7 @@ export default function ContactSheetGallery({
   margin-inline: -1%;
   padding-inline: 10px;
   border-radius: 2px;
-  background: linear-gradient(180deg, #232427, var(--csg-film) 40%, #151618);
+  background: linear-gradient(180deg, #232427, #1b1c1f 40%, #151618);
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.05),
     0 1px 1px rgba(20, 20, 22, 0.25),
@@ -863,10 +847,10 @@ export default function ContactSheetGallery({
   position: absolute;
   inset-inline: 0;
   block-size: 5px;
-  background: color-mix(in srgb, var(--csg-table) 80%, #fff);
+  background: color-mix(in srgb, color-mix(in srgb, #f2ebdd 38%, #e9e9e6) 80%, #fff);
   opacity: 0.8;
-  -webkit-mask: var(--csg-holes) repeat-x;
-  mask: var(--csg-holes) repeat-x;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='5'><rect x='3' y='0.5' width='6' height='4' rx='1'/></svg>") repeat-x;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='5'><rect x='3' y='0.5' width='6' height='4' rx='1'/></svg>") repeat-x;
 }
 
 .bandTop::before {
@@ -940,7 +924,7 @@ export default function ContactSheetGallery({
 }
 
 .frame:focus-visible {
-  outline: 2px solid var(--csg-amber);
+  outline: 2px solid #d9b27a;
   outline-offset: 3px;
 }
 
@@ -988,7 +972,7 @@ export default function ContactSheetGallery({
 
 .ringCore {
   fill: none;
-  stroke: var(--csg-marker);
+  stroke: #e8502e;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 1 2;
@@ -1066,7 +1050,7 @@ export default function ContactSheetGallery({
   inset: 3.5%;
   border-radius: 50%;
   overflow: hidden;
-  background: var(--csg-room);
+  background: #131417;
   box-shadow:
     inset 0 0 0 1px rgba(0, 0, 0, 0.55),
     inset 0 0 16px rgba(0, 0, 0, 0.3);
@@ -1109,7 +1093,7 @@ export default function ContactSheetGallery({
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background-image: var(--csg-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.47  0 0 0 0 0.42  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.06;
   mix-blend-mode: overlay;
 }
@@ -1242,7 +1226,7 @@ export default function ContactSheetGallery({
   pointer-events: none;
   background:
     linear-gradient(122deg, rgba(255, 255, 255, 0.24) 0%, transparent 36%),
-    var(--csg-noise);
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.47  0 0 0 0 0.42  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   mix-blend-mode: soft-light;
   opacity: 0.7;
 }
@@ -1298,7 +1282,7 @@ export default function ContactSheetGallery({
   justify-content: center;
   gap: 18px;
   padding-block-start: 14px;
-  color: var(--csg-ink);
+  color: #eeeeea;
   opacity: 0;
   transition: opacity 260ms ease;
 }
@@ -1310,7 +1294,7 @@ export default function ContactSheetGallery({
   font-size: 13px;
   letter-spacing: 0.12em;
   font-variant-numeric: tabular-nums;
-  color: var(--csg-muted);
+  color: rgba(238, 238, 234, 0.66);
 }
 
 .barButton,
@@ -1323,7 +1307,7 @@ export default function ContactSheetGallery({
   border-radius: 50%;
   border: 1px solid rgba(238, 238, 234, 0.24);
   background: rgba(20, 21, 24, 0.55);
-  color: var(--csg-ink);
+  color: #eeeeea;
   cursor: pointer;
   transition:
     background-color 200ms ease,
@@ -1345,7 +1329,7 @@ export default function ContactSheetGallery({
 
 .barButton:focus-visible,
 .close:focus-visible {
-  outline: 2px solid var(--csg-amber);
+  outline: 2px solid #d9b27a;
   outline-offset: 3px;
 }
 

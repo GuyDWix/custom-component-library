@@ -1,5 +1,4 @@
 import { useEffect, useId, useState } from 'react';
-import type { CSSProperties } from 'react';
 import styles from './Component.module.css';
 
 export interface ElasticChoiceOption {
@@ -13,8 +12,6 @@ export interface ElasticChoiceProps {
   groupLabel?: string;
   options?: ElasticChoiceOption[];
   value?: string;
-  primaryColor?: string;
-  secondaryColor?: string;
   onValueChange?: (value: string) => void;
   className?: string;
 }
@@ -33,8 +30,6 @@ export default function ElasticChoice({
   groupLabel = 'Choose your plan',
   options = defaultOptions,
   value,
-  primaryColor = '#fc51c9',
-  secondaryColor = '#05ddfa',
   onValueChange,
   className,
 }: ElasticChoiceProps) {
@@ -50,10 +45,9 @@ export default function ElasticChoice({
     onValueChange?.(v);
   };
 
-  const rootStyle = { '--ec-pink': primaryColor, '--ec-blue': secondaryColor } as CSSProperties;
 
   return (
-    <fieldset className={`${styles.root} ${className ?? ''}`} style={rootStyle}>
+    <fieldset className={`${styles.root} ${className ?? ''}`}>
       <legend className={styles.legend}>{groupLabel}</legend>
       <div className={styles.list}>
         {options.map((o, i) => {
@@ -73,7 +67,7 @@ export default function ElasticChoice({
                 onChange={() => choose(v)}
               />
               <span className={styles.disc}>
-                <svg className={styles.defs} width="0" height="0" aria-hidden="true"><defs><filter id={fid} x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="2" dy="2" stdDeviation="6" floodColor="var(--ec-pink)" floodOpacity="1" /></filter></defs></svg>
+                <svg className={styles.defs} width="0" height="0" aria-hidden="true"><defs><filter id={fid} x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="2" dy="2" stdDeviation="6" floodColor="var(--accent)" floodOpacity="1" /></filter></defs></svg>
                 <svg className={styles.mark} viewBox="0 0 60 60" aria-hidden="true">
                   <circle className={styles.track} cx="30" cy="30" r="15" transform="rotate(90 30 30)" />
                   <g className={styles.glowed} filter={`url(#${fid})`}>

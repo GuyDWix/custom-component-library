@@ -1,10 +1,10 @@
 Create a custom element called "Leader Dot Menu List". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: items (name, price, description), currency symbol, heading, small line above the heading, text color, accent color, paper color. Add other settings if they help.
+The site owner must be able to change: items (name, price, description), currency symbol, heading, small line above the heading. Add other settings if they help.
 
 ```tsx
 import { useEffect, useId, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent } from 'react';
+import type { KeyboardEvent } from 'react';
 import styles from './Component.module.css';
 
 export interface LeaderDotMenuItem {
@@ -18,9 +18,6 @@ export interface LeaderDotMenuListProps {
   heading?: string;
   items?: LeaderDotMenuItem[];
   currencySymbol?: string;
-  textColor?: string;
-  accentColor?: string;
-  paperColor?: string;
   className?: string;
 }
 
@@ -37,9 +34,6 @@ export default function LeaderDotMenuList({
   heading = 'Le Dîner',
   items = defaultItems,
   currencySymbol = '$',
-  textColor = '#1f2a44',
-  accentColor = '#a8392b',
-  paperColor = '#f6efdf',
   className,
 }: LeaderDotMenuListProps) {
   const [open, setOpen] = useState<number | null>(0);
@@ -69,16 +63,11 @@ export default function LeaderDotMenuList({
     buttons.current[next]?.focus();
   };
 
-  const rootStyle = {
-    '--ldm-ink': textColor,
-    '--ldm-accent': accentColor,
-    '--ldm-paper': paperColor,
-  } as CSSProperties;
 
   const formatPrice = (price?: string) => (price ? `${currencySymbol}${price}` : '');
 
   return (
-    <div className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
+    <div className={[styles.root, className].filter(Boolean).join(' ')}>
       <span className={styles.grain} aria-hidden="true" />
       <span className={styles.vignette} aria-hidden="true" />
 
@@ -159,13 +148,8 @@ export default function LeaderDotMenuList({
 
 ```css
 .root {
-  --ldm-ink: #1f2a44;
-  --ldm-accent: #a8392b;
-  --ldm-paper: #f6efdf;
-  --ldm-muted: color-mix(in srgb, var(--ldm-ink) 76%, var(--ldm-paper));
-  --ldm-dot: color-mix(in srgb, var(--ldm-ink) 42%, var(--ldm-paper));
+  --accent: #a8392b;
   --ldm-font-serif: 'Cormorant Garamond', 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
-  --ldm-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.27  0 0 0 0 0.15  0 0 0 .8 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -176,16 +160,13 @@ export default function LeaderDotMenuList({
   padding-block: 40px;
   padding-inline: 20px;
   border-radius: 4px;
-  background:
-    radial-gradient(90% 60% at 22% 0%, color-mix(in srgb, #fff 55%, transparent) 0%, transparent 70%),
-    repeating-linear-gradient(0deg, color-mix(in srgb, var(--ldm-ink) 2.5%, transparent) 0 1px, transparent 1px 5px),
-    var(--ldm-paper);
-  color: var(--ldm-ink);
+  background: #f6efdf;
+  color: #1f2a44;
   font-family: var(--ldm-font-serif);
   box-shadow:
     inset 0 1px 0 color-mix(in srgb, #fff 70%, transparent),
-    0 1px 2px color-mix(in srgb, var(--ldm-ink) 14%, transparent),
-    0 28px 56px -30px color-mix(in srgb, var(--ldm-ink) 45%, transparent);
+    0 1px 2px color-mix(in srgb, #1f2a44 14%, transparent),
+    0 28px 56px -30px color-mix(in srgb, #1f2a44 45%, transparent);
 }
 
 .grain,
@@ -197,14 +178,17 @@ export default function LeaderDotMenuList({
 
 .grain {
   z-index: 2;
-  background-image: var(--ldm-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.27  0 0 0 0 0.15  0 0 0 .8 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.2;
   mix-blend-mode: multiply;
 }
 
 .vignette {
   z-index: -1;
-  background: radial-gradient(120% 90% at 50% 40%, transparent 55%, color-mix(in srgb, #8a6a3a 14%, transparent) 100%);
+  background:
+    radial-gradient(120% 90% at 50% 40%, transparent 55%, color-mix(in srgb, #8a6a3a 14%, transparent) 100%),
+    radial-gradient(90% 60% at 22% 0%, color-mix(in srgb, #fff 55%, transparent) 0%, transparent 70%),
+    repeating-linear-gradient(0deg, color-mix(in srgb, #1f2a44 2.5%, transparent) 0 1px, transparent 1px 5px);
 }
 
 .sheet {
@@ -212,7 +196,7 @@ export default function LeaderDotMenuList({
   max-inline-size: 640px;
   margin-inline: auto;
   padding-block: 28px 18px;
-  border-block: 3px double color-mix(in srgb, var(--ldm-ink) 62%, transparent);
+  border-block: 3px double color-mix(in srgb, #1f2a44 62%, transparent);
 }
 
 .header {
@@ -229,7 +213,7 @@ export default function LeaderDotMenuList({
   font-weight: 600;
   font-variant-caps: all-small-caps;
   letter-spacing: 0.24em;
-  color: var(--ldm-accent);
+  color: var(--accent);
   overflow-wrap: anywhere;
 }
 
@@ -251,8 +235,8 @@ export default function LeaderDotMenuList({
   block-size: 9px;
   margin-block-start: 8px;
   background:
-    linear-gradient(90deg, transparent, var(--ldm-dot) 70%, transparent 70%) left center / 50% 1px no-repeat,
-    linear-gradient(270deg, transparent, var(--ldm-dot) 70%, transparent 70%) right center / 50% 1px no-repeat;
+    linear-gradient(90deg, transparent, color-mix(in srgb, #1f2a44 42%, #f6efdf) 70%, transparent 70%) left center / 50% 1px no-repeat,
+    linear-gradient(270deg, transparent, color-mix(in srgb, #1f2a44 42%, #f6efdf) 70%, transparent 70%) right center / 50% 1px no-repeat;
 }
 
 .fleuron::before {
@@ -262,7 +246,7 @@ export default function LeaderDotMenuList({
   inset-inline-start: 50%;
   inline-size: 7px;
   block-size: 7px;
-  background: var(--ldm-accent);
+  background: var(--accent);
   transform: translate(-50%, -50%) rotate(45deg);
 }
 
@@ -289,8 +273,8 @@ export default function LeaderDotMenuList({
   border-radius: 10px;
   background:
     radial-gradient(80% 120% at 0% 0%, color-mix(in srgb, #fff 60%, transparent), transparent 70%),
-    color-mix(in srgb, var(--ldm-accent) 7%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ldm-accent) 12%, transparent);
+    color-mix(in srgb, var(--accent) 7%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
   opacity: var(--ldm-open);
   transition: opacity 360ms cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
@@ -331,7 +315,7 @@ export default function LeaderDotMenuList({
 }
 
 .row:focus-visible {
-  outline: 2px solid var(--ldm-accent);
+  outline: 2px solid var(--accent);
   outline-offset: 4px;
 }
 
@@ -352,13 +336,13 @@ export default function LeaderDotMenuList({
   min-inline-size: 24px;
   block-size: 4px;
   margin-inline: 8px;
-  background: radial-gradient(circle, var(--ldm-dot) 1px, transparent 1.4px) right bottom / 8px 4px repeat-x;
+  background: radial-gradient(circle, color-mix(in srgb, #1f2a44 42%, #f6efdf) 1px, transparent 1.4px) right bottom / 8px 4px repeat-x;
 }
 
 .leaderFill {
   position: absolute;
   inset: -1px 0;
-  background: radial-gradient(circle, var(--ldm-accent) 1.6px, transparent 2px) right center / 8px 6px repeat-x;
+  background: radial-gradient(circle, var(--accent) 1.6px, transparent 2px) right center / 8px 6px repeat-x;
   clip-path: inset(0 calc((1 - var(--ldm-lit)) * 100%) 0 0);
   transition: clip-path 680ms cubic-bezier(0.65, 0, 0.35, 1);
 }
@@ -373,7 +357,7 @@ export default function LeaderDotMenuList({
   line-height: 1.2;
   text-align: end;
   overflow-wrap: anywhere;
-  color: color-mix(in srgb, var(--ldm-accent) calc(var(--ldm-lit) * 100%), var(--ldm-ink));
+  color: color-mix(in srgb, var(--accent) calc(var(--ldm-lit) * 100%), #1f2a44);
   transition: color 420ms cubic-bezier(0.22, 1, 0.36, 1) 160ms;
 }
 
@@ -403,7 +387,7 @@ export default function LeaderDotMenuList({
   font-size: 18px;
   font-style: italic;
   line-height: 1.45;
-  color: var(--ldm-muted);
+  color: color-mix(in srgb, #1f2a44 76%, #f6efdf);
   overflow-wrap: anywhere;
   opacity: var(--ldm-reveal);
   transform: translateY(calc((1 - var(--ldm-reveal)) * -6px));

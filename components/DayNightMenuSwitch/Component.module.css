@@ -1,22 +1,11 @@
 /* Golden hour to candlelight: apricot and cream day, aubergine and amber evening, one sky that swaps the menu. */
 
 .root {
-  --dn-day: #f6a25c;
-  --dn-paper: #fff1de;
-  --dn-night: #2a1234;
-  --dn-glow: #ffb347;
   --dn-play: running;
-  --dn-ink: color-mix(in srgb, var(--dn-night) 88%, #000);
-  --dn-ink-soft: color-mix(in srgb, var(--dn-ink) 74%, var(--dn-paper));
-  --dn-cream: var(--dn-paper);
-  --dn-cream-soft: color-mix(in srgb, var(--dn-paper) 74%, var(--dn-night));
-  --dn-sun: color-mix(in srgb, var(--dn-day) 38%, #ffd067);
-  --dn-sun-deep: color-mix(in srgb, var(--dn-day) 72%, #ff7a3a);
   --dn-font-display: 'Bricolage Grotesque', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --dn-font-ui: 'Instrument Sans', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --dn-ease: cubic-bezier(0.62, 0.02, 0.28, 1);
   --dn-spring: cubic-bezier(0.34, 1.5, 0.5, 1);
-  --dn-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .8 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -28,16 +17,16 @@
   --dn-card-r: 28px;
   --dn-panel-r: calc(var(--dn-card-r) * 1.75);
   border-radius: var(--dn-card-r);
-  background: var(--dn-paper);
-  color: var(--dn-ink);
+  background: #fff1de;
+  color: color-mix(in srgb, #2a1234 88%, #000);
   font-family: var(--dn-font-ui);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 .root::selection {
-  background: var(--dn-glow);
-  color: var(--dn-ink);
+  background: #ffb347;
+  color: color-mix(in srgb, #2a1234 88%, #000);
 }
 
 /* ---------------------------------------------------------------- scene */
@@ -74,26 +63,26 @@
 
 .skyDay {
   background:
-    radial-gradient(70% 60% at 50% 105%, color-mix(in srgb, var(--dn-paper) 92%, #fff) 0%, transparent 70%),
+    radial-gradient(70% 60% at 50% 105%, color-mix(in srgb, #fff1de 92%, #fff) 0%, transparent 70%),
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--dn-day) 86%, #ff6f5e) 0%,
-      var(--dn-day) 28%,
-      color-mix(in srgb, var(--dn-day) 42%, var(--dn-paper)) 64%,
-      var(--dn-paper) 100%
+      color-mix(in srgb, #f6a25c 86%, #ff6f5e) 0%,
+      #f6a25c 28%,
+      color-mix(in srgb, #f6a25c 42%, #fff1de) 64%,
+      #fff1de 100%
     );
 }
 
 .skyNight {
   opacity: 0;
   background:
-    radial-gradient(80% 46% at 38% 100%, color-mix(in srgb, var(--dn-glow) 42%, transparent) 0%, transparent 72%),
+    radial-gradient(80% 46% at 38% 100%, color-mix(in srgb, #ffb347 42%, transparent) 0%, transparent 72%),
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--dn-night) 74%, #000) 0%,
-      var(--dn-night) 42%,
-      color-mix(in srgb, var(--dn-night) 70%, var(--dn-glow)) 82%,
-      color-mix(in srgb, var(--dn-night) 52%, var(--dn-glow)) 100%
+      color-mix(in srgb, #2a1234 74%, #000) 0%,
+      #2a1234 42%,
+      color-mix(in srgb, #2a1234 70%, #ffb347) 82%,
+      color-mix(in srgb, #2a1234 52%, #ffb347) 100%
     );
 }
 
@@ -115,8 +104,8 @@
   inline-size: var(--dn-s);
   aspect-ratio: 1;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--dn-paper) 90%, var(--dn-glow));
-  box-shadow: 0 0 7px 1px color-mix(in srgb, var(--dn-glow) 60%, transparent);
+  background: color-mix(in srgb, #fff1de 90%, #ffb347);
+  box-shadow: 0 0 7px 1px color-mix(in srgb, #ffb347 60%, transparent);
 }
 
 .starLive {
@@ -178,8 +167,8 @@
 .sunHalo {
   background: radial-gradient(
     closest-side,
-    color-mix(in srgb, var(--dn-sun) 62%, transparent) 0%,
-    color-mix(in srgb, var(--dn-sun) 26%, transparent) 38%,
+    color-mix(in srgb, color-mix(in srgb, #f6a25c 38%, #ffd067) 62%, transparent) 0%,
+    color-mix(in srgb, color-mix(in srgb, #f6a25c 38%, #ffd067) 26%, transparent) 38%,
     transparent 100%
   );
   animation: breathe 7s ease-in-out infinite;
@@ -192,7 +181,7 @@
   border-radius: 50%;
   background: repeating-conic-gradient(
     from 0deg,
-    color-mix(in srgb, #fff 72%, var(--dn-sun)) 0deg 1deg,
+    color-mix(in srgb, #fff 72%, color-mix(in srgb, #f6a25c 38%, #ffd067)) 0deg 1deg,
     transparent 1deg 6deg
   );
   -webkit-mask-image: radial-gradient(closest-side, transparent 64%, #000 65%, #000 70%, transparent 71%);
@@ -218,10 +207,10 @@
   border-radius: 50%;
   background:
     radial-gradient(circle at 34% 30%, #fffaf0 0%, #ffeab8 20%, transparent 46%),
-    radial-gradient(circle at 50% 50%, var(--dn-sun) 52%, var(--dn-sun-deep) 100%);
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, #f6a25c 38%, #ffd067) 52%, color-mix(in srgb, #f6a25c 72%, #ff7a3a) 100%);
   box-shadow:
-    inset -6px -8px 18px color-mix(in srgb, var(--dn-sun-deep) 70%, transparent),
-    0 0 36px 6px color-mix(in srgb, var(--dn-sun) 50%, transparent);
+    inset -6px -8px 18px color-mix(in srgb, color-mix(in srgb, #f6a25c 72%, #ff7a3a) 70%, transparent),
+    0 0 36px 6px color-mix(in srgb, color-mix(in srgb, #f6a25c 38%, #ffd067) 50%, transparent);
 }
 
 .sunDusk {
@@ -236,8 +225,8 @@
 .moonHalo {
   background: radial-gradient(
     closest-side,
-    color-mix(in srgb, var(--dn-paper) 34%, transparent) 0%,
-    color-mix(in srgb, var(--dn-glow) 18%, transparent) 46%,
+    color-mix(in srgb, #fff1de 34%, transparent) 0%,
+    color-mix(in srgb, #ffb347 18%, transparent) 46%,
     transparent 100%
   );
 }
@@ -255,7 +244,7 @@
     radial-gradient(circle at 30% 28%, #fffaf0 0%, #ffe9bd 52%, #e4bd86 100%);
   box-shadow:
     inset -9px -7px 20px rgba(120, 66, 70, 0.4),
-    0 0 40px 4px color-mix(in srgb, var(--dn-glow) 34%, transparent);
+    0 0 40px 4px color-mix(in srgb, #ffb347 34%, transparent);
 }
 
 /* ------------------------------------------------------------- landscape */
@@ -302,19 +291,19 @@
 }
 
 .farADay {
-  background: color-mix(in srgb, var(--dn-day) 74%, var(--dn-night) 26%);
+  background: color-mix(in srgb, #f6a25c 74%, #2a1234 26%);
 }
 
 .farBDay {
-  background: color-mix(in srgb, var(--dn-day) 86%, var(--dn-night) 14%);
+  background: color-mix(in srgb, #f6a25c 86%, #2a1234 14%);
 }
 
 .farANight {
-  background: color-mix(in srgb, var(--dn-night) 84%, #000);
+  background: color-mix(in srgb, #2a1234 84%, #000);
 }
 
 .farBNight {
-  background: color-mix(in srgb, var(--dn-night) 90%, var(--dn-glow) 10%);
+  background: color-mix(in srgb, #2a1234 90%, #ffb347 10%);
 }
 
 .ground {
@@ -328,7 +317,7 @@
 }
 
 .groundDay {
-  background: linear-gradient(180deg, var(--dn-paper) 0%, color-mix(in srgb, var(--dn-paper) 86%, var(--dn-day)) 100%);
+  background: linear-gradient(180deg, #fff1de 0%, color-mix(in srgb, #fff1de 86%, #f6a25c) 100%);
   box-shadow: inset 0 2px 0 color-mix(in srgb, #fff 80%, transparent);
 }
 
@@ -336,10 +325,10 @@
   opacity: 0;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--dn-night) 72%, #000) 0%,
-    color-mix(in srgb, var(--dn-night) 56%, #000) 100%
+    color-mix(in srgb, #2a1234 72%, #000) 0%,
+    color-mix(in srgb, #2a1234 56%, #000) 100%
   );
-  box-shadow: inset 0 1.5px 0 color-mix(in srgb, var(--dn-glow) 46%, transparent);
+  box-shadow: inset 0 1.5px 0 color-mix(in srgb, #ffb347 46%, transparent);
 }
 
 .groundNight.fadeIn,
@@ -353,7 +342,7 @@
   inset-inline: -20%;
   inset-block-end: -16%;
   block-size: 64%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--dn-glow) 26%, transparent) 0%, transparent 100%);
+  background: radial-gradient(closest-side, color-mix(in srgb, #ffb347 26%, transparent) 0%, transparent 100%);
   opacity: 0;
   transition: opacity 1500ms ease-in-out 500ms;
 }
@@ -367,7 +356,7 @@
 .grain {
   position: absolute;
   inset: 0;
-  background-image: var(--dn-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .8 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   background-size: 180px 180px;
   mix-blend-mode: soft-light;
   opacity: 0.32;
@@ -404,7 +393,7 @@
 }
 
 .track {
-  --dn-focus: var(--dn-ink);
+  --dn-focus: color-mix(in srgb, #2a1234 88%, #000);
   position: relative;
   box-sizing: border-box;
   display: grid;
@@ -412,17 +401,17 @@
   padding: 4px;
   min-block-size: 56px;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--dn-ink) 20%, transparent);
-  background: color-mix(in srgb, var(--dn-paper) 36%, transparent);
+  border: 1px solid color-mix(in srgb, color-mix(in srgb, #2a1234 88%, #000) 20%, transparent);
+  background: color-mix(in srgb, #fff1de 36%, transparent);
   transition:
     background-color 900ms ease-in-out,
     border-color 900ms ease-in-out;
 }
 
 .trackNight {
-  --dn-focus: var(--dn-cream);
-  border-color: color-mix(in srgb, var(--dn-cream) 24%, transparent);
-  background: color-mix(in srgb, var(--dn-cream) 8%, transparent);
+  --dn-focus: #fff1de;
+  border-color: color-mix(in srgb, #fff1de 24%, transparent);
+  background: color-mix(in srgb, #fff1de 8%, transparent);
 }
 
 .thumb {
@@ -431,8 +420,8 @@
   inset-inline-start: 4px;
   inline-size: calc((100% - 8px) / 2);
   border-radius: 999px;
-  background: var(--dn-ink);
-  box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--dn-ink) 60%, transparent);
+  background: color-mix(in srgb, #2a1234 88%, #000);
+  box-shadow: 0 6px 16px -6px color-mix(in srgb, color-mix(in srgb, #2a1234 88%, #000) 60%, transparent);
   transition:
     translate 760ms var(--dn-spring),
     background-color 900ms ease-in-out;
@@ -440,7 +429,7 @@
 
 .thumbNight {
   translate: 100% 0;
-  background: var(--dn-cream);
+  background: #fff1de;
 }
 
 .glyphRing {
@@ -451,7 +440,7 @@
   inline-size: 26px;
   block-size: 26px;
   border-radius: 50%;
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--dn-sun) 30%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, color-mix(in srgb, #f6a25c 38%, #ffd067) 30%, transparent);
   transition: box-shadow 900ms ease-in-out;
 }
 
@@ -466,19 +455,19 @@
   block-size: 100%;
   overflow: clip;
   border-radius: 50%;
-  background: var(--dn-sun);
+  background: color-mix(in srgb, #f6a25c 38%, #ffd067);
   transition: background-color 900ms ease-in-out;
 }
 
 .glyphDiscNight {
-  background: var(--dn-ink);
+  background: color-mix(in srgb, #2a1234 88%, #000);
 }
 
 .glyphCut {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: var(--dn-ink);
+  background: color-mix(in srgb, #2a1234 88%, #000);
   translate: 125% -45%;
   transition:
     translate 900ms var(--dn-ease),
@@ -486,7 +475,7 @@
 }
 
 .glyphCutNight {
-  background: var(--dn-cream);
+  background: #fff1de;
   translate: 38% -22%;
 }
 
@@ -504,7 +493,7 @@
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--dn-ink);
+  color: color-mix(in srgb, #2a1234 88%, #000);
   font-family: var(--dn-font-display);
   font-size: 17px;
   font-weight: 600;
@@ -523,33 +512,33 @@
 }
 
 .optNight {
-  color: var(--dn-cream);
+  color: #fff1de;
 }
 
 .optOn {
-  color: var(--dn-paper);
+  color: #fff1de;
 }
 
 .optOnNight {
-  color: var(--dn-ink);
+  color: color-mix(in srgb, #2a1234 88%, #000);
 }
 
 /* ----------------------------------------------------------------- title */
 
 .toneDay {
-  --dn-text: var(--dn-ink);
-  --dn-soft: var(--dn-ink-soft);
-  --dn-hair: color-mix(in srgb, var(--dn-ink) 16%, transparent);
-  --dn-price: var(--dn-ink);
-  --dn-dot: var(--dn-sun-deep);
+  --dn-text: color-mix(in srgb, #2a1234 88%, #000);
+  --dn-soft: color-mix(in srgb, color-mix(in srgb, #2a1234 88%, #000) 74%, #fff1de);
+  --dn-hair: color-mix(in srgb, color-mix(in srgb, #2a1234 88%, #000) 16%, transparent);
+  --dn-price: color-mix(in srgb, #2a1234 88%, #000);
+  --dn-dot: color-mix(in srgb, #f6a25c 72%, #ff7a3a);
 }
 
 .toneNight {
-  --dn-text: var(--dn-cream);
-  --dn-soft: var(--dn-cream-soft);
-  --dn-hair: color-mix(in srgb, var(--dn-cream) 18%, transparent);
-  --dn-price: var(--dn-glow);
-  --dn-dot: var(--dn-glow);
+  --dn-text: #fff1de;
+  --dn-soft: color-mix(in srgb, #fff1de 74%, #2a1234);
+  --dn-hair: color-mix(in srgb, #fff1de 18%, transparent);
+  --dn-price: #ffb347;
+  --dn-dot: #ffb347;
 }
 
 .titleBlock {

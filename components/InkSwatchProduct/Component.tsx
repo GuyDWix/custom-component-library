@@ -775,7 +775,7 @@ export default function InkSwatchProduct({
   const titleLen = title.length;
   const titleCls = titleLen > 46 ? styles.titleLong : titleLen > 22 ? styles.titleMid : '';
 
-  const rootStyle = { '--pig-active': pigActive } as CSSProperties;
+  const rootStyle = { '--active': pigActive } as CSSProperties;
 
   return (
     <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>

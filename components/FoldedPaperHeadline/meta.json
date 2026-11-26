@@ -8,8 +8,6 @@
   "visitor_action": "click or hover to unfold; readable at every stage",
   "owner_settings": [
     "Headline text",
-    "Paper color",
-    "Text color",
     "Fold count",
     "Folded (on/off)",
     "Fold trigger (click, hover, none)"

@@ -967,12 +967,7 @@ export default function HoneycombLens({
 
 ```css
 .root {
-  --hl-ground: #0b0d12;
-  --hl-ink: #e6e9ef;
-  --hl-mist: #ccd2de;
-  --hl-focus: #7fd4ff;
   --hl-font: 'Wix Madefor Display', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
-  --hl-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.72  0 0 0 0 0.76  0 0 0 0 0.84  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -981,8 +976,8 @@ export default function HoneycombLens({
   inline-size: 100%;
   contain: inline-size;
   border-radius: 22px;
-  background: var(--hl-ground);
-  color: var(--hl-ink);
+  background: #0b0d12;
+  color: #e6e9ef;
   font-family: var(--hl-font);
   touch-action: pan-y;
   -webkit-tap-highlight-color: transparent;
@@ -1013,7 +1008,7 @@ export default function HoneycombLens({
 
 .grain {
   z-index: 3;
-  background-image: var(--hl-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.72  0 0 0 0 0.76  0 0 0 0 0.84  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.05;
   mix-blend-mode: overlay;
 }
@@ -1065,7 +1060,7 @@ export default function HoneycombLens({
   background: rgba(11, 13, 18, 0.78);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  color: var(--hl-ink);
+  color: #e6e9ef;
   font-size: 14px;
   font-weight: 700;
   line-height: 1.25;
@@ -1097,7 +1092,7 @@ export default function HoneycombLens({
   border: 0;
   background: transparent;
   overflow: visible;
-  color: var(--hl-ink);
+  color: #e6e9ef;
 }
 
 .dialog::backdrop {
@@ -1149,7 +1144,7 @@ export default function HoneycombLens({
   font-size: 17px;
   line-height: 1.3;
   letter-spacing: -0.005em;
-  color: var(--hl-ink);
+  color: #e6e9ef;
   overflow-wrap: anywhere;
 }
 
@@ -1165,7 +1160,7 @@ export default function HoneycombLens({
   border: 1px solid rgba(230, 233, 239, 0.14);
   border-radius: 50%;
   background: transparent;
-  color: var(--hl-ink);
+  color: #e6e9ef;
   cursor: pointer;
   transition: background-color 180ms ease-out;
 }
@@ -1175,7 +1170,7 @@ export default function HoneycombLens({
 }
 
 .close:focus-visible {
-  outline: 2px solid var(--hl-focus);
+  outline: 2px solid #7fd4ff;
   outline-offset: 3px;
 }
 

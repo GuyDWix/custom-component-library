@@ -1,10 +1,9 @@
 Create a custom element called "Calendar Leaf Event Card". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: event title and photo, short description, start and end date and time, event time zone, venue, details link and its label, add-to-calendar and confirmation labels, accent color. Add other settings if they help.
+The site owner must be able to change: event title and photo, short description, start and end date and time, event time zone, venue, details link and its label, add-to-calendar and confirmation labels. Add other settings if they help.
 
 ```tsx
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import type { CSSProperties } from 'react';
 import styles from './Component.module.css';
 
 export interface CalendarLeafEventCardProps {
@@ -21,7 +20,6 @@ export interface CalendarLeafEventCardProps {
   addLabel?: string;
   addedLabel?: string;
   dateLanguage?: string;
-  leafColor?: string;
   className?: string;
 }
 
@@ -194,7 +192,6 @@ export default function CalendarLeafEventCard({
   addLabel = 'Add to calendar',
   addedLabel = 'Added',
   dateLanguage = 'en-US',
-  leafColor = '#ff5a36',
   className,
 }: CalendarLeafEventCardProps) {
   const uid = useId();
@@ -330,13 +327,12 @@ export default function CalendarLeafEventCard({
   };
 
   const cx = (...names: (string | false | undefined)[]) => names.filter(Boolean).join(' ');
-  const rootStyle = { '--cl-accent': leafColor } as CSSProperties;
   const ctaAria = `${addLabel}: ${title}${fullDate ? `, ${fullDate}` : ''}${timeLine ? `, ${timeLine}` : ''}`;
   const hintOn = () => setHint(true);
   const hintOff = () => setHint(false);
 
   return (
-    <div ref={rootRef} className={cx(styles.root, className)} style={rootStyle}>
+    <div ref={rootRef} className={cx(styles.root, className)}>
       <article className={cx(styles.card, seen && styles.cardSeen)} aria-labelledby={titleId}>
         <span className={styles.atmos} aria-hidden={image ? undefined : true}>
           <span className={styles.atmosTint} />
@@ -464,18 +460,10 @@ export default function CalendarLeafEventCard({
 }
 
 .root {
-  --cl-accent: #ff5a36;
-  --cl-ink: #0d0e12;
-  --cl-sheet: #16171c;
-  --cl-sheet-deep: #111216;
-  --cl-bone: #f3efe7;
-  --cl-muted: rgba(243, 239, 231, 0.64);
-  --cl-hairline: rgba(243, 239, 231, 0.12);
-  --cl-on-accent: #160b08;
+  --accent: #ff5a36;
   --cl-font-numeral: 'Oswald', 'Arial Narrow', sans-serif;
   --cl-font-display: 'Oswald', 'Arial Narrow', sans-serif;
   --cl-font-ui: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --cl-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   --cl-ease: cubic-bezier(0.16, 1, 0.3, 1);
 
   container-type: inline-size;
@@ -483,7 +471,7 @@ export default function CalendarLeafEventCard({
   inline-size: 100%;
   display: grid;
   justify-items: center;
-  color: var(--cl-bone);
+  color: #f3efe7;
   font-family: var(--cl-font-ui);
 }
 
@@ -497,7 +485,7 @@ export default function CalendarLeafEventCard({
   gap: 30px;
   padding: 26px 20px 26px;
   border-radius: 24px;
-  background: var(--cl-ink);
+  background: #0d0e12;
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.07),
     0 2px 4px rgba(0, 0, 0, 0.3),
@@ -525,7 +513,7 @@ export default function CalendarLeafEventCard({
 }
 
 .atmosTint {
-  background: var(--cl-accent);
+  background: var(--accent);
 }
 
 .photo {
@@ -561,7 +549,7 @@ export default function CalendarLeafEventCard({
   inset: 0;
   z-index: 1;
   border-radius: inherit;
-  background-image: var(--cl-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.05;
   mix-blend-mode: screen;
   pointer-events: none;
@@ -614,7 +602,7 @@ export default function CalendarLeafEventCard({
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0, rgba(255, 255, 255, 0) 2px),
     linear-gradient(180deg, transparent 70%, rgba(0, 0, 0, 0.22) 100%),
-    var(--cl-accent);
+    var(--accent);
   box-shadow: 0 3px 6px -2px rgba(0, 0, 0, 0.55);
 }
 
@@ -622,7 +610,7 @@ export default function CalendarLeafEventCard({
   inline-size: 30px;
   block-size: 9px;
   border-radius: 6px;
-  background: var(--cl-ink);
+  background: #0d0e12;
   box-shadow: inset 0 2px 2px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
@@ -663,7 +651,7 @@ export default function CalendarLeafEventCard({
   overflow: hidden;
   background:
     linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0, transparent 26px),
-    var(--cl-sheet-deep);
+    #111216;
 }
 
 .ghost {
@@ -695,7 +683,7 @@ export default function CalendarLeafEventCard({
 .tick {
   inline-size: 64px;
   block-size: 64px;
-  color: var(--cl-accent);
+  color: var(--accent);
 }
 
 .tickRing,
@@ -733,7 +721,7 @@ export default function CalendarLeafEventCard({
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.15;
-  color: var(--cl-bone);
+  color: #f3efe7;
   overflow-wrap: anywhere;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -746,7 +734,7 @@ export default function CalendarLeafEventCard({
 .underDate {
   font-size: 14px;
   font-weight: 500;
-  color: var(--cl-muted);
+  color: rgba(243, 239, 231, 0.64);
   opacity: 0;
   transform: translateY(6px);
 }
@@ -773,7 +761,7 @@ export default function CalendarLeafEventCard({
   content: '';
   position: absolute;
   inset: 0;
-  background: var(--cl-sheet);
+  background: #16171c;
   clip-path: polygon(0 0, 100% 0, 100% 55%, 97% 80%, 93% 50%, 89% 85%, 84% 55%, 80% 95%, 75% 60%, 70% 88%, 65% 52%, 60% 90%, 55% 58%, 50% 84%, 45% 50%, 40% 92%, 35% 60%, 30% 86%, 25% 54%, 20% 90%, 15% 58%, 10% 84%, 5% 52%, 0 78%);
 }
 
@@ -793,7 +781,7 @@ export default function CalendarLeafEventCard({
   background:
     radial-gradient(120% 70% at 15% 0%, rgba(255, 255, 255, 0.06) 0%, transparent 60%),
     linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0, transparent 14px),
-    var(--cl-sheet);
+    #16171c;
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--curl)), calc(100% - var(--curl)) 100%, 0 100%);
   transform-origin: 3% 0;
   cursor: pointer;
@@ -878,14 +866,14 @@ export default function CalendarLeafEventCard({
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.1;
-  color: var(--cl-accent);
+  color: var(--accent);
   overflow-wrap: anywhere;
 }
 
 .weekday {
   font-size: clamp(13px, 4cqi, 17px);
   font-weight: 500;
-  color: var(--cl-muted);
+  color: rgba(243, 239, 231, 0.64);
   white-space: nowrap;
 }
 
@@ -898,7 +886,7 @@ export default function CalendarLeafEventCard({
   line-height: 0.78;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
-  color: var(--cl-bone);
+  color: #f3efe7;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
 }
 
@@ -910,24 +898,24 @@ export default function CalendarLeafEventCard({
   margin-block-start: 6cqi;
   padding-block-start: 12px;
   padding-inline-end: 9cqi;
-  border-block-start: 1px solid var(--cl-hairline);
+  border-block-start: 1px solid rgba(243, 239, 231, 0.12);
   font-size: clamp(13px, 4cqi, 17px);
   font-variant-numeric: tabular-nums;
 }
 
 .leafTime {
   font-weight: 650;
-  color: var(--cl-bone);
+  color: #f3efe7;
 }
 
 .leafYear {
-  color: var(--cl-muted);
+  color: rgba(243, 239, 231, 0.64);
 }
 
 .leafGrain {
   position: absolute;
   inset: 0;
-  background-image: var(--cl-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.06;
   mix-blend-mode: screen;
   pointer-events: none;
@@ -970,7 +958,7 @@ export default function CalendarLeafEventCard({
   font-weight: 700;
   line-height: 1.04;
   letter-spacing: -0.03em;
-  color: var(--cl-bone);
+  color: #f3efe7;
   overflow-wrap: anywhere;
   text-wrap: balance;
 }
@@ -980,7 +968,7 @@ export default function CalendarLeafEventCard({
   max-inline-size: 46ch;
   font-size: 16px;
   line-height: 1.55;
-  color: var(--cl-muted);
+  color: rgba(243, 239, 231, 0.64);
   overflow-wrap: anywhere;
 }
 
@@ -990,7 +978,7 @@ export default function CalendarLeafEventCard({
   margin: 6px 0 0;
   padding: 18px 0 0;
   list-style: none;
-  border-block-start: 1px solid var(--cl-hairline);
+  border-block-start: 1px solid rgba(243, 239, 231, 0.12);
 }
 
 .fact {
@@ -999,7 +987,7 @@ export default function CalendarLeafEventCard({
   gap: 12px;
   font-size: 15px;
   line-height: 1.45;
-  color: var(--cl-bone);
+  color: #f3efe7;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1008,7 +996,7 @@ export default function CalendarLeafEventCard({
   inline-size: 18px;
   block-size: 18px;
   margin-block-start: 2px;
-  color: var(--cl-accent);
+  color: var(--accent);
 }
 
 .factText {
@@ -1033,8 +1021,8 @@ export default function CalendarLeafEventCard({
   padding: 12px 22px 12px 18px;
   border: 0;
   border-radius: 14px;
-  background: var(--cl-accent);
-  color: var(--cl-on-accent);
+  background: var(--accent);
+  color: #160b08;
   font: inherit;
   font-size: 15.5px;
   font-weight: 650;
@@ -1042,7 +1030,7 @@ export default function CalendarLeafEventCard({
   line-height: 1.25;
   text-align: start;
   cursor: pointer;
-  box-shadow: 0 12px 28px -14px color-mix(in srgb, var(--cl-accent) 80%, transparent);
+  box-shadow: 0 12px 28px -14px color-mix(in srgb, var(--accent) 80%, transparent);
   transition:
     transform 220ms var(--cl-ease),
     background-color 220ms var(--cl-ease),
@@ -1053,7 +1041,7 @@ export default function CalendarLeafEventCard({
 
 .cta:hover {
   transform: translateY(-1px);
-  background-color: color-mix(in srgb, var(--cl-accent) 88%, white);
+  background-color: color-mix(in srgb, var(--accent) 88%, white);
 }
 
 .cta:active {
@@ -1062,7 +1050,7 @@ export default function CalendarLeafEventCard({
 }
 
 .cta:focus-visible {
-  outline: 2px solid var(--cl-bone);
+  outline: 2px solid #f3efe7;
   outline-offset: 3px;
 }
 
@@ -1073,7 +1061,7 @@ export default function CalendarLeafEventCard({
 
 .ctaDone {
   background: transparent;
-  color: var(--cl-bone);
+  color: #f3efe7;
   box-shadow: inset 0 0 0 1px rgba(243, 239, 231, 0.24);
 }
 
@@ -1100,7 +1088,7 @@ export default function CalendarLeafEventCard({
   max-inline-size: 100%;
   font-size: 15px;
   font-weight: 600;
-  color: var(--cl-bone);
+  color: #f3efe7;
   text-decoration: none;
   border-radius: 6px;
 }
@@ -1117,7 +1105,7 @@ export default function CalendarLeafEventCard({
 }
 
 .details:focus-visible {
-  outline: 2px solid var(--cl-bone);
+  outline: 2px solid #f3efe7;
   outline-offset: 4px;
 }
 
@@ -1125,7 +1113,7 @@ export default function CalendarLeafEventCard({
   flex: none;
   inline-size: 18px;
   block-size: 18px;
-  color: var(--cl-accent);
+  color: var(--accent);
   transition: transform 320ms var(--cl-ease);
 }
 
@@ -1137,8 +1125,8 @@ export default function CalendarLeafEventCard({
 .description::selection,
 .factText::selection,
 .detailsText::selection {
-  background: var(--cl-accent);
-  color: var(--cl-on-accent);
+  background: var(--accent);
+  color: #160b08;
 }
 
 .status {

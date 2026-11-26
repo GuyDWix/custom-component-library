@@ -1,6 +1,6 @@
 Create a custom element called "Goal Jar Fill". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: amount reached, goal amount, label, currency symbol, liquid color, goal-reached text. Add other settings if they help.
+The site owner must be able to change: amount reached, goal amount, label, currency symbol, goal-reached text. Add other settings if they help.
 
 ```tsx
 import { useEffect, useId, useRef, useState } from 'react';
@@ -12,7 +12,6 @@ export interface GoalJarFillProps {
   goal?: number;
   label?: string;
   currencySymbol?: string;
-  liquidColor?: string;
   reachedText?: string;
   className?: string;
 }
@@ -61,7 +60,6 @@ export default function GoalJarFill({
   goal = 20000,
   label = 'Orchard replanting fund',
   currencySymbol = '$',
-  liquidColor = '#1a86a8',
   reachedText = 'Goal reached',
   className,
 }: GoalJarFillProps) {
@@ -195,7 +193,7 @@ export default function GoalJarFill({
   };
 
   const digits = String(reduced ? percent : shown.percent).length;
-  const rootStyle = { '--gj-liquid': liquidColor, '--gj-len': digits } as CSSProperties;
+  const rootStyle = { '--gj-len': digits } as CSSProperties;
   const shownPercent = reduced ? percent : shown.percent;
   const shownAmount = reduced ? amountText : money(currencySymbol, shown.amount);
   const numeral = (
@@ -265,16 +263,6 @@ export default function GoalJarFill({
 ```css
 /* Soft-UI liquid tablet: pressed well, tinted liquid with two wave layers, numeral inverts along the wave. */
 .root {
-  --gj-liquid: #1a86a8;
-  --gj-ground: #e6ebee;
-  --gj-ink: #1c2a33;
-  --gj-ink-soft: #4a5a64;
-  --gj-cream: #f6fbfd;
-  --gj-hi: rgba(255, 255, 255, 0.9);
-  --gj-lo: rgba(70, 92, 110, 0.3);
-  --gj-deep: #061822;
-  --gj-top: color-mix(in srgb, var(--gj-liquid) 82%, var(--gj-deep));
-  --gj-bottom: color-mix(in srgb, var(--gj-liquid) 52%, var(--gj-deep));
   --gj-font: 'Instrument Sans', 'Avenir Next', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --gj-fill: 0;
   --gj-len: 2;
@@ -283,8 +271,8 @@ export default function GoalJarFill({
   inline-size: 100%;
   padding: clamp(18px, 4cqi, 40px);
   container-type: inline-size;
-  background: var(--gj-ground);
-  color: var(--gj-ink);
+  background: #e6ebee;
+  color: #1c2a33;
   font-family: var(--gj-font);
 }
 
@@ -303,8 +291,8 @@ export default function GoalJarFill({
   margin-inline: auto;
   overflow: hidden;
   border-radius: 36px;
-  background: var(--gj-ground);
-  box-shadow: inset 10px 12px 26px var(--gj-lo), inset -10px -10px 22px var(--gj-hi);
+  background: #e6ebee;
+  box-shadow: inset 10px 12px 26px rgba(70, 92, 110, 0.3), inset -10px -10px 22px rgba(255, 255, 255, 0.9);
   cursor: crosshair;
   touch-action: pan-y;
 }
@@ -316,7 +304,7 @@ export default function GoalJarFill({
 }
 
 .well:focus-visible {
-  outline: 3px solid var(--gj-ink);
+  outline: 3px solid #1c2a33;
   outline-offset: 5px;
 }
 
@@ -332,7 +320,7 @@ export default function GoalJarFill({
 }
 
 .layerIn {
-  color: var(--gj-cream);
+  color: #f6fbfd;
 }
 
 .numeral {
@@ -370,11 +358,11 @@ export default function GoalJarFill({
 }
 
 .surfaceFront {
-  fill: var(--gj-top);
+  fill: color-mix(in srgb, #1a86a8 82%, #061822);
 }
 
 .surfaceBack {
-  fill: color-mix(in srgb, var(--gj-liquid) 60%, #fff);
+  fill: color-mix(in srgb, #1a86a8 60%, #fff);
   opacity: 0.6;
 }
 
@@ -391,9 +379,9 @@ export default function GoalJarFill({
   inset: 0;
   overflow: hidden;
   background:
-    radial-gradient(120% 60% at 20% 0%, color-mix(in srgb, var(--gj-liquid) 60%, #fff 40%) 0%, transparent 60%),
+    radial-gradient(120% 60% at 20% 0%, color-mix(in srgb, #1a86a8 60%, #fff 40%) 0%, transparent 60%),
     radial-gradient(90% 60% at 90% 110%, rgba(0, 10, 18, 0.4), transparent 70%),
-    linear-gradient(180deg, var(--gj-top), var(--gj-bottom));
+    linear-gradient(180deg, color-mix(in srgb, #1a86a8 82%, #061822), color-mix(in srgb, #1a86a8 52%, #061822));
   box-shadow: inset 0 -16px 28px rgba(0, 10, 18, 0.25);
 }
 
@@ -442,8 +430,8 @@ export default function GoalJarFill({
   max-inline-size: calc(100% - 32px);
   padding: 10px 18px;
   border-radius: 999px;
-  background: var(--gj-cream);
-  color: var(--gj-ink);
+  background: #f6fbfd;
+  color: #1c2a33;
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -478,7 +466,7 @@ export default function GoalJarFill({
   font-size: clamp(1rem, 2.6cqi, 1.25rem);
   font-weight: 500;
   line-height: 1.3;
-  color: var(--gj-ink-soft);
+  color: #4a5a64;
   overflow-wrap: anywhere;
 }
 
@@ -502,7 +490,7 @@ export default function GoalJarFill({
 .goal {
   font-size: 1rem;
   font-weight: 500;
-  color: var(--gj-ink-soft);
+  color: #4a5a64;
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }

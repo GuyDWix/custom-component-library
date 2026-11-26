@@ -6,9 +6,6 @@ export type StitchStyle = 'filled' | 'outline';
 
 export interface EmbroideredWordProps {
   text?: string;
-  threadColor?: string;
-  outlineColor?: string;
-  fabricColor?: string;
   stitchStyle?: StitchStyle;
   resewOnHover?: boolean;
   className?: string;
@@ -1360,9 +1357,6 @@ type Engine = ReturnType<typeof createEngine>;
 
 export default function EmbroideredWord({
   text = 'Made by hand',
-  threadColor = '#efe4c8',
-  outlineColor = '#eaa233',
-  fabricColor = '#253f69',
   stitchStyle = 'filled',
   resewOnHover = false,
   className,
@@ -1426,9 +1420,9 @@ export default function EmbroideredWord({
         w: width,
         text: text.trim() || ' ',
         family: cs.getPropertyValue('--ew-font').trim() || 'sans-serif',
-        fab: parseColor(cs.getPropertyValue('--ew-fabric'), fabricColor),
-        fill: parseColor(cs.getPropertyValue('--ew-thread'), threadColor),
-        outline: parseColor(cs.getPropertyValue('--ew-outline'), outlineColor),
+        fab: parseColor(cs.backgroundColor, '#253f69'),
+        fill: parseColor(cs.color, '#efe4c8'),
+        outline: parseColor(cs.getPropertyValue('--accent'), '#eaa233'),
         style: stitchStyle === 'outline' ? 'outline' : 'filled',
         dpr: Math.min(2, window.devicePixelRatio || 1),
       });
@@ -1447,7 +1441,7 @@ export default function EmbroideredWord({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [width, text, threadColor, outlineColor, fabricColor, stitchStyle, reduced]);
+  }, [width, text, stitchStyle, reduced]);
 
   useEffect(() => {
     played.current = false;
@@ -1502,12 +1496,7 @@ export default function EmbroideredWord({
     engine.current?.replay();
   };
 
-  const rootStyle = {
-    '--ew-thread': threadColor,
-    '--ew-outline': outlineColor,
-    '--ew-fabric': fabricColor,
-    blockSize: height ? `${height}px` : undefined,
-  } as CSSProperties;
+  const rootStyle = { blockSize: height ? `${height}px` : undefined } as CSSProperties;
 
   return (
     <div

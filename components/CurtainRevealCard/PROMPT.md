@@ -1,6 +1,6 @@
 Create a custom element called "Curtain Reveal Card". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: service name, price, duration, details lines, image, curtain color, open speed. Add other settings if they help.
+The site owner must be able to change: service name, price, duration, details lines, image, open speed. Add other settings if they help.
 
 ```tsx
 import { useEffect, useId, useRef, useState } from 'react';
@@ -24,7 +24,6 @@ export interface CurtainRevealCardProps {
   details?: CurtainRevealCardDetail[];
   image?: string;
   imageAlt?: string;
-  curtainColor?: string;
   openSpeed?: number;
   className?: string;
 }
@@ -53,7 +52,6 @@ export default function CurtainRevealCard({
   details = defaultDetails,
   image = 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=1400&h=900&fit=crop',
   imageAlt = 'A spa still life with a lotion bottle, a rolled towel and a lit candle',
-  curtainColor = '#3a2433',
   openSpeed = 650,
   className,
 }: CurtainRevealCardProps) {
@@ -163,7 +161,6 @@ export default function CurtainRevealCard({
   const visuallyOpen = open || (progress !== null && progress > 0.5);
 
   const cardStyle = {
-    '--cv-curtain': curtainColor,
     '--cv-speed': `${clamp(openSpeed, 250, 1600)}ms`,
     ...(pulling ? { '--cv-tug': `${drag}px` } : {}),
     ...(progress !== null ? { '--cv-p': progress } : {}),
@@ -277,16 +274,6 @@ export default function CurtainRevealCard({
 
 ```css
 .root {
-  --cv-curtain: #3a2433;
-  --cv-curtain-deep: color-mix(in srgb, var(--cv-curtain) 62%, #07040a);
-  --cv-curtain-mid: color-mix(in srgb, var(--cv-curtain) 88%, #07040a);
-  --cv-curtain-ridge: color-mix(in srgb, var(--cv-curtain) 88%, #f0dfe8);
-  --cv-wall: #0d080c;
-  --cv-gold: #c9a45c;
-  --cv-gold-light: #e2c88f;
-  --cv-hair: color-mix(in srgb, var(--cv-gold) 46%, transparent);
-  --cv-cream: #f4ece4;
-  --cv-glow: #ffc58a;
   --cv-font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
   --cv-font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
   --cv-speed: 650ms;
@@ -296,14 +283,14 @@ export default function CurtainRevealCard({
   display: block;
   box-sizing: border-box;
   inline-size: 100%;
-  color: var(--cv-cream);
+  color: #f4ece4;
   font-family: var(--cv-font-ui);
   container-type: inline-size;
 }
 
 .root ::selection {
-  background: color-mix(in srgb, var(--cv-gold) 40%, transparent);
-  color: var(--cv-cream);
+  background: color-mix(in srgb, #c9a45c 40%, transparent);
+  color: #f4ece4;
 }
 
 .card {
@@ -322,11 +309,11 @@ export default function CurtainRevealCard({
   --cv-velvet:
     repeating-linear-gradient(
       90deg,
-      var(--cv-curtain-deep) 0,
-      var(--cv-curtain-mid) calc(var(--cv-fold) * 0.3),
-      var(--cv-curtain-ridge) calc(var(--cv-fold) * 0.5),
-      var(--cv-curtain-mid) calc(var(--cv-fold) * 0.72),
-      var(--cv-curtain-deep) var(--cv-fold)
+      color-mix(in srgb, #3a2433 62%, #07040a) 0,
+      color-mix(in srgb, #3a2433 88%, #07040a) calc(var(--cv-fold) * 0.3),
+      color-mix(in srgb, #3a2433 88%, #f0dfe8) calc(var(--cv-fold) * 0.5),
+      color-mix(in srgb, #3a2433 88%, #07040a) calc(var(--cv-fold) * 0.72),
+      color-mix(in srgb, #3a2433 62%, #07040a) var(--cv-fold)
     );
 
   position: relative;
@@ -336,7 +323,7 @@ export default function CurtainRevealCard({
   aspect-ratio: 16 / 10;
   overflow: clip;
   border-radius: clamp(10px, 1.6cqi, 16px);
-  background: var(--cv-wall);
+  background: #0d080c;
   box-shadow: 0 30px 50px -34px rgba(0, 0, 0, 0.75);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -353,7 +340,7 @@ export default function CurtainRevealCard({
   z-index: 10;
   pointer-events: none;
   border-radius: inherit;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cv-gold) 30%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #c9a45c 30%, transparent);
 }
 
 /* ---------- stage ---------- */
@@ -388,7 +375,7 @@ export default function CurtainRevealCard({
   display: grid;
   place-items: center;
   background:
-    radial-gradient(50% 70% at 50% 85%, color-mix(in srgb, var(--cv-glow) 38%, transparent), transparent 72%),
+    radial-gradient(50% 70% at 50% 85%, color-mix(in srgb, #ffc58a 38%, transparent), transparent 72%),
     #1c1217;
 }
 
@@ -397,7 +384,7 @@ export default function CurtainRevealCard({
   font-size: clamp(120px, 40cqi, 420px);
   font-weight: 500;
   line-height: 1;
-  color: color-mix(in srgb, var(--cv-gold-light) 22%, transparent);
+  color: color-mix(in srgb, #e2c88f 22%, transparent);
 }
 
 .stageGlow {
@@ -406,7 +393,7 @@ export default function CurtainRevealCard({
   inset: 0;
   pointer-events: none;
   mix-blend-mode: screen;
-  background: radial-gradient(44% 70% at 50% 108%, color-mix(in srgb, var(--cv-glow) 36%, transparent), transparent 74%);
+  background: radial-gradient(44% 70% at 50% 108%, color-mix(in srgb, #ffc58a 36%, transparent), transparent 74%);
 }
 
 .stageDim {
@@ -467,11 +454,11 @@ export default function CurtainRevealCard({
 }
 
 .clothLeft {
-  box-shadow: inset -1px 0 0 var(--cv-hair), 6px 0 28px rgba(0, 0, 0, 0.55);
+  box-shadow: inset -1px 0 0 color-mix(in srgb, #c9a45c 46%, transparent), 6px 0 28px rgba(0, 0, 0, 0.55);
 }
 
 .clothRight {
-  box-shadow: inset 1px 0 0 var(--cv-hair), -6px 0 28px rgba(0, 0, 0, 0.55);
+  box-shadow: inset 1px 0 0 color-mix(in srgb, #c9a45c 46%, transparent), -6px 0 28px rgba(0, 0, 0, 0.55);
 }
 
 .foldShade {
@@ -515,7 +502,7 @@ export default function CurtainRevealCard({
 }
 
 .pull:focus-visible {
-  outline: 2px solid var(--cv-gold-light);
+  outline: 2px solid #e2c88f;
   outline-offset: 2px;
   border-radius: 6px;
 }
@@ -524,7 +511,7 @@ export default function CurtainRevealCard({
   flex: none;
   inline-size: 1px;
   block-size: calc(var(--cv-valance) + var(--cv-cord) + var(--cv-tug));
-  background: linear-gradient(180deg, transparent, var(--cv-gold) 30%);
+  background: linear-gradient(180deg, transparent, #c9a45c 30%);
   transition: block-size calc(var(--cv-speed) * 0.6) var(--cv-ease-out);
 }
 
@@ -537,15 +524,15 @@ export default function CurtainRevealCard({
   inline-size: 18px;
   block-size: 30px;
   border-radius: 9px;
-  border: 1px solid var(--cv-gold);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--cv-gold) 28%, #120b10), #120b10);
+  border: 1px solid #c9a45c;
+  background: linear-gradient(180deg, color-mix(in srgb, #c9a45c 28%, #120b10), #120b10);
   box-shadow: 0 6px 12px -4px rgba(0, 0, 0, 0.7);
   transition: border-color 200ms ease;
 }
 
 .pull:hover .pullGrip,
 .pull:focus-visible .pullGrip {
-  border-color: var(--cv-gold-light);
+  border-color: #e2c88f;
 }
 
 /* ---------- valance + rail ---------- */
@@ -570,7 +557,7 @@ export default function CurtainRevealCard({
   z-index: 7;
   block-size: 1px;
   pointer-events: none;
-  background: linear-gradient(90deg, transparent, var(--cv-gold) 12%, var(--cv-gold) 88%, transparent);
+  background: linear-gradient(90deg, transparent, #c9a45c 12%, #c9a45c 88%, transparent);
 }
 
 /* ---------- reveal panel + title ---------- */
@@ -602,7 +589,7 @@ export default function CurtainRevealCard({
   inline-size: 100%;
   box-sizing: border-box;
   padding: clamp(14px, 2.4cqi, 28px);
-  border: 1px solid var(--cv-hair);
+  border: 1px solid color-mix(in srgb, #c9a45c 46%, transparent);
   border-radius: 4px;
   background: linear-gradient(180deg, rgba(20, 13, 18, 0.72), rgba(13, 8, 12, 0.82));
   opacity: 0;
@@ -621,7 +608,7 @@ export default function CurtainRevealCard({
   flex-wrap: wrap;
   gap: 6px 16px;
   padding-block-end: clamp(10px, 1.6cqi, 16px);
-  border-block-end: 1px solid var(--cv-hair);
+  border-block-end: 1px solid color-mix(in srgb, #c9a45c 46%, transparent);
   opacity: 0;
   transform: translateY(10px);
   transition:
@@ -642,7 +629,7 @@ export default function CurtainRevealCard({
   line-height: 1.05;
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
-  color: var(--cv-gold-light);
+  color: #e2c88f;
   overflow-wrap: anywhere;
 }
 
@@ -654,7 +641,7 @@ export default function CurtainRevealCard({
   letter-spacing: 0.14em;
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
-  color: color-mix(in srgb, var(--cv-cream) 80%, transparent);
+  color: color-mix(in srgb, #f4ece4 80%, transparent);
   overflow-wrap: anywhere;
 }
 
@@ -685,7 +672,7 @@ export default function CurtainRevealCard({
   font-size: 12px;
   letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
-  color: var(--cv-gold);
+  color: #c9a45c;
 }
 
 .inclusionText {
@@ -697,7 +684,7 @@ export default function CurtainRevealCard({
   min-inline-size: 0;
   font-size: 15px;
   line-height: 1.35;
-  color: color-mix(in srgb, var(--cv-cream) 90%, transparent);
+  color: color-mix(in srgb, #f4ece4 90%, transparent);
   overflow-wrap: anywhere;
 }
 
@@ -732,7 +719,7 @@ export default function CurtainRevealCard({
   inline-size: 40px;
   block-size: 1px;
   margin-block-end: 12px;
-  background: var(--cv-gold);
+  background: #c9a45c;
 }
 
 .title {
@@ -749,7 +736,7 @@ export default function CurtainRevealCard({
   letter-spacing: -0.01em;
   text-wrap: balance;
   overflow-wrap: anywhere;
-  color: var(--cv-cream);
+  color: #f4ece4;
 }
 
 /* ---------- container sizing ---------- */

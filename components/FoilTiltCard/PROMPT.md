@@ -1,6 +1,6 @@
 Create a custom element called "Foil Tilt Card". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: image, title, subtitle, small heading and card number, detail rows (label, value), foil color, tilt strength. Add other settings if they help.
+The site owner must be able to change: image, title, subtitle, small heading and card number, detail rows (label, value), tilt strength. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
@@ -20,7 +20,6 @@ export interface FoilTiltCardProps {
   eyebrow?: string;
   serial?: string;
   details?: FoilTiltCardDetail[];
-  foilColor?: string;
   tiltStrength?: number;
   className?: string;
 }
@@ -51,7 +50,6 @@ export default function FoilTiltCard({
   eyebrow = 'Founding crew',
   serial = 'No. 07 / 24',
   details = defaultDetails,
-  foilColor = '#b69cff',
   tiltStrength = 16,
   className,
 }: FoilTiltCardProps) {
@@ -196,11 +194,10 @@ export default function FoilTiltCard({
     keyTimer.current = window.setTimeout(release, KEY_HOLD_MS);
   };
 
-  const rootStyle = { '--ft-foil': foilColor } as CSSProperties;
   const monogram = title.trim().charAt(0).toUpperCase();
 
   return (
-    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
+    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')}>
       <span className={styles.glowLilac} aria-hidden="true" />
       <span className={styles.glowMint} aria-hidden="true" />
       <span className={styles.grain} aria-hidden="true" />
@@ -281,29 +278,9 @@ export default function FoilTiltCard({
 
 ```css
 .root {
-  --ft-foil: #b69cff;
-  --ft-sky: #a9d6ff;
-  --ft-mint: #93ecca;
-  --ft-butter: #fbefb4;
-  --ft-rose: #ffc6da;
-  --ft-stock: #fbfaf7;
-  --ft-stock-shade: #ebe6ee;
-  --ft-stage: #f1eef2;
-  --ft-ink: #1d1b26;
-  --ft-muted: rgba(29, 27, 38, 0.6);
   --ft-font-display: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --ft-font-ui: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --ft-font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  --ft-spectrum: repeating-linear-gradient(
-    115deg,
-    var(--ft-foil) 0%,
-    var(--ft-sky) 6%,
-    var(--ft-mint) 12%,
-    var(--ft-butter) 18%,
-    var(--ft-rose) 24%,
-    var(--ft-foil) 30%
-  );
-  --ft-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -317,11 +294,18 @@ export default function FoilTiltCard({
   padding-block: 64px 36px;
   padding-inline: 20px;
   border-radius: 32px;
-  background:
-    radial-gradient(60% 50% at 50% 0%, #fff 0%, transparent 70%),
-    linear-gradient(180deg, var(--ft-stage) 0%, color-mix(in srgb, var(--ft-stage) 80%, var(--ft-foil)) 100%);
-  color: var(--ft-ink);
+  background: linear-gradient(180deg, #f1eef2 0%, color-mix(in srgb, #f1eef2 80%, #b69cff) 100%);
+  color: #1d1b26;
   font-family: var(--ft-font-ui);
+}
+
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background: radial-gradient(60% 50% at 50% 0%, #fff 0%, transparent 70%);
 }
 
 .glowLilac,
@@ -338,7 +322,7 @@ export default function FoilTiltCard({
   inline-size: 62%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--ft-foil) 55%, transparent), transparent);
+  background: radial-gradient(closest-side, color-mix(in srgb, #b69cff 55%, transparent), transparent);
   filter: blur(40px);
   animation: drift 24s ease-in-out infinite alternate;
 }
@@ -349,14 +333,14 @@ export default function FoilTiltCard({
   inline-size: 58%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--ft-mint) 60%, transparent), transparent);
+  background: radial-gradient(closest-side, color-mix(in srgb, #93ecca 60%, transparent), transparent);
   filter: blur(44px);
   animation: drift 30s ease-in-out -11s infinite alternate-reverse;
 }
 
 .grain {
   inset: 0;
-  background-image: var(--ft-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.22;
   mix-blend-mode: multiply;
 }
@@ -422,8 +406,8 @@ export default function FoilTiltCard({
 
 .card:focus-visible {
   box-shadow:
-    0 0 0 3px var(--ft-stage),
-    0 0 0 5px var(--ft-ink),
+    0 0 0 3px #f1eef2,
+    0 0 0 5px #1d1b26,
     0 36px 64px -28px rgba(52, 32, 110, 0.45);
 }
 
@@ -442,11 +426,19 @@ export default function FoilTiltCard({
 .stock {
   background:
     radial-gradient(120% 70% at 18% 0%, #fff 0%, transparent 62%),
-    linear-gradient(160deg, var(--ft-stock) 0%, var(--ft-stock-shade) 100%);
+    linear-gradient(160deg, #fbfaf7 0%, #ebe6ee 100%);
 }
 
 .foilField {
-  background: var(--ft-spectrum);
+  background: repeating-linear-gradient(
+    115deg,
+    #b69cff 0%,
+    #a9d6ff 6%,
+    #93ecca 12%,
+    #fbefb4 18%,
+    #ffc6da 24%,
+    #b69cff 30%
+  );
   background-size: 220% 220%;
   background-position: var(--px) var(--py);
   mix-blend-mode: multiply;
@@ -484,7 +476,7 @@ export default function FoilTiltCard({
   font-size: 10.5px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--ft-muted);
+  color: rgba(29, 27, 38, 0.6);
 }
 
 .eyebrow {
@@ -495,7 +487,7 @@ export default function FoilTiltCard({
 .serial {
   flex: none;
   font-variant-numeric: tabular-nums;
-  color: var(--ft-ink);
+  color: #1d1b26;
 }
 
 .window {
@@ -503,7 +495,15 @@ export default function FoilTiltCard({
   aspect-ratio: 1 / 0.9;
   padding: 3px;
   border-radius: 15px;
-  background: var(--ft-spectrum);
+  background: repeating-linear-gradient(
+    115deg,
+    #b69cff 0%,
+    #a9d6ff 6%,
+    #93ecca 12%,
+    #fbefb4 18%,
+    #ffc6da 24%,
+    #b69cff 30%
+  );
   background-size: 320% 320%;
   background-position: var(--px) var(--py);
   box-shadow:
@@ -517,7 +517,15 @@ export default function FoilTiltCard({
   overflow: hidden;
   block-size: 100%;
   border-radius: 12px;
-  background: var(--ft-spectrum);
+  background: repeating-linear-gradient(
+    115deg,
+    #b69cff 0%,
+    #a9d6ff 6%,
+    #93ecca 12%,
+    #fbefb4 18%,
+    #ffc6da 24%,
+    #b69cff 30%
+  );
   background-size: 260% 260%;
   background-position: var(--py) var(--px);
 }
@@ -540,7 +548,7 @@ export default function FoilTiltCard({
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.06em;
-  color: color-mix(in srgb, var(--ft-ink) 82%, transparent);
+  color: color-mix(in srgb, #1d1b26 82%, transparent);
   mix-blend-mode: multiply;
 }
 
@@ -552,7 +560,15 @@ export default function FoilTiltCard({
 }
 
 .holo {
-  background: var(--ft-spectrum);
+  background: repeating-linear-gradient(
+    115deg,
+    #b69cff 0%,
+    #a9d6ff 6%,
+    #93ecca 12%,
+    #fbefb4 18%,
+    #ffc6da 24%,
+    #b69cff 30%
+  );
   background-size: 240% 240%;
   background-position: var(--px) var(--py);
   mix-blend-mode: color-dodge;
@@ -577,15 +593,15 @@ export default function FoilTiltCard({
     radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.95) 0%, transparent 42%),
     conic-gradient(
       from calc(var(--nx) * 140deg),
-      var(--ft-foil),
-      var(--ft-sky),
-      var(--ft-mint),
-      var(--ft-butter),
-      var(--ft-rose),
-      var(--ft-foil)
+      #b69cff,
+      #a9d6ff,
+      #93ecca,
+      #fbefb4,
+      #ffc6da,
+      #b69cff
     );
   box-shadow:
-    0 0 0 2.5px var(--ft-stock),
+    0 0 0 2.5px #fbfaf7,
     0 6px 14px -4px rgba(52, 32, 110, 0.5);
 }
 
@@ -611,7 +627,7 @@ export default function FoilTiltCard({
   font-weight: 700;
   line-height: 1.02;
   letter-spacing: -0.035em;
-  color: var(--ft-ink);
+  color: #1d1b26;
   overflow-wrap: anywhere;
   text-wrap: balance;
 }
@@ -620,7 +636,7 @@ export default function FoilTiltCard({
   margin: 0;
   font-size: 13.5px;
   line-height: 1.4;
-  color: var(--ft-muted);
+  color: rgba(29, 27, 38, 0.6);
   overflow-wrap: anywhere;
 }
 
@@ -630,7 +646,7 @@ export default function FoilTiltCard({
   gap: 8px 0;
   margin: auto 0 0;
   padding-block-start: 11px;
-  border-block-start: 1px solid color-mix(in srgb, var(--ft-ink) 12%, transparent);
+  border-block-start: 1px solid color-mix(in srgb, #1d1b26 12%, transparent);
 }
 
 .detail {
@@ -644,7 +660,7 @@ export default function FoilTiltCard({
   font-size: 9.5px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--ft-muted);
+  color: rgba(29, 27, 38, 0.6);
   overflow-wrap: anywhere;
 }
 
@@ -659,7 +675,7 @@ export default function FoilTiltCard({
 
 .grainCard {
   z-index: 3;
-  background-image: var(--ft-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.16;
   mix-blend-mode: multiply;
 }
@@ -679,7 +695,7 @@ export default function FoilTiltCard({
   z-index: 5;
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.75),
-    inset 0 0 0 1.5px color-mix(in srgb, var(--ft-foil) 30%, transparent);
+    inset 0 0 0 1.5px color-mix(in srgb, #b69cff 30%, transparent);
 }
 
 @container (min-width: 640px) {

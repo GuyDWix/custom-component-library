@@ -1,6 +1,6 @@
 Create a custom element called "Expand In-Place Card". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: image, image alt text, title, summary, full text, link label, link URL, accent color. Add other settings if they help.
+The site owner must be able to change: image, image alt text, title, summary, full text, link label, link URL. Add other settings if they help.
 
 ```tsx
 import { Fragment, useCallback, useEffect, useId, useRef, useState } from 'react';
@@ -15,7 +15,6 @@ export interface ExpandInPlaceCardProps {
   fullText?: string;
   linkLabel?: string;
   linkUrl?: string;
-  accentColor?: string;
   className?: string;
 }
 
@@ -32,7 +31,6 @@ export default function ExpandInPlaceCard({
     'The yard handles everything from a quick scrub and antifoul to a full refit: pressure washing, engine servicing, rig tuning and mast lifts, all done in-house by a crew that has worked this harbour for fifteen years. Winter storage ashore runs October to March, with secure hard standing, shore power and round-the-clock access for owners.',
   linkLabel = 'Book a slot',
   linkUrl = '#booking',
-  accentColor = '#ff6a3d',
   className,
 }: ExpandInPlaceCardProps) {
   const [open, setOpen] = useState(false);
@@ -127,7 +125,6 @@ export default function ExpandInPlaceCard({
     if (e.key === 'Escape' && open) setOpen(false);
   };
 
-  const rootStyle = { '--ei-accent': accentColor } as CSSProperties;
   const cls = (...parts: Array<string | false | undefined>) => parts.filter(Boolean).join(' ');
   const linkArrow = (
     <svg
@@ -149,7 +146,6 @@ export default function ExpandInPlaceCard({
     <article
       ref={rootRef}
       className={cls(styles.root, hasMore && styles.rootInteractive, open && styles.rootOpen, className)}
-      style={rootStyle}
       aria-labelledby={titleId}
       onKeyDown={onRootKeyDown}
     >
@@ -260,14 +256,7 @@ export default function ExpandInPlaceCard({
 
 ```css
 .root {
-  --ei-accent: #ff6a3d;
-  --ei-on-accent: #1c0f08;
-  --ei-panel: #263341;
-  --ei-panel-raise: #3a5064;
-  --ei-panel-deep: #18212b;
-  --ei-ink: #f4f8fb;
-  --ei-ink-soft: rgba(244, 248, 251, 0.84);
-  --ei-line: rgba(244, 248, 251, 0.18);
+  --accent: #ff6a3d;
   --ei-font-display: 'Archivo', system-ui, -apple-system, sans-serif;
   --ei-font-ui: 'Archivo', system-ui, -apple-system, sans-serif;
   --ei-spring: cubic-bezier(0.34, 1.38, 0.5, 1);
@@ -280,9 +269,9 @@ export default function ExpandInPlaceCard({
   container-type: inline-size;
   box-sizing: border-box;
   inline-size: 100%;
-  color: var(--ei-ink);
+  color: #f4f8fb;
   font-family: var(--ei-font-ui);
-  scrollbar-color: color-mix(in srgb, var(--ei-accent) 70%, transparent) transparent;
+  scrollbar-color: color-mix(in srgb, var(--accent) 70%, transparent) transparent;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -312,8 +301,8 @@ export default function ExpandInPlaceCard({
   overflow: hidden;
   border-radius: 22px;
   background:
-    radial-gradient(80% 90% at 0% 0%, var(--ei-panel-raise) 0%, transparent 64%),
-    linear-gradient(170deg, var(--ei-panel) 0%, var(--ei-panel-deep) 100%);
+    radial-gradient(80% 90% at 0% 0%, #3a5064 0%, transparent 64%),
+    linear-gradient(170deg, #263341 0%, #18212b 100%);
   box-shadow:
     inset 0 0 0 1px rgba(244, 248, 251, 0.07),
     0 30px 60px -34px rgba(6, 10, 15, 0.8),
@@ -340,8 +329,8 @@ export default function ExpandInPlaceCard({
 }
 
 .root ::selection {
-  background: var(--ei-accent);
-  color: var(--ei-on-accent);
+  background: var(--accent);
+  color: #1c0f08;
 }
 
 .rootInteractive .card {
@@ -437,7 +426,7 @@ export default function ExpandInPlaceCard({
 .paintedBuoyB {
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle at 34% 30%, #ffc2a3 0%, var(--ei-accent) 55%, #9a3516 100%);
+  background: radial-gradient(circle at 34% 30%, #ffc2a3 0%, var(--accent) 55%, #9a3516 100%);
 }
 
 .paintedBuoyA {
@@ -514,7 +503,7 @@ export default function ExpandInPlaceCard({
   opacity: 1;
   background: linear-gradient(
     0deg,
-    var(--ei-panel-deep) 0%,
+    #18212b 0%,
     rgba(24, 33, 43, 0.82) 14%,
     rgba(14, 22, 30, 0.5) 38%,
     transparent 70%
@@ -592,7 +581,7 @@ export default function ExpandInPlaceCard({
   font-weight: 700;
   line-height: 0.95;
   letter-spacing: -0.035em;
-  color: var(--ei-ink);
+  color: #f4f8fb;
   text-wrap: balance;
   overflow-wrap: anywhere;
   hyphens: auto;
@@ -667,7 +656,7 @@ export default function ExpandInPlaceCard({
   font-size: clamp(12.5px, calc(var(--ei-cw) * 0.026), 15px);
   font-weight: 450;
   line-height: 1.45;
-  color: var(--ei-ink-soft);
+  color: rgba(244, 248, 251, 0.84);
   text-shadow: 0 1px 10px rgba(8, 14, 20, 0.45);
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -694,7 +683,7 @@ export default function ExpandInPlaceCard({
   -webkit-line-clamp: 3;
   line-clamp: 3;
   transform: translate3d(0, -2px, 0);
-  color: var(--ei-ink);
+  color: #f4f8fb;
 }
 
 @container (max-inline-size: 639px) {
@@ -722,7 +711,7 @@ export default function ExpandInPlaceCard({
   background: rgba(14, 22, 30, 0.42);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-  color: var(--ei-ink);
+  color: #f4f8fb;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition:
@@ -755,7 +744,7 @@ export default function ExpandInPlaceCard({
 
 .toggle:focus-visible,
 .link:focus-visible {
-  outline: 2px solid var(--ei-ink);
+  outline: 2px solid #f4f8fb;
   outline-offset: 3px;
 }
 
@@ -775,7 +764,7 @@ export default function ExpandInPlaceCard({
   display: grid;
   grid-template-rows: 0fr;
   visibility: hidden;
-  background: var(--ei-panel-deep);
+  background: #18212b;
   transition:
     grid-template-rows 760ms var(--ei-expo),
     visibility 0s linear 760ms;
@@ -817,7 +806,7 @@ export default function ExpandInPlaceCard({
   inline-size: 72px;
   block-size: 3px;
   border-radius: 3px;
-  background: var(--ei-accent);
+  background: var(--accent);
   transform: scaleX(0);
   transform-origin: left center;
   transition: transform 220ms var(--ei-ease);
@@ -835,7 +824,7 @@ export default function ExpandInPlaceCard({
   max-inline-size: 60ch;
   font-size: clamp(16px, 1.7cqi, 20px);
   line-height: 1.62;
-  color: var(--ei-ink-soft);
+  color: rgba(244, 248, 251, 0.84);
   text-wrap: pretty;
   overflow-wrap: anywhere;
 }
@@ -879,8 +868,8 @@ export default function ExpandInPlaceCard({
   padding-inline: 26px 22px;
   border: 0;
   border-radius: 999px;
-  background: var(--ei-accent);
-  color: var(--ei-on-accent);
+  background: var(--accent);
+  color: #1c0f08;
   font-family: var(--ei-font-ui);
   font-size: 16px;
   font-weight: 650;

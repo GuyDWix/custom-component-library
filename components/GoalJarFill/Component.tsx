@@ -7,7 +7,6 @@ export interface GoalJarFillProps {
   goal?: number;
   label?: string;
   currencySymbol?: string;
-  liquidColor?: string;
   reachedText?: string;
   className?: string;
 }
@@ -56,7 +55,6 @@ export default function GoalJarFill({
   goal = 20000,
   label = 'Orchard replanting fund',
   currencySymbol = '$',
-  liquidColor = '#1a86a8',
   reachedText = 'Goal reached',
   className,
 }: GoalJarFillProps) {
@@ -190,7 +188,7 @@ export default function GoalJarFill({
   };
 
   const digits = String(reduced ? percent : shown.percent).length;
-  const rootStyle = { '--gj-liquid': liquidColor, '--gj-len': digits } as CSSProperties;
+  const rootStyle = { '--gj-len': digits } as CSSProperties;
   const shownPercent = reduced ? percent : shown.percent;
   const shownAmount = reduced ? amountText : money(currencySymbol, shown.amount);
   const numeral = (

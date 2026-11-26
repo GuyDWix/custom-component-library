@@ -14,7 +14,6 @@ export interface DrawerPullCardProps {
   subtitle?: string;
   handleLabel?: string;
   rows?: DrawerPullCardRow[];
-  tone?: 'oak' | 'walnut' | 'steel';
   className?: string;
 }
 
@@ -40,7 +39,6 @@ export default function DrawerPullCard({
   subtitle = 'Neighborhood dining room · Fernwood',
   handleLabel = 'House hours',
   rows = defaultRows,
-  tone = 'oak',
   className,
 }: DrawerPullCardProps) {
   const [open, setOpen] = useState(false);
@@ -177,7 +175,6 @@ export default function DrawerPullCard({
     <div
       ref={rootRef}
       className={[styles.root, className].filter(Boolean).join(' ')}
-      data-tone={tone}
       data-title={tier}
       onKeyDown={onKeyDown}
     >

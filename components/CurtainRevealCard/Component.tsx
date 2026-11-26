@@ -19,7 +19,6 @@ export interface CurtainRevealCardProps {
   details?: CurtainRevealCardDetail[];
   image?: string;
   imageAlt?: string;
-  curtainColor?: string;
   openSpeed?: number;
   className?: string;
 }
@@ -48,7 +47,6 @@ export default function CurtainRevealCard({
   details = defaultDetails,
   image = 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=1400&h=900&fit=crop',
   imageAlt = 'A spa still life with a lotion bottle, a rolled towel and a lit candle',
-  curtainColor = '#3a2433',
   openSpeed = 650,
   className,
 }: CurtainRevealCardProps) {
@@ -158,7 +156,6 @@ export default function CurtainRevealCard({
   const visuallyOpen = open || (progress !== null && progress > 0.5);
 
   const cardStyle = {
-    '--cv-curtain': curtainColor,
     '--cv-speed': `${clamp(openSpeed, 250, 1600)}ms`,
     ...(pulling ? { '--cv-tug': `${drag}px` } : {}),
     ...(progress !== null ? { '--cv-p': progress } : {}),

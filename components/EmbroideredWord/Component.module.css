@@ -1,9 +1,6 @@
 .root {
-  --ew-thread: #efe4c8;
-  --ew-outline: #eaa233;
-  --ew-fabric: #253f69;
+  --accent: #eaa233;
   --ew-font: 'Arial Rounded MT Bold', 'Nunito', 'Varela Round', 'Helvetica Neue', Arial, sans-serif;
-  --ew-focus: #eaa233;
   --ew-radius: 20px;
 
   position: relative;
@@ -13,7 +10,8 @@
   min-block-size: 220px;
   overflow: clip;
   border-radius: var(--ew-radius);
-  background: var(--ew-fabric);
+  background: #253f69;
+  color: #efe4c8;
   box-shadow:
     0 1px 2px rgba(8, 14, 30, 0.18),
     0 28px 60px -34px rgba(8, 14, 30, 0.7);
@@ -24,7 +22,7 @@
 .root:focus-visible {
   box-shadow:
     0 0 0 3px #f6f2e8,
-    0 0 0 6px var(--ew-focus),
+    0 0 0 6px var(--accent),
     0 28px 60px -34px rgba(8, 14, 30, 0.7);
 }
 
@@ -63,7 +61,7 @@
   font-size: 44px;
   line-height: 1.1;
   text-align: center;
-  color: var(--ew-thread);
+  color: #efe4c8;
 }
 
 .srOnly {

@@ -9,8 +9,6 @@ const worst: HangingTagCardProps = {
   title: 'Alexandria Montgomery-Vanderhoeven-Castellanos',
   price: '',
   note: 'This piece is the result of a year-long residency exploring clay dug from the riverbed below the studio, fired twice in a hand-built kiln and finished with a glaze recipe that has been passed down through three generations of makers, so no two pieces ever leave the workshop looking quite the same.',
-  stringColor: '#31465e',
-  inkColor: '#1e3a2f',
   tagShape: 'round',
 };
 

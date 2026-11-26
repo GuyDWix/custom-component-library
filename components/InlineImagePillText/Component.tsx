@@ -11,8 +11,6 @@ export interface InlineImagePillTextProps {
   sentence?: string;
   pills?: InlineImagePill[];
   pillHeight?: number;
-  textColor?: string;
-  backgroundColor?: string;
   label?: string;
   pillDescription?: string;
   className?: string;
@@ -67,8 +65,6 @@ export default function InlineImagePillText({
   sentence = defaultSentence,
   pills = defaultPills,
   pillHeight = 92,
-  textColor = '#1d1b2c',
-  backgroundColor = '#e7e4ec',
   label = 'From our kitchen',
   pillDescription = 'Hover, tap or press Enter to widen the photo. Escape closes it.',
   className,
@@ -230,8 +226,6 @@ export default function InlineImagePillText({
   };
 
   const rootStyle = {
-    '--ip-ink': textColor,
-    '--ip-paper': backgroundColor,
     '--ip-pill-h': `${clamp(pillHeight, 40, 110) / 100}em`,
   } as CSSProperties;
 

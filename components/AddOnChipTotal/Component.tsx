@@ -217,7 +217,7 @@ export default function AddOnChipTotal({
             { duration: 420, easing: 'cubic-bezier(.2,1.3,.4,1)' },
           );
           row?.animate(
-            [{ backgroundColor: 'var(--ac-raspberry-tint)' }, { backgroundColor: 'transparent' }],
+            [{ backgroundColor: '#fdecf1' }, { backgroundColor: 'transparent' }],
             { duration: 900, easing: 'cubic-bezier(.4,0,.2,1)' },
           );
           badgeRef.current?.animate(

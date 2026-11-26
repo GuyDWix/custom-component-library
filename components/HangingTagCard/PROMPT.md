@@ -1,6 +1,6 @@
 Create a custom element called "Hanging Tag Card". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: title, price or label, short note, string color, ink color, tag shape. Add other settings if they help.
+The site owner must be able to change: title, price or label, short note, tag shape. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
@@ -13,8 +13,6 @@ export interface HangingTagCardProps {
   title?: string;
   price?: string;
   note?: string;
-  stringColor?: string;
-  inkColor?: string;
   tagShape?: HangingTagShape;
   className?: string;
 }
@@ -56,8 +54,6 @@ export default function HangingTagCard({
   title = 'Atelier Mug No. 12',
   price = '$38',
   note = 'Small-batch stoneware, thrown on the wheel and glazed in a soft sage green. Limited run of forty.',
-  stringColor = '#a87c4e',
-  inkColor = '#2c4a38',
   tagShape = 'classic',
   className,
 }: HangingTagCardProps) {
@@ -265,13 +261,8 @@ export default function HangingTagCard({
     }
   };
 
-  const rootStyle = {
-    '--ht-string': stringColor,
-    '--ht-ink': inkColor,
-  } as CSSProperties;
-
   return (
-    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
+    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')}>
       <span className={styles.wallBroad} aria-hidden="true" />
       <span className={styles.wallPlaster} aria-hidden="true" />
       <span className={styles.wallGrit} aria-hidden="true" />
@@ -344,30 +335,14 @@ export default function HangingTagCard({
 
 ```css
 .root {
-  --ht-ink: #2c4a38;
-  --ht-string: #a87c4e;
-  --ht-kraft: #cfa06a;
-  --ht-kraft-2: #c0915b;
-  --ht-kraft-3: #a47645;
-  --ht-wall: #aeb7a8;
-  --ht-wall-2: #7c897e;
-  --ht-wall-ink: #1c2822;
-  --ht-shadow: rgba(10, 18, 14, 0.85);
   --ht-font-stamp: 'Oswald', 'Arial Narrow', 'Helvetica Neue', sans-serif;
   --ht-font-body: 'Instrument Sans', system-ui, 'Segoe UI', sans-serif;
   --ht-lx: 0.78;
   --ht-ly: 0.62;
   --ht-stage-h: clamp(460px, 58cqi, 780px);
-  --ht-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   /* Plaster, lit for real: three octaves of noise become a height map and an SVG distant light rakes across it. */
-  --ht-plaster: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000' viewBox='0 0 1600 1000'><filter id='w' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.0032 .0046' numOctaves='3' seed='3' result='a'/><feTurbulence type='fractalNoise' baseFrequency='.014 .019' numOctaves='4' seed='8' result='b'/><feTurbulence type='fractalNoise' baseFrequency='.2' numOctaves='3' seed='5' result='c'/><feComposite in='a' in2='b' operator='arithmetic' k1='0' k2='.46' k3='.34' result='ab'/><feComposite in='ab' in2='c' operator='arithmetic' k1='0' k2='1' k3='.12' result='h'/><feDiffuseLighting in='h' surfaceScale='9' diffuseConstant='1.05' lighting-color='%23fff'><feDistantLight azimuth='218' elevation='28'/></feDiffuseLighting></filter><rect width='1600' height='1000' filter='url(%23w)'/></svg>");
-  --ht-plaster-broad: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000' viewBox='0 0 1600 1000'><filter id='b' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.0018 .0026' numOctaves='3' seed='14' result='h'/><feColorMatrix in='h' type='matrix' values='0 0 0 0 .1  0 0 0 0 .14  0 0 0 0 .11  0 0 0 .62 -.12'/></filter><rect width='1600' height='1000' filter='url(%23b)'/></svg>");
-  --ht-plaster-grit: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000' viewBox='0 0 1600 1000'><filter id='g' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='2' seed='21' result='h'/><feDiffuseLighting in='h' surfaceScale='1.6' diffuseConstant='1' lighting-color='%23fff'><feDistantLight azimuth='218' elevation='34'/></feDiffuseLighting></filter><rect width='1600' height='1000' filter='url(%23g)'/></svg>");
   /* Kraft stock: crinkle and fibre relief under the same raking light, then pale and dark wavy fibres and bark flecks. */
-  --ht-kraft-relief: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='700' viewBox='0 0 500 700'><filter id='r' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.007 .011' numOctaves='3' seed='6' result='a'/><feTurbulence type='fractalNoise' baseFrequency='.22' numOctaves='4' seed='12' result='b'/><feTurbulence type='fractalNoise' baseFrequency='.03 .09' numOctaves='2' seed='3' result='c'/><feComposite in='a' in2='b' operator='arithmetic' k1='0' k2='.4' k3='.42' result='ab'/><feComposite in='ab' in2='c' operator='arithmetic' k1='0' k2='1' k3='.2' result='h'/><feDiffuseLighting in='h' surfaceScale='3.4' diffuseConstant='.95' lighting-color='%23fff'><feDistantLight azimuth='218' elevation='46'/></feDiffuseLighting></filter><rect width='500' height='700' filter='url(%23r)'/></svg>");
-  --ht-kraft-fibres: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='700' viewBox='0 0 500 700'><filter id='p' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.02 .5' numOctaves='3' seed='4' result='s'/><feTurbulence type='fractalNoise' baseFrequency='.018' numOctaves='2' seed='9' result='d'/><feDisplacementMap in='s' in2='d' scale='140' xChannelSelector='R' yChannelSelector='G' result='w'/><feColorMatrix in='w' type='matrix' values='0 0 0 0 .99  0 0 0 0 .91  0 0 0 0 .73  0 0 0 8 -5.7'/></filter><filter id='q' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.016 .7' numOctaves='3' seed='17' result='s'/><feTurbulence type='fractalNoise' baseFrequency='.014' numOctaves='2' seed='5' result='d'/><feDisplacementMap in='s' in2='d' scale='150' xChannelSelector='G' yChannelSelector='R' result='w'/><feColorMatrix in='w' type='matrix' values='0 0 0 0 .38  0 0 0 0 .23  0 0 0 0 .09  0 0 0 8.5 -6.2'/></filter><filter id='f' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.42' numOctaves='2' seed='11'/><feColorMatrix type='matrix' values='0 0 0 0 .26  0 0 0 0 .15  0 0 0 0 .05  0 0 0 17 -13.3'/></filter><filter id='m' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.011 .02' numOctaves='3' seed='2'/><feColorMatrix type='matrix' values='0 0 0 0 .5  0 0 0 0 .32  0 0 0 0 .14  0 0 0 1.1 -.34'/></filter><rect width='500' height='700' filter='url(%23m)'/><rect width='500' height='700' filter='url(%23p)' opacity='.95'/><rect width='500' height='700' filter='url(%23q)' opacity='1'/><rect width='500' height='700' filter='url(%23f)'/></svg>");
   /* Hairline plaster cracks around the nail. */
-  --ht-cracks: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100' fill='none' stroke-linecap='round' stroke-linejoin='round'><g stroke='rgba(20,28,24,.5)' stroke-width='.7'><path d='M50 50 L61 41 L66 30 L78 22 L84 8'/><path d='M50 50 L40 60 L41 72 L31 82 L26 96'/><path d='M50 50 L63 56 L74 55 L88 63'/><path d='M61 41 L72 43 L77 50'/><path d='M40 60 L28 57 L16 62'/></g><g stroke='rgba(255,252,238,.4)' stroke-width='.5' transform='translate(.9 1)'><path d='M50 50 L61 41 L66 30 L78 22 L84 8'/><path d='M50 50 L40 60 L41 72 L31 82 L26 96'/><path d='M50 50 L63 56 L74 55 L88 63'/></g></svg>");
 
   position: relative;
   isolation: isolate;
@@ -377,15 +352,22 @@ export default function HangingTagCard({
   inline-size: 100%;
   display: block;
   border-radius: 26px;
-  background:
-    radial-gradient(100% 90% at 24% 6%, color-mix(in srgb, var(--ht-wall) 62%, #fff) 0%, transparent 62%),
-    linear-gradient(162deg, var(--ht-wall) 0%, var(--ht-wall-2) 100%);
-  color: var(--ht-ink);
+  background: linear-gradient(162deg, #aeb7a8 0%, #7c897e 100%);
+  color: #2c4a38;
   font-family: var(--ht-font-body);
 }
 
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background: radial-gradient(100% 90% at 24% 6%, color-mix(in srgb, #aeb7a8 62%, #fff) 0%, transparent 62%);
+}
+
 .root ::selection {
-  background: var(--ht-ink);
+  background: #2c4a38;
   color: #f0e7d3;
 }
 
@@ -404,19 +386,19 @@ export default function HangingTagCard({
 
 /* Broad, soft trowel clouding: lighter and darker patches in the wash. */
 .wallBroad {
-  background: var(--ht-plaster-broad) center / cover no-repeat;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000' viewBox='0 0 1600 1000'><filter id='b' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.0018 .0026' numOctaves='3' seed='14' result='h'/><feColorMatrix in='h' type='matrix' values='0 0 0 0 .1  0 0 0 0 .14  0 0 0 0 .11  0 0 0 .62 -.12'/></filter><rect width='1600' height='1000' filter='url(%23b)'/></svg>") center / cover no-repeat;
   opacity: 0.55;
   mix-blend-mode: multiply;
 }
 
 .wallPlaster {
-  background: var(--ht-plaster) center / cover no-repeat;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000' viewBox='0 0 1600 1000'><filter id='w' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.0032 .0046' numOctaves='3' seed='3' result='a'/><feTurbulence type='fractalNoise' baseFrequency='.014 .019' numOctaves='4' seed='8' result='b'/><feTurbulence type='fractalNoise' baseFrequency='.2' numOctaves='3' seed='5' result='c'/><feComposite in='a' in2='b' operator='arithmetic' k1='0' k2='.46' k3='.34' result='ab'/><feComposite in='ab' in2='c' operator='arithmetic' k1='0' k2='1' k3='.12' result='h'/><feDiffuseLighting in='h' surfaceScale='9' diffuseConstant='1.05' lighting-color='%23fff'><feDistantLight azimuth='218' elevation='28'/></feDiffuseLighting></filter><rect width='1600' height='1000' filter='url(%23w)'/></svg>") center / cover no-repeat;
   mix-blend-mode: overlay;
   opacity: 0.95;
 }
 
 .wallGrit {
-  background: var(--ht-plaster-grit) center / cover no-repeat;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000' viewBox='0 0 1600 1000'><filter id='g' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='2' seed='21' result='h'/><feDiffuseLighting in='h' surfaceScale='1.6' diffuseConstant='1' lighting-color='%23fff'><feDistantLight azimuth='218' elevation='34'/></feDiffuseLighting></filter><rect width='1600' height='1000' filter='url(%23g)'/></svg>") center / cover no-repeat;
   mix-blend-mode: soft-light;
   opacity: 0.55;
 }
@@ -438,8 +420,8 @@ export default function HangingTagCard({
 
 .wallVignette {
   background:
-    radial-gradient(130% 105% at 38% 32%, transparent 52%, color-mix(in srgb, var(--ht-wall-ink) 56%, transparent) 100%),
-    linear-gradient(180deg, transparent 62%, color-mix(in srgb, var(--ht-wall-ink) 20%, transparent) 100%);
+    radial-gradient(130% 105% at 38% 32%, transparent 52%, color-mix(in srgb, #1c2822 56%, transparent) 100%),
+    linear-gradient(180deg, transparent 62%, color-mix(in srgb, #1c2822 20%, transparent) 100%);
 }
 
 .stage {
@@ -589,7 +571,7 @@ export default function HangingTagCard({
   border-radius: 50%;
   pointer-events: none;
   background:
-    var(--ht-cracks) center / 100% 100% no-repeat,
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100' fill='none' stroke-linecap='round' stroke-linejoin='round'><g stroke='rgba(20,28,24,.5)' stroke-width='.7'><path d='M50 50 L61 41 L66 30 L78 22 L84 8'/><path d='M50 50 L40 60 L41 72 L31 82 L26 96'/><path d='M50 50 L63 56 L74 55 L88 63'/><path d='M61 41 L72 43 L77 50'/><path d='M40 60 L28 57 L16 62'/></g><g stroke='rgba(255,252,238,.4)' stroke-width='.5' transform='translate(.9 1)'><path d='M50 50 L61 41 L66 30 L78 22 L84 8'/><path d='M50 50 L40 60 L41 72 L31 82 L26 96'/><path d='M50 50 L63 56 L74 55 L88 63'/></g></svg>") center / 100% 100% no-repeat,
     radial-gradient(circle at 41% 39%, rgba(14, 22, 18, 0.34) 0 16%, transparent 40%),
     radial-gradient(circle at 63% 66%, rgba(255, 250, 232, 0.4) 0 12%, transparent 38%),
     radial-gradient(circle at 50% 50%, rgba(255, 252, 238, 0.14) 0 36%, rgba(14, 22, 18, 0.12) 46%, transparent 62%);
@@ -653,9 +635,9 @@ export default function HangingTagCard({
 .knot,
 .tailA,
 .tailB {
-  --ht-tw-lite: color-mix(in srgb, var(--ht-string) 50%, #fff);
-  --ht-tw-mid: color-mix(in srgb, var(--ht-string) 96%, #fff);
-  --ht-tw-dark: color-mix(in srgb, var(--ht-string) 58%, #2a1705);
+  --ht-tw-lite: color-mix(in srgb, #a87c4e 50%, #fff);
+  --ht-tw-mid: color-mix(in srgb, #a87c4e 96%, #fff);
+  --ht-tw-dark: color-mix(in srgb, #a87c4e 58%, #2a1705);
 }
 
 .cord {
@@ -855,7 +837,7 @@ export default function HangingTagCard({
   inset: 0;
   border-radius: var(--ht-radius);
   clip-path: var(--ht-clip);
-  background: var(--ht-shadow);
+  background: rgba(10, 18, 14, 0.85);
 }
 
 /* Broad soft pool, pushed away from the wall light; grows and softens as the tag swings off the wall. */
@@ -904,7 +886,7 @@ export default function HangingTagCard({
 }
 
 .tag:focus-visible {
-  box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--ht-ink) 55%, transparent);
+  box-shadow: inset 0 0 0 3px color-mix(in srgb, #2c4a38 55%, transparent);
 }
 
 .face,
@@ -925,7 +907,7 @@ export default function HangingTagCard({
   background:
     radial-gradient(130% 110% at 40% 0%, rgba(255, 246, 226, 0.3) 0%, transparent 46%),
     radial-gradient(150% 130% at 50% 45%, transparent 52%, rgba(112, 72, 30, 0.26) 100%),
-    linear-gradient(172deg, var(--ht-kraft) 0%, var(--ht-kraft-2) 60%, var(--ht-kraft-3) 100%);
+    linear-gradient(172deg, #cfa06a 0%, #c0915b 60%, #a47645 100%);
 }
 
 /* Fibre, mottling and bark flecks as colour. */
@@ -934,7 +916,7 @@ export default function HangingTagCard({
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background: var(--ht-kraft-fibres) center / cover no-repeat;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='700' viewBox='0 0 500 700'><filter id='p' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.02 .5' numOctaves='3' seed='4' result='s'/><feTurbulence type='fractalNoise' baseFrequency='.018' numOctaves='2' seed='9' result='d'/><feDisplacementMap in='s' in2='d' scale='140' xChannelSelector='R' yChannelSelector='G' result='w'/><feColorMatrix in='w' type='matrix' values='0 0 0 0 .99  0 0 0 0 .91  0 0 0 0 .73  0 0 0 8 -5.7'/></filter><filter id='q' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.016 .7' numOctaves='3' seed='17' result='s'/><feTurbulence type='fractalNoise' baseFrequency='.014' numOctaves='2' seed='5' result='d'/><feDisplacementMap in='s' in2='d' scale='150' xChannelSelector='G' yChannelSelector='R' result='w'/><feColorMatrix in='w' type='matrix' values='0 0 0 0 .38  0 0 0 0 .23  0 0 0 0 .09  0 0 0 8.5 -6.2'/></filter><filter id='f' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.42' numOctaves='2' seed='11'/><feColorMatrix type='matrix' values='0 0 0 0 .26  0 0 0 0 .15  0 0 0 0 .05  0 0 0 17 -13.3'/></filter><filter id='m' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.011 .02' numOctaves='3' seed='2'/><feColorMatrix type='matrix' values='0 0 0 0 .5  0 0 0 0 .32  0 0 0 0 .14  0 0 0 1.1 -.34'/></filter><rect width='500' height='700' filter='url(%23m)'/><rect width='500' height='700' filter='url(%23p)' opacity='.95'/><rect width='500' height='700' filter='url(%23q)' opacity='1'/><rect width='500' height='700' filter='url(%23f)'/></svg>") center / cover no-repeat;
   opacity: 0.9;
 }
 
@@ -944,7 +926,7 @@ export default function HangingTagCard({
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background: var(--ht-kraft-relief) center / cover no-repeat;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='700' viewBox='0 0 500 700'><filter id='r' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.007 .011' numOctaves='3' seed='6' result='a'/><feTurbulence type='fractalNoise' baseFrequency='.22' numOctaves='4' seed='12' result='b'/><feTurbulence type='fractalNoise' baseFrequency='.03 .09' numOctaves='2' seed='3' result='c'/><feComposite in='a' in2='b' operator='arithmetic' k1='0' k2='.4' k3='.42' result='ab'/><feComposite in='ab' in2='c' operator='arithmetic' k1='0' k2='1' k3='.2' result='h'/><feDiffuseLighting in='h' surfaceScale='3.4' diffuseConstant='.95' lighting-color='%23fff'><feDistantLight azimuth='218' elevation='46'/></feDiffuseLighting></filter><rect width='500' height='700' filter='url(%23r)'/></svg>") center / cover no-repeat;
   mix-blend-mode: overlay;
   opacity: 0.8;
 }
@@ -953,7 +935,7 @@ export default function HangingTagCard({
   position: absolute;
   inset: var(--ht-frame-in);
   border-radius: var(--ht-frame-radius);
-  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ht-ink) 36%, transparent);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, #2c4a38 36%, transparent);
   clip-path: var(--ht-frame-clip);
   pointer-events: none;
 }
@@ -970,8 +952,8 @@ export default function HangingTagCard({
   background: linear-gradient(
     to bottom right,
     transparent calc(50% - 1.1px),
-    color-mix(in srgb, var(--ht-ink) 36%, transparent) calc(50% - 0.75px),
-    color-mix(in srgb, var(--ht-ink) 36%, transparent) calc(50% + 0.75px),
+    color-mix(in srgb, #2c4a38 36%, transparent) calc(50% - 0.75px),
+    color-mix(in srgb, #2c4a38 36%, transparent) calc(50% + 0.75px),
     transparent calc(50% + 1.1px)
   );
 }
@@ -1033,7 +1015,7 @@ export default function HangingTagCard({
   font-weight: 400;
   line-height: 1.05;
   letter-spacing: 0.12em;
-  color: color-mix(in srgb, var(--ht-ink) 88%, var(--ht-kraft));
+  color: color-mix(in srgb, #2c4a38 88%, #cfa06a);
   text-wrap: balance;
   overflow-wrap: break-word;
   display: -webkit-box;
@@ -1042,7 +1024,7 @@ export default function HangingTagCard({
   line-clamp: var(--ht-title-lines, 3);
   overflow: hidden;
   text-shadow:
-    0 0 0.75px color-mix(in srgb, var(--ht-ink) 45%, transparent),
+    0 0 0.75px color-mix(in srgb, #2c4a38 45%, transparent),
     0.75px 0.5px 0 rgba(44, 74, 56, 0.14);
 }
 
@@ -1056,7 +1038,7 @@ export default function HangingTagCard({
   line-height: 0.92;
   letter-spacing: 0.025em;
   font-variant-numeric: tabular-nums;
-  color: var(--ht-ink);
+  color: #2c4a38;
   transform: rotate(-1.4deg);
   text-wrap: balance;
   overflow-wrap: break-word;
@@ -1066,7 +1048,7 @@ export default function HangingTagCard({
   line-clamp: 2;
   overflow: hidden;
   text-shadow:
-    0 0 1px color-mix(in srgb, var(--ht-ink) 40%, transparent),
+    0 0 1px color-mix(in srgb, #2c4a38 40%, transparent),
     1.5px 1px 0 rgba(44, 74, 56, 0.16);
 }
 
@@ -1075,7 +1057,7 @@ export default function HangingTagCard({
   inline-size: 44%;
   block-size: 2px;
   border-radius: 2px;
-  background: color-mix(in srgb, var(--ht-ink) 40%, transparent);
+  background: color-mix(in srgb, #2c4a38 40%, transparent);
 }
 
 .content[data-note-fit='none'] .rule {
@@ -1094,7 +1076,7 @@ export default function HangingTagCard({
   font-size: clamp(12px, calc(var(--ht-tag-w) * 0.047), 17px);
   line-height: 1.45;
   letter-spacing: 0.01em;
-  color: color-mix(in srgb, var(--ht-ink) 82%, var(--ht-kraft));
+  color: color-mix(in srgb, #2c4a38 82%, #cfa06a);
   text-wrap: pretty;
   overflow-wrap: break-word;
   hyphens: manual;
@@ -1127,8 +1109,8 @@ export default function HangingTagCard({
   inline-size: calc(var(--ht-patch-r) * 2);
   background:
     radial-gradient(circle at 36% 30%, rgba(255, 240, 206, 0.34), transparent 60%),
-    var(--ht-kraft-fibres) center / 300% auto,
-    color-mix(in srgb, var(--ht-kraft-3) 82%, #6a3f17);
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='700' viewBox='0 0 500 700'><filter id='p' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.02 .5' numOctaves='3' seed='4' result='s'/><feTurbulence type='fractalNoise' baseFrequency='.018' numOctaves='2' seed='9' result='d'/><feDisplacementMap in='s' in2='d' scale='140' xChannelSelector='R' yChannelSelector='G' result='w'/><feColorMatrix in='w' type='matrix' values='0 0 0 0 .99  0 0 0 0 .91  0 0 0 0 .73  0 0 0 8 -5.7'/></filter><filter id='q' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.016 .7' numOctaves='3' seed='17' result='s'/><feTurbulence type='fractalNoise' baseFrequency='.014' numOctaves='2' seed='5' result='d'/><feDisplacementMap in='s' in2='d' scale='150' xChannelSelector='G' yChannelSelector='R' result='w'/><feColorMatrix in='w' type='matrix' values='0 0 0 0 .38  0 0 0 0 .23  0 0 0 0 .09  0 0 0 8.5 -6.2'/></filter><filter id='f' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.42' numOctaves='2' seed='11'/><feColorMatrix type='matrix' values='0 0 0 0 .26  0 0 0 0 .15  0 0 0 0 .05  0 0 0 17 -13.3'/></filter><filter id='m' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'><feTurbulence type='fractalNoise' baseFrequency='.011 .02' numOctaves='3' seed='2'/><feColorMatrix type='matrix' values='0 0 0 0 .5  0 0 0 0 .32  0 0 0 0 .14  0 0 0 1.1 -.34'/></filter><rect width='500' height='700' filter='url(%23m)'/><rect width='500' height='700' filter='url(%23p)' opacity='.95'/><rect width='500' height='700' filter='url(%23q)' opacity='1'/><rect width='500' height='700' filter='url(%23f)'/></svg>") center / 300% auto,
+    color-mix(in srgb, #a47645 82%, #6a3f17);
   box-shadow:
     inset calc(var(--lux) * -1.2px) calc(var(--luy) * -1.2px) 0 rgba(255, 236, 196, 0.5),
     inset calc(var(--lux) * 1.2px) calc(var(--luy) * 1.2px) 0 rgba(70, 40, 14, 0.4),
@@ -1216,7 +1198,7 @@ export default function HangingTagCard({
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background-image: var(--ht-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.12;
   mix-blend-mode: multiply;
   pointer-events: none;

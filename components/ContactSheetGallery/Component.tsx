@@ -12,8 +12,6 @@ export interface ContactSheetGalleryProps {
   photos?: ContactSheetPhoto[];
   rollLabel?: string;
   showFrameNumbers?: boolean;
-  markerColor?: string;
-  paperTone?: string;
   ariaLabel?: string;
   photoLabel?: string;
   closeLabel?: string;
@@ -67,8 +65,6 @@ export default function ContactSheetGallery({
   photos = defaultPhotos,
   rollLabel = 'Roll 07 · 400 · Proof',
   showFrameNumbers = true,
-  markerColor = '#E8502E',
-  paperTone = '#F2EBDD',
   ariaLabel = 'Contact sheet',
   photoLabel = 'Photo',
   closeLabel = 'Close',
@@ -529,7 +525,6 @@ export default function ContactSheetGallery({
   const gridCols = { gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` };
   const isOpen = phase === 'open';
   const introRank = (i: number) => photos.slice(0, i).filter((p) => p.picked).length;
-  const rootStyle = { '--csg-paper': paperTone, '--csg-marker': markerColor } as CSSProperties;
   const on = (base: string, active: string, flag: boolean) => (flag ? `${base} ${active}` : base);
 
   const stripNode = (cells: number[], s: number, clone: boolean) => (
@@ -611,7 +606,7 @@ export default function ContactSheetGallery({
   );
 
   return (
-    <section ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle} aria-label={ariaLabel}>
+    <section ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} aria-label={ariaLabel}>
       <span className={styles.grain} aria-hidden="true" />
       <div
         ref={tableRef}

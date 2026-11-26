@@ -8,9 +8,7 @@
   "visitor_action": "click/tap the toggle or press Space; swipe on touch",
   "owner_settings": [
     "Two menus (title, hours, note, dishes with name, description and price)",
-    "Toggle labels",
-    "Day colors (sky, paper)",
-    "Evening colors (night sky, lamp glow)"
+    "Toggle labels"
   ],
   "site_types": [
     "restaurant",

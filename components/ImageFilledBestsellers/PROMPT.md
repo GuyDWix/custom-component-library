@@ -1,6 +1,6 @@
 Create a custom element called "Image-Filled Best Sellers". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: products (name, photo, units sold), number shown, unit label, highlight color, heading, rank label. Add other settings if they help.
+The site owner must be able to change: products (name, photo, units sold), number shown, unit label, heading, rank label. Add other settings if they help.
 
 ```tsx
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -17,7 +17,6 @@ export interface ImageFilledBestsellersProps {
   products?: BestsellerProduct[];
   numberShown?: number;
   unitLabel?: string;
-  highlightColor?: string;
   heading?: string;
   rankLabel?: string;
   className?: string;
@@ -50,7 +49,6 @@ export default function ImageFilledBestsellers({
   products = defaultProducts,
   numberShown = 5,
   unitLabel = 'sold',
-  highlightColor = '#d23a1b',
   heading = 'Best sellers',
   rankLabel = 'No.',
   className,
@@ -114,13 +112,11 @@ export default function ImageFilledBestsellers({
 
   const armed = phase === 'armed';
   const playing = phase === 'play';
-  const rootStyle = { '--ifb-highlight': highlightColor } as CSSProperties;
 
   return (
     <section
       ref={rootRef}
       className={cx(styles.root, !inView && styles.paused, className)}
-      style={rootStyle}
       aria-label={heading}
     >
       <div className={styles.inner}>
@@ -208,13 +204,6 @@ export default function ImageFilledBestsellers({
 }
 
 .root {
-  --ifb-highlight: #d23a1b;
-  --ifb-surface: #f4f3ef;
-  --ifb-card: #ffffff;
-  --ifb-ink: #16181d;
-  --ifb-muted: #555b66;
-  --ifb-line: rgba(22, 24, 29, 0.14);
-  --ifb-shadow: 22, 24, 29;
   --ifb-font: 'Avenir Next', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --ifb-play: running;
 
@@ -227,10 +216,10 @@ export default function ImageFilledBestsellers({
   padding-block: 40px;
   padding-inline: 20px;
   border-radius: 20px;
-  background: var(--ifb-surface);
-  color: var(--ifb-ink);
+  background: #f4f3ef;
+  color: #16181d;
   font-family: var(--ifb-font);
-  box-shadow: inset 0 0 0 1px var(--ifb-line);
+  box-shadow: inset 0 0 0 1px rgba(22, 24, 29, 0.14);
 }
 
 .paused {
@@ -292,7 +281,7 @@ export default function ImageFilledBestsellers({
   font-weight: 750;
   line-height: 1;
   letter-spacing: -0.03em;
-  color: var(--ifb-highlight);
+  color: #d23a1b;
   font-variant-numeric: tabular-nums lining-nums;
 }
 
@@ -321,8 +310,8 @@ export default function ImageFilledBestsellers({
   padding: 10px 12px 10px 10px;
   border: 0;
   border-radius: 14px;
-  background: var(--ifb-card);
-  box-shadow: 0 0 0 1px var(--ifb-line);
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(22, 24, 29, 0.14);
   color: inherit;
   font: inherit;
   text-align: start;
@@ -337,13 +326,13 @@ export default function ImageFilledBestsellers({
 }
 
 .track:focus-visible {
-  outline: 3px solid var(--ifb-ink);
+  outline: 3px solid #16181d;
   outline-offset: 3px;
 }
 
 .trackActive {
   --lift: 1;
-  box-shadow: 0 0 0 2px var(--ifb-highlight);
+  box-shadow: 0 0 0 2px #d23a1b;
 }
 
 .thumb {
@@ -383,7 +372,7 @@ export default function ImageFilledBestsellers({
 
 .groove {
   inline-size: calc(100% - var(--tagw));
-  background: rgba(var(--ifb-shadow), 0.08);
+  background: rgba(22, 24, 29, 0.08);
 }
 
 .fill {
@@ -472,7 +461,7 @@ export default function ImageFilledBestsellers({
   justify-items: start;
   min-inline-size: 56px;
   padding: 5px 10px 5px 22px;
-  background: var(--ifb-ink);
+  background: #16181d;
   color: #fff;
   clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%);
 }
@@ -485,7 +474,7 @@ export default function ImageFilledBestsellers({
   inline-size: 6px;
   block-size: 6px;
   border-radius: 50%;
-  background: var(--ifb-surface);
+  background: #f4f3ef;
 }
 
 .tagCount {
@@ -581,12 +570,12 @@ export default function ImageFilledBestsellers({
   }
 
   .groove {
-    background: rgba(var(--ifb-shadow), 0.07);
-    box-shadow: inset 0 0 0 1px var(--ifb-line);
+    background: rgba(22, 24, 29, 0.07);
+    box-shadow: inset 0 0 0 1px rgba(22, 24, 29, 0.14);
   }
 
   .trackActive .groove {
-    box-shadow: inset 0 0 0 2px var(--ifb-highlight);
+    box-shadow: inset 0 0 0 2px #d23a1b;
   }
 
   .scrim {

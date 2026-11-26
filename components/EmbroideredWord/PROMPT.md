@@ -1,6 +1,6 @@
 Create a custom element called "Embroidered Word". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: text, thread color (fill), outline thread color, fabric color, stitch style (filled or outline), re-sew a letter on hover (on/off, default off). Add other settings if they help.
+The site owner must be able to change: text, stitch style (filled or outline), re-sew a letter on hover (on/off, default off). Add other settings if they help.
 
 ```tsx
 import { useEffect, useId, useRef, useState } from 'react';
@@ -11,9 +11,6 @@ export type StitchStyle = 'filled' | 'outline';
 
 export interface EmbroideredWordProps {
   text?: string;
-  threadColor?: string;
-  outlineColor?: string;
-  fabricColor?: string;
   stitchStyle?: StitchStyle;
   resewOnHover?: boolean;
   className?: string;
@@ -1365,9 +1362,6 @@ type Engine = ReturnType<typeof createEngine>;
 
 export default function EmbroideredWord({
   text = 'Made by hand',
-  threadColor = '#efe4c8',
-  outlineColor = '#eaa233',
-  fabricColor = '#253f69',
   stitchStyle = 'filled',
   resewOnHover = false,
   className,
@@ -1431,9 +1425,9 @@ export default function EmbroideredWord({
         w: width,
         text: text.trim() || ' ',
         family: cs.getPropertyValue('--ew-font').trim() || 'sans-serif',
-        fab: parseColor(cs.getPropertyValue('--ew-fabric'), fabricColor),
-        fill: parseColor(cs.getPropertyValue('--ew-thread'), threadColor),
-        outline: parseColor(cs.getPropertyValue('--ew-outline'), outlineColor),
+        fab: parseColor(cs.backgroundColor, '#253f69'),
+        fill: parseColor(cs.color, '#efe4c8'),
+        outline: parseColor(cs.getPropertyValue('--accent'), '#eaa233'),
         style: stitchStyle === 'outline' ? 'outline' : 'filled',
         dpr: Math.min(2, window.devicePixelRatio || 1),
       });
@@ -1452,7 +1446,7 @@ export default function EmbroideredWord({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [width, text, threadColor, outlineColor, fabricColor, stitchStyle, reduced]);
+  }, [width, text, stitchStyle, reduced]);
 
   useEffect(() => {
     played.current = false;
@@ -1507,12 +1501,7 @@ export default function EmbroideredWord({
     engine.current?.replay();
   };
 
-  const rootStyle = {
-    '--ew-thread': threadColor,
-    '--ew-outline': outlineColor,
-    '--ew-fabric': fabricColor,
-    blockSize: height ? `${height}px` : undefined,
-  } as CSSProperties;
+  const rootStyle = { blockSize: height ? `${height}px` : undefined } as CSSProperties;
 
   return (
     <div
@@ -1550,11 +1539,8 @@ export default function EmbroideredWord({
 
 ```css
 .root {
-  --ew-thread: #efe4c8;
-  --ew-outline: #eaa233;
-  --ew-fabric: #253f69;
+  --accent: #eaa233;
   --ew-font: 'Arial Rounded MT Bold', 'Nunito', 'Varela Round', 'Helvetica Neue', Arial, sans-serif;
-  --ew-focus: #eaa233;
   --ew-radius: 20px;
 
   position: relative;
@@ -1564,7 +1550,8 @@ export default function EmbroideredWord({
   min-block-size: 220px;
   overflow: clip;
   border-radius: var(--ew-radius);
-  background: var(--ew-fabric);
+  background: #253f69;
+  color: #efe4c8;
   box-shadow:
     0 1px 2px rgba(8, 14, 30, 0.18),
     0 28px 60px -34px rgba(8, 14, 30, 0.7);
@@ -1575,7 +1562,7 @@ export default function EmbroideredWord({
 .root:focus-visible {
   box-shadow:
     0 0 0 3px #f6f2e8,
-    0 0 0 6px var(--ew-focus),
+    0 0 0 6px var(--accent),
     0 28px 60px -34px rgba(8, 14, 30, 0.7);
 }
 
@@ -1614,7 +1601,7 @@ export default function EmbroideredWord({
   font-size: 44px;
   line-height: 1.1;
   text-align: center;
-  color: var(--ew-thread);
+  color: #efe4c8;
 }
 
 .srOnly {

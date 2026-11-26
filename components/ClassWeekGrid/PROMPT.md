@@ -620,13 +620,6 @@ export default function ClassWeekGrid({
 /* Studio linen: oat-white weave, sage / clay / denim paper tiles, today's column lifted off the cloth. */
 
 .root {
-  --cw-ground: #f2eee4;
-  --cw-paper: #fdfbf6;
-  --cw-ink: #24221e;
-  --cw-muted: #665e51;
-  --cw-hair: rgba(70, 58, 38, 0.16);
-  --cw-focus: #2f5d8f;
-  --cw-accent: #3d5f86;
   --cw-font-display: 'Bricolage Grotesque', 'Instrument Sans', system-ui, sans-serif;
   --cw-font-body: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --cw-spring: cubic-bezier(0.3, 1.35, 0.5, 1);
@@ -637,22 +630,31 @@ export default function ClassWeekGrid({
   inline-size: 100%;
   padding: 48px 28px 28px;
   border-radius: 28px;
-  color: var(--cw-ink);
+  color: #24221e;
   font-family: var(--cw-font-body);
   font-size: 16px;
   line-height: 1.35;
   font-variant-numeric: tabular-nums;
+  background: #f2eee4;
+  box-shadow: inset 0 0 0 1px rgba(70, 58, 38, 0.16);
+}
+
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
   background:
     repeating-linear-gradient(0deg, rgba(90, 72, 44, 0.05) 0 1px, transparent 1px 4px),
     repeating-linear-gradient(90deg, rgba(90, 72, 44, 0.04) 0 1px, transparent 1px 5px),
-    radial-gradient(120% 70% at 18% 0%, rgba(255, 255, 255, 0.6), transparent 62%),
-    var(--cw-ground);
-  box-shadow: inset 0 0 0 1px var(--cw-hair);
+    radial-gradient(120% 70% at 18% 0%, rgba(255, 255, 255, 0.6), transparent 62%);
 }
 
 .root::selection {
   background: #cfdcea;
-  color: var(--cw-ink);
+  color: #24221e;
 }
 
 @supports (transition-timing-function: linear(0, 1)) {
@@ -680,7 +682,7 @@ export default function ClassWeekGrid({
   margin-block: -14px;
   margin-inline: 2px;
   border-radius: 24px;
-  background: var(--cw-paper);
+  background: #fdfbf6;
   box-shadow:
     0 0 0 1px rgba(70, 58, 38, 0.1),
     0 2px 4px rgba(60, 48, 28, 0.06),
@@ -725,7 +727,7 @@ export default function ClassWeekGrid({
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.02em;
-  color: var(--cw-muted);
+  color: #665e51;
 }
 
 .headToday {
@@ -750,7 +752,7 @@ export default function ClassWeekGrid({
   font-weight: 650;
   line-height: 0.9;
   letter-spacing: -0.045em;
-  color: var(--cw-ink);
+  color: #24221e;
 }
 
 .todayText {
@@ -771,7 +773,7 @@ export default function ClassWeekGrid({
   align-self: flex-start;
   padding: 3px 10px;
   border-radius: 99px;
-  background: var(--cw-accent);
+  background: #3d5f86;
   color: #fff;
   font-size: 12px;
   font-weight: 650;
@@ -785,7 +787,7 @@ export default function ClassWeekGrid({
   font-size: 12px;
   font-weight: 560;
   line-height: 1.2;
-  color: var(--cw-muted);
+  color: #665e51;
   white-space: nowrap;
 }
 
@@ -845,7 +847,7 @@ export default function ClassWeekGrid({
   font: inherit;
   text-align: start;
   cursor: pointer;
-  background: color-mix(in srgb, var(--c) 34%, var(--cw-paper));
+  background: color-mix(in srgb, var(--c) 34%, #fdfbf6);
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--c) 30%, transparent),
     0 1px 1.5px rgba(60, 48, 28, 0.1),
@@ -868,7 +870,7 @@ export default function ClassWeekGrid({
 }
 
 .tile:focus-visible {
-  outline: 3px solid var(--cw-focus);
+  outline: 3px solid #2f5d8f;
   outline-offset: 3px;
 }
 
@@ -911,8 +913,8 @@ export default function ClassWeekGrid({
 
 .tileActive {
   box-shadow:
-    0 0 0 2px var(--cw-paper),
-    0 0 0 3.5px var(--cw-ink),
+    0 0 0 2px #fdfbf6,
+    0 0 0 3.5px #24221e,
     0 10px 16px -12px rgba(60, 48, 28, 0.3);
 }
 
@@ -926,8 +928,8 @@ export default function ClassWeekGrid({
 
 .tileNextActive {
   box-shadow:
-    0 0 0 2px var(--cw-paper),
-    0 0 0 3.5px var(--cw-ink),
+    0 0 0 2px #fdfbf6,
+    0 0 0 3.5px #24221e,
     0 14px 22px -12px color-mix(in srgb, var(--c) 80%, #000);
 }
 
@@ -1002,7 +1004,7 @@ export default function ClassWeekGrid({
   min-inline-size: 0;
   padding: 8px;
   border-radius: 22px;
-  background: var(--cw-paper);
+  background: #fdfbf6;
   box-shadow:
     0 0 0 1px rgba(70, 58, 38, 0.1),
     0 1px 2px rgba(60, 48, 28, 0.06),
@@ -1077,7 +1079,7 @@ export default function ClassWeekGrid({
   margin: 0;
   font-size: 14px;
   line-height: 1.35;
-  color: var(--cw-muted);
+  color: #665e51;
   overflow-wrap: anywhere;
 }
 
@@ -1086,7 +1088,7 @@ export default function ClassWeekGrid({
   margin: 0 6px 0 0;
   padding: 7px 14px;
   border-radius: 99px;
-  background: color-mix(in srgb, var(--c) 26%, var(--cw-paper));
+  background: color-mix(in srgb, var(--c) 26%, #fdfbf6);
   color: color-mix(in srgb, var(--c) 22%, #1b1a17);
   font-size: 13px;
   font-weight: 650;
@@ -1121,7 +1123,7 @@ export default function ClassWeekGrid({
   padding: 8px 16px;
   border: 0;
   border-radius: 99px;
-  color: var(--cw-ink);
+  color: #24221e;
   font: inherit;
   font-size: 14px;
   font-weight: 600;
@@ -1139,7 +1141,7 @@ export default function ClassWeekGrid({
 }
 
 .chip:hover {
-  background: var(--cw-paper);
+  background: #fdfbf6;
 }
 
 .chip:active {
@@ -1147,7 +1149,7 @@ export default function ClassWeekGrid({
 }
 
 .chip:focus-visible {
-  outline: 3px solid var(--cw-focus);
+  outline: 3px solid #2f5d8f;
   outline-offset: 3px;
 }
 
@@ -1175,7 +1177,7 @@ export default function ClassWeekGrid({
 }
 
 .chipAll {
-  --chip-strong: var(--cw-ink);
+  --chip-strong: #24221e;
 }
 
 /* ---------- compact: one day at a time ---------- */
@@ -1201,7 +1203,7 @@ export default function ClassWeekGrid({
   padding: 6px 2px;
   border: 0;
   border-radius: 16px;
-  color: var(--cw-ink);
+  color: #24221e;
   font: inherit;
   cursor: pointer;
   background: transparent;
@@ -1214,7 +1216,7 @@ export default function ClassWeekGrid({
 }
 
 .dayTab:focus-visible {
-  outline: 3px solid var(--cw-focus);
+  outline: 3px solid #2f5d8f;
   outline-offset: 2px;
 }
 
@@ -1235,7 +1237,7 @@ export default function ClassWeekGrid({
 
 .dayTabToday {
   translate: 0 -4px;
-  background: var(--cw-paper);
+  background: #fdfbf6;
   box-shadow:
     0 0 0 1px rgba(70, 58, 38, 0.12),
     0 12px 16px -10px rgba(60, 48, 28, 0.45);
@@ -1243,7 +1245,7 @@ export default function ClassWeekGrid({
 
 .dayTabOn {
   color: #fff;
-  background: var(--cw-ink);
+  background: #24221e;
   box-shadow: 0 12px 16px -10px rgba(60, 48, 28, 0.55);
 }
 
@@ -1253,7 +1255,7 @@ export default function ClassWeekGrid({
   inline-size: 5px;
   block-size: 5px;
   border-radius: 50%;
-  background: var(--cw-accent);
+  background: #3d5f86;
 }
 
 .dayTabDotOn {
@@ -1322,7 +1324,7 @@ export default function ClassWeekGrid({
   font: inherit;
   text-align: start;
   cursor: pointer;
-  background: color-mix(in srgb, var(--c) 34%, var(--cw-paper));
+  background: color-mix(in srgb, var(--c) 34%, #fdfbf6);
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--c) 30%, transparent),
     0 1px 1.5px rgba(60, 48, 28, 0.1),
@@ -1338,7 +1340,7 @@ export default function ClassWeekGrid({
 }
 
 .row:focus-visible {
-  outline: 3px solid var(--cw-focus);
+  outline: 3px solid #2f5d8f;
   outline-offset: 3px;
 }
 
@@ -1352,8 +1354,8 @@ export default function ClassWeekGrid({
 
 .rowOpen {
   box-shadow:
-    0 0 0 2px var(--cw-paper),
-    0 0 0 3.5px var(--cw-ink);
+    0 0 0 2px #fdfbf6,
+    0 0 0 3.5px #24221e;
 }
 
 .rowClock {
@@ -1430,7 +1432,7 @@ export default function ClassWeekGrid({
   border-radius: 18px;
   text-align: center;
   font-size: 15px;
-  color: var(--cw-muted);
+  color: #665e51;
   box-shadow: inset 0 0 0 1px rgba(70, 58, 38, 0.2);
 }
 

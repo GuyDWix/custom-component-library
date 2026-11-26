@@ -13,8 +13,7 @@
     "Event time zone",
     "Venue",
     "Details link and its label",
-    "Add-to-calendar and confirmation labels",
-    "Accent color"
+    "Add-to-calendar and confirmation labels"
   ],
   "site_types": [
     "events",

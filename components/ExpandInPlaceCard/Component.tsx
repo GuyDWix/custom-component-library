@@ -10,7 +10,6 @@ export interface ExpandInPlaceCardProps {
   fullText?: string;
   linkLabel?: string;
   linkUrl?: string;
-  accentColor?: string;
   className?: string;
 }
 
@@ -27,7 +26,6 @@ export default function ExpandInPlaceCard({
     'The yard handles everything from a quick scrub and antifoul to a full refit: pressure washing, engine servicing, rig tuning and mast lifts, all done in-house by a crew that has worked this harbour for fifteen years. Winter storage ashore runs October to March, with secure hard standing, shore power and round-the-clock access for owners.',
   linkLabel = 'Book a slot',
   linkUrl = '#booking',
-  accentColor = '#ff6a3d',
   className,
 }: ExpandInPlaceCardProps) {
   const [open, setOpen] = useState(false);
@@ -122,7 +120,6 @@ export default function ExpandInPlaceCard({
     if (e.key === 'Escape' && open) setOpen(false);
   };
 
-  const rootStyle = { '--ei-accent': accentColor } as CSSProperties;
   const cls = (...parts: Array<string | false | undefined>) => parts.filter(Boolean).join(' ');
   const linkArrow = (
     <svg
@@ -144,7 +141,6 @@ export default function ExpandInPlaceCard({
     <article
       ref={rootRef}
       className={cls(styles.root, hasMore && styles.rootInteractive, open && styles.rootOpen, className)}
-      style={rootStyle}
       aria-labelledby={titleId}
       onKeyDown={onRootKeyDown}
     >

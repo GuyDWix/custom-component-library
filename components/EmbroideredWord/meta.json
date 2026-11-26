@@ -8,9 +8,6 @@
   "visitor_action": "none (stitches itself when scrolled into view); hovering or tapping a letter sews it again",
   "owner_settings": [
     "Text",
-    "Thread color (fill)",
-    "Outline thread color",
-    "Fabric color",
     "Stitch style (filled or outline)",
     "Re-sew a letter on hover (on/off, default off)"
   ],

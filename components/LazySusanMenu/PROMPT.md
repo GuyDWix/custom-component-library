@@ -1,6 +1,6 @@
 Create a custom element called "Lazy Susan Menu". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: dishes (image, name, price), plate size, spin speed, table tone. Add other settings if they help.
+The site owner must be able to change: dishes (image, name, price), plate size, spin speed. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -17,7 +17,6 @@ export interface LazySusanMenuProps {
   items?: LazySusanItem[];
   plateSize?: number;
   spinSpeed?: number;
-  tableTone?: string;
   className?: string;
 }
 
@@ -129,7 +128,6 @@ export default function LazySusanMenu({
   items = defaultItems,
   plateSize = 26,
   spinSpeed = 1,
-  tableTone = '#22272b',
   className,
 }: LazySusanMenuProps) {
   const count = items.length;
@@ -369,7 +367,6 @@ export default function LazySusanMenu({
   };
 
   const rootStyle = {
-    '--ls-tone': tableTone,
     '--ls-plate': String(plateD),
     '--ls-orbit': String(ORBIT),
     '--ls-lx': String(LIGHT_X),
@@ -505,18 +502,11 @@ export default function LazySusanMenu({
 
 ```css
 .root {
-  /* Re-themable palette. The stone colour comes from the tableTone prop. */
-  --ls-tone: #22272b;
   --ls-plate: 26;
   --ls-orbit: 29.5;
   --ls-lx: -0.64;
   --ls-ly: -0.42;
   --ls-lobe: 303deg;
-  --ls-ink-bg: #0c1012;
-  --ls-ink-bg-lo: #050708;
-  --ls-ivory: #f4efe4;
-  --ls-champagne: #d9c18f;
-  --ls-hair: rgba(255, 255, 255, 0.12);
   --ls-display: 'Gloock', 'Iowan Old Style', Georgia, serif;
   /* The table's rendered width; only valid on direct children of the root. */
   --ls-d: min(100cqi, 700px);
@@ -533,11 +523,18 @@ export default function LazySusanMenu({
   padding-block: 28px 16px;
   padding-inline: 20px;
   border-radius: 28px;
-  background:
-    radial-gradient(70% 55% at 30% 24%, rgba(255, 255, 255, 0.055), transparent 70%),
-    radial-gradient(150% 110% at 50% 42%, var(--ls-ink-bg) 0%, var(--ls-ink-bg-lo) 100%);
-  color: var(--ls-ivory);
+  background: radial-gradient(150% 110% at 50% 42%, #0c1012 0%, #050708 100%);
+  color: #f4efe4;
   font-family: var(--ls-display);
+}
+
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background: radial-gradient(70% 55% at 30% 24%, rgba(255, 255, 255, 0.055), transparent 70%);
 }
 
 .root ::selection {
@@ -619,9 +616,9 @@ export default function LazySusanMenu({
     ),
     radial-gradient(
       circle at 50% 50%,
-      color-mix(in srgb, var(--ls-tone) 88%, white) 0%,
-      var(--ls-tone) 55%,
-      color-mix(in srgb, var(--ls-tone) 72%, black) 100%
+      color-mix(in srgb, #22272b 88%, white) 0%,
+      #22272b 55%,
+      color-mix(in srgb, #22272b 72%, black) 100%
     );
   transform: rotate(var(--ls-rot));
   will-change: transform;
@@ -776,7 +773,7 @@ export default function LazySusanMenu({
 }
 
 .plate:focus-visible {
-  outline: 2px solid var(--ls-champagne);
+  outline: 2px solid #d9c18f;
   outline-offset: 3px;
 }
 
@@ -844,9 +841,9 @@ export default function LazySusanMenu({
   block-size: 44px;
   padding: 0;
   border-radius: 50%;
-  border: 1px solid var(--ls-hair);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.04);
-  color: var(--ls-ivory);
+  color: #f4efe4;
   cursor: pointer;
   transition:
     background-color 180ms ease,
@@ -864,7 +861,7 @@ export default function LazySusanMenu({
 }
 
 .arrow:focus-visible {
-  outline: 2px solid var(--ls-champagne);
+  outline: 2px solid #d9c18f;
   outline-offset: 2px;
 }
 
@@ -883,7 +880,7 @@ export default function LazySusanMenu({
   border-radius: 16px;
   text-align: center;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.035));
-  border: 1px solid var(--ls-hair);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
   box-shadow:
@@ -907,7 +904,7 @@ export default function LazySusanMenu({
   font-weight: 400;
   line-height: 1.1;
   letter-spacing: -0.01em;
-  color: var(--ls-ivory);
+  color: #f4efe4;
   overflow-wrap: anywhere;
   text-wrap: balance;
   /* clamped so the card never grows past the frame (full name stays in the accessible label) */
@@ -939,7 +936,7 @@ export default function LazySusanMenu({
   font-size: 19px;
   line-height: 1.2;
   letter-spacing: 0.08em;
-  color: var(--ls-champagne);
+  color: #d9c18f;
   font-variant-numeric: lining-nums tabular-nums;
   /* one line, ellipsised: a pathological price must not push the card out of the frame */
   min-inline-size: 0;

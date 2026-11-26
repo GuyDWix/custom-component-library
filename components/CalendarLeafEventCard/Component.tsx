@@ -1,5 +1,4 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import type { CSSProperties } from 'react';
 import styles from './Component.module.css';
 
 export interface CalendarLeafEventCardProps {
@@ -16,7 +15,6 @@ export interface CalendarLeafEventCardProps {
   addLabel?: string;
   addedLabel?: string;
   dateLanguage?: string;
-  leafColor?: string;
   className?: string;
 }
 
@@ -189,7 +187,6 @@ export default function CalendarLeafEventCard({
   addLabel = 'Add to calendar',
   addedLabel = 'Added',
   dateLanguage = 'en-US',
-  leafColor = '#ff5a36',
   className,
 }: CalendarLeafEventCardProps) {
   const uid = useId();
@@ -325,13 +322,12 @@ export default function CalendarLeafEventCard({
   };
 
   const cx = (...names: (string | false | undefined)[]) => names.filter(Boolean).join(' ');
-  const rootStyle = { '--cl-accent': leafColor } as CSSProperties;
   const ctaAria = `${addLabel}: ${title}${fullDate ? `, ${fullDate}` : ''}${timeLine ? `, ${timeLine}` : ''}`;
   const hintOn = () => setHint(true);
   const hintOff = () => setHint(false);
 
   return (
-    <div ref={rootRef} className={cx(styles.root, className)} style={rootStyle}>
+    <div ref={rootRef} className={cx(styles.root, className)}>
       <article className={cx(styles.card, seen && styles.cardSeen)} aria-labelledby={titleId}>
         <span className={styles.atmos} aria-hidden={image ? undefined : true}>
           <span className={styles.atmosTint} />

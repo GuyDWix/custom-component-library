@@ -9,8 +9,7 @@
   "owner_settings": [
     "Dishes (image, name, price)",
     "Plate size",
-    "Spin speed",
-    "Table tone"
+    "Spin speed"
   ],
   "site_types": [
     "restaurant",

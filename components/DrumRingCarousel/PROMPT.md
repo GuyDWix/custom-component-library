@@ -1,6 +1,6 @@
 Create a custom element called "Drum Ring Carousel". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: photos (image, caption), drum radius, spin speed, background tone. Add other settings if they help.
+The site owner must be able to change: photos (image, caption), drum radius, spin speed. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -16,7 +16,6 @@ export interface DrumRingCarouselProps {
   photos?: DrumPhoto[];
   drumRadius?: number;
   spinSpeed?: number;
-  backgroundTone?: string;
   className?: string;
 }
 
@@ -89,7 +88,6 @@ export default function DrumRingCarousel({
   photos = defaultPhotos,
   drumRadius = 860,
   spinSpeed = 4,
-  backgroundTone = '#0a0e1a',
   className,
 }: DrumRingCarouselProps) {
   const n = photos.length;
@@ -323,7 +321,6 @@ export default function DrumRingCarousel({
   const current = photos[active];
   const opened = open !== null ? photos[open] : undefined;
   const rootStyle = {
-    '--dr-tone': backgroundTone,
     '--dr-panel-w': `${panelW}px`,
     '--dr-panel-h': `${panelH}px`,
     '--dr-perspective': `${Math.round(geo.r * 1.35)}px`,
@@ -482,14 +479,7 @@ export default function DrumRingCarousel({
 
 ```css
 .root {
-  --dr-tone: #0a0e1a;
-  --dr-dome-glow: color-mix(in srgb, var(--dr-tone) 52%, #1c3054);
-  --dr-floor: color-mix(in srgb, var(--dr-tone) 42%, #000);
-  --dr-ink: #e9eef7;
-  --dr-muted: rgba(233, 238, 247, 0.72);
-  --dr-hairline: rgba(233, 238, 247, 0.15);
-  --dr-accent: #8fb8ff;
-  --dr-light: #ffedc8;
+  --accent: #8fb8ff;
   --dr-font-display: 'Wix Madefor Display', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
   --dr-font-ui: 'Avenir Next', Avenir, 'Segoe UI', 'Helvetica Neue', system-ui, sans-serif;
   --dr-top: 44px;
@@ -506,10 +496,8 @@ export default function DrumRingCarousel({
   padding-block: var(--dr-top) 32px;
   padding-inline: 0;
   border-radius: 24px;
-  background:
-    radial-gradient(130% 90% at 50% -18%, var(--dr-dome-glow) 0%, transparent 58%),
-    linear-gradient(180deg, var(--dr-tone) 0%, color-mix(in srgb, var(--dr-tone) 72%, #000) 100%);
-  color: var(--dr-ink);
+  background: linear-gradient(180deg, #0a0e1a 0%, color-mix(in srgb, #0a0e1a 72%, #000) 100%);
+  color: #e9eef7;
   font-family: var(--dr-font-ui);
   -webkit-tap-highlight-color: transparent;
 }
@@ -518,8 +506,17 @@ export default function DrumRingCarousel({
   --dr-horizon: calc(var(--dr-top) + 8px + var(--dr-panel-w) * 0.86 * 1.24);
 }
 
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background: radial-gradient(130% 90% at 50% -18%, color-mix(in srgb, #0a0e1a 52%, #1c3054) 0%, transparent 58%);
+}
+
 .root ::selection {
-  background: color-mix(in srgb, var(--dr-accent) 72%, transparent);
+  background: color-mix(in srgb, var(--accent) 72%, transparent);
   color: #05070d;
 }
 
@@ -542,14 +539,14 @@ export default function DrumRingCarousel({
   inline-size: min(92%, 940px);
   aspect-ratio: 1.7;
   translate: -50% 0;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--dr-accent) 8%, transparent), transparent 78%);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 8%, transparent), transparent 78%);
   filter: blur(18px);
 }
 
 .floor {
   inset-inline: 0;
   inset-block: var(--dr-horizon) 0;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--dr-floor) 90%, #131c2e) 0%, #030509 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, color-mix(in srgb, #0a0e1a 42%, #000) 90%, #131c2e) 0%, #030509 100%);
   box-shadow: inset 0 1px 0 rgba(233, 238, 247, 0.05);
 }
 
@@ -568,7 +565,7 @@ export default function DrumRingCarousel({
 }
 
 .stage:focus-visible {
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--dr-accent) 72%, transparent);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 72%, transparent);
   border-radius: 20px;
 }
 
@@ -606,7 +603,7 @@ export default function DrumRingCarousel({
   inset-inline: -10%;
   inset-block-start: calc(100% - 6px);
   block-size: 44px;
-  background: radial-gradient(50% 100% at 50% 0%, color-mix(in srgb, var(--dr-light) 10%, transparent), transparent 72%);
+  background: radial-gradient(50% 100% at 50% 0%, color-mix(in srgb, #ffedc8 10%, transparent), transparent 72%);
   filter: blur(4px);
   pointer-events: none;
 }
@@ -691,7 +688,7 @@ export default function DrumRingCarousel({
   border: 1px solid rgba(233, 238, 247, 0.28);
   border-radius: 50%;
   background: rgba(233, 238, 247, 0.06);
-  color: var(--dr-ink);
+  color: #e9eef7;
   cursor: pointer;
   transition: background-color 180ms ease, border-color 180ms ease, transform 160ms ease;
 }
@@ -724,7 +721,7 @@ export default function DrumRingCarousel({
 .close:focus-visible,
 .slideButton:focus-visible,
 .track:focus-visible {
-  outline: 2px solid var(--dr-accent);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -760,7 +757,7 @@ export default function DrumRingCarousel({
   font-weight: 500;
   letter-spacing: 0.2em;
   font-variant-numeric: tabular-nums;
-  color: var(--dr-muted);
+  color: rgba(233, 238, 247, 0.72);
 }
 
 .countRule {
@@ -777,7 +774,7 @@ export default function DrumRingCarousel({
   font-weight: 400;
   line-height: 1.2;
   letter-spacing: -0.015em;
-  color: var(--dr-ink);
+  color: #e9eef7;
   text-wrap: balance;
   overflow-wrap: anywhere;
   display: -webkit-box;
@@ -806,13 +803,13 @@ export default function DrumRingCarousel({
   inset-inline-end: 14px;
   inline-size: 36px;
   block-size: 36px;
-  color: var(--dr-muted);
+  color: rgba(233, 238, 247, 0.72);
   border-color: transparent;
   background: transparent;
 }
 
 .pause:hover {
-  color: var(--dr-ink);
+  color: #e9eef7;
 }
 
 .pauseIcon {
@@ -862,7 +859,7 @@ export default function DrumRingCarousel({
   font-size: 17px;
   line-height: 1.3;
   letter-spacing: -0.005em;
-  color: var(--dr-ink);
+  color: #e9eef7;
   overflow-wrap: anywhere;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -920,7 +917,7 @@ export default function DrumRingCarousel({
     inset 0 1px 0 rgba(255, 237, 200, 0.1),
     0 0 0 1px rgba(2, 4, 9, 0.8),
     0 24px 70px -20px rgba(0, 0, 0, 0.9),
-    0 0 70px -8px color-mix(in srgb, var(--dr-light) 28%, transparent);
+    0 0 70px -8px color-mix(in srgb, #ffedc8 28%, transparent);
 }
 
 .viewerCaption {
@@ -929,7 +926,7 @@ export default function DrumRingCarousel({
   font-size: 20px;
   line-height: 1.3;
   letter-spacing: -0.005em;
-  color: var(--dr-ink);
+  color: #e9eef7;
   text-align: center;
   text-wrap: balance;
   overflow-wrap: anywhere;

@@ -1,10 +1,10 @@
 Create a custom element called "Black Hole Intro". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: centre label, star color, accent color, star density, content shown beneath (children). Add other settings if they help.
+The site owner must be able to change: centre label, star density, content shown beneath (children). Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent, ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 import styles from './Component.module.css';
 
 export interface BlackHoleIntroProps {
@@ -12,8 +12,6 @@ export interface BlackHoleIntroProps {
   children?: ReactNode;
   onOpen?: () => void;
   onClose?: () => void;
-  starColor?: string;
-  accentColor?: string;
   density?: number;
   className?: string;
 }
@@ -33,8 +31,6 @@ export default function BlackHoleIntro({
   children,
   onOpen,
   onClose,
-  starColor = '#cfd8ff',
-  accentColor = '#ff8a4c',
   density = 1,
   className,
 }: BlackHoleIntroProps) {
@@ -82,6 +78,8 @@ export default function BlackHoleIntro({
       return;
     }
     const g = ctx;
+    const starColor = getComputedStyle(canvas).color;
+    const accentColor = getComputedStyle(root).getPropertyValue('--accent').trim();
     let reduced = mql.matches;
     setStaticMode(reduced);
 
@@ -249,15 +247,12 @@ export default function BlackHoleIntro({
       mql.removeEventListener('change', onMotion);
       kickRef.current = () => {};
     };
-  }, [starColor, accentColor, density]);
-
-  const style = { '--bh-star': starColor, '--bh-accent': accentColor } as CSSProperties;
+  }, [density]);
 
   return (
     <div
       ref={rootRef}
       className={`${styles.root} ${className ?? ''}`}
-      style={style}
       data-open={open}
       data-static={staticMode}
       onKeyDown={onKeyDown}
@@ -289,11 +284,7 @@ export default function BlackHoleIntro({
 
 ```css
 .root {
-  --bh-ink: #06070b;
-  --bh-star: #cfd8ff;
-  --bh-accent: #ff8a4c;
-  --bh-text: #f2f4ff;
-  --bh-muted: #aab0c8;
+  --accent: #ff8a4c;
   --bh-core: 132px;
   --bh-font: 'Instrument Sans', system-ui, sans-serif;
   position: relative;
@@ -306,7 +297,7 @@ export default function BlackHoleIntro({
   min-block-size: 34rem;
   overflow: hidden;
   background: #0b0d14;
-  color: var(--bh-text);
+  color: #f2f4ff;
   font-family: var(--bh-font);
   font-weight: 500;
 }
@@ -315,7 +306,7 @@ export default function BlackHoleIntro({
   position: absolute;
   inset: 0;
   z-index: 2;
-  background: var(--bh-ink);
+  background: #06070b;
   pointer-events: none;
   transition: opacity 1.1s ease 0.2s;
 }
@@ -326,6 +317,7 @@ export default function BlackHoleIntro({
 
 .canvas {
   position: absolute;
+  color: #cfd8ff;
   inset: 0;
   z-index: 3;
   inline-size: 100%;
@@ -341,7 +333,7 @@ export default function BlackHoleIntro({
   position: absolute;
   inset: 0;
   z-index: 4;
-  background: radial-gradient(circle at 50% 50%, var(--bh-ink) 0, var(--bh-ink) calc(var(--bh-core) * 0.3), transparent calc(var(--bh-core) * 0.75));
+  background: radial-gradient(circle at 50% 50%, #06070b 0, #06070b calc(var(--bh-core) * 0.3), transparent calc(var(--bh-core) * 0.75));
   pointer-events: none;
   transition: opacity 0.6s ease;
 }
@@ -363,7 +355,7 @@ export default function BlackHoleIntro({
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--bh-text);
+  color: #f2f4ff;
   font: inherit;
   cursor: pointer;
   display: grid;
@@ -372,7 +364,7 @@ export default function BlackHoleIntro({
 }
 
 .core:focus-visible {
-  outline: 2px solid var(--bh-accent);
+  outline: 2px solid var(--accent);
   outline-offset: 4px;
 }
 
@@ -388,7 +380,7 @@ export default function BlackHoleIntro({
 .core:focus-visible .label {
   letter-spacing: 0.4em;
   text-indent: 0.4em;
-  color: var(--bh-accent);
+  color: var(--accent);
 }
 
 .root[data-open='true'] .core {

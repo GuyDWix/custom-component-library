@@ -12,7 +12,6 @@ export interface ImageFilledBestsellersProps {
   products?: BestsellerProduct[];
   numberShown?: number;
   unitLabel?: string;
-  highlightColor?: string;
   heading?: string;
   rankLabel?: string;
   className?: string;
@@ -45,7 +44,6 @@ export default function ImageFilledBestsellers({
   products = defaultProducts,
   numberShown = 5,
   unitLabel = 'sold',
-  highlightColor = '#d23a1b',
   heading = 'Best sellers',
   rankLabel = 'No.',
   className,
@@ -109,13 +107,11 @@ export default function ImageFilledBestsellers({
 
   const armed = phase === 'armed';
   const playing = phase === 'play';
-  const rootStyle = { '--ifb-highlight': highlightColor } as CSSProperties;
 
   return (
     <section
       ref={rootRef}
       className={cx(styles.root, !inView && styles.paused, className)}
-      style={rootStyle}
       aria-label={heading}
     >
       <div className={styles.inner}>

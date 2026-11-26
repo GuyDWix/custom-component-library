@@ -1,6 +1,6 @@
 Create a custom element called "Inline Image Pill Text". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: sentence, pills (position = word number to replace, image), pill height, text color, background color, small label, accessibility description. Add other settings if they help.
+The site owner must be able to change: sentence, pills (position = word number to replace, image), pill height, small label, accessibility description. Add other settings if they help.
 
 ```tsx
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -16,8 +16,6 @@ export interface InlineImagePillTextProps {
   sentence?: string;
   pills?: InlineImagePill[];
   pillHeight?: number;
-  textColor?: string;
-  backgroundColor?: string;
   label?: string;
   pillDescription?: string;
   className?: string;
@@ -72,8 +70,6 @@ export default function InlineImagePillText({
   sentence = defaultSentence,
   pills = defaultPills,
   pillHeight = 92,
-  textColor = '#1d1b2c',
-  backgroundColor = '#e7e4ec',
   label = 'From our kitchen',
   pillDescription = 'Hover, tap or press Enter to widen the photo. Escape closes it.',
   className,
@@ -235,8 +231,6 @@ export default function InlineImagePillText({
   };
 
   const rootStyle = {
-    '--ip-ink': textColor,
-    '--ip-paper': backgroundColor,
     '--ip-pill-h': `${clamp(pillHeight, 40, 110) / 100}em`,
   } as CSSProperties;
 
@@ -322,14 +316,9 @@ export default function InlineImagePillText({
 
 ```css
 .root {
-  --ip-ink: #1d1b2c;
-  --ip-paper: #e7e4ec;
   --ip-pill-h: 0.86em;
-  --ip-border: #ffffff;
-  --ip-shadow: 44, 36, 72;
   --ip-font: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
   --ip-font-label: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  --ip-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -339,19 +328,26 @@ export default function InlineImagePillText({
   inline-size: 100%;
   padding-block: clamp(40px, 8cqi, 96px);
   padding-inline: clamp(20px, 7cqi, 96px);
-  background:
-    radial-gradient(120% 90% at 50% 110%, color-mix(in srgb, var(--ip-paper) 82%, #8a84a0) 0%, transparent 70%),
-    linear-gradient(170deg, color-mix(in srgb, var(--ip-paper) 70%, #ffffff) 0%, var(--ip-paper) 55%, color-mix(in srgb, var(--ip-paper) 92%, #6f6987) 100%);
-  color: var(--ip-ink);
+  background: linear-gradient(170deg, color-mix(in srgb, #e7e4ec 70%, #ffffff) 0%, #e7e4ec 55%, color-mix(in srgb, #e7e4ec 92%, #6f6987) 100%);
+  color: #1d1b2c;
   font-family: var(--ip-font);
   border-radius: 20px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    inset 0 0 0 1px rgba(var(--ip-shadow), 0.06),
-    0 1px 2px rgba(var(--ip-shadow), 0.08),
-    0 24px 48px -28px rgba(var(--ip-shadow), 0.35);
+    inset 0 0 0 1px rgba(44, 36, 72, 0.06),
+    0 1px 2px rgba(44, 36, 72, 0.08),
+    0 24px 48px -28px rgba(44, 36, 72, 0.35);
   outline: 1px solid rgba(255, 255, 255, 0.55);
   outline-offset: -12px;
+}
+
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 110%, rgba(138, 132, 160, 0.18) 0%, transparent 70%);
 }
 
 .light,
@@ -373,7 +369,7 @@ export default function InlineImagePillText({
 
 .grain {
   inset: 0;
-  background-image: var(--ip-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   mix-blend-mode: multiply;
   opacity: 0.16;
 }
@@ -393,7 +389,7 @@ export default function InlineImagePillText({
   font-family: var(--ip-font-label);
   font-size: 14px;
   letter-spacing: 0.08em;
-  color: color-mix(in srgb, var(--ip-ink) 68%, var(--ip-paper));
+  color: color-mix(in srgb, #1d1b2c 68%, #e7e4ec);
 }
 
 .rule {
@@ -411,7 +407,7 @@ export default function InlineImagePillText({
   letter-spacing: -0.035em;
   text-wrap: pretty;
   overflow-wrap: anywhere;
-  color: var(--ip-ink);
+  color: #1d1b2c;
 }
 
 .slot {
@@ -433,21 +429,21 @@ export default function InlineImagePillText({
   translate: 0 calc(-0.06em - var(--p) * 0.05em);
   transform: scale(calc(1 + var(--p) * 0.06));
   overflow: hidden;
-  border: max(2px, 0.045em) solid var(--ip-border);
+  border: max(2px, 0.045em) solid #ffffff;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--ip-paper) 70%, var(--ip-ink));
+  background: color-mix(in srgb, #e7e4ec 70%, #1d1b2c);
   animation: pillIn 900ms cubic-bezier(0.34, 1.4, 0.5, 1) both;
   font: inherit;
   color: #fff;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   box-shadow:
-    0 0.02em 0.04em rgba(var(--ip-shadow), 0.18),
-    0 calc(0.1em + var(--p) * 0.12em) calc(0.24em + var(--p) * 0.3em) calc(-0.08em - var(--p) * 0.04em) rgba(var(--ip-shadow), calc(0.3 + var(--p) * 0.12));
+    0 0.02em 0.04em rgba(44, 36, 72, 0.18),
+    0 calc(0.1em + var(--p) * 0.12em) calc(0.24em + var(--p) * 0.3em) calc(-0.08em - var(--p) * 0.04em) rgba(44, 36, 72, calc(0.3 + var(--p) * 0.12));
 }
 
 .pill:focus-visible {
-  outline: max(2px, 0.04em) solid var(--ip-ink);
+  outline: max(2px, 0.04em) solid #1d1b2c;
   outline-offset: max(3px, 0.05em);
 }
 
@@ -469,7 +465,7 @@ export default function InlineImagePillText({
 .blank {
   background:
     radial-gradient(80% 120% at 30% 20%, rgba(255, 255, 255, 0.55), transparent 60%),
-    linear-gradient(135deg, color-mix(in srgb, var(--ip-paper) 55%, #9c8fc4), color-mix(in srgb, var(--ip-paper) 40%, var(--ip-ink)));
+    linear-gradient(135deg, color-mix(in srgb, #e7e4ec 55%, #9c8fc4), color-mix(in srgb, #e7e4ec 40%, #1d1b2c));
 }
 
 .sheen {

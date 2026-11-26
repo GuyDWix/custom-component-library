@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent, ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 import styles from './Component.module.css';
 
 export interface BlackHoleIntroProps {
@@ -7,8 +7,6 @@ export interface BlackHoleIntroProps {
   children?: ReactNode;
   onOpen?: () => void;
   onClose?: () => void;
-  starColor?: string;
-  accentColor?: string;
   density?: number;
   className?: string;
 }
@@ -28,8 +26,6 @@ export default function BlackHoleIntro({
   children,
   onOpen,
   onClose,
-  starColor = '#cfd8ff',
-  accentColor = '#ff8a4c',
   density = 1,
   className,
 }: BlackHoleIntroProps) {
@@ -77,6 +73,8 @@ export default function BlackHoleIntro({
       return;
     }
     const g = ctx;
+    const starColor = getComputedStyle(canvas).color;
+    const accentColor = getComputedStyle(root).getPropertyValue('--accent').trim();
     let reduced = mql.matches;
     setStaticMode(reduced);
 
@@ -244,15 +242,12 @@ export default function BlackHoleIntro({
       mql.removeEventListener('change', onMotion);
       kickRef.current = () => {};
     };
-  }, [starColor, accentColor, density]);
-
-  const style = { '--bh-star': starColor, '--bh-accent': accentColor } as CSSProperties;
+  }, [density]);
 
   return (
     <div
       ref={rootRef}
       className={`${styles.root} ${className ?? ''}`}
-      style={style}
       data-open={open}
       data-static={staticMode}
       onKeyDown={onKeyDown}

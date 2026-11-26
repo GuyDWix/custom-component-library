@@ -12,7 +12,6 @@ export interface LazySusanMenuProps {
   items?: LazySusanItem[];
   plateSize?: number;
   spinSpeed?: number;
-  tableTone?: string;
   className?: string;
 }
 
@@ -124,7 +123,6 @@ export default function LazySusanMenu({
   items = defaultItems,
   plateSize = 26,
   spinSpeed = 1,
-  tableTone = '#22272b',
   className,
 }: LazySusanMenuProps) {
   const count = items.length;
@@ -364,7 +362,6 @@ export default function LazySusanMenu({
   };
 
   const rootStyle = {
-    '--ls-tone': tableTone,
     '--ls-plate': String(plateD),
     '--ls-orbit': String(ORBIT),
     '--ls-lx': String(LIGHT_X),

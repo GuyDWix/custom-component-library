@@ -24,13 +24,12 @@ const stage = {
 
 export default function Preview() {
   const params = useMemo(() => new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search), []);
-  const color = params.get('color') ? `#${params.get('color')}` : undefined;
   const isWorst = params.get('worst') === '1';
 
   return (
     <div style={stage}>
       <div style={{ width: '100%', maxWidth: 1200 }}>
-        <GoalJarFill {...(isWorst ? worst : {})} {...(color ? { liquidColor: color } : {})} />
+        <GoalJarFill {...(isWorst ? worst : {})} />
       </div>
     </div>
   );

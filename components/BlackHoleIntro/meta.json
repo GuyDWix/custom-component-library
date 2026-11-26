@@ -8,8 +8,6 @@
   "visitor_action": "hover or focus the centre to pull the stars into a ring; click, Enter or Space to open; Escape closes",
   "owner_settings": [
     "Centre label",
-    "Star color",
-    "Accent color",
     "Star density",
     "Content shown beneath (children)"
   ],

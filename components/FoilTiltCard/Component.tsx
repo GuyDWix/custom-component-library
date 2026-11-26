@@ -15,7 +15,6 @@ export interface FoilTiltCardProps {
   eyebrow?: string;
   serial?: string;
   details?: FoilTiltCardDetail[];
-  foilColor?: string;
   tiltStrength?: number;
   className?: string;
 }
@@ -46,7 +45,6 @@ export default function FoilTiltCard({
   eyebrow = 'Founding crew',
   serial = 'No. 07 / 24',
   details = defaultDetails,
-  foilColor = '#b69cff',
   tiltStrength = 16,
   className,
 }: FoilTiltCardProps) {
@@ -191,11 +189,10 @@ export default function FoilTiltCard({
     keyTimer.current = window.setTimeout(release, KEY_HOLD_MS);
   };
 
-  const rootStyle = { '--ft-foil': foilColor } as CSSProperties;
   const monogram = title.trim().charAt(0).toUpperCase();
 
   return (
-    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
+    <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(' ')}>
       <span className={styles.glowLilac} aria-hidden="true" />
       <span className={styles.glowMint} aria-hidden="true" />
       <span className={styles.grain} aria-hidden="true" />

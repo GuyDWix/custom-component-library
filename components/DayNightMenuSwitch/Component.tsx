@@ -19,10 +19,6 @@ export interface DayNightMenuSwitchProps {
   eveningNote?: string;
   dayItems?: DayNightMenuItem[];
   eveningItems?: DayNightMenuItem[];
-  dayColor?: string;
-  dayPaper?: string;
-  eveningColor?: string;
-  eveningGlow?: string;
   className?: string;
 }
 
@@ -86,10 +82,6 @@ export default function DayNightMenuSwitch({
   eveningNote = 'Candles lit at six',
   dayItems = defaultDayItems,
   eveningItems = defaultEveningItems,
-  dayColor = '#f6a25c',
-  dayPaper = '#fff1de',
-  eveningColor = '#2a1234',
-  eveningGlow = '#ffb347',
   className,
 }: DayNightMenuSwitchProps) {
   const [evening, setEvening] = useState(false);
@@ -188,10 +180,6 @@ export default function DayNightMenuSwitch({
   };
 
   const rootStyle = {
-    '--dn-day': dayColor,
-    '--dn-paper': dayPaper,
-    '--dn-night': eveningColor,
-    '--dn-glow': eveningGlow,
     '--dn-play': inView ? 'running' : 'paused',
   } as CSSProperties;
 

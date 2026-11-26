@@ -1,6 +1,6 @@
 Create a custom element called "Film Strip Scrubber". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: photos (image and caption), frame ratio, strip colour, edge-print film label. Add other settings if they help.
+The site owner must be able to change: photos (image and caption), frame ratio, edge-print film label. Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -15,7 +15,6 @@ export interface FilmStripPhoto {
 export interface FilmStripScrubberProps {
   photos?: FilmStripPhoto[];
   frameRatio?: '16:9' | '3:2' | '4:3' | '1:1';
-  stripColor?: string;
   filmLabel?: string;
   className?: string;
 }
@@ -79,7 +78,6 @@ const STRIP_HELP =
 export default function FilmStripScrubber({
   photos = defaultPhotos,
   frameRatio = '3:2',
-  stripColor = '#4b5158',
   filmLabel = 'PORTRA 400',
   className,
 }: FilmStripScrubberProps) {
@@ -365,7 +363,6 @@ export default function FilmStripScrubber({
   const photo = photos[safeIndex];
   const r = RATIO[frameRatio] ?? RATIO['3:2'];
   const rootStyle = {
-    '--fs-acetate': stripColor,
     '--fs-ratio': r.ratio,
     '--fs-ratio-w': String(r.w),
   } as CSSProperties;
@@ -479,18 +476,10 @@ export default function FilmStripScrubber({
 
 ```css
 .root {
-  --fs-acetate: #4b5158;
-  --fs-amber: #e2a04a;
   --fs-ratio: 3 / 2;
   --fs-ratio-w: 1.5;
-  --fs-room: #191c22;
-  --fs-room-deep: #111318;
-  --fs-ink: #e8ebf0;
-  --fs-muted: rgba(232, 235, 240, 0.66);
   --fs-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   --fs-font: 'Inter', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --fs-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  --fs-holes: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='18'><rect x='4' y='3.5' width='16' height='11' rx='3' fill='%23d8e1ec' fill-opacity='0.85'/></svg>");
 
   position: relative;
   isolation: isolate;
@@ -499,15 +488,22 @@ export default function FilmStripScrubber({
   box-sizing: border-box;
   inline-size: 100%;
   border-radius: 26px;
-  background:
-    radial-gradient(130% 52% at 50% 0%, rgba(176, 196, 216, 0.15) 0%, transparent 62%),
-    linear-gradient(180deg, var(--fs-room) 0%, var(--fs-room-deep) 100%);
-  color: var(--fs-ink);
+  background: linear-gradient(180deg, #191c22 0%, #111318 100%);
+  color: #e8ebf0;
   font-family: var(--fs-font);
 }
 
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(130% 52% at 50% 0%, rgba(176, 196, 216, 0.15) 0%, transparent 62%);
+}
+
 .root ::selection {
-  background: var(--fs-amber);
+  background: #e2a04a;
   color: #17191d;
 }
 
@@ -516,7 +512,7 @@ export default function FilmStripScrubber({
   inset: 0;
   z-index: 4;
   pointer-events: none;
-  background-image: var(--fs-noise);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   opacity: 0.12;
   mix-blend-mode: overlay;
 }
@@ -600,7 +596,7 @@ export default function FilmStripScrubber({
   min-inline-size: 0;
   font-size: 15.5px;
   line-height: 1.55;
-  color: var(--fs-muted);
+  color: rgba(232, 235, 240, 0.66);
   overflow-wrap: anywhere;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -621,15 +617,15 @@ export default function FilmStripScrubber({
 }
 
 .nums {
-  color: var(--fs-amber);
+  color: #e2a04a;
 }
 
 .stock {
-  color: var(--fs-muted);
+  color: rgba(232, 235, 240, 0.66);
 }
 
 .stockDot {
-  color: var(--fs-muted);
+  color: rgba(232, 235, 240, 0.66);
 }
 
 .stripViewport {
@@ -652,7 +648,7 @@ export default function FilmStripScrubber({
 }
 
 .stripViewport:focus-visible {
-  outline: 2.5px solid var(--fs-amber);
+  outline: 2.5px solid #e2a04a;
   outline-offset: -2.5px;
   -webkit-mask-image: none;
   mask-image: none;
@@ -668,9 +664,9 @@ export default function FilmStripScrubber({
   will-change: transform;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--fs-acetate) 70%, #ffffff) 0%,
-    var(--fs-acetate) 26%,
-    color-mix(in srgb, var(--fs-acetate) 84%, #000000) 100%
+    color-mix(in srgb, #4b5158 70%, #ffffff) 0%,
+    #4b5158 26%,
+    color-mix(in srgb, #4b5158 84%, #000000) 100%
   );
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
@@ -682,7 +678,7 @@ export default function FilmStripScrubber({
   flex: none;
   inline-size: 100%;
   block-size: 18px;
-  background-image: var(--fs-holes);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='18'><rect x='4' y='3.5' width='16' height='11' rx='3' fill='%23d8e1ec' fill-opacity='0.85'/></svg>");
   background-repeat: repeat-x;
   background-position: 0 center;
 }
@@ -756,7 +752,7 @@ export default function FilmStripScrubber({
   letter-spacing: 0.18em;
   line-height: 1.2;
   text-transform: uppercase;
-  color: var(--fs-amber);
+  color: #e2a04a;
 }
 
 .gate {
@@ -782,29 +778,29 @@ export default function FilmStripScrubber({
 .gateCornerTL {
   inset-block-start: 3px;
   inset-inline-start: 3px;
-  border-block-start: 2.5px solid var(--fs-amber);
-  border-inline-start: 2.5px solid var(--fs-amber);
+  border-block-start: 2.5px solid #e2a04a;
+  border-inline-start: 2.5px solid #e2a04a;
 }
 
 .gateCornerTR {
   inset-block-start: 3px;
   inset-inline-end: 3px;
-  border-block-start: 2.5px solid var(--fs-amber);
-  border-inline-end: 2.5px solid var(--fs-amber);
+  border-block-start: 2.5px solid #e2a04a;
+  border-inline-end: 2.5px solid #e2a04a;
 }
 
 .gateCornerBL {
   inset-block-end: 3px;
   inset-inline-start: 3px;
-  border-block-end: 2.5px solid var(--fs-amber);
-  border-inline-start: 2.5px solid var(--fs-amber);
+  border-block-end: 2.5px solid #e2a04a;
+  border-inline-start: 2.5px solid #e2a04a;
 }
 
 .gateCornerBR {
   inset-block-end: 3px;
   inset-inline-end: 3px;
-  border-block-end: 2.5px solid var(--fs-amber);
-  border-inline-end: 2.5px solid var(--fs-amber);
+  border-block-end: 2.5px solid #e2a04a;
+  border-inline-end: 2.5px solid #e2a04a;
 }
 
 @container (min-width: 640px) {

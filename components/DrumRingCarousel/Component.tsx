@@ -11,7 +11,6 @@ export interface DrumRingCarouselProps {
   photos?: DrumPhoto[];
   drumRadius?: number;
   spinSpeed?: number;
-  backgroundTone?: string;
   className?: string;
 }
 
@@ -84,7 +83,6 @@ export default function DrumRingCarousel({
   photos = defaultPhotos,
   drumRadius = 860,
   spinSpeed = 4,
-  backgroundTone = '#0a0e1a',
   className,
 }: DrumRingCarouselProps) {
   const n = photos.length;
@@ -318,7 +316,6 @@ export default function DrumRingCarousel({
   const current = photos[active];
   const opened = open !== null ? photos[open] : undefined;
   const rootStyle = {
-    '--dr-tone': backgroundTone,
     '--dr-panel-w': `${panelW}px`,
     '--dr-panel-h': `${panelH}px`,
     '--dr-perspective': `${Math.round(geo.r * 1.35)}px`,

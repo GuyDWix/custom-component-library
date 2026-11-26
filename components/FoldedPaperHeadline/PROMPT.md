@@ -1,6 +1,6 @@
 Create a custom element called "Folded Paper Headline". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: headline text, paper color, text color, fold count, folded (on/off), fold trigger (click, hover, none). Add other settings if they help.
+The site owner must be able to change: headline text, fold count, folded (on/off), fold trigger (click, hover, none). Add other settings if they help.
 
 ```tsx
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
@@ -9,8 +9,6 @@ import styles from './Component.module.css';
 
 export interface FoldedPaperHeadlineProps {
   headline?: string;
-  paperColor?: string;
-  textColor?: string;
   foldCount?: number;
   isFolded?: boolean;
   foldTrigger?: 'click' | 'hover' | 'none';
@@ -33,8 +31,6 @@ const ease = (t: number) => t * t * (3 - 2 * t);
 
 export default function FoldedPaperHeadline({
   headline = 'Folded Light',
-  paperColor = '#b32914',
-  textColor = '#f0e5cf',
   foldCount = 5,
   isFolded = true,
   foldTrigger = 'click',
@@ -193,8 +189,6 @@ export default function FoldedPaperHeadline({
   }, [reduced, inView, folded, paint]);
 
   const rootStyle = {
-    '--fph-paper': paperColor,
-    '--fph-ink': textColor,
     '--k': facetCount,
     ...(fit !== null ? { '--fph-size': `${fit}px` } : {}),
   } as CSSProperties;
@@ -278,9 +272,6 @@ export default function FoldedPaperHeadline({
 
 ```css
 .root {
-  --fph-paper: #b32914;
-  --fph-ink: #f0e5cf;
-  --fph-black: #16120f;
   --fph-font: 'Anton', 'Impact', 'Helvetica Neue', sans-serif;
   --fph-size: clamp(36px, 22cqi, 320px);
 
@@ -294,7 +285,7 @@ export default function FoldedPaperHeadline({
   flex-direction: column;
   justify-content: center;
   padding-block: calc(var(--fph-size) * 0.14) calc(var(--fph-size) * 0.2);
-  color: var(--fph-ink);
+  color: #f0e5cf;
 }
 
 .heading {
@@ -323,7 +314,7 @@ export default function FoldedPaperHeadline({
   inset-inline: 8%;
   inset-block-end: calc(var(--fph-size) * -0.12);
   block-size: calc(var(--fph-size) * 0.22);
-  background: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--fph-black) 34%, transparent), transparent 70%);
+  background: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, #16120f 34%, transparent), transparent 70%);
   filter: blur(6px);
   transform: scaleX(var(--shadow-scale, 0.85));
   opacity: var(--shadow-o, 0.9);
@@ -365,7 +356,7 @@ export default function FoldedPaperHeadline({
   overflow: clip;
   transform-origin: 0 50%;
   pointer-events: none;
-  background: var(--fph-paper);
+  background: #b32914;
 }
 
 .lead {
@@ -396,7 +387,7 @@ export default function FoldedPaperHeadline({
   text-align: center;
   box-sizing: border-box;
   padding-inline: 3cqi;
-  color: var(--fph-ink);
+  color: #f0e5cf;
   overflow-wrap: anywhere;
   text-wrap: balance;
   pointer-events: none;
@@ -423,7 +414,7 @@ export default function FoldedPaperHeadline({
 }
 
 .facetShade {
-  background: var(--fph-black);
+  background: #16120f;
   opacity: calc(var(--shd, 0) * 0.5);
 }
 
@@ -435,7 +426,7 @@ export default function FoldedPaperHeadline({
   font-size: calc(var(--fph-size) * 0.13);
   line-height: 1;
   letter-spacing: 0.04em;
-  color: var(--fph-black);
+  color: #16120f;
   pointer-events: none;
 }
 
@@ -467,7 +458,7 @@ export default function FoldedPaperHeadline({
 }
 
 .trigger:focus-visible {
-  outline: 3px solid var(--fph-black);
+  outline: 3px solid #16120f;
   outline-offset: -6px;
 }
 ```

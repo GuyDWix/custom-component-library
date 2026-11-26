@@ -4,8 +4,6 @@ import styles from './Component.module.css';
 
 export interface FoldedPaperHeadlineProps {
   headline?: string;
-  paperColor?: string;
-  textColor?: string;
   foldCount?: number;
   isFolded?: boolean;
   foldTrigger?: 'click' | 'hover' | 'none';
@@ -28,8 +26,6 @@ const ease = (t: number) => t * t * (3 - 2 * t);
 
 export default function FoldedPaperHeadline({
   headline = 'Folded Light',
-  paperColor = '#b32914',
-  textColor = '#f0e5cf',
   foldCount = 5,
   isFolded = true,
   foldTrigger = 'click',
@@ -188,8 +184,6 @@ export default function FoldedPaperHeadline({
   }, [reduced, inView, folded, paint]);
 
   const rootStyle = {
-    '--fph-paper': paperColor,
-    '--fph-ink': textColor,
     '--k': facetCount,
     ...(fit !== null ? { '--fph-size': `${fit}px` } : {}),
   } as CSSProperties;

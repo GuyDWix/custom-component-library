@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import type { CSSProperties, KeyboardEvent } from 'react';
+import type { KeyboardEvent } from 'react';
 import styles from './Component.module.css';
 
 export interface LeaderDotMenuItem {
@@ -13,9 +13,6 @@ export interface LeaderDotMenuListProps {
   heading?: string;
   items?: LeaderDotMenuItem[];
   currencySymbol?: string;
-  textColor?: string;
-  accentColor?: string;
-  paperColor?: string;
   className?: string;
 }
 
@@ -32,9 +29,6 @@ export default function LeaderDotMenuList({
   heading = 'Le Dîner',
   items = defaultItems,
   currencySymbol = '$',
-  textColor = '#1f2a44',
-  accentColor = '#a8392b',
-  paperColor = '#f6efdf',
   className,
 }: LeaderDotMenuListProps) {
   const [open, setOpen] = useState<number | null>(0);
@@ -64,16 +58,11 @@ export default function LeaderDotMenuList({
     buttons.current[next]?.focus();
   };
 
-  const rootStyle = {
-    '--ldm-ink': textColor,
-    '--ldm-accent': accentColor,
-    '--ldm-paper': paperColor,
-  } as CSSProperties;
 
   const formatPrice = (price?: string) => (price ? `${currencySymbol}${price}` : '');
 
   return (
-    <div className={[styles.root, className].filter(Boolean).join(' ')} style={rootStyle}>
+    <div className={[styles.root, className].filter(Boolean).join(' ')}>
       <span className={styles.grain} aria-hidden="true" />
       <span className={styles.vignette} aria-hidden="true" />
 
