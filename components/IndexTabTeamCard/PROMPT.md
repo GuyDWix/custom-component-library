@@ -1,6 +1,6 @@
 Create a custom element called "Index Tab Team Card". Build it exactly as this React reference (same look, behavior and defaults).
 
-The site owner must be able to change: people (name, role, photo, bio), tab color, card tone, stamp text, form labels (role, file number). Add other settings if they help.
+The site owner must be able to change: people (name, role, photo, bio), stamp text, form labels (role, file number). Add other settings if they help.
 
 ```tsx
 import { useEffect, useId, useRef, useState } from 'react';

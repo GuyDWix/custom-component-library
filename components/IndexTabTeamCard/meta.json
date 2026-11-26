@@ -8,8 +8,6 @@
   "visitor_action": "click/tap a tab or use arrow keys to flip to a person",
   "owner_settings": [
     "People (name, role, photo, bio)",
-    "Tab color",
-    "Card tone",
     "Stamp text",
     "Form labels (role, file number)"
   ],
