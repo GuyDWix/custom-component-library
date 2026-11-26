@@ -65,9 +65,14 @@ Owner queue examples (2026-11-23 16:06): "less cartoonish (playful is ok)" for P
 
 Theme `::selection`, `:focus-visible` ring, scrollbars (if any scroll), `accent-color`, and use `font-variant-numeric: tabular-nums` for numerals in data. This is the cheapest signal a component was built rather than assembled.
 
-## 8. Colours and fonts as root CSS custom properties
+## 8. Colours an owner can change
 
-Neutral, re-themable defaults on the root (`--ft-foil`, `--cs-font-ui` style, per component prefix) so an owner can re-theme. Colours are never props. Name each variable for its job (`--ft-accent`, `--ft-ink`, not `--c1`), give it one plain hex default, and derive shades with `color-mix()` from it so they follow a change. The defaults must look finished, not placeholder grey.
+Studio 2 turns every root variable into a Design-panel control labelled with its name (`--dp-milk-lo` → "Dp Milk Lo"), and real CSS properties into Wix's own panels (Background with solid, gradient and image). Verified by paste test, 2026-11-26.
+- Put each owner colour on a real property of a named element: the surface's `background`, the text's `color`, the frame's `background-color`. Keep a surface to one background layer; move glows and sheens to a `::before` or a child.
+- At most 2 root colour variables, only for a colour reused across elements (focus ring, selection, an SVG stroke). Name them in plain owner words with no prefix: `--accent`, not `--ft-accent`.
+- Shades, edges, shadows, textures and `url()` stay literal in the rule that uses them, or come from `color-mix()` on a variable. Never declare them on the root.
+- Colours are never props: a string prop becomes a plain text field.
+The defaults must look finished, not placeholder grey.
 
 ## Spectrum check (DIY vs studio owner)
 

@@ -16,7 +16,7 @@ Run these as written. Replace `<Name>` with your component. Tick items with evid
 
 **Build**
 - [ ] `Component.tsx`: typed props with finished-looking defaults, arrays of flat objects, all text from props, `className` on the root, no browser globals in render.
-- [ ] `Component.module.css`: root custom properties for colours and fonts, `container-type: inline-size`, `@container` for responsiveness, fonts named from `wix-fonts.md` with no `@font-face`, `:focus-visible` ring, `::selection`, reduced-motion block.
+- [ ] `Component.module.css`: colours on real CSS properties (≤2 plainly named root colour vars, nothing internal on the root), `container-type: inline-size`, `@container` for responsiveness, fonts named from `wix-fonts.md` with no `@font-face`, `:focus-visible` ring, `::selection`, reduced-motion block.
 - [ ] Hero has material and light; controls are flat with hairlines and soft low shadows. No eyebrow, no warm-craft default, no nested cards.
 - [ ] Motion: 3+ beats, spring/eased, staggered, interruptible; `IntersectionObserver` pause; `matchMedia` reduced-motion static state.
 - [ ] After EVERY edit: `npx tsc --noEmit 2>&1 | grep "components/<Name>/"` is empty.
@@ -45,7 +45,7 @@ Run these as written. Replace `<Name>` with your component. Tick items with evid
 - [ ] 4. Choreographed motion: 3+ beats with overlap and physics, not one fade/draw/slide.
 - [ ] 5. Composition with a point of view: scale contrast, depth, asymmetry, a focal point.
 - [ ] 6. Finish: no text under 12px (1280 and 375), type hierarchy obvious, edges aligned, browser surfaces themed.
-- [ ] 7. Interaction and states: one primary action, empty/disabled states designed, soft effect edges, trigger/speed props with safe defaults, colours as root CSS variables.
+- [ ] 7. Interaction and states: one primary action, empty/disabled states designed, soft effect edges, trigger/speed props with safe defaults, colours on real CSS properties.
 - [ ] 8. Benchmark: beside FoilTiltCard's 1280 shot it would also be featured.
 - [ ] Usefulness: an owner could drop it into a real site with their content and it still works (not a flashy demo nobody can use).
 

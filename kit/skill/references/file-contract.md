@@ -21,17 +21,17 @@ components/<Name>/
 - Every prop optional with a default that looks finished. Arrays are arrays of flat objects (`details: {label, value}[]`), never nested arrays or object props. Every visible string comes from a prop.
 - Accept `className?: string` and join it onto the root: `className={[styles.root, className].filter(Boolean).join(' ')}`.
 - Root sets `container-type: inline-size` (see `components/FoilTiltCard/Component.module.css`) and everything responds to the container with `@container (min-width: ...)`.
-- Colours and fonts are CSS custom properties on the root with a component prefix (`--ft-foil`, `--cs-font-ui`). Never drive a colour from a prop.
+- Colours sit on real CSS properties of named elements; at most 2 shared colours as root variables with plain names (`--accent`, no prefix). Nothing internal (shades, textures, url(), RGB triples) on the root. Never drive a colour from a prop. Details: [art-direction.md](art-direction.md) §8.
 - Browser APIs only inside effects or handlers: the reduced-motion and in-view state pattern is at `components/FoilTiltCard/Component.tsx` lines ~85-100 (`matchMedia` and `IntersectionObserver` inside `useEffect`).
 - Use `useId()` for label ids (SSR-stable), never `Math.random()` in render.
 
 ## Props = owner settings only
 
 Studio 2 turns every prop into a settings-panel control. So:
-- Expose only what an owner would plausibly change: content, a speed/strength, a variant (colours go through root CSS variables, not props). Plain words, one concept per prop.
+- Expose only what an owner would plausibly change: content, a speed/strength, a variant (colours go through CSS, not props). Plain words, one concept per prop.
 - No preview or test hooks: no initial open state, forced index, demo flag, debug flag. (ContactSheetGallery's `initialOpenIndex` was removed for this.) If you need a state for the preview, drive it from the URL inside `preview.tsx`, never through a prop.
 - Screen-reader strings become props only when an owner would translate them; otherwise hard-code sensible aria text.
-- Triggers (click/hover/none) and speeds an owner would tune are props with a safe default (click over hover). Examples: SunArcOpeningHours `selectTrigger`, SignOffSignature `speed`. Colours are root CSS variables, never props.
+- Triggers (click/hover/none) and speeds an owner would tune are props with a safe default (click over hover). Examples: SunArcOpeningHours `selectTrigger`, SignOffSignature `speed`. Colours are never props.
 - `preview.tsx` shows only the component: no sample owner content, no hints or demo scaffolding. Content a section wraps comes from `children` (BlackHoleIntro's preview is stars only).
 - A per-letter or per-item behaviour that some owners want is an explicit setting with a safe default (EmbroideredWord's `resewOnHover`, default off).
 - No eyebrow/kicker prop (banned), no "small heading" setting, no replay/demo button, no on-screen hint line (guideline; the pause control for continuous motion over 5s is the one allowed exception, and CardStack's hint line is a granted exception). Keyboard and gesture help goes in `aria-label` or `aria-description` (see `aria-description={CARD_HELP}` on the card in FoilTiltCard).

@@ -42,7 +42,7 @@ Known blemishes in the exemplars (do not copy): both carry an `eyebrow` prop (ba
    - Quiet text at least 4.5:1 against its real background.
    - Aligned edges; nothing clipped at 1280, 375 or worst case (check the full height).
    - Browser surfaces themed from the palette: `::selection`, focus ring, scrollbars, `font-variant-numeric: tabular-nums` where data.
-7. **Interaction and states.** One clear primary action (others ink or ghost); empty and disabled-until-meaningful states designed; effect edges soft, never clipped or hard; trigger and speed exposed as props with safe defaults; colours only as root CSS variables. Details: [design-standard.md](design-standard.md).
+7. **Interaction and states.** One clear primary action (others ink or ghost); empty and disabled-until-meaningful states designed; effect edges soft, never clipped or hard; trigger and speed exposed as props with safe defaults; colours as real CSS properties, at most 2 plainly named root colour variables. Details: [design-standard.md](design-standard.md).
 8. **Benchmark.** Capture your 1280 shot and open `FoilTiltCard`'s next to it. If yours would not also be featured on a design showcase, it is a 2.
 
 ## Scoring honestly

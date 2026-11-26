@@ -15,7 +15,7 @@ Last verified against the project record: 2026-11-24.
 
 1. **Would it sit next to the gold list in craft AND usefulness?** `CardStack`, `EmbroideredWord`, `FoilTiltCard`, `InlineImagePillText`, `SizeAgainstObjects`, `ShortlistSwipeDeck`, `WorldConnectionsMap` (all in `components/`). If a designer would not screenshot yours beside them, it is a 2 and does not ship. Details: [references/quality-bar.md](references/quality-bar.md).
 2. **Material and light on the hero moment only; contemporary flat UI everywhere else.** No warm-craft default, no eyebrows, less skeuomorphic, less cartoonish. Details: [references/art-direction.md](references/art-direction.md).
-3. **Know what "good" means here.** One primary action, designed empty/disabled states, a unique mechanism with real value, soft premium effects, props for triggers and speeds (colours are root CSS variables, never props), a preview with only the component. Read [references/design-standard.md](references/design-standard.md) before you build.
+3. **Know what "good" means here.** One primary action, designed empty/disabled states, a unique mechanism with real value, soft premium effects, props for triggers and speeds (colours live in real CSS properties, never props), a preview with only the component. Read [references/design-standard.md](references/design-standard.md) before you build.
 4. **Nothing ships unseen, and you report only what you verified.** Capture your own render at 1280, 375 and `?worst=1`, and look at every frame before you report. Every default image URL returns 200 and has a CSS-painted fallback. Details: [references/common-misses.md](references/common-misses.md).
 
 ## Paste-safe contract (hard gate)
@@ -25,7 +25,7 @@ The owner pastes `PROMPT.md` (only the `.tsx` and `.css`) into Studio 2, and cod
 1. **React 18 and TypeScript, no dependencies.** No npm imports in `Component.tsx` or its CSS, no Wix imports, no external files (no `./fonts/`, no local images).
 2. **Every prop is an owner setting, with a default.** Each prop becomes a settings-panel control, so no preview or test hooks. Every prop is optional and its default looks finished.
 3. **Every visible text comes from a prop.** Include `alt` text and any label a visitor reads. Only aria help nobody would translate may be hard-coded.
-4. **Colours and fonts as CSS variables** on the root (`--ft-foil`, `--cs-font-ui`), with neutral defaults.
+4. **Colours on real CSS properties** of named elements (`background`, `color`, `border-color`), at most 2 plainly named root colour variables (`--accent`). Every root variable becomes a Studio 2 control, so nothing internal goes on the root ([art-direction.md](references/art-direction.md) §8).
 5. **Fonts are Wix catalog families only, named, never loaded.** Pick from [references/wix-fonts.md](references/wix-fonts.md). No `@font-face`, no `fonts/` folder, no base64 faces. Codegen loads the face itself (paste test 2026-11-25: it added `@fontsource/bricolage-grotesque` imports and the font picker showed the family). For the showcase, `preview.tsx` imports the same Fontsource package.
 6. **Size to the container, no viewport media queries.** Set `container-type: inline-size` on the root and use `@container`. `@media (prefers-reduced-motion)` and `(hover: hover)` are fine.
 7. **No browser globals while rendering.** `window`, `document`, `navigator` and observers belong only inside `useEffect` or handlers. Use `useId()`, never `Math.random()`, in render.
@@ -64,7 +64,7 @@ Known conflict, already resolved: CONTRACT §9.2-9.3 say "never a single flat fi
 4. **Choreographed motion.** At least 3 beats with overlap, secondary motion and physics (pierce, pull, fabric dimples, thread tightens). One fade, draw or slide is a 2.
 5. **Composition with a point of view.** Scale contrast, depth, asymmetry, one focal point. Not a template.
 6. **Finish.** No text under 12px at 1280 or 375, no unreadable small-caps labels, obvious type hierarchy, aligned edges, browser surfaces themed (selection, focus ring, scrollbars, tabular numerals for data).
-7. **Interaction and states.** One clear primary action, designed empty/disabled states, soft effect edges, trigger/speed props with safe defaults, colours as root CSS variables ([design-standard.md](references/design-standard.md)).
+7. **Interaction and states.** One clear primary action, designed empty/disabled states, soft effect edges, trigger/speed props with safe defaults, colours on real CSS properties ([design-standard.md](references/design-standard.md)).
 8. **Benchmark.** Put your 1280 shot beside `FoilTiltCard`'s. Both featured on a design showcase? If yours is weaker, it is a 2.
 
 Craft scale is 1-3 (never 4; a builder once wrote 4). A clean, correct component is a 2. Ship only at 3; a 2 gets one polish pass, then `backlog`. FoilTiltCard is the level of polish, not the style: never copy its holo/pastel/glass look unless your card asks for it.
@@ -104,7 +104,7 @@ Craft scale is 1-3 (never 4; a builder once wrote 4). A clean, correct component
 | File | Rule |
 |---|---|
 | `Component.tsx` | One default-exported component; typed props with defaults; exports its prop types |
-| `Component.module.css` | Flat single-class selectors, logical properties, CSS custom properties on the root for colours/fonts |
+| `Component.module.css` | Flat single-class selectors, logical properties, colours on real CSS properties, ≤2 plainly named root colour variables |
 | `preview.tsx` | Default content, plus `?worst=1` worst case (long names, long text, many items, missing optional fields), plus `import '@fontsource/<family>/<weight>.css'` for each face. Copy `components/FoilTiltCard/preview.tsx` |
 | `meta.json` | Fields of `components/FoilTiltCard/meta.json` (template in the reference) |
 | `PROMPT.md` | ONLY from `bash scripts/build-prompts.sh <Name>`. Never hand-written. |
